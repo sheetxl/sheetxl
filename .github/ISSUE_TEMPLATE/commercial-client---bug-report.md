@@ -1,9 +1,9 @@
 ---
-name: Bug report
-about: Something is not working as expected.
+name: Commercial Client - Bug report
+about: Commercial Client - Something is not working as expected.
 title: ''
-labels: bug
-assignees: ''
+labels: bug-sla
+assignees: michaeltford
 
 ---
 
