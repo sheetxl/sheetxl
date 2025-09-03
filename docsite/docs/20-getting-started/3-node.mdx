@@ -1,0 +1,128 @@
+---
+sidebar_position: 30
+title: Quick Start (Node)
+sidebar_label: Quick Start (Node)
+description: Quickly get started with SheetXL using Node.js.
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+
+<div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+  <img
+    src={require('/static/img/nodejs-logo.png').default}
+    alt="Node.js"
+    style={{ maxWidth: 180, width: '100%', borderRadius: 16, paddingLeft: 8, paddingRight: 8, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+  />
+</div>
+
+SheetXL for Node lets you create, modify, and save spreadsheet workbooks entirely server-side—perfect for automation, serverless, or offline processing.
+
+## New Project
+
+The fastest way to get started with SheetXL is using our project wizard. It will create a new
+project with SheetXL pre-configured and ready to use.
+
+<Tabs
+  defaultValue="pnpm"
+  values={[
+    {label: 'pnpm', value: 'pnpm'},
+    {label: 'yarn', value: 'yarn'},
+    {label: 'npm', value: 'npm'}
+  ]}>
+  <TabItem value="pnpm">
+```sh
+pnpm create sheetxl
+```
+  </TabItem>
+  <TabItem value="yarn">
+```sh
+yarn create sheetxl
+```
+  </TabItem>
+  <TabItem value="npm">
+```sh
+npx create-sheetxl
+```
+  </TabItem>
+</Tabs>
+
+> ...and follow the interactive prompts.
+
+
+
+***
+
+## Existing Project
+
+Install the SDK and IO packages using your preferred package manager:
+
+<Tabs
+  defaultValue="pnpm"
+  values={[
+    {label: 'pnpm', value: 'pnpm'},
+    {label: 'yarn', value: 'yarn'},
+    {label: 'npm', value: 'npm'}
+  ]}>
+  <TabItem value="pnpm">
+```sh
+pnpm add @sheetxl/sdk @sheetxl/io
+```
+  </TabItem>
+  <TabItem value="yarn">
+```sh
+yarn add @sheetxl/sdk @sheetxl/io
+```
+  </TabItem>
+  <TabItem value="npm">
+```sh
+npm install @sheetxl/sdk @sheetxl/io
+```
+  </TabItem>
+</Tabs>
+
+### Installation
+
+Create a file called `example.js`:
+
+```javascript title="example.js"
+import SheetXL from '@sheetxl/sdk';
+import WorkbookIO from '@sheetxl/io';
+import fs from 'node:fs';
+
+// Set your license key or use CLI to install
+SheetXL.LicenseManager.setLicenseKey('visit https://my.sheetxl.com to generate a license key.');
+
+// Create a new workbook
+const workbook = new SheetXL.Workbook();
+
+workbook.getRange('A1').setValues([['Hello World!']]);
+
+// Export the workbook to a buffer
+const buffer = await WorkbookIO.write({
+  workbook,
+  type: 'xlsx',
+});
+
+// Save to disk
+fs.writeFileSync('my-workbook.xlsx', buffer);
+
+console.log('Workbook saved as my-workbook.xlsx');
+```
+
+Run it with:
+
+```bash
+node example.js
+```
+
+***
+
+### API Documentation
+
+See the full API reference for all available methods:
+
+- **[SDK](https://api.sheetxl.com/modules/_sheetxl_sdk.html)**
+- **[IO](https://api.sheetxl.com/modules/_sheetxl_io.html)**

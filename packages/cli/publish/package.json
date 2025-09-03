@@ -1,0 +1,10 @@
+{
+  "bin": {
+    "sheetxl": "./cli.js"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20 <21 || >=22"
+  },
+  "engineStrict": true
+}

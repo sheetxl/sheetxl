@@ -1,0 +1,142 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Studio MUI - Examples",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/examples/studio-mui",
+      "runtimeArgs": [
+        "--profile-directory=debug-profile",
+        "--preserve-symlinks",
+        "--js-flags=--allow-natives-syntax --trace-gc --trace-gc-verbose"
+      ],
+      "pathMapping": {
+        "/@fs/": ""
+      },
+      "skipFiles": [
+        // Skip all files from node_modules, including packages linked by pnpm
+        "${workspaceFolder}/**/node_modules/**",
+        // Also keep skipping Node.js internal modules
+        "<node_internals>/**"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "smartStep": true,
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Studio ESM - Examples",
+      "url": "http://localhost:4000",
+      "webRoot": "${workspaceFolder}/examples/studio-vanilla",
+      "runtimeArgs": [
+        "--profile-directory=debug-profile",
+        "--preserve-symlinks",
+        "--js-flags=--allow-natives-syntax --trace-gc --trace-gc-verbose"
+      ],
+      "pathMapping": {
+        "/@fs/": ""
+      },
+      "skipFiles": [
+        // Skip all files from node_modules, including packages linked by pnpm
+        "${workspaceFolder}/**/node_modules/**",
+        // Also keep skipping Node.js internal modules
+        "<node_internals>/**"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "smartStep": true,
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CLI (TypeScript)",
+      "runtimeExecutable": "tsx",
+      "args": ["src/cli.ts"],
+      "cwd": "${workspaceFolder}/packages/cli",
+      "env": {
+        "NODE_ENV": "development",
+        "NODE_OPTIONS": "--conditions=development"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Storybook - Examples",
+      "url": "http://localhost:6006",
+      "webRoot": "${workspaceFolder}/examples/storybook",
+      "runtimeArgs": [
+        "--profile-directory=debug-profile"
+      ],
+      "pathMapping": {
+        "/@fs/": ""
+      },
+      "smartStep": true,
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    // {
+    //   "name": "CLI - Examples",
+    //   "type": "node",
+    //   "request": "launch",
+    //   "cwd": "${workspaceFolder}/examples/cli",
+    //   "runtimeArgs": [
+    //     "--preserve-symlinks"
+    //   ],
+    //   "args": ["--experimental-transform-types", "${workspaceFolder}/examples/cli/src/index.ts", "--verbose", "extract", "assets/${input:assetName}"],
+    //   "console": "integratedTerminal",
+    //   "internalConsoleOptions": "neverOpen"
+    // },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Vitest {CurrentFile}",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"], // , "**/node_modules/**"
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "smartStep": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Vitest Debug Tests",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "--reporter=verbose"],
+      "env": {
+        "NODE_ENV": "debug"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Vitest Debug {CurrentFile}",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${file}", "--reporter=verbose"],
+      "env": {
+        "NODE_ENV": "debug"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ],
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "assetName",
+      "description": "Name of file.",
+      "default": "simple"
+    }
+  ]
+}

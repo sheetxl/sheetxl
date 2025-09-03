@@ -1,0 +1,28 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "disableSources": true,
+  "hideGenerator": true,
+  // https://typedoc.org/documents/Options.Output.html#customjs to example navigation.
+  // https://typedoc.org/documents/Options.Output.html#customjs to style
+
+  //  "hostedBaseUrl": "https://example.com" to fix the module url links
+  // "gaID": "G-1JGL700TV6",
+  "validation": {
+    "notExported": false, // Not working. TypeDoc is giving warnings for private interfaces on protected methods.
+    "invalidLink": false,
+    "rewrittenLink": true,
+    "notDocumented": false,
+    "unusedMergeModuleWith": true
+  },
+  // Potentially useful for debugging
+  "logLevel": "Warn", // "Verbose" | "Info" | "Warn" | "Error" | "None"
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeReferences": true,
+  "excludeExternals": true,
+  "exclude": ["./apisite/README.md"],
+  "excludeNotDocumented": true, // doesn't work. stilling giving bogus warnings.
+  "excludeNotDocumentedKinds": ["Property", "Interface", "TypeAlias"]
+  // "excludeNotDocumentedKinds": ["Property", "Interface", "TypeAlias"]
+}

@@ -1,0 +1,29 @@
+@media screen and (min-width: 1440px) {
+  .studio {
+    max-width: calc(100% - 128px);
+    margin-left: 64px;
+    margin-right: 64px;
+  }
+}
+
+@media screen and (min-width: 996px) and (max-width: 1200px) {
+  .studio {
+    max-width: calc(100% - 64px);
+    margin-left: 32px;
+    margin-right: 32px;
+  }
+}
+
+@media screen and (max-width: 996px) {
+  .studio {
+    max-width: calc(100% - 16px);
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+}
+
+.studio {
+  padding-left: 0px;
+  padding-right: 0px;
+  min-height: 580px;
+}

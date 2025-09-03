@@ -1,0 +1,45 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "baseUrl": ".",
+    "paths": {
+      "@sheetxl/utils": [
+        "../utils/src"
+      ],
+      "@sheetxl/io": [
+        "../io/src"
+      ],
+      "@sheetxl/utils-react": [
+        "../utils-react/src"
+      ],
+      "@sheetxl/utils-mui": [
+        "../utils-mui/src"
+      ],
+      "@sheetxl/react-grid": [
+        "../react/src-grid"
+      ],
+      "@sheetxl/studio-mui": [
+        "../studio-mui/src"
+      ]
+    },
+    "tsBuildInfoFile": "./build/.tsbuildinfo.studio-vanilla",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src",
+    "../primitives/src",
+    "../utils/src",
+    "../utils-react/src",
+    "../utils-mui/src",
+    "../studio-mui/src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

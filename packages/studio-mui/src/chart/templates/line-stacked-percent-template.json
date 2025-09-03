@@ -1,0 +1,8 @@
+{
+  "types": {
+    "0": {
+      "type": "line",
+      "grouping": "percentStacked"
+    }
+  }
+}

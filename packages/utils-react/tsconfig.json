@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "baseUrl": ".",
+    "paths": {
+      "@sheetxl/utils": [
+        "../utils/src"
+      ]
+    },
+    "tsBuildInfoFile": "./build/.tsbuildinfo.utils-react",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src",
+    "../utils/src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

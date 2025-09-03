@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    {
+      "path": "../utils"
+    }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./build/.tsbuildinfo.utils-react",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

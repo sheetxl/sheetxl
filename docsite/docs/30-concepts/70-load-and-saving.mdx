@@ -1,0 +1,104 @@
+---
+sidebar_position: 70
+title: Loading and Saving
+---
+
+### Loading and Saving State
+
+Most models implement the <strong>[JSONSerializable](https://api.sheetxl.com/interfaces/_sheetxl_utils.JSONSerializable.html)</strong> interface
+which enables a common API for loading and saving state as JSON.
+
+Model with public constructors also have an `json` property in the constructor options that matches the type of
+the toJSON().
+
+```typescript title="Save to JSON"
+const asJSON:IWorkbook.JSON = workbook.toJSON();
+// save asJSON to local storage or db
+```
+
+```typescript title="Read from JSON"
+
+const json:IWorkbook.JSON = { /* Json loaded from db, local storage, or other location */ };
+const workbook:IWorkbook = new Workbook({ json });
+
+```
+
+#### Create workbook model from initial data
+
+A common use case is to just display a Workbook with initial data.<br/>The Workbook constructor also takes a 2D array of [Scalar](https://api.sheetxl.com/types/_sheetxl_primitives.Scalar.html)s.
+```typescript
+const workbook:IWorkbook = new Workbook();
+workbook.getSelectedSheet().getRange('A1:C3').setValues([
+  [1,2,3],
+  [4,5,6],
+  [7,8,9]
+]);
+```
+
+### Import and Exporting
+
+Import and exporting file formats other than the native SheetXL JSON type is done using using
+[@sheetxl/io](https://www.npmjs.com/package/@sheetxl/io) module.
+
+The formats, including native JSON, currently support are:
+- SheetXL JSON (native)
+- CSV
+- Excel
+
+
+```typescript title="@sheetxl/io/WorkbookIO"
+/**
+ * Read from local file system using available IO handlers.
+ * The input can be either a File, a Promise<File>, or a string.
+ * If a string is provided, if should be either an extension or a mimetype
+ * that will be passed to the accept attribute of an
+ * input: {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept}.
+ *
+ * @param options THe options for loading the workbook.
+ * @returns A promise that resolves to an ImportResults object.
+ *
+ */
+WorkbookIO.read(
+  options: ReadWorkbookOptions
+): Promise<ImportResults>;
+
+// Import from a file
+const result1 = await serialization.read({
+  source: myFile,
+  name: 'My Spreadsheet'
+});
+
+// Import from base64 (explicit disambiguation)
+const result2 = await serialization.read({
+  source: { base64: 'iVBORw0KGgo...' },
+  type: 'xlsx'
+});
+
+// Import from URL
+const result3 = await serialization.read({
+  source: 'https://example.com/data.xlsx'
+});
+
+// Import from array buffer
+const result4 = await serialization.read({
+  source: myArrayBuffer,
+  type: 'csv',
+  name: 'data.csv'
+});
+
+/**
+ * Exports to the local file system attempting to use the fileName provided. This will
+ * use the exportType to determine the export handler to use.
+ *
+ * @returns A Promise indicating success or failure.
+ */
+WorkbookIO.writeFile(
+  fileName: string | null,
+  workbook: IWorkbook,
+  exportType?: ExportType
+): Promise<boolean>;
+```
+
+:::note
+If another format is needed or something is missing please let me know.
+:::

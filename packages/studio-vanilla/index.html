@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>SheetXL Studio Vanilla - Live ESM Dev Server</title>
+  <link rel="icon" href="https://www.sheetxl.com/favicon.ico" crossorigin="anonymous" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="SheetXL" />
+  <link rel="apple-touch-icon" href="https://www.sheetxl.com/img/logo_x192.png" crossorigin="anonymous" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #2c5f8a 100%);
+
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+    }
+
+    .title {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }    .env-badge {
+      background: rgba(135, 206, 250, 0.2);
+      color: #87ceeb;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1px solid rgba(135, 206, 250, 0.3);
+    }
+
+    .container {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .card h2 {
+      color: white;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .info-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-item h3 {
+      color: #e0e0e0;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-item p {
+      color: white;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 0.875rem;
+    }
+    .demo-area {
+      min-height: calc(100cqh - 275px); /* Full viewport minus estimated space for header/footer/padding */
+      display: flex;
+      flex-direction: row;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+    }
+
+    /* .status {
+      color: #011229;
+      font-weight: 500
+    } */
+
+    /* .status.success {
+      color: #049b04;
+    } */
+
+    .status.error {
+      color: #ff6b6b;
+    }
+
+    .footer {
+      background: rgba(0, 0, 0, 0.2);
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.875rem;
+    }
+
+    pre {
+      background: rgba(0, 0, 0, 0.3);
+      color: #e0e0e0;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.875rem;
+      margin: 0.5rem 0;
+    }
+
+    .button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="logo-section">
+      <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="80" height="80" fill="none" stroke="white" stroke-width="3" rx="8" />
+        <rect x="20" y="20" width="25" height="25" fill="white" opacity="0.8" rx="3" />
+        <rect x="55" y="20" width="25" height="25" fill="white" opacity="0.6" rx="3" />
+        <rect x="20" y="55" width="25" height="25" fill="white" opacity="0.6" rx="3" />
+        <rect x="55" y="55" width="25" height="25" fill="white" opacity="0.4" rx="3" />
+        <circle cx="37.5" cy="37.5" r="3" fill="#4a90e2" />
+      </svg>
+      <h1 class="title">SheetXL Studio Vanilla</h1>
+    </div>
+    <div class="env-badge">Live ESM Dev Server</div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>🧪 Live Demo Area</h2>
+      <div style="margin-top: 0.75rem; margin-bottom: 0.75rem; display: flex; gap: 1rem;">
+        <button class="button" onclick="initializeDemo()">Initialize</button>
+        <button class="button" onclick="clearDemo()">Clear</button>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: start;">
+          <p class="status" id="demoStatus">Unloaded</p>
+        </div>
+      </div>
+      <div class="demo-area" id="demoArea"></div>
+    </div>
+
+    <div class="card">
+      <h2>📦 ESM Import Examples</h2>
+      <div class="info-item">
+        <h3>Direct Import (Development)</h3>
+        <pre>import { SheetXL } from './src/index.ts';</pre>
+      </div>
+      <div class="info-item">
+        <h3>CDN-Style Import (Simulated)</h3>
+        <pre>import { SheetXL } from 'http://localhost:4000/src/index.ts';</pre>
+      </div>
+      <div class="info-item">
+        <h3>Dynamic Import</h3>
+        <pre>const { SheetXL } = await import('./src/index.ts');</pre>
+      </div>
+    </div>
+
+
+    <div class="card">
+      <h2>🚀 Development Server Info</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Environment</h3>
+          <p>Development Mode</p>
+        </div>
+        <div class="info-item">
+          <h3>Server Port</h3>
+          <p>http://localhost:4000</p>
+        </div>
+        <div class="info-item">
+          <h3>Hot Module Replacement</h3>
+          <p class="status success">Enabled</p>
+        </div>
+        <div class="info-item">
+          <h3>Source Maps</h3>
+          <p class="status success">Enabled</p>
+        </div>
+        <div class="info-item">
+          <h3>Import Mode</h3>
+          <p>ESM (Direct Source)</p>
+        </div>
+        <div class="info-item">
+          <h3>Library Status</h3>
+          <p class="status" id="libraryStatus">Loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔧 Development Tools</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Vite Dev Server</h3>
+          <p>pnpm run dev</p>
+        </div>
+        <div class="info-item">
+          <h3>Build Library</h3>
+          <p>pnpm run build</p>
+        </div>
+        <div class="info-item">
+          <h3>Preview Build</h3>
+          <p>pnpm run preview</p>
+        </div>
+        <div class="info-item">
+          <h3>Run Tests</h3>
+          <p>pnpm run test</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>SheetXL Studio Vanilla - Live ESM Development Server | Use this for rapid development and CDN-style testing</p>
+  </div>
+  <script type="module">
+    let SheetXL = null;
+    let studioElement = null;
+
+    function updateStatus(elementId, text, isSuccess = null) {
+      const element = document.getElementById(elementId);
+      element.textContent = text;
+      element.className = 'status' + (isSuccess === true ? ' success' : isSuccess === false ? ' error' : '');
+    }
+
+    async function loadLibrary() {
+      try {
+        updateStatus('libraryStatus', 'Loading...');
+
+        // Import the library directly from source (Vite will handle it)
+        const module = await import('./src/sheetxl.ts');
+        console.log('📦 SheetXL Library Loaded:', module);
+        SheetXL = module.SheetXL;
+
+        updateStatus('libraryStatus', 'Loaded Successfully', true);
+        return module;
+      } catch (error) {
+        console.error('❌ Failed to load SheetXL Studio Vanilla:', error);
+        updateStatus('libraryStatus', `Failed: ${error.message}`, false);
+        throw error;
+      }
+    }
+
+    async function initializeDemo() {
+      try {
+        updateStatus('demoStatus', 'Loading...');
+
+        if (!SheetXL) {
+          await loadLibrary();
+        }
+
+        updateStatus('demoStatus', 'Initializing...');
+
+        // Clear the demo area and create a container
+        const demoArea = document.getElementById('demoArea');
+        demoArea.innerHTML = '<div id="sheetxl-container" style="flex: 1 1 100%; width: 100%;"></div>';
+
+        // Initialize SheetXL using the actual API
+        if (SheetXL && typeof SheetXL.attachStudio === 'function') {
+          try {
+            studioElement = await SheetXL.attachStudio('#sheetxl-container', {
+              autoFocus: true
+              // workbook: {
+              //   // source: 'https://www.sheetxl.com/examples/financial-calculators.xlsx',
+              //   // source: 'https://www.sheetxl.com/examples/features-checklist.xlsx',
+              // }
+            });
+            updateStatus('demoStatus', 'Loaded', true);
+          } catch (attachError) {
+            console.error('SheetXL initialize error:', attachError);
+            updateStatus('demoStatus', 'Library loaded, initialize failed', true);
+          }
+        } else {
+          // Fallback if attach method is not available
+          document.getElementById('sheetxl-container').innerHTML = `
+                        <div style="padding: 2rem; text-align: center; color: #333;">
+                            <h3>🎉 SheetXL Studio Loaded!</h3>
+                            <p>The library is ready for use. Use SheetXL.attachStudio(selector, props) to initialize.</p>
+                            <div style="margin-top: 1rem; text-align: left; background: #f8f9fa; padding: 1rem; border-radius: 4px;">
+                                <strong>Available methods:</strong>
+                                <ul style="padding: inherit">
+                                    ${Object.getOwnPropertyNames(SheetXL || {}).map(prop => `<li>${prop}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+          updateStatus('demoStatus', 'SheetXL loaded!', true);
+        }
+
+      } catch (error) {
+        console.error('Initialization failed:', error);
+        updateStatus('demoStatus', `Initialization failed: ${error.message}`, false);
+        document.getElementById('demoArea').innerHTML = `
+                    <div style="color: #ff6b6b; padding: 1rem;">
+                        <strong>Error:</strong> ${error.message}
+                        <pre style="margin-top: 0.5rem; color: #ff9999;">${error.stack}</pre>
+                    </div>
+                `;
+      }
+    }
+
+    function clearDemo() {
+      if (!SheetXL) return;
+      studioElement.detach();
+      updateStatus('demoStatus', 'Cleared.');
+    }
+
+    // Global functions for buttons
+    window.initializeDemo = initializeDemo;
+    window.clearDemo = clearDemo;
+    loadLibrary().catch(error => {
+      console.error('Failed to auto-load library:', error);
+    });
+
+    // Enhanced Hot Module Replacement support
+    if (import.meta.hot) {
+      // Accept changes to the main module
+      import.meta.hot.accept('./src/sheetxl.ts', (newModule) => {
+        console.log('🔄 HMR: Reloading demo with updated library');
+        SheetXL = newModule?.SheetXL;
+        updateStatus('libraryStatus', 'Hot Reloaded', true);
+        clearDemo();
+        setTimeout(() => initializeDemo(), 100);
+      });
+    }
+  </script>
+</body>
+
+</html>

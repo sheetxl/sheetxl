@@ -1,0 +1,53 @@
+{
+  "sheets": [
+    {
+      "name": "Data",
+      "sheet": {
+        "data": [
+          "[0,[[0,[\"0\"]]]]",
+          "[1,[[2,[34995]]]]",
+          "[2,[[1,[234,true]]]]"
+        ],
+        "cols": [
+          {
+            "min": 0,
+            "max": 0,
+            "sz": 15.42857143,
+            "csz": true
+          },
+          {
+            "min": 1,
+            "max": 1,
+            "sz": 11.42857143,
+            "csz": true
+          }
+        ],
+        "view": {
+          "selection": {
+            "cell": "C3"
+          }
+        },
+        "directStyles": [
+          {
+            "r": "B3",
+            "v": 1
+          }
+        ]
+      }
+    }
+  ],
+  "styles": {
+    "direct": [
+      {},
+      {
+        "numberFormat": "Short Date"
+      }
+    ]
+  },
+  "strings": [
+    "this has spaces"
+  ],
+  "view": {
+    "activeSheetId": 1
+  }
+}

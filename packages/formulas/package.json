@@ -1,0 +1,45 @@
+{
+  "name": "@sheetxl/formulas",
+  "version": "0.0.0",
+  "description": "Formulas - TypeScript formulas compatible with Excel built-ins.",
+  "license": "SEE LICENSE IN <LICENSE>",
+  "private": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./build/types/index.d.ts",
+      "import": {
+        "node": "./build/node/esm/index.mjs",
+        "browser": "./build/browser/esm/index.mjs",
+        "default": "./build/browser/esm/index.mjs"
+      }
+    }
+  },
+  "scripts": {
+    "build:node": "cross-env BUILD_ENV=node vite build",
+    "build:browser": "vite build",
+    "build": "pnpm run build:node && pnpm run build:browser",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "release:package": "cd build && pnpm publish --no-git-checks --access public",
+    "lint": "eslint .",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@sheetxl/primitives": "workspace:*",
+    "bahttext": "^2.3.0",
+    "bessel": "^1.0.2",
+    "jstat": "^1.9.6"
+  },
+  "optionalDependencies": {
+    "@xmldom/xmldom": "^0.9.8",
+    "fontoxpath": "^3.33.2"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "sheetxl",
+    "spreadsheet",
+    "formulas"
+  ]
+}

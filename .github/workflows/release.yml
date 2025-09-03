@@ -1,0 +1,179 @@
+name: Build and Publish Packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**/src/**'
+      - 'package.json'
+      - 'README.md'
+      - '!packages/**/src/**/__tests__/**'
+      - '!*PRIVATE*.md'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/**/src/**'
+      - 'package.json'
+      - 'README.md'
+      - '!packages/**/src/**/__tests__/**'
+      - '!*PRIVATE*.md'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.perform-build.outputs.released }}
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Setup SSH for Checkout
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY_WORKFLOW }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PAT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Perform Build
+        id: perform-build
+        run: |
+          # Configure git to use SSH for this repository
+          git remote set-url origin git@github.com:sheetxl/private.git
+          # Run semantic-release WITH GitHub plugin (it will create the release)
+          pnpm run release
+          # Check if any packages were actually released by looking for new tags
+          if git describe --tags --exact-match HEAD 2>/dev/null; then
+            echo "released=true" >> $GITHUB_OUTPUT
+            echo "✅ Release created, continuing with deployments"
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            echo "Created tag and GitHub release: $LATEST_TAG"
+          else
+            echo "released=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No release created, skipping deployments"
+          fi
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Setup SSH for TSDocs
+        if: steps.perform-build.outputs.released == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY_MIRRROR_TSDOCS }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Mirror TSDocs
+        if: steps.perform-build.outputs.released == 'true'
+        run: |
+          pnpm run build:tsdocs
+          mkdir ../deploy-tsdocs
+          cp -r build/docs/* ../deploy-tsdocs
+          cp -r apisite/public/* ../deploy-tsdocs
+          cd ../deploy-tsdocs
+          git init
+          git config core.autocrlf false
+          git config core.safecrlf false
+          # git config user.name "sheetxl-ops"
+          # git config user.email "hello@sheetxl.com"
+          git config user.name "Michael Ford"
+          git config user.email "michael@sheetxl.com"
+          git remote add origin git@github.com:michaeltford/deploy-tsdocs.git
+          git checkout -b main
+          git add . > /dev/null
+          git commit -m "docs: update from $GITHUB_SHA" > /dev/null
+          git push origin main --force > /dev/null
+          cd -
+
+      - name: Setup SSH for Studio MUI
+        if: steps.perform-build.outputs.released == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY_MIRRROR_DEMO_STUDIO }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Mirror Studio MUI
+        if: steps.perform-build.outputs.released == 'true'
+        run: |
+          pnpm run build:studio-mui
+          mkdir ../deploy-studio-mui
+          cp -r examples/studio-mui/build/* ../deploy-studio-mui
+          cd ../deploy-studio-mui
+          git init
+          git config core.autocrlf false
+          git config core.safecrlf false
+          # git config user.name "sheetxl-ops"
+          # git config user.email "hello@sheetxl.com"
+          git config user.name "Michael Ford"
+          git config user.email "michael@sheetxl.com"
+          git remote add origin git@github.com:michaeltford/deploy-studio-mui.git
+          git checkout -b main
+          git add . > /dev/null 2>&1
+          git commit -m "docs: update from $GITHUB_SHA"> /dev/null
+          git push origin main --force
+          cd -
+
+      - name: Setup SSH for Storybook
+        if: steps.perform-build.outputs.released == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY_MIRRROR_STORYBOOK }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Mirror Storybook
+        if: steps.perform-build.outputs.released == 'true'
+        run: |
+          pnpm run build:storybook
+          mkdir ../deploy-storybook
+          cp -r examples/storybook/build/* ../deploy-storybook
+          cd ../deploy-storybook
+          git init
+          git config core.autocrlf false
+          git config core.safecrlf false
+          # git config user.name "sheetxl-ops"
+          # git config user.email "hello@sheetxl.com"
+          git config user.name "Michael Ford"
+          git config user.email "michael@sheetxl.com"
+          git remote add origin git@github.com:michaeltford/deploy-storybook.git
+          git checkout -b main
+          git add . > /dev/null 2>&1
+          git commit -m "docs: update from $GITHUB_SHA"> /dev/null
+          git push origin main --force
+          cd -
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          if [ "${{ steps.perform-build.outputs.released }}" == "true" ]; then
+            echo "✅ Release published and deployments completed successfully"
+            echo "::notice title=Workflow Result::Packages released and deployed"
+          else
+            echo "ℹ️ No packages required release - deployments skipped"
+            echo "::notice title=Workflow Result::No release needed - all deployments skipped"
+          fi

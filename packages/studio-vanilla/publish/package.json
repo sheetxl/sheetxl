@@ -1,0 +1,19 @@
+{
+  "type": "module",
+  "main": "./browser/esm/index.mjs",
+  "module": "./browser/esm/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./browser/esm/index.mjs",
+      "require": "./browser/cjs/index.cjs",
+      "types": "./types/index.d.ts"
+    },
+    "./cdn": "./cdn/index.js",
+    "./loader.js": "./cdn/loader.js"
+  },
+  "types": "./types/index.d.ts",
+  "sideEffects": [
+    "*.css",
+    "**/*.css"
+  ]
+}

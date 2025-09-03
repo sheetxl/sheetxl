@@ -1,0 +1,48 @@
+.traverse-ellipsis {
+  display: inline-block;
+  position: relative;
+}
+.traverse-ellipsis div {
+  position: absolute;
+  border-radius: 50%;
+}
+.traverse-ellipsis div:nth-child(1) {
+  left: 0px;
+  animation: traverse-ellipsis1 0.6s infinite;
+}
+.traverse-ellipsis div:nth-child(2) {
+  left: 0px;
+  animation: traverse-ellipsis2 0.6s infinite;
+}
+.traverse-ellipsis div:nth-child(3) {
+  left: 24px;
+  animation: traverse-ellipsis2 0.6s infinite;
+}
+.traverse-ellipsis div:nth-child(4) {
+  left: 48px;
+  animation: traverse-ellipsis3 0.6s infinite;
+}
+@keyframes traverse-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes traverse-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+@keyframes traverse-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(24px, 0);
+  }
+}

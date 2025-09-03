@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./build/.tsbuildinfo.utils"
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}
