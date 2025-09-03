@@ -1,0 +1,142 @@
+---
+sidebar_position: 21
+title: Interacting with Sheets
+---
+import CoreOverviewImg from '@site/src/components/CoreOverviewImg';
+
+
+This section provides an overview of the primary interfaces in the SheetXL API, forming the foundation for
+interacting with spreadsheet data. Understanding these interfaces will aid you in creating powerful spreadsheet
+solutions.
+
+The SheetXL API provides a set of TypeScript interfaces for interacting with spreadsheets programmatically.
+While SheetXL has many interfaces, the most commonly used are described below.
+
+<CoreOverviewImg style={{maxWidth: '100%', marginLeft: '4px', marginRight: '4px'}} alt={`Core Overview`}/>
+
+### [ICellRange](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html)
+
+Represents a rectangular selection of cells, allowing you to read, write, and manipulate data within
+that region. Use `ICellRange` to access cell values, apply formatting, and perform operations on groups of cells.
+
+A rectangular collection of [ICell](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICell.html)s within a [ISheet](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ISheet.html).
+
+Ranges can be retrieved using either a workbook or a sheet.
+
+```typescript
+// return a range via a workbook
+const rangeWB:ICellRange = workbook.getRange('Sheet1!A1:E5000');
+
+// return the range via a sheet
+const rangeSheet:ICellRange = workbook.getSheet('Sheet1')?.getRange('A1:E5000');
+
+```
+
+### [ICell](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICell.html)
+
+Represents a single cell within a spreadsheet. It provides access to the cell's value, formatting,
+and other metadata. Use `ICell` to get or set the properties of individual cells.
+
+A single unit of data and meta data within an [ICellRange](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html),
+located at a specific row and column.
+
+Cells are always accessed via a range and can be retrieved in a few different ways.
+
+```typescript
+// returns the top/left cell
+const cellTopLeft:ICell = workbook.getRange('Sheet1!A1:E5000').getCell();
+
+// returns all cells in range as a 2D array
+const cellsArray:ICell[][] = workbook.getRange('Sheet1!A1:E5000').getCells();
+
+// returns all cells in range as a 2D array
+const cellsIterator:Iterator<ICellRange.Entry> = workbook.getRange('Sheet1!A1:E5000').entries();
+```
+
+### [ISheet](https://api.sheetxl.com/modules/_sheetxl_sdk.ISheet.html)
+
+Represents a collection of elements such as [ICellRange](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html),
+[ITable](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ITable.html), and other elements contained within and visualized
+through a [ISheetView](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ISheetView.html).
+
+Sheets can be retrieved using either `getSheet()` or `getSheets()` from a workbook.
+
+```typescript
+// return a sheet via a workbook
+const sheet:ISheet = workbook.getSheet('Sheet1');
+
+// return all sheets via a workbook
+const sheets:ISheetCollection = workbook.getSheets();
+```
+
+### [IWorkbook](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbook.html)
+
+Represents a collection of [ISheet](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ISheet.html)s,
+and other shared resources.
+
+To create a workbook model simply import the `@sheetxl/sdk` package and create a new instance.
+
+```typescript
+// create a default workbook
+const workbook:IWorkbook = new Workbook();
+```
+
+### [IStyle](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IStyle.html)
+
+Represents the formatting applied to a cell or range of cells, including font, color, alignment,
+number format, and borders.
+
+Provides access to the combined styling information for a cell or range, including user-applied styles
+and dynamic styles (e.g., from tables or conditional formatting).
+
+```typescript
+// Set the fill to color accent 1.
+workbook.getRange('Sheet1!A1:D5000').getStyle().setFill('accent1');
+```
+
+### [ICellRanges](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRanges.html)
+
+Represents a collection of [ICellRange](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html)s.
+This is useful when you need work with non-contiguous ranges as a single unit,
+such as applying the same formatting or extracting data from multiple selections.
+
+Ranges can be retrieved similar to a single range.
+
+```typescript
+const range:ICellRanges = workbook.getRanges('Sheet1!A1:A5000,Sheet1!C1:C5000').getStats().getSum();
+```
+
+### [ISheetView](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ISheetView.html)
+
+The visual presentation of a specific sheet. It controls attributes like zoom level,
+frozen rows/columns, gridlines visibility, and the active cell selection.
+
+Use `ISheetView` to customize how a sheet is displayed to a specific user.
+
+```typescript
+// hide the row gridlines
+workbook.getSheet('Sheet1').getView().setShowRowGridlines(false);
+```
+
+### [IWorkbookView](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbookView.html)
+
+The visual presentation of the entire workbook. It controls workbook-level display settings.
+
+Use `IWorkbookView` to customize how a sheet is displayed to a specific user.
+
+```typescript
+// Hide the statusbar
+workbook.getView().setShowStatusBar(false);
+```
+
+## More Examples
+
+Another way to see a set of examples is to use the use developer console of full demo:
+
+### Demo console
+
+<code>
+* Open the standalone demo at <a href="https://demo.sheetxl.com">standalone demo</a>
+* Open the developer tools (Ctl+Shift+I)
+* In the console window type `SheetXL.moreExamples()`
+</code>

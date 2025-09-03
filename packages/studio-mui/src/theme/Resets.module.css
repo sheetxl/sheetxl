@@ -1,0 +1,42 @@
+.sheetxl-reset {
+  display: block;
+  margin: 0;
+  padding: 0;
+  line-height: normal;
+}
+
+.sheetxl-reset table,
+.sheetxl-reset thead,
+.sheetxl-reset tbody,
+.sheetxl-reset tfoot,
+.sheetxl-reset tr,
+.sheetxl-reset th,
+.sheetxl-reset td {
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-collapse: inherit;
+  border-spacing: 0;
+  border-color: inherit;
+  vertical-align: inherit;
+  text-align: left;
+  font-weight: inherit;
+  -webkit-border-horizontal-spacing: 0;
+  -webkit-border-vertical-spacing: 0;
+}
+
+.sheetxl-reset th,
+.sheetxl-reset td {
+  display: inline;
+}
+
+.sheetxl-reset button {
+  /* Add button resets here if needed */
+}
+
+html {
+  color: initial;
+}

@@ -1,0 +1,18 @@
+---
+sidebar_position: 50
+title: Listening for Changes
+---
+
+To listen for data range changes use [addListener](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html#addlistener).
+
+```typescript
+// create a default workbook
+const workbook:IWorkbook = new Workbook();
+// get a range that can be iterators or allow for updates
+
+const removeListener:RemoveListener = workbook.getRange('Sheet1!A1:E5000').addListener((event: WorkbookRangeEvent): void => {
+  // do something with the range. We are justing going to log it.
+  console.log(`We received an event from ${event.getSource().toString()}`);
+});
+// call removeListener() to remove the listener when finished
+```

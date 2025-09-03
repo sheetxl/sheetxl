@@ -1,0 +1,90 @@
+---
+sidebar_position: 80
+title: Performance Benchmarks
+---
+import SvgPerformance from '@site/static/img/undraw_fast_loading.svg';
+
+# SheetXL Performance Benchmarks
+
+**Last Updated:** August 4, 2025
+
+## Performance Matters
+
+<div style={{ float: 'right', margin: '10px 0 20px 20px', maxWidth: 160 }}>
+  <SvgPerformance
+    alt="Performance illustration"
+    style={{
+      width: '100%',
+      height: 'auto',
+      borderRadius: 12,
+      padding: '8px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+    }}
+  />
+</div>
+
+Performance is critical when working with large datasets or interactive spreadsheets.
+
+SheetXL is optimized for performance across devices, letting you deliver fast, responsive experiences on any hardware.
+
+<div style={{ clear: 'both' }}></div>
+
+This page provides transparent, reproducible benchmarks for common spreadsheet
+operations across a variety of hardware profiles and environments.
+
+---
+
+## Our Testing Methodology
+
+To ensure fairness and clarity, all tests were conducted using the following scenarios and environments.
+
+### Test Scenarios
+
+All tests were performed on a workbook containing **1,048,576 rows (2²⁰) and 5 columns (A-E)** of pseudo-random numerical data.
+
+* **Initial Load:** Time from component mount to the grid being rendered and interactive.
+* **Large Data Scroll:** Measures UI smoothness (frame rate) while scrolling through the entire dataset. Reported as average Frames Per Second (FPS).
+* **Formula Autofill:** Time to fill a new column (F) with a formula (`=SUM(A1:E1)`) and autofill it down all 1,048,576 rows. **This is our primary performance metric.**
+* **Complex Calculation:** Time to recalculate the entire sheet after changing a single value in a precedent cell that affects thousands of dependent formulas.
+* **Data Sort:** Time to sort the entire 1M+ row dataset by a single column.
+* **File Serialization (Node.js):** Time to load a 50MB `.xlsx` file into a SheetXL instance in memory, and then save it back to a file.
+
+### Hardware Profiles
+
+1.  **High-End Desktop (M-Series):** Apple Mac Studio (M2 Max, 32GB RAM)
+2.  **Mid-Range Laptop (Intel):** Dell XPS 15 (Intel Core i7-11800H, 16GB RAM)
+3.  **Mobile Device (ARM):** Samsung Galaxy S21 (Snapdragon 888, 8GB RAM) - _from 2021_
+4.  **Server Environment (Node.js):** Standard AWS EC2 `t3.large` Instance (2 vCPU, 8GB RAM)
+
+---
+
+## Google Chrome Performance
+
+Version 135. Average of 5 runs.
+
+| Metric (1,048,576 rows)      | High-End Desktop | Mid-Range Laptop | 4-Year-Old Phone |
+| :--------------------------- | :--------------- | :--------------- | :--------------- |
+| **Initial Load (18MB)** | **1.1 s** | **1.6 s** | **2.1 s** |
+| **Large Data Scroll** | **~120 FPS** | **~60 FPS** | **~55 FPS** |
+| **Formula Autofill** | **210 ms** | **350 ms** | **715 ms** |
+| **Complex Calculation** | **35 ms** | **60 ms** | **65 ms** |
+| **Data Sort** | **450 ms** | **780 ms** | **1.2 s** |
+
+---
+
+## Philosophy
+
+SheetXL's performance is the result of a purpose-built, vectorized calculation engine. Unlike traditional data grids
+that struggle with complex calculations, or spreadsheet components that rely on inefficient cell-by-cell processing,
+our range-based API is designed for bulk operations.
+
+This architecture allows SheetXL to deliver a fluid user experience even with massive datasets, all while running
+entirely client-side, reducing server costs and simplifying your infrastructure.
+
+We are confident that these numbers represent a new standard for performance in web-based spreadsheets.
+
+## Ready to see for yourself?
+
+Explore our demos or get started with our 2-minute quickstart guides.
+
+**[View Live Demos](https://www.sheetxl.com/docs/guides/introduction/demos)** **[Get Started Now](./category/getting-started)**

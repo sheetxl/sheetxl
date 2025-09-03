@@ -1,0 +1,491 @@
+import React, { useEffect, useMemo, useCallback } from 'react';
+
+import { CommonUtils, UndoManager } from '@sheetxl/utils';
+import { IWorkbook } from '@sheetxl/sdk';
+
+import {
+  useUndoManager, useCallbackRef, SimpleCommand, KeyModifiers, Notifier, Command,
+  ICommand, ICommandProperties, ICommands, CommandGroup
+} from '@sheetxl/utils-react';
+
+import {
+  useModal, type ThemeModeOptions, ThemeMode, useResolvedThemeMode
+} from '@sheetxl/utils-mui';
+
+import {
+  WorkbookIO, type WorkbookHandle, type WriteFormatType
+}  from '../io';
+
+export interface useStudioCommandsOptions {
+  /**
+   * The workbook
+   */
+  workbook: IWorkbook;
+
+  setWorkbook: (newWorkbook: IWorkbook) => void;
+
+  importExportDisabled: boolean;
+
+  /**
+   * @defaultValue 'varies based on import/export'
+   */
+  workbookTitle?: string;
+
+  setWorkbookTitle?: (newWorkbookTitle: string | null) => void;
+
+  /**
+   * If the workbookTitle is not specified this will be call at time of save.
+   * @remarks
+   * If null is returned or the project is rejected then treat as cancel.
+   */
+  requestWorkbookTitle?: (reason?: string) => Promise<string | null>;
+
+  themeOptions?: ThemeModeOptions;
+
+  /**
+   * If undo manager provider then undo commands will be added to the command map
+   */
+  undoManager?: UndoManager;
+
+  commands?: ICommands.IGroup;
+
+  notifier?: Notifier;
+
+  // TODO - review as part of standard command review. This doesn't belong here.
+  onExecute?: () => void;
+}
+
+/**
+ * Add csv import as new sheet or replace existing workbook
+ */
+const CSV_IMPORT_ADD_SHEET: boolean = true;
+
+/**
+ * Hooks for a standalone workbook app
+ */
+export const useStudioCommands = (
+  props: useStudioCommandsOptions
+): ICommands.IGroup => {
+  const {
+    workbook,
+    setWorkbook,
+    importExportDisabled,
+    workbookTitle = 'export',
+    setWorkbookTitle,
+    notifier,
+    requestWorkbookTitle,
+    themeOptions,
+      undoManager,
+    // commandTarget,
+    // allCommands,
+    commands: commandsParent,
+    onExecute,
+  } = props;
+
+  const onModeChange = useCallbackRef(themeOptions?.onModeChange, [themeOptions?.onModeChange]);
+  const onEnabledDarkGridChange = useCallbackRef(themeOptions?.onEnabledDarkGridChange, [themeOptions?.onEnabledDarkGridChange]);
+  const onEnabledDarkImagesChange = useCallbackRef(themeOptions?.onEnabledDarkImagesChange, [themeOptions?.onEnabledDarkImagesChange]);
+
+  const importFromFile = useCallbackRef(async (
+    input: File | Promise<File> | string=null,
+    createWorkbookOptions: IWorkbook.ConstructorOptions=null
+  ): Promise<WorkbookHandle> => {
+    const warnings = [];
+    const onWarning = (message: string) => {
+      warnings.push(message);
+    }
+    let inputResolve:File | Promise<File>;
+
+    let inputFile:File | Promise<File> = null;
+    let inputInputs:string = null;
+    if (typeof input == 'string') {
+      inputInputs = input;
+    } else {
+      inputFile = input;
+    }
+    if (!inputFile) {
+      inputResolve = await CommonUtils.openFileDialog(inputInputs ?? WorkbookIO.getAllReadFormatTypeAsString().join(','));
+    } else {
+      inputResolve = input as (File | Promise<File>);
+    }
+
+    if (!inputResolve) {
+      // cancel
+      return null;
+    }
+
+    const optionsFie = {
+      source: inputResolve,
+      createWorkbookOptions,
+      onWarning
+    }
+    const retValue = await WorkbookIO.read(optionsFie, notifier);
+    if (warnings.length > 0) {
+      notifier?.showMessage?.('Some elements were not able to be imported. See console for details.');
+      console.warn('Import warnings:\n' + warnings.join('\n'));
+    }
+    return retValue;
+  }, [onExecute, notifier, workbook]);
+
+  const exportToFile = useCallbackRef(async (
+    workbook: IWorkbook,
+    fileNameDefault: string | null,
+    exportType?: WriteFormatType
+  ): Promise<boolean> => {
+    if (!fileNameDefault && requestWorkbookTitle) {
+      const fileNameRequested: string | null = await requestWorkbookTitle(`Enter Workbook name to ${exportType.isDefault ? `Save.` : `Export as ${exportType.description}.`}`);
+      if (fileNameRequested === null) {
+        return false;
+      }
+      return WorkbookIO.writeFile(fileNameRequested, workbook, {
+        formatType: exportType.key
+      });
+    }
+
+    return WorkbookIO.writeFile(fileNameDefault, workbook, {
+      formatType: exportType.key
+    });
+  }, [notifier, workbook, requestWorkbookTitle]);
+
+  const target:() => ICommands.ITarget = useCallback(() => {
+    return {
+      contains(_element: Node | null): boolean {
+        return true;
+      },
+      focus(): void {
+      }
+    };
+  }, []);
+
+  const commandsArray = useMemo(() => {
+    const commandsExport: ICommand<any, any>[] = [];
+    if (!importExportDisabled) {
+      WorkbookIO.getWriteFormats().forEach((handler: WriteFormatType) => {
+        const isDefault = handler.isDefault;
+        const commandProperties:ICommandProperties<any, any> = {
+          label: isDefault ? `Save Workbook` : `Save Workbook as ${handler.description}`,
+          scopedLabels: {
+            'workbook': 'Save',
+            'saveWorkbook': `as ${handler.description}`
+          },
+          tags: handler.tags,
+          description: `Save the workbook to the desktop${isDefault ? '' : ` as ${handler.description}`}.`
+        };
+        if (isDefault) {
+          commandProperties.shortcut = {
+            key: 'S',
+            modifiers: [KeyModifiers.Ctrl]
+          }
+          // Also do a save as with ctrl+shift+S
+          commandsExport.push(new Command<string>(`saveWorkbookAs`, target, {
+            label: `Save Workbook As\u2026`, // '...' // ellipsis
+            scopedLabels: {
+              'workbook': 'Save as\u2026', // '...' // ellipsis
+              'saveWorkbook': `as\u2026` // '...' // ellipsis
+            },
+            shortcut: [{
+              key: 'S',
+              modifiers: [KeyModifiers.Shift, KeyModifiers.Ctrl]
+            }, {
+              key: 'F12'
+            }],
+            description: `Save the workbook to the desktop with the provided name.`
+          }, () => {
+            // specifically ignore the name
+            exportToFile(workbook, null, handler)
+              .catch(error => {
+              notifier?.showError?.(error);
+            });
+          }));
+
+        }
+        const commandKey = isDefault ? 'saveWorkbook' : `saveWorkbookAs${handler.key}`;
+        commandsExport.push(new Command<string>(commandKey, target, commandProperties, (inputName: string) => {
+          exportToFile(workbook, inputName ?? workbookTitle, handler)
+            .catch(error => {
+            notifier?.showError?.(error);
+          });
+        }));
+      });
+      commandsExport.push(new Command<File | Promise<File> | string>('openWorkbook', target, {
+        label: 'Open Workbook\u2026', // '...' // ellipsis
+        scopedLabels: {
+          'workbook': 'Open\u2026', // '...'  // ellipsis
+        },
+        description: 'Open a workbook from the desktop.',
+        shortcut: {
+          key: 'O',
+          modifiers: [KeyModifiers.Ctrl]
+        }
+      }, async (input: File | Promise<File> | string=null): Promise<void> => {
+        const options:IWorkbook.ConstructorOptions = {
+          date1904: workbook.isDate1904(),
+          ...workbook.options
+        }
+        try {
+          const loadResults:WorkbookHandle = await importFromFile(input, options);
+          if (!loadResults) return; // cancel
+          // We use the csv filename for sheet name
+
+          const title = loadResults.title;
+          const importedWorkbook = loadResults.workbook;
+          const importedSheet = importedWorkbook.getSelectedSheet();
+          if (loadResults.formatType.mimeType === 'text/csv' && CSV_IMPORT_ADD_SHEET) {
+            // Add to existing sheet
+            const newSheetName = workbook.findValidSheetName(title);
+            await workbook.doBatch(async () => {
+              const importRange = importedSheet.getUsedRange();
+              if (!importRange) {
+                // TODO - move to csv handler
+                notifier?.showMessage("The file appears to be blank.");
+                return;
+              }
+              const sheetTo = workbook.getSheets().add({ name: newSheetName, autoSelect: true });
+              const rangeTo = sheetTo.getRange({
+                colStart: 0,
+                rowStart: 0,
+                colEnd:0,
+                rowEnd:0
+              });
+              await rangeTo.copyFrom(importRange);
+            }, `Import CSV '${title}'`);
+            // TODO - allow add sheet to be an unDoable action. Then we can wrap the import as a transaction that can be undone.
+            // undoManager?.clear(); // copy is an unDoable action, but we don't want to undo it.
+          } else {
+            // clear old workbook
+            workbook?.close();
+            // Set name and replace.
+            setWorkbookTitle?.(title);
+            setWorkbook(importedWorkbook);
+          }
+        } catch (error: any) {
+          notifier?.showError?.(error);
+        }
+      }));
+      commandsExport.push(new Command<string>('openWorkbookFromUrl', target, {
+        label: 'Open Workbook From Web',
+        scopedLabels: {
+          'insert': 'From Web',
+          'workbook': 'From Web\u2026', // '...' // ellipsis
+        },
+        description: 'Open a workbook from the web.',
+      }, async function(url: string) {
+        if (!url) {
+          const results = await notifier?.showInputOptions?.({
+            title: 'Open Workbook from the Web',
+            description: `Enter the web address for the workbook to open.`,
+            inputLabel: 'Address',
+            initialValue: 'https://www.sheetxl.com/examples/features-checklist.xlsx',
+            inputProps: {
+              style: {
+                minWidth: '440px'
+              }
+            },
+            options: ['Open']
+          });
+          if (results.option !== 'Open')
+            return;
+          url = results.input;
+        }
+        if (!url) return;
+        // TODO - refactor open command to take either argument
+        console.log('openWorkbookFromUrl', url);
+        // addImage(this, { fetch: url });
+      }));
+    }
+
+    let commandsDarkModeToggle: ICommand<any, any>[] = [];
+    if (themeOptions) {
+      commandsDarkModeToggle = [
+        new Command<ThemeMode | null>('themeMode', target, {
+          label: `Light/Dark Mode`,
+          scopedLabels: {
+            'appearance': `Light/Dark Mode`
+          },
+          description: `Toggle the application styling between light and dark mode.`,
+        }),
+        new Command<boolean>('defaultThemeMode', target, {
+          label: `Use System Light/Dark Mode`,
+          scopedLabels: {
+            'appearance': `Use System Default`
+          },
+          description: `Use the system settings to determine styling for light and dark mode.`,
+        }),
+        new Command<boolean>('enableDarkGrid', target, {
+          label: `Enable Dark Grid`,
+          description: `Allow the grid to render in dark mode if dark mode is being used. This is ensures that the grid will render the colors as specified in another tools (for example Excel).`,
+        }),
+        new Command<boolean>('enableDarkImages', target, {
+          label: `Enable Dark Images`,
+          description: `Allow the images to render in dark mode if dark mode is being used. This is ensures that the images will render the colors as specified in another tools (for example Excel). This only has any effect if the grid is in dark mode.`,
+        })
+      ];
+    }
+    const commandsStudio: ICommand<any, any>[] = [
+      ...commandsExport,
+      ...commandsDarkModeToggle,
+      new SimpleCommand('help', target, {
+        label: 'Show Help',
+        description: 'Provide Help.',
+        shortcut: {
+          key: 'F1'
+        }
+      }, () => {}),
+      new SimpleCommand('showKeyboardShortcuts', target, {
+        label: 'Keyboard Shortcuts',
+        description: 'Show keyboard shortcuts.',
+        shortcut: {
+          key: '/',
+          modifiers: [KeyModifiers.Ctrl]
+        }
+      }, () => {}),
+      new Command<string>('gotoUrlGithub', target, {
+        label: 'Github',
+        description: 'Download examples, explore source code, and leave a star.',
+      }, () => {
+        window?.open('https://github.com/sheetxl/sheetxl');
+      }),
+      new Command<string>('gotoUrlDiscord', target, {
+        label: 'Discord',
+        description: 'Join our community on discord.',
+      }, () => {
+        window?.open('https://discord.gg/NTKdwUgK9p');
+      }),
+      new Command<string>('gotoUrlDocumentation', target, {
+        label: 'Documentation',
+        description: 'Read the documentation.',
+      }, () => {
+        window?.open('https://www.sheetxl.com/docs');
+      }),
+      new Command<string>('gotoUrlIssue', target, {
+        label: 'Create Issue',
+        description: 'Create an issue to identify a bug or a feature request.',
+      }, () => {
+        window?.open('https://github.com/sheetxl/sheetxl/issues');
+      }),
+      // new SimpleCommand('debug', target, {
+      //   label: 'Toggle Debug',
+      //   description: 'Toggle Debug.',
+      //   shortcut: {
+      //     key: 'F3'
+      //   }
+      // }, () => {
+      //   notifier?.showBusy?.('Testing with a long piece of text that may wrap...').then((hideBusy) => {
+      //     // sync timeout
+      //     // let start = Date.now();
+      //     // let lapsed = 0;
+      //     // console.log('showBusy');
+      //     // do {
+      //     //   lapsed = Math.floor((Date.now() - start) / 1000);
+      //     // } while (lapsed < 3);
+      //     // console.log('hideBusy nested');
+
+      //     // notifier?.showBusy?.('Testing nested...').then((hideBusyNested) => {
+      //     //   start = Date.now();
+      //     //   do {
+      //     //     lapsed = Math.floor((Date.now() - start) / 1000);
+      //     //   } while (lapsed < 3);
+      //     //   hideBusyNested();
+      //     //   console.log('hideBusyNested');
+      //     // });
+      //     // hideBusy();
+      //     // console.log('hideBusy');
+
+      //     // async timeout
+      //     setTimeout(() => {
+      //       hideBusy();
+      //     }, 7 * 1000);
+      //   });
+      // })
+    ];
+    return commandsStudio;
+  }, [workbook, workbookTitle, notifier, importExportDisabled, themeOptions, commandsParent, undoManager]);
+
+  const commands = useMemo(() => {
+    let retValue = null;
+    if (commandsParent) {
+      retValue = commandsParent.createChildGroup(target, 'standaloneWorkbook', false);
+    } else {
+      retValue = new CommandGroup(target, 'standaloneWorkbook');
+    }
+    retValue.addCommands(commandsArray, true);
+    return retValue;
+  }, [commandsParent, commandsArray]);
+
+  // const commands:ICommands.IGroup = useMemo(() => {
+  //   commandsParent?.addCommands(commandsArray, true);
+  //   return commandsParent;
+  // }, [commandsParent, commandsArray]);
+
+  useUndoManager({
+    manager: undoManager,
+    commands,
+    // disabled: propDisabled,
+    notifier
+  });
+
+  const { themeMode: defaultThemeMode } = useResolvedThemeMode();
+  useEffect(() => {
+    if (!themeOptions || !commands) return;
+    const currentDark = themeOptions.mode === 'dark' || (!themeOptions.mode && defaultThemeMode === 'dark');
+
+    commands.getCommand('themeMode').update({
+      state: themeOptions.mode ?? null,
+      label: currentDark ? 'Dark Mode' : 'Light Mode',
+      scopedLabels: {
+        'appearance': currentDark ? 'Dark Mode' : 'Light Mode'
+      },
+    }).updateCallback(() => {
+      onModeChange(currentDark ? ThemeMode.Light : ThemeMode.Dark);
+    });
+
+    commands.getCommand('defaultThemeMode').update({
+      state: !themeOptions.mode
+    }).updateCallback(() => {
+      onModeChange(null);
+    });
+    commands.getCommand('enableDarkGrid').update({
+      state: themeOptions.enableDarkGrid,
+    }).updateCallback(() => {
+      onEnabledDarkGridChange(!themeOptions.enableDarkGrid)
+    });
+    commands.getCommand('enableDarkImages').update({
+      state: themeOptions.enableDarkImages,
+    }).updateCallback(() => {
+      onEnabledDarkImagesChange(!themeOptions.enableDarkImages)
+    });
+  }, [defaultThemeMode, themeOptions, commandsArray]);
+
+  const { showModal } = useModal();
+  useEffect(() => {
+    const showKeyboardShortcutsDialog = () => {
+      return new Promise<boolean>((resolve, _reject) => {
+        const LazyShortcutKeysDialog = React.lazy(() => import('../dialog/ShortcutKeysDialog'));
+        const modal = showModal(LazyShortcutKeysDialog, {
+          title: 'Shortcut Keys Reference',
+          commands,
+          onDone: () => {
+            modal.hide();
+          },
+          TransitionProps: {
+            onExited: () => {
+              resolve(true);
+            },
+          },
+        });
+      });
+    };
+
+    commands.getCommand('showKeyboardShortcuts').updateCallback(() => {
+      return showKeyboardShortcutsDialog();
+    });
+
+    commands.getCommand('help').updateCallback(() => {
+      return showKeyboardShortcutsDialog(); // For now we just map to keyboard shortcuts
+    });
+  }, [commandsArray, commands]);
+
+  return commands;
+}
+
+export default useStudioCommands;

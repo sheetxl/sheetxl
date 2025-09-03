@@ -1,0 +1,9 @@
+imports:
+  - config: p/javascript
+
+exclude:
+  - id: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    # paths:
+    #   - docsite/docusaurus.config.js
+    #   - config/**/*
+    #   - packages/config/**/*

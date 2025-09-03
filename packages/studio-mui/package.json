@@ -1,0 +1,93 @@
+{
+  "name": "@sheetxl/studio-mui",
+  "version": "0.0.0",
+  "description": "Studio - Spreadsheet UI built with SheetXL SDK using React & MUI.",
+  "license": "SEE LICENSE IN <LICENSE>",
+  "private": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./build/types/index.d.ts",
+      "import": {
+        "node": "./build/node/esm/index.mjs",
+        "browser": "./build/browser/esm/index.mjs",
+        "default": "./build/browser/esm/index.mjs"
+      }
+    }
+  },
+  "scripts": {
+    "build:node": "cross-env BUILD_ENV=node vite build",
+    "build:browser": "vite build",
+    "build": "pnpm run build:node && pnpm run build:browser",
+    "build:tsdocs:json": "typedoc --json ../../build/docs/studio-mui.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "release:package": "cd build && pnpm publish --no-git-checks --access public",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@sheetxl/grid-react": "*",
+    "@sheetxl/io": "workspace:*",
+    "@sheetxl/react": "*",
+    "@sheetxl/sdk": "*",
+    "@sheetxl/utils": "workspace:*",
+    "@sheetxl/utils-mui": "workspace:*",
+    "@sheetxl/utils-react": "workspace:*",
+    "clsx": "^2.1.1",
+    "csstype": "^3.1.3",
+    "file-saver": "^2.0.5",
+    "fuse.js": "^7.0.0",
+    "notistack": "^3.0.1",
+    "react-color": "^2.19.3",
+    "react-error-boundary": "^6.0.0",
+    "react-hook-form": "^7.54.2",
+    "react-merge-refs": "^3.0.2",
+    "react-resizable": "^3.0.5",
+    "react-transition-group": "^4.4.5",
+    "react-use": "^17.6.0",
+    "react-virtualized": "^9.22.6",
+    "rooks": "^9.0.1",
+    "tinycolor2": "^1.6.0"
+  },
+  "peerDependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/material": "^6.5.0",
+    "@mui/styled-engine": "^6.5.0",
+    "@mui/system": "^6.5.0",
+    "@mui/utils": "^6.4.9",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.5",
+    "@types/react-resizable": "^3.0.8",
+    "@types/react-transition-group": "^4.4.6",
+    "@types/react-virtualized": "^9.22.0"
+  },
+  "sideEffects": [
+    "*.css",
+    "**/*.css"
+  ],
+  "keywords": [
+    "sheetxl",
+    "spreadsheet",
+    "utilities",
+    "sheets",
+    "grid",
+    "excel",
+    "react",
+    "material",
+    "material-ui",
+    "mui",
+    "office",
+    "automation",
+    "charting"
+  ]
+}

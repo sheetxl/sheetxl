@@ -1,0 +1,98 @@
+---
+sidebar_position: 40
+title: CLI
+sidebar_label: CLI
+description: Quickly get started with SheetXL using our CLI.
+---
+
+<div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+  <img
+    src={require('/static/img/cli-logo.png').default}
+    alt="CLI"
+    style={{
+      maxWidth: 180,
+      background: '#ffffff',
+      width: '100%',
+      borderRadius: 16,
+      paddingTop: 12, paddingBottom: 12,
+      paddingLeft: 6, paddingRight: 6,
+      boxShadow: '0 4px 24px rgba(0,0,0,0.08)'
+    }}
+  />
+</div>
+
+The easiest way to use the SheetXL CLI is by running it directly without a permanent installation. All you need is Node.js (v22+) installed (v24 recommended),
+
+Open your terminal and run:
+
+```bash
+npx sheetxl
+```
+
+*(If you use `pnpm`, you can use `dlx sheetxl`)*
+
+This will start an interactive REPL (Read-Eval-Print Loop), pre-loaded with the SheetXL SDK.
+
+```terminal
+SheetXL >
+```
+
+:::tip
+Type `help` in CLI for a list of commands.
+:::
+
+## Usage
+
+The CLI can be used in three main ways: as an [**interactive REPL**](#interactive-repl), for [**executing scripts**](#executing-scripts) files, or for running [**direct commands**](#direct-commands).
+
+### Interactive REPL
+
+Running the CLI with no arguments starts the interactive session. This is a powerful JavaScript environment for prototyping, running calculations, or managing your workbooks programmatically.
+
+```bash
+npx sheetxl
+```
+
+Inside the REPL, you have access to the `@sheetxl/sdk` and `@sheetxl/io` packages and special commands:
+
+* `help`: Displays help message.
+* `.help`: Shows all available dot commands.
+
+
+#### Accessing the SDK API
+
+You can access the sdk directly
+
+Create a new Workbook and save with a single value.
+
+```javascript title="New Workbook"
+wb = new Workbook();
+wb.getRange('a1').setValues([[1]]);
+saveWorkbook('myWorkbook.xlsx', wb);
+```
+
+:::info API Reference
+See our full [SDK API Documentation](https://api.sheetxl.com) for a complete list of all available classes and methods.
+:::
+
+### Executing Scripts
+
+For automation and more complex tasks, you can pass a local JavaScript file to the CLI for execution. The script will run within the SheetXL environment, with the SDK available.
+
+```bash
+npx sheetxl path/to/your/script.js
+```
+
+### Direct Commands
+
+You can also run specific built-in commands directly. This is useful for one-off tasks.
+
+#### Activate Your License
+
+To activate your license key, run the `activate` command:
+
+```bash
+npx sheetxl activate YOUR_LICENSE_KEY_HERE
+```
+
+This will store your license key for future use.

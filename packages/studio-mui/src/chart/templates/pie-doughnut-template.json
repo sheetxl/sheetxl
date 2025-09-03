@@ -1,0 +1,8 @@
+{
+  "types": {
+    "0": {
+      "type": "pie",
+      "holeSize": 50
+    }
+  }
+}

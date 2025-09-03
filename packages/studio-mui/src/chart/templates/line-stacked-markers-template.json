@@ -1,0 +1,9 @@
+{
+  "types": {
+    "0": {
+      "type": "line",
+      "scatterStyle": "lineMarker",
+      "grouping": "stacked"
+    }
+  }
+}

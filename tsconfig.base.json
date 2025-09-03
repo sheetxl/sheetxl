@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "strictNullChecks" : false, // TODO - remove this soon
+    "noImplicitAny": false,     /* Raise error on expressions and declarations with an implied 'any' type. */
+    "noImplicitThis": false,    /* Raise error on 'this' expressions with an implied 'any' type. */
+    "strict": false,
+
+    "resolveJsonModule": true,
+
+    "outDir": "./build",
+    "tsBuildInfoFile": "./build/.tsbuildinfo",
+    "declarationDir": "./build/types",
+
+    "target": "ESNext",
+
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    "lib": ["es2022", "dom"], // for node and browser
+
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    // Prevent .d.ts files in source
+    "emitDeclarationOnly": false,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "useDefineForClassFields": false, // **Performance** - setting to `true` has huge performance costs.
+  },
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

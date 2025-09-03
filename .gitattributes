@@ -1,0 +1,51 @@
+# Set default behavior to automatically normalize line endings.
+text=auto
+
+# The item with `binary` is treated as binary file.
+# The item with `eol=lf` is converted to LF on checkin, back to LF on checkout.
+# The item with `eol=crlf` is converted to LF on checkin, back to CRLF on checkout.
+
+# To get full extension list in the repo, remove the node_modules folder and run the following PowerShell cmdlet.
+# PS> Get-ChildItem . -Recurse | Where-Object { -not $_.PSIsContainer } | ForEach-Object { $_.Extension.ToLower() } | Sort-Object | Get-Unique
+
+# If new extensions are added, please refresh the repo with the following commands.
+# Reference: https://git-scm.com/docs/gitattributes
+# > rm .git/index     # Remove the index to force Git to
+# > git reset         # re-scan the working directory
+# > git status        # Show files that will be normalized
+# > git add -u
+# > git add .gitattributes
+# > git commit -m "Apply end-of-line normalization based on updated .gitattributes file"
+
+*.json            text eol=lf
+*.cmd             text eol=crlf
+*.dll             binary
+*.eot             binary
+*.exe             binary
+*.gif             binary
+*.ico             binary
+*.jpg             binary
+*.png             binary
+*.ttf             binary
+*.woff            binary
+*.wsp             binary
+
+# NPM "bin" scripts MUST have LF, or else the executable fails to run on Mac.
+# This fnmatch expression only matches files in a "bin" folder and without
+# a period in the filename.
+/*/*/bin/+([!.]) -text
+
+# Don't allow people to merge changes to these generated files, because the result
+# may be invalid.  You need to run "yarn" again.
+pnpm-lock.yaml               merge=text
+shrinkwrap.yaml              merge=binary
+npm-shrinkwrap.json          merge=binary
+yarn.lock                    merge=binary
+
+# SheetXL's JSON config files use JavaScript-style code comments.  The rule below prevents
+# syntax highlighters such as GitHub's from highlighting these comments as errors.  Your text editor
+# may also require a special configuration to allow comments in JSON.
+#
+# For more information, see this issue: https://github.com/microsoft/rushstack/issues/1088
+#
+*.json            linguist-language=JSON-with-Comments

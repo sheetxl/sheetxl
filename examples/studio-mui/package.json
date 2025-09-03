@@ -1,0 +1,46 @@
+{
+  "name": "example-studio-mui",
+  "description": "Example project for SheetXL Studio using MUI",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/material": "^6.5.0",
+    "@mui/system": "^6.5.0",
+    "@mui/utils": "^6.4.9",
+    "@sheetxl/grid-react": "*",
+    "@sheetxl/io": "workspace:*",
+    "@sheetxl/primitives": "workspace:*",
+    "@sheetxl/react": "*",
+    "@sheetxl/scripting": "*",
+    "@sheetxl/sdk": "*",
+    "@sheetxl/studio-mui": "workspace:*",
+    "@sheetxl/utils": "workspace:*",
+    "@sheetxl/utils-mui": "workspace:*",
+    "@sheetxl/utils-react": "workspace:*",
+    "csstype": "^3.1.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-ga4": "^2.1.0",
+    "react-use": "^17.6.0",
+    "rooks": "^9.0.1"
+  },
+  "devDependencies": {
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^16.3.0",
+    "vite": "^7.1.3"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "types": {
+    "0": {
+      "type": "area",
+      "grouping": "percentStacked"
+    }
+  }
+}

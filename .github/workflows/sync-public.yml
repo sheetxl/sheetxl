@@ -1,0 +1,52 @@
+name: Sync Public Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:  # Allow manual triggering for testing
+
+jobs:
+  sync-public-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for git operations
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter "./{packages,examples,docsite}/*" up @sheetxl/sdk@latest @sheetxl/react@latest @sheetxl/scripting@latest @sheetxl/grid-react@latest
+
+      - name: Install git-filter-repo
+        run: |
+          pip install git-filter-repo
+
+      - name: Configure Git
+        run: |
+          git config core.autocrlf false
+          git config core.safecrlf false
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "hello@sheetxl.com"
+
+      - name: Setup SSH for Public Repo
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY_MIRROR_PUBLIC }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Sync public release
+        run: pnpm release:public-repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.SECRET_CREATE_RELEASE_PAT }}

@@ -1,0 +1,109 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #1976d2;
+  --ifm-color-primary-dark: #1565c0;
+  --ifm-color-primary-darker: #1565c0;
+  --ifm-color-primary-darkest: #1565c0;
+  --ifm-color-primary-light: #42a5f5;
+  --ifm-color-primary-lighter: #42a5f5;
+  --ifm-color-primary-lightest: #42a5f5;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+
+  --ifm-color-secondary-dark: rgb(212, 213, 216);
+  --ifm-color-secondary-darker: rgb(200, 201, 204);
+  --ifm-color-secondary-darkest: rgb(164, 166, 168);
+  --ifm-color-secondary-light: rgb(238, 240, 242);
+  --ifm-color-secondary-lighter: rgb(241, 242, 245);
+  --ifm-color-secondary-lightest: rgb(245, 246, 248);
+
+  --ifm-footer-background-color:#1565c0;
+
+  .footer {
+    background-color: #1565c0;/*var(--ifm-footer-background-color)*/;
+    color: var(--ifm-footer-color);
+    padding: var(--ifm-footer-padding-vertical)
+      var(--ifm-footer-padding-horizontal);
+  }
+
+  .footer--dark {
+    --ifm-footer-background-color: #42a5f5;
+    --ifm-footer-color: var(--ifm-footer-link-color);
+    --ifm-footer-link-color: var(--ifm-color-secondary);
+    --ifm-footer-title-color: var(--ifm-color-white);
+  }
+
+  .section--odd {
+    background: linear-gradient(245deg, rgba(47,172,255,0.3) 0%, rgba(47,172,255,0.2) 25%, rgba(255,255,255,1) 90%, rgba(255,255,255,1) 97%);
+  }
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #90caf9;
+  --ifm-color-primary-dark: #42a5f5;
+  --ifm-color-primary-darker: #42a5f5;
+  --ifm-color-primary-darkest: #42a5f5;
+  --ifm-color-primary-light: #e3f2fd;
+  --ifm-color-primary-lighter: #e3f2fd;
+  --ifm-color-primary-lightest: #e3f2fd;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  /** we switch text with contrast on dark mode */
+  --ifm-font-color-base: var(--ifm-color-content-secondary);
+  --ifm-font-color-secondary: var(--ifm-color-content);
+
+  --ifm-font-color-base-inverse: var(--ifm-color-content-inverse);
+
+  .section--odd {
+    background: linear-gradient(245deg, rgba(144,202,249,0.3) 0%, rgba(144,202,249,0.2) 75%, rgba(255,255,255,0) 97%);
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+.container {
+    max-width: var(--ifm-container-width);
+}
+
+@media (min-width: 1440px) {
+  .container {
+      max-width: var(--ifm-container-width-xl);
+  }
+}
+
+.full-width {
+  width: 100%;
+  table {
+    display: table;
+    width: 100%;
+  }
+}
+
+
+.algolia-autocomplete .algolia-docsearch-suggestion--category-header {
+  background-color: var(--ifm-color-primary-darker, #373940) !important;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--category-header span {
+  text-transform: none;
+}
+
+.algolia-docsearch-footer {
+  height: 0px !important
+}
+
+.algolia-autocomplete .ds-dropdown-menu:before {
+  background-color: var(--ifm-color-primary-darker, #373940);
+  border-right: 1px solid var(--ifm-color-primary-darkest, #373940);
+  border-top: 1px solid var(--ifm-color-primary-darkest, #373940);
+}
+

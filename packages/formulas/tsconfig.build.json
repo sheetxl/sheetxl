@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    {
+      "path": "../primitives"
+    }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./build/.tsbuildinfo.formulas"
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}
