@@ -1,0 +1,20 @@
+{
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "browser": "./browser/esm/index.mjs",
+      "node": "./node/esm/index.mjs",
+      "import": "./browser/esm/index.mjs",
+      "require": "./browser/cjs/index.cjs"
+    }
+  },
+  "types": "./types/index.d.ts",
+  "module": "./browser/esm/index.mjs",
+  "main": "./browser/cjs/index.cjs",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20 <21 || >=22"
+  },
+  "engineStrict": true
+}

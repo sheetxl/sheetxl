@@ -1,0 +1,104 @@
+---
+sidebar_position: 700
+title: UI Components
+---
+import ComponentsOverviewImg from '@site/src/components/ComponentsOverviewImg';
+
+SheetXL's UI is built from a set of composable React Components. These can be used as standalone components or assembled together to support
+a complete spreadsheet experience.
+
+An overview of the [Studio](https://api.sheetxl.com/modules/_sheetxl_studio-mui.html) component is
+shown below:
+<ComponentsOverviewImg style={{maxWidth: '100%', marginLeft: '4px', marginRight: '4px'}} alt={`Components Overview`}/>
+
+## Spreadsheet Components
+
+| Component | Description |
+|------------|------|
+| Studio | Fully functional application that can be easily embedded and/or extended using Material-UI and React. |
+| WorkbookElement | Accepts a Workbook and displays an ISheet and other editing artifacts. |
+| WorkbookToolbars | Collection of WorkbookToolbars that contain CommandButtons |
+| FormulaBar | A Wrapper around a SheetCellEditor.  |
+| NamedInput | Editor for creating and managing NamedReferences. |
+| SheetElement | Shows a collection of SheetCellRenders and SheetCellEditors as well as Headers. |
+| SheetCellRenderer | A read only rendering of a value an ICell. |
+| SheetCellEditor | An editor that allows for updating an ICell. |
+| WorkbookStrip | Contains a set of WorkbookTabs to allow navigation between Sheets. |
+| Statusbar | A Collection of StatusbarItems. |
+| SheetZoomScale | An editor for selecting a zoom scale. |
+
+### Spreadsheet Dialogs
+
+Additionally SheetXL has a number of dialog specific for working with spreadsheets.
+| Dialog | Description |
+|------------|------|
+| FindReplaceWindow | Find/Replace items in the Workbook. |
+| NumberFormatDialog | Allow for editing of the number format. |
+| SortDialog | Advanced and multi-level sorting. |
+
+### Advanced Components
+
+| Component | Description |
+|------------|------|
+| ColorPanel | Color-chooser that is theme aware. |
+| PresetStylesSelector | For Previewing, selecting, and modifying predefined styles. |
+| ThemeSelectPanel | For previewing and selecting current theme from a list of predefined themes. |
+| ShortcutKeysPanel | Display the shortcut keys associated with a CommandGroup. |
+
+
+### Common Dialogs
+
+| Dialog | Description |
+|------------|------|
+| OptionsDialog | Configurable options dialog, used for 'Goto', 'Rename', confirmation prompts, and other simple inputs. |
+
+
+## Configuring Components
+
+Like all React components SheetXL components are configured using properties; see [API Reference](https://api.sheetxl.com/) for the specific
+properties available for each component. Most components also support the ref property; when they do they always expose the
+underlying component and additional imperative API calls as defined in the Typescript interface
+following the convention `<Component>`Attributes.
+
+### App Themes
+
+SheetXL has two types of themes.
+1. App Themes are used to render the application and are configured via CSS or MUIThemeProvider.
+2. Doc Themes are used for render the spreadsheet and are configured via the models and styles and saved within the document.
+
+App Themes are configured using Material UI's [MUIThemeProvider](https://material-ui.com/customization/theming/#theme-provider) component.
+
+```typescript title="SheetXL with MUIThemeProvider"
+/**
+ * Wrapping a SheetXL component inside of a MUIThemeProvider.
+ */
+<ThemeProvider theme={currentTheme}>
+  <Studio />
+</ThemeProvider>
+```
+
+#### App theme extensions
+SheetXL has a thin layer of customized MUI components known as 'Exhibit Components'. These extend MUI components to provide
+functionality and styling needed for SheetXL. The Exhibit Components are MIT open-sourced and can be found at
+[github](https://github.com/sheetxl/sheetxl/tree/main/packages/utils-mui/).
+
+### Document Themes
+Document Themes are used for rendering they managed are associated with the data so they are managed via
+[document themes](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ITheme.html).
+
+
+{/*
+
+<!-- Add a picture of the various components? -->
+
+<!-- Custom Renderers / Custom Editors. We need to allow these to be registered at workbook so that sheets can have different values -->
+<!-- Configure Toolbar -->
+<!-- Allow for Other items to be configured similar to AGGrid -->
+
+<!-- Side Panels (after full implementation) -->
+<!-- Advanced - Overlay (after full implementation) -->
+<!-- Advanced - Commands (after refactor) -->
+
+*/}
+
+

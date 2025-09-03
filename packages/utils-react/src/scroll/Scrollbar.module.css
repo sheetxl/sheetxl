@@ -1,0 +1,14 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+  Note - this isn't working but was meant to enabled default scroll buttons to play nicely with rounded corners
+ */
+.sheetxl-scrollbar {
+  /* & ::-webkit-scrollbar {
+    background: gre;
+  } */
+  & ::-webkit-scrollbar-button {
+    background: transparent;
+  }
+
+}

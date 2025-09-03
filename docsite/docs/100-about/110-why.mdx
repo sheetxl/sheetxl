@@ -1,0 +1,81 @@
+---
+sidebar_position: 1
+slug: /about
+title: Why SheetXL Exists
+id: sheetxl-about
+---
+
+# Why SheetXL Exists
+
+#### and why we think you'll love It
+
+Every complex system I have shipped hit the same wall:
+
+**“Can you just make it like Excel?”**
+
+It always started simple. First a grid with some formatting, maybe sorting or filtering.
+
+Then came the requests:
+
+* “Can we have date validation?”
+* “Can we copy-paste from Excel?”
+* “Can we do formulas?”
+* “Why is it so slow with 20,000 rows?”
+
+Edge cases pile up. Deadlines slip.
+
+A data grid was the perfect fit. At first...
+
+After years of workarounds, rewrites, and compromises, I finally took a step back and realized:
+
+My users didn't just want to view the data; they wanted to **interact with it**.
+They wanted the flexibility of a spreadsheet.
+
+And spreadsheets were not designed for developers.
+
+That realization led to SheetXL.
+
+#### Excel's 40,000 micro features weren't feature requests. They were non-negotiables.
+
+Users trust Excel. They've built workflows, intuition, and muscle memory around it.
+
+So we matched them. Not some. Everything that matters:
+400+ functions, including tricky ones like INDIRECT, XLOOKUP, and full spill behavior.
+Formatting edge cases. Paste quirks. Even the subtle gestures.
+
+#### It had to be built for developers
+
+It had to leverage existing tech stacks, not fight them.
+
+So we built SheetXL using the tools that developers already know and love: TypeScript, React, and modern web standards.
+
+The goal: fewer obstacles, more productivity, more upgradability.
+
+#### It had to be incredibly fast
+
+Performance isn't a feature. It's the foundation of a good user experience.
+
+So we reimagined how spreadsheets manage data.
+
+Not just virtual rendering. True performance required rethinking storage, mutation, and calculations.
+
+We applied design patterns from big data systems:
+
+columnar storage, vectorized APIs, immutability, zero-copy architecture, and dependency graphs.
+
+The result? You can throw a 250MB workbook at it or autofill a million rows with formulas, and never
+skip a beat.
+
+If any of this resonates with you, join the community and give SheetXL a try.
+
+We'd love to hear from you and see what you've built.
+
+
+{/* <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+  <img
+    src={require('/static/img/kennedy.png').default}
+    alt="We choose to do these things. Not because they are easy... ...but because we thought they were easy when we started."
+    style={{ maxWidth: 580, width: '100%', borderRadius: 4, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+  />
+</div>
+ */}

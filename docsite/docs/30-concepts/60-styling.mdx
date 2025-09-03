@@ -1,0 +1,59 @@
+---
+sidebar_position: 60
+title: Styling
+---
+
+Styling can be assigned to a range using the **[IStyle](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IStyle.html)** interface.
+
+#### Reading Cell Styles Values
+Cell Styles are accessed as a property on the <strong>[ICell](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICell.html)</strong> interface
+which is available from the <strong>[ICellRange](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html)</strong> interface
+or from the `forEach`.
+
+  ```typescript
+  // Note getCell is not recommended if accessing many values
+  const cell:ICell = workbook.getRange('Sheet1!A1').getCell();
+  const style:IStyle = cell.getStyle();
+
+  // If accessing many values use the forEach iterator.
+  workbook.getRange('Sheet1!A1:E5').forEach((value: Scalar, context: ICell.IteratorContext) => {
+    // only cells with a value will be visited. A complex ICell can be accessed using the context.
+    const cell:ICell = context.getCell();
+    const style:IStyle = cell.getStyle();
+  }, options);
+  ```
+
+#### Updating Styles
+
+Writing cells styles is similar to writing values and the <strong>[IStyle.update](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IStyle.html#update)</strong>
+is used. The biggest addition to data values is that cell styles are complex objects that support 'partial' updates.
+
+To update a style a JSON object that mirrors the IStyle interface is used but with the following rules.
+
+1. If value is a valid type it will replace the existing value.
+2. If value is `null` it will 'default' the value to the original style value.
+3. If the value is `undefined` or not present it will be ignored.
+4. If the value is a `string` it will be parsed similar to CSS (See individual style property for details); for example
+a border can be set by using the following: `1px solid red` or a font can be set by using `14pt Arial`.
+5. If the value is a function then the function will be called with the original value and the result will be applied `Note - This can have negative performance impacts so use carefully`.
+
+```typescript title="Updating style"
+// update style to several cells.
+const updateExample1:IStyle.Update = {
+  font: '14pt Arial',
+  fill: IColor.Named.AliceBlue,
+};
+workbook.getRange('Sheet1!A1:E5').getStyle().update(updateExample1);
+
+// revert the fill to the normal style but leave the font change intact.
+workbook.getRange('Sheet1!A1:E5').getStyle().update({
+  fill: null,
+});
+```
+
+### Themes
+
+Cell Styles use Themes, implemented as [ITheme](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ITheme.html), to determine colors, fonts, and other visual effects.
+These are based on the OOXML standards used by Microsoft Excel and (mostly) Google Sheets.
+
+The theme is generally embedded within the Sheet or Workbook so if these are shared the themes will also be shared.

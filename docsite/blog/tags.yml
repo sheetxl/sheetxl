@@ -1,0 +1,14 @@
+sheetxl:
+  label: SheetXL
+  permalink: /sheetxl
+  description: SheetXL
+
+typescript:
+  label: typescript
+  permalink: /typescript
+  description: Information about typescript
+
+python:
+  label: python
+  permalink: /python
+  description: Information about python

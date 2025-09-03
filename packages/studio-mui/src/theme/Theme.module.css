@@ -1,0 +1,71 @@
+
+.sheetxl-theme {
+  /* should we make all svg have a default fill of currentColor? */
+  & svg.themed {
+    fill: currentColor;
+    & :global(.activeColor) {
+      fill: var(--sxl-color-active);
+    }
+    & :global(.background) {
+      fill: var(--sxl-app-color-background);
+    }
+    & :global(.grey) {
+      fill: var(--sxl-app-color-grey);
+    }
+    & :global(.highContrast) {
+      fill: var(--sxl-app-color-high);
+    }
+    & :global(.info) {
+      fill: var(--sxl-app-color-info);
+      &:global(.light) {
+        fill: var(--sxl-app-color-info-light);
+      }
+      &:global(.dark) {
+        fill: var(--sxl-app-color-info-dark);
+      }
+    }
+    & :global(.secondary) {
+      fill: var(--sxl-app-color-secondary);
+      &:global(.light) {
+        fill: var(--sxl-app-color-secondary-light);
+      }
+      &:global(.dark) {
+        fill: var(--sxl-app-color-secondary-dark);
+      }
+    }
+    & :global(.success) {
+      fill: var(--sxl-app-color-success);
+      &:global(.light) {
+        fill: var(--sxl-app-color-success-light);
+      }
+      &:global(.dark) {
+        fill: var(--sxl-app-color-success-dark);
+      }
+    }
+    & :global(.warning) {
+      fill: var(--sxl-app-color-warning);
+      & :global(.light) {
+        fill: var(--sxl-app-color-warning-light);
+      }
+      & :global(.dark) {
+        fill: var(--sxl-app-color-warning-dark);
+      }
+    }
+    & :global(.error) {
+      fill: var(--sxl-app-color-error);
+      & :global(.light) {
+        fill: var(--sxl-app-color-error-light);
+      }
+      & :global(.dark) {
+        fill: var(--sxl-app-color-error-dark);
+      }
+    }
+  }
+}
+
+/*
+
+          '--sxl-app-color-high-contrast': appTheme.palette.primary.main, // style_HighContrast // TODO - make this nicer
+          '--sxl-app-color-background': appTheme.palette.background.paper, // style_m20
+          '--sxl-app-color-grey': ((appTheme.palette.text as any).icon ?? appTheme.palette.action.active), // style_m26
+          */

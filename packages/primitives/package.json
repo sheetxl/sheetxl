@@ -1,0 +1,41 @@
+{
+  "name": "@sheetxl/primitives",
+  "version": "0.0.0",
+  "description": "Primitives - Base types for SheetXL functions.",
+  "license": "SEE LICENSE IN <LICENSE>",
+  "private": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./build/types/index.d.ts",
+      "import": {
+        "node": "./build/node/esm/index.mjs",
+        "browser": "./build/browser/esm/index.mjs",
+        "default": "./build/browser/esm/index.mjs"
+      }
+    }
+  },
+  "scripts": {
+    "build:node": "cross-env BUILD_ENV=node vite build",
+    "build:browser": "vite build",
+    "build": "pnpm run build:node && pnpm run build:browser",
+    "build:tsdocs:json": "typedoc --json ../../build/docs/primitives.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "release:package": "cd build && pnpm publish --no-git-checks --access public",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "sheetxl",
+    "spreadsheet",
+    "data-science",
+    "vector-api",
+    "formulas",
+    "primitives"
+  ]
+}

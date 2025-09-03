@@ -1,0 +1,185 @@
+---
+sidebar_position: 800
+title: Live Scripting
+---
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+### Overview
+
+Live Scripting lets you build custom functions and macros directly inside your spreadsheet.
+Designed for both power users and developers, it combines ease of use with deep extensibility.
+
+Key features of Live Scripting include:
+
+* **Custom functions**: Define reusable macros and formula functions using standard syntax.
+* **Vectorized  API**: Perform data-science-style range operations with full spreadsheet context — presentation and interaction included.
+* **Interactive**: Read/write from live spreadsheet data and events.
+* **Strongly Typed**: Modern TypeScript with auto complete and real-time validation.
+* **Third-party libraries**: Import 3rd party libraries.
+
+### Integrated Editor
+
+The integrated editor, *powered by Monaco Editor*, provides an environment for writing, validating, and managing scripts. Core features include:
+
+* **Custom Functions**: Create custom behaviors with `export`-defined functions.
+* **Auto Documentation**: `ts-doc` comments will generate tooltips and dropdown options.
+* **Code Validation**: Ensure reliability and catch errors with real-time syntax validation auto completion.
+* **Library Integration**: The SheetXL API [API Docs](https://api.sheetxl.com) is ambiently available via the `SheetXL` namespace. 3rd party libraries are supported using [unpkg](https://www.unpkg.com/), [esm.sh](https://esm.sh/#docs), and in-memory bundling.
+
+Access the editor through the `Macro` menu or by pressing `Alt-F11`.
+
+{/* :::tip
+First time here? Try the [Scripting Demo](#) or see [Scripting Examples](#).
+::: */}
+
+### Function Types
+
+Live Scripting supports two types of exported functions: **[Formula Functions](#formula-functions-user-defined-functions---udf)** as **[Macro Functions](#macro-functions)**.
+
+<div style={{textAlign: 'center'}}>
+  <img src={useBaseUrl('/img/scripting-flow.png')} alt="Scripting Flow" style={{maxWidth: '75%', maxHeight: '360px'}} />
+  <p><em>Figure 1: Scripting workflow overview</em></p>
+</div>
+
+## Formula Functions (User Defined Functions - UDF)
+
+:::note
+While we use the term User Defined Functions to align with the industry standard, **All SheetXL built-in functions** are defined using the same API and are made freely available at [functions](https://www.github.com/sheetxl/functions).
+:::
+
+### Purpose
+
+Perform custom calculations or data transformations as part of the formula evaluation process.
+
+### Triggers
+
+Activated during calculation or recalculation of cells that reference the function.
+
+### Inputs
+
+* `Scalar`, `IRange`, `IRange[]`, `IReferenceRange`, `IReferenceRange[]`, `Scalar[]`, or `Scalar[][]`
+* Variadic arguments using the ellipsis syntax (`...`)
+
+### Return Values
+
+* Must return a value that can be used in formulas or displayed in cells
+* `void` is not permitted
+
+### User Interface
+
+Available as dropdown options during formula editing.
+
+### Example
+
+```ts title="Formula Function Example"
+/**
+ * @summary Add 2 numbers.
+ */
+export function add(a: number, b: number): number {
+  return a + b;
+}
+```
+
+## Macro Functions
+
+### Purpose
+
+Automate tasks, respond to user interactions, and customize spreadsheet behavior.
+
+### Triggers
+
+* Manual selection from the `Macros` menu (with dialog input for parameters)
+* User interface elements like buttons or menus
+* Workbook autorun scripts marked with the `default export` modifier
+
+### Inputs
+
+* Value objects such as: `ICell`, `ICellRange`, `ICellRanges`, `ISheet`, and `IWorkbook`
+* Specific `Scalar` or `IRange` inputs (via user dialog prompt)
+* (Future support planned for MouseEvent and KeyboardEvent)
+
+### Return Values
+
+* Must return `void`, `Promise<void>`, or a cleanup function `() => void`
+* If provided, the cleanup function will be called when the macro is deregistered or the application shuts down gracefully
+
+:::caution
+Clean up functions are not guaranteed to be called if the application shuts down unexpectedly.
+:::
+
+### User Interface
+
+Available in the 'Macro' menu or associated with UI elements such as toolbars or menus.
+
+### Example
+
+```ts title="Macro Function Example"
+/**
+ * Prompts the user for a color.
+ *
+ * @summary Set Fill Color
+ */
+export function setFillColor(range: ICellRange, fillColor: IColor): void {
+  range.getStyle().setFill(fillColor);
+}
+```
+
+### Autorun
+
+The Autorun macro is called once when a workbook is loaded.
+
+```ts title="Autorun Macro Example"
+/**
+ * Exporting a function as default will cause it to be run on workbook load.
+ */
+export default function main(workbook: SheetXL.IWorkbook): void {
+  // code that will only be executed once on load
+}
+```
+
+:::note
+The name of the default function is not important but `main` is used as convention.
+:::
+
+## Debugging
+
+Debugging is supported using browser developer tools.
+
+:::tip
+Insert a `debugger;` directive in your code to trigger breakpoints.
+:::
+
+## Terminology
+
+| Term      | Definition |
+| --------- | ---------- |
+| IFunction | A unit of work, a function, that performs a specific task. Defined within a module and reusable. |
+| IModule   | A container for code, representing a conceptual file. Contains multiple scripts (functions) and metadata. |
+| IScript   | A interface/namespace for managing and interacting with scripting functionality (e.g., modules, utilities). |
+
+``` typescript
+Workbook
+  ↳ getScripting(): IScript
+      ↳ getModules(): IModuleCollection
+          ↳ getByName("BudgetAnalysis"): IModule
+              ↳ execute("calculateGrowthRate")
+              ↳ execute("generateReport")
+          ↳ getFunctionNames(): string[]
+```
+
+## Comparison with VBA
+
+For users familiar with VBA, SheetXL Live Scripting retains familiar concepts while introducing modern,
+safe, and embeddable development practices:
+
+| Feature               | VBA (Excel Desktop)       | Office Scripts (Excel Web)   | SheetXL (Live Scripting)          |
+|-----------------------|---------------------------|------------------------------|-----------------------------------|
+| **Languages**         | VBA (Visual Basic)        | TypeScript (subset)          | TypeScript  (full)        |
+| **Persistence State** | Hidden workbook storage   | <span title="Not available in Office Scripts">❌</span> Not supported            | 'useState' serialization <span title="Feature under development">🚧</span>        |
+| **Script Format**     | Workbook-specific project | Workbook-linked JSON blob    | JavaScript ESM          |
+| **Initialization**    | `Workbook_Open` event     | Task-based triggers          | Default exported function         |
+| **Macros**            | `Sub` routines            | `main()` with limited access | Exported `void` functions         |
+| **Formula Functions** | UDFs via `Function`       | <span title="Not available in Office Scripts">❌</span> Not supported            | Exported value-returning functions |
+| **Global State**      | Module variables          | <span title="No persistent global variables in Office Scripts">❌</span> No true globals           | `globalThis` for shared state     |
+| **Extensibility**     | COM / Add-ins (limited)   | <span title="No module imports in Office Scripts">❌</span> No imports                | ES module imports                 |
+| **Security**          | Full system access        | Microsoft-managed sandbox    | Browser sandbox (`iframe`, CSP)   |

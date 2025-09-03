@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../utils-react"
+    }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./build/.tsbuildinfo.utils-mui",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

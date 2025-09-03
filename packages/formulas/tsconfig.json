@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "baseUrl": ".",
+    "paths": {
+      "@sheetxl/primitives": [
+        "../primitives/src"
+      ]
+    },
+    "tsBuildInfoFile": "./build/.tsbuildinfo.formulas"
+  },
+  "include": [
+    "./src",
+    "../primitives/src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

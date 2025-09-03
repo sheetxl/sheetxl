@@ -1,0 +1,27 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+ .sheetxl-workbook {
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  & :global(.splitPane) {
+    & :global(.styled-resizer) {
+      background-color: var(--sxl-app-color-grey, grey);
+      &:hover {
+        background-color: var(--sxl-app-color-primary, blue);
+      }
+    }
+
+    &:global(.dragging) {
+      & :global(.styled-resizer) {
+        background-color: var(--sxl-app-color-primary, blue);
+      }
+    }
+  }
+}

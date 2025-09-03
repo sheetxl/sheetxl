@@ -1,0 +1,106 @@
+name: Build and Deploy Docsite
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docsite/**'
+      - '!README.md'
+      - '!*PRIVATE*.md'
+  workflow_run:
+    workflows: ["Build and Publish Packages"]
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  deploy-docsite:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if should deploy
+        id: should-deploy
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "✅ Direct docsite changes detected, deploying"
+          else
+            # Check if packages were released by looking for new tags at the commit SHA
+            git fetch --tags
+            if git describe --tags --exact-match ${{ github.event.workflow_run.head_sha }} 2>/dev/null; then
+              echo "deploy=true" >> $GITHUB_OUTPUT
+              echo "✅ Packages were released, deploying docsite"
+              # Wait for npm registry propagation to avoid race condition
+              echo "⏳ Waiting 10 seconds for npm registry propagation..."
+              sleep 10
+            else
+              echo "deploy=false" >> $GITHUB_OUTPUT
+              echo "ℹ️ No packages were released, skipping docsite deployment"
+            fi
+          fi
+
+      - name: Setup Node.js
+        if: steps.should-deploy.outputs.deploy == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        if: steps.should-deploy.outputs.deploy == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        if: steps.should-deploy.outputs.deploy == 'true'
+        run: |
+          cd docsite
+          pnpm up @sheetxl/sdk @sheetxl/studio-mui
+          pnpm install --frozen-lockfile
+
+      - name: Build docsite
+        if: steps.should-deploy.outputs.deploy == 'true'
+        run: |
+          cd docsite
+          pnpm build
+
+      - name: Setup SSH for Docsite
+        if: steps.should-deploy.outputs.deploy == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY_MIRRROR_DOCSITE }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Mirror Docsite
+        if: steps.should-deploy.outputs.deploy == 'true'
+        run: |
+          mkdir ../deploy-docsite
+          cp -r docsite/build/* ../deploy-docsite
+          cd ../deploy-docsite
+          git init
+          git config core.autocrlf false
+          git config core.safecrlf false
+          git config user.name "Michael Ford"
+          git config user.email "michael@sheetxl.com"
+          git remote add origin git@github.com:michaeltford/deploy-docsite.git
+          git checkout -b main
+          git add . > /dev/null 2>&1
+          git commit -m "docs: update from $GITHUB_SHA" > /dev/null
+          git push origin main --force
+          cd -
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          if [ "${{ steps.should-deploy.outputs.deploy }}" = "true" ]; then
+            echo "✅ Docsite deployed successfully"
+            echo "::notice title=Docsite Deployment::Docsite has been built and deployed"
+          else
+            echo "ℹ️ Docsite deployment skipped"
+            echo "::notice title=Docsite Deployment::No deployment needed"
+          fi

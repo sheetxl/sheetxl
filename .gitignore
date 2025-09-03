@@ -1,0 +1,66 @@
+storybook-static
+/docs/api/
+.docusaurus
+
+*.generated
+
+# dependencies
+**/node_modules
+
+# v5 build files
+/packages/*/cjs/
+/packages/*/esm/
+/packages/*/umd/
+/examples/*/cjs/
+/examples/*/esm/
+/examples/*/umd/
+
+#Profile files
+.cpuprofile
+.cpu-profile
+*.cpuprofile
+
+# Generated files
+.rollup.cache
+.rollup.cache/**
+
+**/build
+**/dist
+**/coverage
+**/__coverage__/
+
+.eslintcache
+.*cache
+
+# misc
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# tarball
+.tgz
+
+# dotenv
+.env
+.idea
+.vercel
+
+*.map
+
+# Open office docs
+**/~$*
+**/[~][$]*
+
+.VSCodeCounter
+
+
+**/scenarios/out/
+**/tmp/
+**/.tmp/

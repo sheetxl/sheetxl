@@ -1,0 +1,145 @@
+---
+sidebar_position: 10
+title: Quick Start (React)
+sidebar_label: Quick Start (React)
+description: Quickly get started with SheetXL in React.
+---
+
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import CodeBlock from '@theme/CodeBlock';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+import SimpleStudioSource from '!!raw-loader!./SimpleStudio';
+
+# Quick Start (React)
+
+<div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+  <img
+    src={require('/static/img/react-javascript2.png').default}
+    alt="React"
+    style={{
+      maxWidth: 180,
+      width: '100%',
+      borderRadius: 16,
+      boxShadow: '0 4px 24px rgba(0,0,0,0.08)'
+    }}
+  />
+</div>
+
+## New Project
+
+The fastest way to get started with SheetXL is using our project wizard. It will create a new
+project with SheetXL pre-configured and ready to use.
+
+<Tabs
+  defaultValue="pnpm"
+  values={[
+    {label: 'pnpm', value: 'pnpm'},
+    {label: 'yarn', value: 'yarn'},
+    {label: 'npm', value: 'npm'}
+  ]}>
+  <TabItem value="pnpm">
+```sh
+pnpm create sheetxl
+```
+  </TabItem>
+  <TabItem value="yarn">
+```sh
+yarn create sheetxl
+```
+  </TabItem>
+  <TabItem value="npm">
+```sh
+npx create-sheetxl
+```
+  </TabItem>
+</Tabs>
+
+> ...and follow the interactive prompts.
+
+
+## Existing Project
+
+If you want to add SheetXL to an existing React project, follow these installation steps.
+
+### Installation
+
+To start install the following packages:
+
+`@sheetxl/studio-mui`
+
+And additional peer dependencies unless you already have these in your project.
+
+* `react`, `react-dom` - React
+* `@emotion/react`, `@emotion/styled` - CSS-in-JSS Styling (Material UI dependency)
+* `@mui/icons-material`, `@mui/material`, `@mui/styled-engine`, `@mui/system`, `@mui/utils` - Material UI
+
+<Tabs
+  defaultValue="pnpm"
+  values={[
+    {label: 'pnpm', value: 'pnpm'},
+    {label: 'yarn', value: 'yarn'},
+    {label: 'npm', value: 'npm'}
+  ]}>
+  <TabItem value="pnpm">
+```sh
+pnpm add @sheetxl/studio-mui @mui/icons-material @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled react react-dom
+```
+  </TabItem>
+  <TabItem value="yarn">
+```sh
+yarn add @sheetxl/studio-mui @mui/icons-material @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled react react-dom
+```
+  </TabItem>
+  <TabItem value="npm">
+```sh
+npm install @sheetxl/studio-mui @mui/icons-material @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled react react-dom
+```
+  </TabItem>
+</Tabs>
+
+Once installed SheetXL components can be used as any React component.
+
+### First Component
+
+Copy below to your project
+
+<BrowserOnly>
+  {()=> {
+    return (
+      <CodeBlock language="jsx">{SimpleStudioSource}</CodeBlock>
+    )
+  }}
+</BrowserOnly>
+
+## Example
+
+Sometimes starting with an example is the simplest way to start.
+
+The following code sandbox shows a react application with a standalone workbook component:
+
+[CodeSandbox-Studio](https://codesandbox.io/p/sandbox/sheetxl-react-studio-nnc5t8)
+
+:::tip
+Sandboxes can also be forked or downloaded to be run locally.
+:::
+
+{/*
+```jsx
+import { Studio } from '@sheetxl/studio-mui';
+```
+
+```jsx
+function App () {
+  return (
+    // <Studio
+    //   sx={{ // notice the mui style sx prop
+    //     minHeight: '500px'
+    //   }}
+    // />
+  )
+}
+```
+
+*/}

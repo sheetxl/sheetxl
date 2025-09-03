@@ -1,0 +1,69 @@
+{
+  "name": "@sheetxl/io",
+  "version": "0.0.0",
+  "description": "IO - Import/Export Libraries for SheetXL.",
+  "license": "SEE LICENSE IN <LICENSE>",
+  "private": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./build/types/index.d.ts",
+      "import": {
+        "node": "./build/node/esm/index.mjs",
+        "browser": "./build/browser/esm/index.mjs",
+        "default": "./build/browser/esm/index.mjs"
+      }
+    },
+    "./lib/path": {
+      "node": "./src/lib/path/path.node.js",
+      "browser": "./src/lib/path/path.browser.js",
+      "default": "./src/lib/path/path.node.js"
+    },
+    "./lib/file": {
+      "node": "./src/lib/file/file.node.js",
+      "browser": "./src/lib/file/file.browser.js",
+      "default": "./src/lib/file/file.node.js"
+    }
+  },
+  "scripts": {
+    "build:node": "cross-env BUILD_ENV=node vite build",
+    "build:browser": "vite build",
+    "build": "pnpm run build:node && pnpm run build:browser",
+    "build:tsdocs:json": "typedoc --json ../../build/docs/io.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "release:package": "cd build && pnpm publish --no-git-checks --access public",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@sheetxl/sdk": "*",
+    "@sheetxl/utils": "workspace:*",
+    "@xmldom/xmldom": "^0.9.8",
+    "papaparse": "^5.5.3",
+    "path-browserify": "^1.0.1",
+    "web-streams-polyfill": "^4.0.0",
+    "xlsx": "https://raw.githubusercontent.com/sheetxl/vendor-xlsx/main/xlsx-0.20.3.tgz",
+    "xml-formatter": "^3.6.4"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.16",
+    "@types/path-browserify": "^1.0.3"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "sheetxl",
+    "spreadsheet",
+    "io",
+    "automation",
+    "xlsx",
+    "csv",
+    "office",
+    "charting",
+    "excel",
+    "utilities"
+  ]
+}

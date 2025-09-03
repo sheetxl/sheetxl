@@ -1,0 +1,18 @@
+---
+sidebar_position: 1
+title: Concepts Overview
+id: concept-overview
+---
+import ConceptsOverviewImg from '@site/src/components/ConceptsOverviewImg';
+
+# Concepts Overview
+
+SheetXL follows the design principal that state is implemented using headless Typescript models and Components are implemented
+as React Components. This allows for many views against the same models and allows for different UIs (or no UI) when using
+the models.
+
+The components and models interact through a set of hooks that wrap the model callback listeners.
+
+Persistence is similar in that models can save and load JSON but all reading/writing to specific locations is handled through listeners.
+
+<ConceptsOverviewImg style={{width: '100%', maxWidth: '460px', marginLeft: 'auto', marginRight: 'auto'}} alt={`Concepts Overview`}/>

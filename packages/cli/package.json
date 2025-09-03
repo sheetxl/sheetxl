@@ -1,0 +1,47 @@
+{
+  "name": "sheetxl",
+  "version": "0.0.0",
+  "description": "SheetXL - Command line tool",
+  "license": "SEE LICENSE IN <LICENSE>",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "sheetxl": "./build/cli.js"
+  },
+  "scripts": {
+    "sheetxl": "node --trace-warnings --trace-uncaught ./build/cli.js",
+    "build": "vite build",
+    "preview": "echo Use 'sheetxl' instead",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "release:package": "cd build && pnpm publish --no-git-checks --access public",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@sheetxl/formulas": "workspace:*",
+    "@sheetxl/io": "workspace:*",
+    "@sheetxl/primitives": "workspace:*",
+    "@sheetxl/scripting": "*",
+    "@sheetxl/sdk": "*",
+    "@sheetxl/utils": "workspace:*",
+    "commander": "^14.0.0",
+    "configstore": "^7.0.0",
+    "open": "^10.2.0"
+  },
+  "devDependencies": {
+    "@types/configstore": "^6.0.2",
+    "rollup-plugin-preserve-shebang": "^1.0.1",
+    "tsx": "^4.20.3"
+  },
+  "keywords": [
+    "sheetxl",
+    "spreadsheet",
+    "javascript",
+    "typescript",
+    "excel",
+    "xlsx",
+    "cli",
+    "command-line",
+    "tool"
+  ]
+}

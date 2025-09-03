@@ -1,0 +1,20 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "out": "./build/docs",
+  "entryPointStrategy": "packages",
+  "packageOptions": {
+    "entryPoints": ["src/index.ts"],
+    "readme": "README.md"
+  },
+  // "categoryOrder": ["@sheetxl/sdk", "@sheetxl/primitives", "*"],
+  "name": "SheetXL",
+  "includeVersion": true,
+  "includeHierarchySummary": true,
+  // https://typedoc.org/documents/Options.Output.html#customjs to example navigation.
+  // https://typedoc.org/documents/Options.Output.html#customjs to style
+
+  //  "hostedBaseUrl": "https://example.com" to fix the module url links
+  // "gaID": "G-1JGL700TV6",
+  "readme": "./apisite/README.md",
+  "extends": ["./typedoc.base.json"], // Path to shared config
+}

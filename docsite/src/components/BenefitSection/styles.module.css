@@ -1,0 +1,65 @@
+.section {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.svg {
+  height: 160px;
+  width: 160px;
+}
+
+.benefitRow {
+  display: flex;
+}
+
+.benefitRow.reversed {
+  flex-direction: row-reverse;
+}
+
+.benefitRow .col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Image alignment classes */
+.imageContainer {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* On large screens, align images closer to text based on odd/even */
+.benefitRow.odd .imageContainer {
+  justify-content: flex-start; /* Right align - closer to text on left */
+  margin-left: 100px;
+}
+
+.benefitRow.even .imageContainer {
+  justify-content: flex-end; /* Left align - closer to text on right */
+  margin-right: 100px;
+}
+
+/* On small screens, center everything when stacked */
+@media (max-width: 996px) {
+  .benefitRow.reversed {
+    flex-direction: row;
+  }
+
+  .benefitRow.odd .imageContainer,
+  .benefitRow.even .imageContainer {
+    justify-content: center; /* Center on mobile */
+  }
+}
+
+:global(.tight-code-block) code {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  padding-right: 24px !important;
+}
+
+:global(.tight-code-block) :global(.theme-code-block) {
+  margin-bottom: 4px !important;
+}

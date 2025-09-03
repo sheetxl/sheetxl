@@ -1,0 +1,84 @@
+{
+  "name": "@sheetxl/studio-vanilla",
+  "version": "0.0.0",
+  "description": "SheetXL Studio - Vanilla entry point for integrating SheetXL UI.",
+  "license": "SEE LICENSE IN <LICENSE>",
+  "private": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./build/types/index.d.ts",
+      "cdn": "./build/cdn/index.js",
+      "import": {
+        "node": "./build/browser/esm/index.mjs",
+        "browser": "./build/browser/esm/index.mjs",
+        "default": "./build/browser/esm/index.mjs"
+      },
+      "require": {
+        "node": "./build/browser/cjs/index.cjs",
+        "browser": "./build/browser/cjs/index.cjs",
+        "default": "./build/browser/cjs/index.cjs"
+      }
+    },
+    "./cdn": {
+      "import": "./build/browser/index.js"
+    },
+    "./loader.js": "./build/browser/loader.js"
+  },
+  "types": "./build/types/index.d.ts",
+  "main": "./build/cjs/index.cjs",
+  "module": "./build/esm/index.mjs",
+  "unpkg": "./build/cdn/index.js",
+  "jsdelivr": "./dist/cdn/index.js",
+  "scripts": {
+    "dev": "vite --port 4000",
+    "dev:open": "vite --port 4000 --open",
+    "dev:host": "vite --port 4000 --host",
+    "build": "pnpm run build:lib && pnpm run build:es && pnpm run build:iife",
+    "build:lib": "vite build --config vite.config.ts",
+    "build:es": "vite build --config vite.es.ts",
+    "build:iife": "vite build --config vite.iife.ts",
+    "build:tsdocs:json": "typedoc --json ../../build/docs/studio-vanilla.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "preview": "http-server build -p 4000 --cors",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "release:package": "cd build && pnpm publish --no-git-checks --access public",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/material": "^6.5.0",
+    "@mui/styled-engine": "^6.5.0",
+    "@mui/system": "^6.5.0",
+    "@mui/utils": "^6.4.9",
+    "@sheetxl/sdk": "*",
+    "@sheetxl/studio-mui": "workspace:*",
+    "csstype": "^3.1.3",
+    "http-server": "^14.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "sideEffects": [
+    "*.css",
+    "**/*.css"
+  ],
+  "keywords": [
+    "sheetxl",
+    "spreadsheet",
+    "utilities",
+    "sheets",
+    "grid",
+    "excel",
+    "vanilla",
+    "office",
+    "automation",
+    "charting"
+  ]
+}
