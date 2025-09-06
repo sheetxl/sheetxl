@@ -2,7 +2,7 @@
   display: block;
   margin: 0;
   padding: 0;
-  line-height: normal;
+  line-height: 1; /* Reset line-height to normal */
 }
 
 .sheetxl-reset table,
@@ -33,9 +33,9 @@
   display: inline;
 }
 
-.sheetxl-reset button {
-  /* Add button resets here if needed */
-}
+/* Add button resets here if needed */
+/* .sheetxl-reset button {
+} */
 
 html {
   color: initial;

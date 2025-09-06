@@ -413,6 +413,8 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
           outline: 'none',
           width: '100%',
           height: '100%',
+          minWidth: 0,
+          minHeight: 0,
           zIndex: 99999, // should be on top of everything
           '&.animating': {
             opacity: 1
