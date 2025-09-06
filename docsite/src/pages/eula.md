@@ -51,15 +51,9 @@ once for licensing purposes, even if they contribute to multiple Applications.
 
 Subject to Licensee’s compliance with this Agreement and payment of applicable fees (under a separate Order Form or Pricing Schedule):
 
-1. **Application License.** Licensee may incorporate the SOFTWARE into a single Application and deploy it to end-users.
-An Application License includes both (a) Client Deployment (deployment of the SOFTWARE in client-side environments such
-as browsers, mobile apps, or desktop apps), and (b) Server Deployment (deployment of the SOFTWARE in server-side
-environments such as Node.js runtimes, calculation servers, or data importers). Deployment to additional Applications
-requires additional licenses. Non-production environments (e.g., development, QA, staging) supporting the same
-Application are included.
+1. **Application License.** Licensee may incorporate the SOFTWARE into a single Application and deploy it to end-users. An Application License is granted as a non-exclusive, fully paid (royalty-free), worldwide license to use for Licensee’s business purposes during the term and includes both (a) **Client Deployment** (deployment of the SOFTWARE in client-side environments such as browsers, mobile apps, or desktop apps), and (b) **Server Deployment** (deployment of the SOFTWARE in server-side environments such as Node.js runtimes, calculation servers, or data importers). Deployment to additional Applications requires additional licenses. Non-production environments (e.g., development, QA, staging) supporting the same Application are included.
 2. **Developer License.** Licensee may permit the number of Developers (as defined in this Agreement) authorized by
-License to use the SOFTWARE for development of an Application under a paid commercial license.
-Each Developer requires a separate Developer License.
+License to use the SOFTWARE for development of an Application under a paid commercial license. Each Developer requires a separate Developer License.
 3. **Community License.** SheetXL makes available a free 'Community Version' of the SOFTWARE. Subject to the terms of this Agreement:
    * **Grant.** Licensee may use the Community Version internally for evaluation, learning, or non-commercial purposes only.
    * **Watermark.** The Community Version may display a visual watermark or other notice.
@@ -82,17 +76,18 @@ applicable law for the sole purpose of achieving interoperability.
 
 ### **IV. SUPPORT AND MAINTENANCE**
 
-For paid licenses, and for the duration of the license term, Licensee is entitled to receive SOFTWARE updates and standard technical support as described in SheetXL's then-current Support Policy, which is incorporated by reference. SheetXL is under no obligation to provide support for Community Versions or for licenses that have expired.
+For paid licenses, and for the duration of the license term, Licensee is entitled to receive SOFTWARE updates and standard technical support as described in SheetXL’s then-current Support Policy, available at [www.sheetxl.com/support](https://www.sheetxl.com/support), which is incorporated by reference. SheetXL is under no obligation to provide support for Community Versions or for licenses that have expired.
 
 ### **V. AUDIT RIGHTS**
 
-SheetXL may, upon reasonable notice, audit Licensee’s use of the SOFTWARE to verify compliance. Any audit will be
+SheetXL may, upon 60 days' notice, audit Licensee’s use of the SOFTWARE to verify compliance. Any audit will be
 reasonable and proportionate, and Licensee agrees to cooperate in good faith, including providing reasonable
 demonstrations (e.g., repository access counts, screen-sharing, or other agreed method).
 
 ### **VI. INTELLECTUAL PROPERTY**
 
-1. **Ownership.** The SOFTWARE is licensed, not sold. SheetXL and its licensors retain all rights, title, and interest in and to the SOFTWARE.
+1. **Ownership.** The SOFTWARE is licensed, not sold. SheetXL and its licensors retain all rights, title, and interest
+in and to the SOFTWARE. Licensee retains all rights, title, and interest in all Licensee intellectual property.
 2. **Feedback.** If Licensee voluntarily provides suggestions, ideas, or other feedback to SheetXL concerning the SOFTWARE (“Feedback”), Licensee grants SheetXL a perpetual, irrevocable, royalty-free, worldwide license to use such Feedback. Feedback does not include routine error reports, support requests, or other communications submitted in the ordinary course of using the SOFTWARE.
 3. **Copies.** Licensee may make copies of the SOFTWARE solely for backup and archival purposes.
 4. **Reservation of Rights.** Except as expressly granted, no rights are conveyed.
@@ -100,28 +95,53 @@ demonstrations (e.g., repository access counts, screen-sharing, or other agreed 
 ### **VII. LIMITED WARRANTY & DISCLAIMER**
 
 1. **Limited Warranty.** SheetXL warrants that it has the right to license the SOFTWARE.
+
+In addition, SheetXL will defend or settle any third-party claim that the unmodified SOFTWARE, as provided by SheetXL, directly infringes a valid patent, copyright, trademark in any jurisdiction where SheetXL has made the SOFTWARE commercially available or expressly authorized its use the SOFTWARE provided that:
+
+  i. Licensee promptly notifies SheetXL in writing of the claim;
+  ii. Licensee gives SheetXL sole control of the defense and settlement; and
+  iii. Licensee provides reasonable cooperation at SheetXL’s expense.
+
+If such a claim is sustained, SheetXL will indemnify Licensee against resulting direct damages, liabilities, costs, and reasonable attorneys’ fees finally awarded by a court or agreed in settlement.
+
+This obligation does not apply to claims arising from
+ (i) modifications not made by SheetXL,
+ (ii) combination or use of the SOFTWARE with products or services not provided by SheetXL,
+ (iii) use of the SOFTWARE in violation of this Agreement, or
+ (iv) open-source components provided under separate license terms.
+
+If such a claim arises, SheetXL may, at its option: (1) obtain rights for Licensee to continue using the SOFTWARE, (2) replace or modify the SOFTWARE so it is non-infringing, or (3) terminate the license for the affected SOFTWARE and refund the unused portion of any prepaid fees.
+
 2. **Disclaimer.** EXCEPT AS SET FORTH ABOVE, THE SOFTWARE IS PROVIDED “AS IS” WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
-3. **Risk.** The entire risk as to performance, accuracy, or results of using the SOFTWARE rests with Licensee.
+
+3. **Risk.** The entire risk as to performance, accuracy, or results of using the SOFTWARE rests with Licensee, except in relation to the Limited Warranty in section 1 above.
 
 ### **VIII. INDEMNIFICATION & LIMITATION OF LIABILITY**
 
-1. **Licensee Indemnity.** Licensee shall indemnify and hold harmless SheetXL from any claim, damage, or liability arising from (i) Licensee’s use or distribution of the SOFTWARE, (ii) Licensee’s Applications, or (iii) breach of this Agreement.
-2. **Limitation of Liability.** TO THE MAXIMUM EXTENT PERMITTED BY LAW, SHEETXL SHALL NOT BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, BUSINESS INTERRUPTION, OR DATA LOSS, EVEN IF ADVISED OF THE POSSIBILITY. SHEETXL’S TOTAL LIABILITY SHALL NOT EXCEED FEES PAID BY LICENSEE IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM.
+1. **Licensee Indemnity.** Licensee shall indemnify and hold harmless SheetXL from any claim, damage, or liability arising from
+(i) Licensee’s use or distribution of the SOFTWARE,
+(ii) Licensee’s Applications, or
+(iii) breach of this Agreement.
+
+2. **Limitation of Liability.** TO THE MAXIMUM EXTENT PERMITTED BY LAW, SHEETXL AND LICENSEE SHALL NOT BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, BUSINESS INTERRUPTION, OR DATA LOSS, EVEN IF ADVISED OF THE POSSIBILITY. SHEETXL’S AND LICENSEE’S TOTAL LIABILITY SHALL NOT EXCEED FEES PAID BY LICENSEE IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM. THIS LIMITATION SHALL NOT APPLY TO (I) EITHER PARTY’S INDEMNIFICATION OBLIGATIONS, OR (II) LICENSEE’S BREACH OF SECTION III (PROHIBITED USES).
 
 ### **IX. TERM AND TERMINATION**
 
 1. **Term.** Each license runs for twelve (12) months from the date of purchase, unless otherwise specified.
+
 2. **Renewal.** Renewal of any license is available upon payment of the applicable fees and is subject to Licensee’s
 continued compliance with this Agreement. SheetXL may update the terms of this Agreement upon renewal, and will make updated terms reasonably available prior to renewal. Continued use of the SOFTWARE after renewal constitutes acceptance of the updated terms.
+
 3. **Termination.** SheetXL may terminate this Agreement if Licensee materially breaches its terms and fails to cure
 such breach within a reasonable time after receiving notice, except that SheetXL reserves the right to terminate
-immediately in cases of intentional misuse, unauthorized distribution, or other material violations that cannot be remedied.
+immediately in cases of intentional misuse, unauthorized distribution, or other material violations that cannot be remedied. Licensee may terminate this Agreement if SheetXL materially breaches its terms under this Agreement.
+
 4. **Effect of Termination.** Upon termination or expiration, Licensee must cease all development and distribution of the SOFTWARE and destroy all copies in its possession. Licensee acknowledges that the SOFTWARE includes a license validation mechanism and that upon expiration of the license term, the SOFTWARE may automatically revert to a feature-limited, watermarked, or disabled state. While this Agreement's termination does not revoke the right of Licensee's end-users to continue using Applications distributed prior to termination, their continued use is subject to the SOFTWARE functioning in such a degraded state.
 
 ### **X. MISCELLANEOUS**
 
 1. **Entire Agreement.** This Agreement is the complete and exclusive statement of the agreement between the parties and supersedes all prior oral or written agreements, communications, or understandings. This Agreement may not be modified except by a written instrument signed by a duly authorized representative of each party.
-2. **Assignment.** Licensee may not assign this Agreement without SheetXL’s prior written consent. SheetXL may assign to an affiliate or successor.
+2. **Assignment.** Licensee may not assign this Agreement without SheetXL’s prior written consent, except in connection with a merger, acquisition or other bona fide corporate transaction, provided the successor assumes all obligations hereunder and Licensee gives prompt written notice to SheetXL. SheetXL may assign to an affiliate or successor.
 3. **Governing Law.** This Agreement is governed by the laws of the State of New York. Any disputes shall be resolved in New York County, New York.
 4. **Severability.** If any provision is held unenforceable, the remainder shall remain in effect.
 5. **Waiver.** Failure to enforce any provision shall not constitute a waiver of future enforcement.
