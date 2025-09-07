@@ -13,7 +13,7 @@ import { IWorkbook, LicenseManager } from '@sheetxl/sdk';
 import { ThemeMode, ThemeModeOptions } from '@sheetxl/utils-mui';
 
 import {
-  Studio, WorkbookIO, setPrintExamplesOnLoad
+  Studio, WorkbookIO, setPrintExamplesOnLoad, useModelListener
 } from '@sheetxl/studio-mui';
 
 /**
@@ -204,6 +204,13 @@ function App() {
     readWorkbook();
   }, [state]);
 
+  const [workbookResolved, setWorkbookResolved] = useState<IWorkbook>(null);
+  useModelListener<IWorkbook, IWorkbook.IListeners>(workbookResolved, {
+    onSelectionChange: (source: IWorkbook) => {
+      // console.log('Workbook Selection Changed', source?.getSelectedRanges().toString());
+    }
+  });
+
   return (
     <Studio
       className="App"
@@ -216,6 +223,9 @@ function App() {
       //   console.log('Workbook Element ref called', instance);
       // }}
       workbook={workbook}
+      onWorkbookChange={(wb: IWorkbook) => {
+        setWorkbookResolved(wb);
+      }}
       title={workbookTitle}
       // renderLoadingPanel={() => (
       //   <div>Loading workbook...</div>

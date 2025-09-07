@@ -16,7 +16,7 @@ import { CSSTransition } from 'react-transition-group';
 
 import {
   Workbook, IWorkbook, IMovable, IAutoFilter, ISheet, IWorkbookProtection,
-  IWorkbookView, TypesUtils, CommonUtils, type TopLeft
+  IWorkbookView, TypesUtils, CommonUtils, type TopLeft, type Bounds
 } from '@sheetxl/sdk';
 
 import {
@@ -46,7 +46,7 @@ import { ScriptWorkspace, type IScriptWorkspaceElement } from '../../script';
 import useWorkbookCommands from './useWorkbookCommands';
 
 import type {
-  IWorkbookElement, WorkbookElementProps, WorkbookAttributes, WorkbookRefProps, WorkbookLoadEvent
+  IWorkbookElement, WorkbookElementProps, WorkbookAttributes, WorkbookLoadEvent
 } from './IWorkbookElement';
 
 import resetsStyles from '../../theme/Resets.module.css';
@@ -306,23 +306,26 @@ const WorkbookElement =
   const [isPopperOpen, setPopperOpen] = useState<boolean>(false);
   const [popperDisplay, setPopperDisplay] = useState<any>(null);
   const [popperPlacement, setPopperPlacement] = useState<ToolTipPlacement>(ToolTipPlacement.Top);
-  const [popperAnchor, setPopperAnchor] = useState(TypesUtils.EmptyBounds);
+  const [popperAnchor, setPopperAnchor] = useState<Partial<Bounds>>(TypesUtils.EmptyBounds);
 
-  const closeTooltip = () => {
+  const closeTooltip = useCallback(() => {
     setPopperOpen(false);
     setPopperDisplay(null);
-  }
+  }, []);
 
-  // TODO - fix typing
-  const showTooltip = (anchor, display: string | React.ReactElement, placement: ToolTipPlacement=ToolTipPlacement.Top) => {
+  const showTooltip = useCallback((anchor: Partial<Bounds>, display: string | React.ReactElement, placement: ToolTipPlacement=ToolTipPlacement.Top) => {
     setPopperAnchor(anchor);
     setPopperPlacement(placement);
     setPopperDisplay(display);
     if (popperRef.current !== null) {
-      popperRef.current.update();
+      setTimeout(() => {
+        if (popperRef.current !== null) {
+          popperRef.current.update();
+        }
+      }, 160); // give time for the popper to render
     }
     setPopperOpen(true);
-  }
+  }, []);
 
   const [_focusedComponent, setFocusedComponent] = useState<string>('sheet');
 
@@ -1147,6 +1150,62 @@ const WorkbookElement =
     );
   }, [showHorizontalScrollbar, showTabs, createTabStripSharedScrollbar, showVerticalScrollbar, viewport, sideBar, sheetElement, workbookStrip, appTheme, isFullWidth]);
 
+  const tooltip = useMemo(() => {
+    return (
+      <SimpleTooltip
+        arrow
+        disableInteractive
+        // TransitionComponent={Fade} // Not working
+        open={isPopperOpen}
+        title={
+          <Typography
+            variant="subtitle2"
+            component="div"
+          >
+            {popperDisplay}
+          </Typography>
+        }
+        placement={popperPlacement}
+        TransitionProps={{
+          timeout: {
+            exit: 0, // reverse grow with arrow behaves poorly. Would be nice to just make a fade?
+          }
+        }}
+        PopperProps={{
+          popperRef,
+          sx: {
+            "& .MuiTooltip-tooltip": {
+              padding: "2px 6px",
+              "& .MuiTooltip-arrow": {
+                display: isPopperOpen ? "visible" : "none"
+              }
+            }
+          },
+          anchorEl: {
+            getBoundingClientRect: () => {
+              return new DOMRect(
+                popperAnchor.x,
+                popperAnchor.y,
+                popperAnchor.width,
+                popperAnchor.height
+              );
+            },
+          },
+          modifiers: [
+            {
+                name: "offset",
+                options: {
+                    offset: [0, 0],
+                },
+            },
+          ],
+        }}
+      >
+        <Box />
+      </SimpleTooltip>
+    );
+  }, [isPopperOpen, popperDisplay, popperPlacement, popperAnchor, popperRef]);
+
   const effectiveStyle = useMemo(() => {
     const themedScrollbar = scrollbarTheming(appTheme);
     return {
@@ -1171,6 +1230,59 @@ const WorkbookElement =
       ...propSx
     }
   }, [propSx, gridStyle]);
+
+  const formulaBarPadding = useMemo(() => {
+    return (
+      <Box
+        sx={{
+          marginBottom: (theme: Theme) => { return theme.spacing(0.75) }
+        }}
+      />
+    );
+  }, []);
+
+  const themedStyles = useMemo(() => {
+    return {
+      flex: '1 1 100%',
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      opacity: !isLoaded ? 0 : undefined,
+      '--sxl-app-color-high-contrast': appTheme.palette.primary.main, // style_HighContrast // TODO - make this nicer
+      '--sxl-app-color-primary': appTheme.palette.primary.main,
+      '--sxl-app-color-primary-dark': appTheme.palette.primary.dark,
+      '--sxl-app-color-primary-light': appTheme.palette.primary.light,
+      '--sxl-app-color-info': appTheme.palette.info.main, // style_m24
+      '--sxl-app-color-info-dark': appTheme.palette.info.dark, // style_m25
+      '--sxl-app-color-info-light': appTheme.palette.info.light, // style_m26
+      '--sxl-app-color-secondary': appTheme.palette.secondary.main, // no office equivalent
+      '--sxl-app-color-secondary-dark': appTheme.palette.secondary.dark, // style_m23
+      '--sxl-app-color-secondary-light': appTheme.palette.secondary.light, // style_m21 - office always makes this grey
+      '--sxl-app-color-success': appTheme.palette.success.main,
+      '--sxl-app-color-success-dark': appTheme.palette.success.dark,
+      '--sxl-app-color-success-light': appTheme.palette.success.light,
+      '--sxl-app-color-warning': appTheme.palette.warning.main,
+      '--sxl-app-color-warning-dark': appTheme.palette.warning.dark,
+      '--sxl-app-color-warning-light': appTheme.palette.warning.light,
+      '--sxl-app-color-error': appTheme.palette.error.main,
+      '--sxl-app-color-error-dark': appTheme.palette.error.dark,
+      '--sxl-app-color-error-light': appTheme.palette.error.light,
+      '--sxl-app-color-text': appTheme.palette.text.primary,
+      '--sxl-app-color-text-secondary': appTheme.palette.text.secondary,
+      '--sxl-app-color-text-disabled': appTheme.palette.text.disabled,
+      '--sxl-app-color-background': appTheme.palette.background.paper, // style_m20
+      '--sxl-app-color-button-surface': appTheme.palette.grey[600],
+      '--sxl-app-color-shadow': appTheme.palette.action.focus,
+      '--sxl-app-color-grey': appTheme.palette.grey[500], // style_m26
+      // TODO - review these. They are color mode specific and this is not a good pattern.
+      '--sxl-app-filter-dark-invert': gridStyle.body.darkMode && propEnabledDarkImages ? `hue-rotate(180deg) invert(1) brightness(95%)` : 'none',
+      '--sxl-app-image-background': gridStyle.body.darkMode ? `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})` : undefined,
+    } as CSSProperties
+  }, [gridStyle, appTheme, isLoaded]);
+
+  const classNameEffective = useMemo(() => {
+    return clsx(resetsStyles['sheetxl-reset'])
+  }, []);
 
   return (
     <Paper
@@ -1209,104 +1321,15 @@ const WorkbookElement =
       onDrop={handleDrop}
     >
       <div
-        className={clsx(resetsStyles['sheetxl-reset'])}
-        style={{
-          flex: '1 1 100%',
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          opacity: !isLoaded ? 0 : undefined,
-          '--sxl-app-color-high-contrast': appTheme.palette.primary.main, // style_HighContrast // TODO - make this nicer
-          '--sxl-app-color-primary': appTheme.palette.primary.main,
-          '--sxl-app-color-primary-dark': appTheme.palette.primary.dark,
-          '--sxl-app-color-primary-light': appTheme.palette.primary.light,
-          '--sxl-app-color-info': appTheme.palette.info.main, // style_m24
-          '--sxl-app-color-info-dark': appTheme.palette.info.dark, // style_m25
-          '--sxl-app-color-info-light': appTheme.palette.info.light, // style_m26
-          '--sxl-app-color-secondary': appTheme.palette.secondary.main, // no office equivalent
-          '--sxl-app-color-secondary-dark': appTheme.palette.secondary.dark, // style_m23
-          '--sxl-app-color-secondary-light': appTheme.palette.secondary.light, // style_m21 - office always makes this grey
-          '--sxl-app-color-success': appTheme.palette.success.main,
-          '--sxl-app-color-success-dark': appTheme.palette.success.dark,
-          '--sxl-app-color-success-light': appTheme.palette.success.light,
-          '--sxl-app-color-warning': appTheme.palette.warning.main,
-          '--sxl-app-color-warning-dark': appTheme.palette.warning.dark,
-          '--sxl-app-color-warning-light': appTheme.palette.warning.light,
-          '--sxl-app-color-error': appTheme.palette.error.main,
-          '--sxl-app-color-error-dark': appTheme.palette.error.dark,
-          '--sxl-app-color-error-light': appTheme.palette.error.light,
-          '--sxl-app-color-text': appTheme.palette.text.primary,
-          '--sxl-app-color-text-secondary': appTheme.palette.text.secondary,
-          '--sxl-app-color-text-disabled': appTheme.palette.text.disabled,
-          '--sxl-app-color-background': appTheme.palette.background.paper, // style_m20
-          '--sxl-app-color-button-surface': appTheme.palette.grey[600],
-          '--sxl-app-color-shadow': appTheme.palette.action.focus,
-          '--sxl-app-color-grey': appTheme.palette.grey[500], // style_m26
-          // TODO - review these. They are color mode specific and this is not a good pattern.
-          '--sxl-app-filter-dark-invert': gridStyle.body.darkMode && propEnabledDarkImages ? `hue-rotate(180deg) invert(1) brightness(95%)` : 'none',
-          '--sxl-app-image-background': gridStyle.body.darkMode ? `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})` : undefined,
-        } as any}
+        className={classNameEffective}
+        style={themedStyles}
       >
         {workbookToolbar}
         {showFormulaBar ? formulaBar : null}
-        <Box
-          sx={{
-            marginBottom: (theme: Theme) => { return theme.spacing(0.75) }
-          }}
-        />
+        {formulaBarPadding}
         {mainArea}
         {statusBar}
-        <SimpleTooltip
-          arrow
-          disableInteractive
-          // TransitionComponent={Fade} // Not working
-          open={isPopperOpen}
-          title={
-            <Typography
-              variant="subtitle2"
-              component="div"
-            >
-              {popperDisplay}
-            </Typography>
-          }
-          placement={popperPlacement}
-          TransitionProps={{
-            timeout:{
-              exit: 0, // reverse grow with arrow behaves poorly. Would be nice to just make a fade?
-              }
-          }}
-          PopperProps={{
-            popperRef,
-            sx: {
-              "& .MuiTooltip-tooltip": {
-                padding: "2px 6px",
-                "& .MuiTooltip-arrow": {
-                  display: isPopperOpen ? "visible" : "none"
-                }
-              }
-            },
-            anchorEl: {
-              getBoundingClientRect: () => {
-                return new DOMRect(
-                  popperAnchor.x,
-                  popperAnchor.y,
-                  popperAnchor.width,
-                  popperAnchor.height
-                );
-              },
-            },
-            modifiers: [
-              {
-                  name: "offset",
-                  options: {
-                      offset: [0, 0],
-                  },
-              },
-            ],
-          }}
-        >
-          <Box/>
-        </SimpleTooltip>
+        {tooltip}
         {contextMenuComponent}
         {dropOverlay}
       </div>
