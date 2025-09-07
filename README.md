@@ -13,11 +13,16 @@
 
 **SheetXL is the open spreadsheet ecosystem** — modular, embeddable, and fully scriptable.
 
+**Excel-compatible. API-first. Built for speed.**
+
+If you like SheetXL, give us a star ⭐ to help others find us!
+
 Whether you're building a custom UI, adding live scripting, or integrating spreadsheet logic into your app, SheetXL gives you full control with zero platform lock-in.
 
 ![SheetXL Animated Demo Link](./static/img/sheetxl-animated-preview.gif)
+*Headless API. Live Scripting. Built for developers.*
 
-### Try it now — Live Demo
+### Try it now — Complete Excel-compatible App
 
 👉 [See a full SheetXL demo](https://demo.sheetxl.com)
 
@@ -125,10 +130,11 @@ SheetXL is built on four core pillars: extreme performance, deep Excel compatibi
 
 ### ✨ User Features
 
-* 17+ billion cells (The same as Excel)
-* 400+ Formulas
+* 17B+ cells (The same as Excel)
+* 400+ Excel-compatible formulas
+* Full fidelity Excel import/export
 * Scripting Engine
-* Full fidelity Import / Export to Excel
+* Fast. Autofill 1,048,576 rows with formulas in 0.7s (10M+ formulas/second)
 
 <details>
 <summary><b>Click to see the full list of additional User Features...</b></summary>
@@ -306,7 +312,7 @@ Whether you're ready to build, need help, or just want to see more examples, her
 * 🌐 **[Live Demo Gallery](https://www.sheetxl.com/demos)** - A showcase of interactive examples.
 * ✨ **[Storybook](https://storybook.sheetxl.com)** - Explore and test individual UI components.
 * 💬 **[Join our Discord Community](https://discord.gg/NTKdwUgK9p)** - Get help and connect with the team.
-* ⭐ **[Star us on GitHub](https://github.com/sheetxl)** - If you find SheetXL useful, we'd appreciate a star!
+* ⭐ **[Star us on GitHub](https://github.com/sheetxl)** - If you like SheetXL, give us a star ⭐ to help others find us!!
 * 🌐 **[Website](https://www.sheetxl.com)** - Our Website.
 
 ---
