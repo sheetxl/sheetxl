@@ -359,57 +359,23 @@ const config = {
         darkTheme: darkCodeTheme,
       },
       metadata: [
-        {name: 'keywords', content: 'spreadsheet, react, excel, open-source, datagrid'},
+        {name: 'keywords', content: 'spreadsheet, sdk, ai, react, excel, open-source, datagrid'},
         {name: 'og:locale', content: 'en_us'},
         {name: 'og:type', content: 'website'},
 
         {name: 'og:url', content: 'https://www.sheetxl.com'},
         {name: 'og:site_name', content: 'SheetXL'},
-        {name: 'og:description', content: `SheetXL is a spreadsheet and a data-grid. Fast⚡, beautiful, and compatible with Excel. Built using React, Typescript, and MUI.`},
-        // this is being overwritten by title from docusaurus
-        // {name: 'og:title', content: 'A React spreadsheet and a datagrid | SheetXL'},
-        // {name: 'og:image', content: 'https://www.sheetxl.com/img/social.png'}, // defined in image tag
-        {name: 'og:image:width', content: '1200'},
-        {name: 'og:image:height', content: '630'},
-        {name: 'og:image:alt', content: 'A React Spreadsheet and a datagrid,'},
-        {name: 'twitter:card', content: 'SheetXL is a React Spreadsheet and a datagrid.'},
-        {name: 'twitter:card', content: 'summary_large_image'},
+        // {name: 'og:description', content: `SheetXL is a spreadsheet and a data-grid. Fast⚡, beautiful, and compatible with Excel. Built using React, Typescript, and MUI.`},
+        // // this is being overwritten by title from docusaurus
+        // // {name: 'og:title', content: 'A React spreadsheet and a datagrid | SheetXL'},
+        // // {name: 'og:image', content: 'https://www.sheetxl.com/img/social.png'}, // defined in image tag
+        // {name: 'og:image:width', content: '1200'},
+        // {name: 'og:image:height', content: '630'},
+        // {name: 'og:image:alt', content: 'A React Spreadsheet and a datagrid,'},
+        // {name: 'twitter:card', content: 'SheetXL is a React Spreadsheet and a datagrid.'},
+        // {name: 'twitter:card', content: 'summary_large_image'},
         // {name: 'twitter:site', content: '@sheetxl'},
-      ],
-      // algolia: {
-      //   // container: '#docsearch',
-      //   appId: 'WREK9AGD86',
-      //   indexName: 'DocSearch',
-      //   apiKey: 'bbb1071e5bfda09cb034226e13ef5604',
-      //   contextualSearch: true,
-      //   searchPagePath: 'search',
-      //   // replaceSearchResultPathname: {
-      //   //   from: '/',
-      //   //   to: '/docs/',
-      //   // },
-      //   // Optional: see doc section below
-      //   // contextualSearch: true,
-
-      //   // Optional: Specify domains where the navigation should occur through window.location instead on history.push. Useful when our Algolia config crawls multiple documentation sites and we want to navigate with window.location.href to them.
-      //   // externalUrlRegex: 'external\\.com|domain\\.com',
-
-      //   // // Optional: Replace parts of the item URLs from Algolia. Useful when using the same search index for multiple deployments using a different baseUrl. You can use regexp or string in the `from` param. For example: localhost:3000 vs myCompany.com/docs
-      //   // replaceSearchResultPathname: {
-      //   //   from: '/docs/', // or as RegExp: /\/docs\//
-      //   //   to: '/',
-      //   // },
-
-      //   // Optional: Algolia search parameters
-      //   // searchParameters: {},
-
-      //   // // Optional: path for search page that enabled by default (`false` to disable it)
-      //   // searchPagePath: 'search',
-
-      //   // // Optional: whether the insights feature is enabled or not on Docsearch (`false` by default)
-      //   // insights: false,
-
-      //   //... other Algolia params
-      // },
+      ]
     }),
 };
 
