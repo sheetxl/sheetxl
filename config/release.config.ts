@@ -22,6 +22,14 @@ const plugins:ReadonlyArray<PluginSpec> = [
         commitsSort: ['scope', 'subject'],
         groupBy: 'type',
         commitGroupsSort: 'title',
+        transform: (commit, context) => {
+          // Return a new object without commit hashes
+          return {
+            ...commit,
+            hash: '',
+            shortHash: ''
+          };
+        },
         types: [
           { type: 'feat', section: 'Features' },
           { type: 'fix', section: 'Bug Fixes' },
