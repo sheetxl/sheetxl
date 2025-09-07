@@ -66,7 +66,7 @@ export function DemoPage() {
 export default function Page() {
   return (
     <Layout
-      title={`Demo`}
+      title={`Featured Demos`}
       description={`Demos that demonstrate the features and power of SheetXL`}>
       <HomepageHeader />
       <DemoPage/>
