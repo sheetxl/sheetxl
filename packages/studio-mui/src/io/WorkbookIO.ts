@@ -1,6 +1,5 @@
 import type { IWorkbook } from '@sheetxl/sdk';
 
-import type { Notifier } from '@sheetxl/utils-react';
 
 // Re-export all types from @sheetxl/io
 export type * from '@sheetxl/io';
@@ -9,6 +8,8 @@ export type * from '@sheetxl/io';
 import type {
   ReadWorkbookOptions, WorkbookHandle, ReadFormatType, WriteFormatType, WriteWorkbookOptions
 } from '@sheetxl/io';
+
+import { IReactNotifier } from '@sheetxl/utils-react';
 
 // Copied from @sheetxl/io
 const DEFAULT_LOAD_TYPES: ReadFormatType[] = [
@@ -120,7 +121,7 @@ export class _WorkbookIO {
    */
   async read(
     options: ReadWorkbookOptions,
-    notifier?: Notifier
+    notifier?: IReactNotifier
   ): Promise<WorkbookHandle> {
     let hideBusyReading:any;
     let ioModule:any;
@@ -133,9 +134,11 @@ export class _WorkbookIO {
     try {
       const retValue:WorkbookHandle = await ioModule.WorkbookIO.read({
         ...options,
-        async onStart(name: string): Promise<void> {
-          await options?.onStart?.(name);
-          hideBusyReading = await notifier?.showBusy?.(`Opening '${name}'...`);
+        progress: {
+          async onStart(name: string): Promise<void> {
+            await options?.progress?.onStart?.(name);
+            hideBusyReading = await notifier?.showBusy?.(`Opening '${name}'...`);
+          }
         }
       });
       return retValue;

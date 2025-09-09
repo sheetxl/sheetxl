@@ -397,6 +397,7 @@ export class DefaultWorkbookIO {
       const buffer: ArrayBuffer = await file.arrayBuffer();
       // const array:ArrayBufferLike = new Uint8Array(buffer).buffer;
       const optionsTyped: ReadWorkbookOptions = {
+        name: fileDisplay,
         ...options,
         ...options?.typedCreateWorkbookOptions?.[formatType.key]
       }
@@ -407,7 +408,6 @@ export class DefaultWorkbookIO {
         throw new Error(`Unable to resolve handler for type: ${formatType?.description ?? TextUtils.getFileNameExtension(file?.name) ?? file?.name ?? '(empty)'}.`);
       }
 
-      await optionsTyped.onStart?.(fileDisplay);
       const workbook: IWorkbook = await handlerImport(buffer, optionsTyped);
       retValue = new WorkbookFileHandle(file, workbook, fileDisplay, formatType);
     } catch (error: any) {

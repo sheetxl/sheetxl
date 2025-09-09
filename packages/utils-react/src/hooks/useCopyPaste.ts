@@ -9,9 +9,9 @@ import {
 } from '@sheetxl/utils';
 
 import { ICommands, SimpleCommand } from '../command';
-import { Notifier, DefaultNotifier } from '../utils';
 import { useCallbackRef } from '../hooks';
 import { KeyModifiers } from '../types';
+import { useNotifier, IReactNotifier } from './useNotifier';
 
 export interface CopyPasteResults {
   copy: (args?: ReferenceableClipboard.CopyOptions) => void;
@@ -39,12 +39,7 @@ export interface CopyPasteProps {
    * Called after paste has been called.
    */
   onPaste?: (reference: ReferenceableClipboard.ReferenceItem, args: ReferenceableClipboard.PasteOptions) => void;
-  /**
-   * A notifier to provide for warnings and errors.
-   */
-  notifier?: Notifier;
 }
-
 
 interface ClipboardHandler {
   setClipboard(clipboard: ReferenceableClipboard): void;
@@ -92,11 +87,12 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
     target,
     onPaste: propOnPaste,
     onClipboardUpdate: propOnClipboardUpdate,
-    notifier = DefaultNotifier,
     commands,
     // onNativeCopy: propOnNativeCopy,
     // onNativePaste: propOnNativePaste,
   } = props;
+
+  const notifier: IReactNotifier = useNotifier();
   const onClipboardUpdate = useCallbackRef(propOnClipboardUpdate, [propOnClipboardUpdate]);
   const onPaste = useCallbackRef(propOnPaste, [propOnPaste]);
 
@@ -187,7 +183,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
     try {
       await handleCopy(args);
     } catch (error: any) {
-      notifier?.showError?.(error);
+      notifier.showError?.(error);
     }
   }, [source?.element, notifier]);
 
@@ -206,7 +202,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       // notify the hook item
       onPaste?.(item, args);
     } catch (error: any) {
-      notifier?.showError?.(error);
+      notifier.showError?.(error);
     }
   }, [onPaste]);
 
@@ -222,7 +218,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       return;
 
     // There is a slight delay with this; should we check amount of content before calling blocking?
-    const hideBusy = await notifier?.showBusy?.("Pasting...");
+    const hideBusy = await notifier.showBusy?.("Pasting...");
 
     if (item) {
       try {
@@ -231,7 +227,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
         return;
       } catch (error: any) {
         hideBusy?.();
-        notifier?.showError?.(error);
+        notifier.showError?.(error);
       }
     }
 
@@ -257,7 +253,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       });
     } catch (error: any) {
       hideBusy?.();
-      notifier?.showError?.(error);
+      notifier.showError?.(error);
     }
     if (!externalItem) {
       hideBusy?.();
@@ -270,7 +266,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       hideBusy?.();
     } catch (error: any) {
       hideBusy?.();
-      notifier?.showError?.(error);
+      notifier.showError?.(error);
     }
   }, [handlePasteItem, target, notifier]);
 
@@ -304,7 +300,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       await handlePaste(nativeItems, null, args);
     } catch (error: any) {
       if (error?.message === 'Document is not focused.') return;
-      notifier?.showError?.(error);
+      notifier.showError?.(error);
     }
   }, [handlePaste, target?.element, notifier]);
 
@@ -341,7 +337,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       }
     } catch (error: any) {
       // editModeHandler.setMode(null);
-      notifier?.showError?.(error);
+      notifier.showError?.(error);
     }
     */
   }, [source?.element]);
@@ -406,11 +402,11 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
     };
     const onClipboardErrorRead = (_event: Event) => {
       // console.log('read error', _event);
-      notifier?.showMessage?.(InternalClipboard.ErrorMessages.PermsRead, { onceKey: 'clipboard.features'});
+      notifier.showMessage?.(InternalClipboard.ErrorMessages.PermsRead, { onceKey: 'clipboard.features'});
     }
     const onClipboardErrorWrite = (_event: Event) => {
       // console.log('write error', _event);
-      notifier?.showMessage?.(InternalClipboard.ErrorMessages.PermsWrite, { onceKey: 'clipboard.features'});
+      notifier.showMessage?.(InternalClipboard.ErrorMessages.PermsWrite, { onceKey: 'clipboard.features'});
     }
 
     clipboard.addEventListener('clipboardchange', onClipboardChange);

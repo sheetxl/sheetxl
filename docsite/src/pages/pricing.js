@@ -1,5 +1,7 @@
 import React from 'react';
+
 import Layout from '@theme/Layout';
+
 import MUIThemeWrapper from '@site/src/components/MUIThemeWrapper';
 
 import HomepageHeaderSmall from '@site/src/components/HomepageHeaderSmall';
@@ -22,6 +24,7 @@ export default function Page() {
   return (
     <Layout
       title={`Pricing`}
+      description="SheetXL Pricing"
       // bullets={`${siteConfig.tagline}`}
     >
       <HomepageHeaderSmall />

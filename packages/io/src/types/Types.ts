@@ -92,7 +92,7 @@ export interface WriteFormatType extends FormatType {
   handler: WorkbookToHandler;
 };
 
-export interface ReadWorkbookOptions extends TaskProgress {
+export interface ReadWorkbookOptions {
   /**
    * The io source for reading. Can be a direct value, Promise, or function.
    */
@@ -118,6 +118,11 @@ export interface ReadWorkbookOptions extends TaskProgress {
    * If not provided, a default name will be generated based on the source.
    */
   name?: string;
+
+  /**
+   * Optional progress callback for long running imports.
+   */
+  progress?: TaskProgress;
 
   /**
    * Allows for different constructor arguments depending on the type of format detected.

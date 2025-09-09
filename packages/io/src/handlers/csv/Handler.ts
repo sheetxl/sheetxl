@@ -1,6 +1,6 @@
-// cspell:ignore papaparse, Unparse
 import { Scalar, IRange, ICell, ICellRange, IWorkbook, Workbook, ISheet } from '@sheetxl/sdk';
 
+// cspell:ignore papaparse, Unparse
 import type { ParseConfig, UnparseConfig } from 'papaparse';
 
 import type { WorkbookToHandler } from '../../types';
@@ -100,6 +100,13 @@ export const fromBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOption
     createWorkbookOptions
   } = options ?? {};
 
+  const taskProgress = options?.progress;
+  // If or type name if provided use this to override the createWorkbookOptions
+  const onStart = taskProgress?.onStart?.(options?.name ?? 'Parsing CSV');
+  await Promise.resolve(onStart);
+
+  const onProgress = taskProgress?.onProgress;
+
   const papaparse = await import(/* webpackChunkName: "papaparse", webpackPrefetch: true */"papaparse");
   const asCSV:string = new TextDecoder().decode(buffer);
 
@@ -110,7 +117,6 @@ export const fromBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOption
 
   const updates:ICellRange.IncrementalUpdater = sheet.getEntireRange().startIncrementalUpdates({ orientation: IRange.Orientation.Row });
 
-  const onProgress = options?.onProgress;
   let updatesCount = 0;
   const populateTransform = (value: string, field: string | number): any => {
     if (papaParseConfig?.transform)
@@ -129,6 +135,8 @@ export const fromBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOption
       onProgress?.(updatesCount);
       // console.log(`CSV import: ${updatesCount} updates`);
     }
+
+    taskProgress?.onComplete?.(updatesCount);
     return value;
   }
 

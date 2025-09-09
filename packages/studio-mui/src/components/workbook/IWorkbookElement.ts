@@ -7,7 +7,7 @@ import { type PaperProps } from '@mui/material';
 
 import { type IWorkbook } from '@sheetxl/sdk';
 
-import { type ICommands,type ICommand, type Notifier } from '@sheetxl/utils-react';
+import { type ICommands,type ICommand } from '@sheetxl/utils-react';
 
 import { type SheetProps, type ISheetElement } from '@sheetxl/react';
 
@@ -78,10 +78,6 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    * loading panels.
    */
   onElementLoad?: (event: WorkbookLoadEvent) => void;
-  /**
-   * Configure the notifier to use for alerts.
-   */
-  notifier?: Notifier;
   /**
    * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
    */

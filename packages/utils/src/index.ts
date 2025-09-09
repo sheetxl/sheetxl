@@ -1,4 +1,7 @@
 export * from './types';
+
+export * from './notifier';
+
 export * from './coords';
 
 export * from './utils';

@@ -21,7 +21,7 @@ import {
 
 import {
   ScrollPane, ScrollbarProps, ToolTipPlacement, KeyModifiers, SimpleCommand,
-  useCallbackRef, useImperativeElement, SplitPane
+  useCallbackRef, useImperativeElement, SplitPane, useNotifier, IReactNotifier,
 } from '@sheetxl/utils-react';
 
 import { GridStyle } from '@sheetxl/grid-react';
@@ -98,7 +98,6 @@ const WorkbookElement =
     createWorkbookOptions: propCreateWorkbookOptions,
     onNewWorkbook: propOnNewWorkbook,
     onElementLoad: propOnElementLoad,
-    notifier,
     autoFocus = false,
     sx: propSx,
     style: propStyle,
@@ -139,6 +138,7 @@ const WorkbookElement =
     ...rest
   } = props;
 
+  const notifier: IReactNotifier = useNotifier();
   const appTheme = useTheme();
   const docThemes = useDocThemes();
 
@@ -287,7 +287,6 @@ const WorkbookElement =
     workbook,
     workbookElement: refLocal.current,
     target: () => refSheet.current,
-    notifier,
     onExecute,
     commands: propCommandsParent,
     darkMode: gridStyle.body.darkMode,
@@ -379,7 +378,6 @@ const WorkbookElement =
         // tabRadius: 0, // TODO - allow for tab direction (bottom, left, right, top, none) (this is a nicer flavor than tabRadius)
       },
       // commandsSheet,
-      notifier,
       ...propsTabs
     });
     /* we wrap to change flex props */
@@ -899,7 +897,6 @@ const WorkbookElement =
       ...propsFormulaBar,
       NamedCollectionEditorProps: {
         restoreFocus: (options: FocusOptions) => refSheet.current.focus(options),
-        notifier,
         ...propsFormulaBar?.NamedCollectionEditorProps,
         commandPopupButtonProps: {
           commands: commandsWorkbook,
@@ -991,7 +988,6 @@ const WorkbookElement =
     return propRenderSheet({
       style: styleFlexFull,
       onFocus: handleSheetFocus,
-      notifier,
       gridStyle,
       headersStyle,
       sheet,

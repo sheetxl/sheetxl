@@ -2,12 +2,12 @@ import React from 'react';
 
 import { useModal } from 'mui-modal-provider';
 
-import type { OptionsNotificationOptions } from '@sheetxl/utils-react';
+import type { OptionsNotifierOptions } from '@sheetxl/utils-react';
 import type { InternalWindowProps } from './InternalWindow';
 
 const Dialog = React.lazy(() => import(/* webpackPrefetch: true */'./OptionsDialog'));
 
-export interface OptionsDialogProps extends OptionsNotificationOptions, InternalWindowProps {
+export interface OptionsDialogProps extends OptionsNotifierOptions, InternalWindowProps {
 
 };
 

@@ -12,7 +12,7 @@ import { Box } from '@mui/material';
 import { ITable, ITableStyle, ICellRanges } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, ICommand, useCommand, Notifier, DefaultNotifier, CommandGroup, CommandButtonType
+  useNotifier, IReactNotifier, useCallbackRef, ICommand, useCommand, CommandGroup, CommandButtonType,
 } from '@sheetxl/utils-react';
 
 import {
@@ -30,8 +30,6 @@ export interface TableDetailsWindowProps extends InternalWindowProps {
   commands: CommandGroup,
 
   context?: CommandContext.Table;
-
-  notifier?: Notifier;
 }
 
 /**
@@ -45,7 +43,6 @@ export const TableDetailsWindow: React.FC<TableDetailsWindowProps> = memo((props
     onHide: propOnHide,
     autoFocusSel = '.range-input input',
     context: propContext,
-    notifier = DefaultNotifier,
     command,
     commands,
     ...rest
@@ -111,6 +108,8 @@ export const TableDetailsWindow: React.FC<TableDetailsWindowProps> = memo((props
     </div>
     )
   }
+
+  const notifier: IReactNotifier = useNotifier();
 
   return (
     <InternalWindow

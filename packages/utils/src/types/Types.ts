@@ -50,44 +50,6 @@ export interface FetchArgs {
   timeout?: number; // in milliseconds
 }
 
-
-/**
- * Interface for tracking long running tasks.
- */
-export interface TaskProgress {
-    /**
-   * When a import is started this will be called.
-   *
-   * @param name
-   * @returns If a promise is returned, it will be awaited before proceeding.
-   */
-  onStart?: (name: string) => Promise<void> | void;
-  /**
-   * May be called periodically to update the progress.
-   *
-   * @param amount The amount of progress made.
-   * @param total If total is not provided then the amount will be shown
-   */
-  onProgress?: (amount: number, total?: number) => void;
-  /**
-   * Called when the task is complete.
-   *
-   * @param total The total amount of progress made. If not provided, it will be assumed to be the same as the last amount.
-   */
-  onComplete?: (total?: number) => void;
-  /**
-   * If an recoverable error occurs, this callback will be called with the message.
-   */
-  onWarning?: (message: string) => void;
-
-  /**
-   * Called when a non-recoverable error occurs.
-   *
-   * @param error
-   */
-  onError?: (error: Error) => void;
-}
-
 /**
  * Represents a top-left coordinate in a 2D space.
  *
