@@ -3,8 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { UndoManager, RemoveListener } from '@sheetxl/utils';
 
 import { Command, ICommands } from '../command';
-import { Notifier, DefaultNotifier } from '../utils';
-import { useCallbackRef } from '../hooks';
+import { useNotifier, type IReactNotifier, useCallbackRef } from '../hooks';
 import { KeyModifiers } from '../types';
 
 const DESCRIPTION_UNDO_DEFAULT = `Undo the last action.`;
@@ -34,8 +33,6 @@ export interface UndoManagerProps {
    */
   disabled?: boolean;
 
-  notifier?: Notifier;
-
   commands?: ICommands.IGroup;
 }
 
@@ -50,13 +47,15 @@ const useUndoManager = ({
   manager,
   commands: commandsParent,
   disabled: propDisabled,
-  notifier = DefaultNotifier
 }: UndoManagerProps): UndoManagerResults => {
+
+  const notifier: IReactNotifier = useNotifier();
+
   const handleUndoProgrammatic = useCallbackRef((count: number): void => {
     try {
       manager?.undo(count);
     } catch (error: any) {
-      notifier.showError?.(error);
+      notifier.error(error);
     }
   }, [manager]);
 
@@ -64,7 +63,7 @@ const useUndoManager = ({
     try {
       manager?.redo(count);
     } catch (error: any) {
-      notifier.showError?.(error);
+      notifier.error(error);
     }
   }, [manager]);
 

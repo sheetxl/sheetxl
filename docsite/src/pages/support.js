@@ -25,6 +25,7 @@ export default function Page() {
       description="Get help and support for SheetXL"
     >
       <HomepageHeaderSmall />
+      <h1 style={{ textAlign: 'center', marginTop: '1rem' }}>We are here to help</h1>
       <SupportPage />
     </Layout>
   );

@@ -15,7 +15,7 @@ import { AddCircleOutline as AddCircleOutlineIcon } from '@mui/icons-material';
 
 import { IWorkbook, ISheet, IWorkbookProtection } from '@sheetxl/sdk';
 
-import { useCallbackRef, Notifier, ICommands } from '@sheetxl/utils-react';
+import { useCallbackRef, ICommands } from '@sheetxl/utils-react';
 import { GridStyle } from '@sheetxl/grid-react';
 import { TabStrip, useModelListener } from '@sheetxl/react';
 import { SimpleTooltip } from '@sheetxl/utils-mui';
@@ -114,8 +114,6 @@ export interface WorkbookStripProps extends React.HTMLAttributes<HTMLDivElement>
 
   gridTheme?: Theme;
   gridStyle?: GridStyle;
-
-  notifier?: Notifier;
 }
 
 const renderWorkbookStripContextMenu = (props: SheetTabMenuProps): React.ReactElement => {
@@ -149,7 +147,6 @@ const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
 
     background="transparent",
     className,
-    notifier,
     sx: propSx,
     borderWidth,
     borderColor,
@@ -411,8 +408,7 @@ const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
           },
           onCancel: () => {
             onUserChange?.(activeSheetOffset); // This is not the correct event
-          },
-          notifier
+          }
         }}
       >
         <SimpleTooltip

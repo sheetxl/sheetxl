@@ -4,8 +4,8 @@ import { CommonUtils, UndoManager } from '@sheetxl/utils';
 import { IWorkbook } from '@sheetxl/sdk';
 
 import {
-  useUndoManager, useCallbackRef, SimpleCommand, KeyModifiers, Notifier, Command,
-  ICommand, ICommandProperties, ICommands, CommandGroup
+  useUndoManager, useCallbackRef, SimpleCommand, KeyModifiers, IReactNotifier,
+  Command, ICommand, ICommandProperties, ICommands, CommandGroup
 } from '@sheetxl/utils-react';
 
 import {
@@ -14,7 +14,7 @@ import {
 
 import {
   WorkbookIO, type WorkbookHandle, type WriteFormatType
-}  from '../io';
+} from '../io';
 
 export interface useStudioCommandsOptions {
   /**
@@ -24,6 +24,14 @@ export interface useStudioCommandsOptions {
 
   setWorkbook: (newWorkbook: IWorkbook) => void;
 
+  /**
+   * The notifier. This is passed as a prop because of the hierarchy.
+   */
+  notifier: IReactNotifier;
+
+  /**
+   * Disabled the importExport options
+   */
   importExportDisabled: boolean;
 
   /**
@@ -49,8 +57,6 @@ export interface useStudioCommandsOptions {
 
   commands?: ICommands.IGroup;
 
-  notifier?: Notifier;
-
   // TODO - review as part of standard command review. This doesn't belong here.
   onExecute?: () => void;
 }
@@ -69,10 +75,10 @@ export const useStudioCommands = (
   const {
     workbook,
     setWorkbook,
+    notifier,
     importExportDisabled,
     workbookTitle = 'export',
     setWorkbookTitle,
-    notifier,
     requestWorkbookTitle,
     themeOptions,
       undoManager,
@@ -114,14 +120,14 @@ export const useStudioCommands = (
       return null;
     }
 
-    const optionsFie = {
+    const optionsFile = {
       source: inputResolve,
       createWorkbookOptions,
       onWarning
     }
-    const retValue = await WorkbookIO.read(optionsFie, notifier);
+    const retValue = await WorkbookIO.read(optionsFile, notifier);
     if (warnings.length > 0) {
-      notifier?.showMessage?.('Some elements were not able to be imported. See console for details.');
+      notifier.showMessage(`Some elements were not able to be imported. See console for details.`);
       console.warn('Import warnings:\n' + warnings.join('\n'));
     }
     return retValue;
@@ -194,7 +200,7 @@ export const useStudioCommands = (
             // specifically ignore the name
             exportToFile(workbook, null, handler)
               .catch(error => {
-              notifier?.showError?.(error);
+              notifier.showError(error);
             });
           }));
 
@@ -203,7 +209,7 @@ export const useStudioCommands = (
         commandsExport.push(new Command<string>(commandKey, target, commandProperties, (inputName: string) => {
           exportToFile(workbook, inputName ?? workbookTitle, handler)
             .catch(error => {
-            notifier?.showError?.(error);
+            notifier.showError(error);
           });
         }));
       });
@@ -237,7 +243,7 @@ export const useStudioCommands = (
               const importRange = importedSheet.getUsedRange();
               if (!importRange) {
                 // TODO - move to csv handler
-                notifier?.showMessage("The file appears to be blank.");
+                notifier.showMessage("The file appears to be blank.");
                 return;
               }
               const sheetTo = workbook.getSheets().add({ name: newSheetName, autoSelect: true });
@@ -259,7 +265,7 @@ export const useStudioCommands = (
             setWorkbook(importedWorkbook);
           }
         } catch (error: any) {
-          notifier?.showError?.(error);
+          notifier.showError(error);
         }
       }));
       commandsExport.push(new Command<string>('openWorkbookFromUrl', target, {
@@ -271,7 +277,7 @@ export const useStudioCommands = (
         description: 'Open a workbook from the web.',
       }, async function(url: string) {
         if (!url) {
-          const results = await notifier?.showInputOptions?.({
+          const results = await notifier.showInputOptions({
             title: 'Open Workbook from the Web',
             description: `Enter the web address for the workbook to open.`,
             inputLabel: 'Address',
@@ -370,7 +376,7 @@ export const useStudioCommands = (
       //     key: 'F3'
       //   }
       // }, () => {
-      //   notifier?.showBusy?.('Testing with a long piece of text that may wrap...').then((hideBusy) => {
+      //   notifier.showBusy('Testing with a long piece of text that may wrap...').then((hideBusy) => {
       //     // sync timeout
       //     // let start = Date.now();
       //     // let lapsed = 0;
@@ -380,7 +386,7 @@ export const useStudioCommands = (
       //     // } while (lapsed < 3);
       //     // console.log('hideBusy nested');
 
-      //     // notifier?.showBusy?.('Testing nested...').then((hideBusyNested) => {
+      //     // notifier.showBusy('Testing nested...').then((hideBusyNested) => {
       //     //   start = Date.now();
       //     //   do {
       //     //     lapsed = Math.floor((Date.now() - start) / 1000);
@@ -421,7 +427,6 @@ export const useStudioCommands = (
     manager: undoManager,
     commands,
     // disabled: propDisabled,
-    notifier
   });
 
   const { themeMode: defaultThemeMode } = useResolvedThemeMode();

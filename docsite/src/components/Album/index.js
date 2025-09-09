@@ -43,7 +43,7 @@ export default function Album({cards}) {
                   flex: '1 1 100%'
                 }}
               >
-                { card.src ? <CardMedia component="img" sx={MEDIA_PROPS} image={card.src}/> : <DefaultSVG role="img"style={MEDIA_PROPS}/> }
+                { card.src ? <CardMedia component="img" sx={MEDIA_PROPS} alt={`${card.title} Demo`} image={card.src}/> : <DefaultSVG role="img"style={MEDIA_PROPS}/> }
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box
                     sx={{

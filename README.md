@@ -89,9 +89,12 @@ Easily load and save workbooks in popular formats:
 * `parquet` (in progress)
 * `json` (native format)
 
-`Items marked with 💎 are part of the premium licensing.`
+<details>
+<summary><b>Click to see the a detailed overview of all modules...</b></summary>
 
 ![SheetXL Module Architecture](./static/img/modules-overview.png)
+
+`Items marked with 💎 are part of the premium licensing.`
 
 | Category     | Module                  | Description                 | License |
 |--------------|-------------------------|-----------------------------|---------|
@@ -108,25 +111,27 @@ Easily load and save workbooks in popular formats:
 |              | @sheetxl/utils-react    | React UI helpers | MIT |
 |              | @sheetxl/utils-mui      | MUI UI helpers (color picker, dialogs, etc) | MIT |
 
+</details>
+
 ## Key Features
 
 SheetXL is built on four core pillars: extreme performance, deep Excel compatibility, unparalleled developer power, and a modern, extensible architecture.
 
 * **Performance & Scale**
 
-* Process 10M+ ops/second and manage massive 17B+ cell workbooks, all in-browser.
+  Process 10M+ ops/second and manage massive 17B+ cell workbooks, all in-browser.
 
 * **True Excel Fidelity**
 
-* Go beyond basic formulas. Get the Excel-grade features your users demand, from tables and charts to cross-sheet copy/paste.
+  Go beyond basic formulas. Get the Excel-grade features your users demand, from tables and charts to cross-sheet copy/paste.
 
 * **Unmatched Developer Power**
 
-* With a headless core, a powerful vectorized API, and a built-in scripting engine, you have the ultimate control to build any experience.
+  With a headless core, a powerful vectorized API, and a built-in scripting engine, you have the ultimate control to build any experience.
 
 * **Modern, Open Architecture**
 
-* Built with TypeScript and a flexible plugin model, including a fully open-sourced MIT-licensed MUI design system.
+  Built with TypeScript and a flexible plugin model, including a fully open-sourced MIT-licensed MUI design system.
 
 ### ✨ User Features
 
@@ -221,8 +226,7 @@ importing/exporting data, just import the spreadsheet.
 
 ### Why not just a spreadsheet component?
 
-As a Microsoft Excel user and a React developer I have always wanted a solution that combines the
-flexibility and ease of use of Excel with the control and specific capabilities of my custom application.
+As a Microsoft Excel user and a React developer I have always wanted a solution that combines the flexibility and ease of use of Excel with the control and specific capabilities of my custom application.
 
 I wanted my custom applications to have spreadsheet features!
 
@@ -235,14 +239,6 @@ Several great spreadsheet components exists but none of them have:
 * Enable advanced copy / paste between Excel/Excel Online/Google Sheets.
 * Easily extendable libraries that use open-source and modern design patterns.
 * Real-time integration to data providing a single source of truth; no copying data between systems using complex APIs.
-
-### Why Now?
-
-* TypeScript became the new “default scripting language.”
-* Post-VBA fatigue is real.
-* Excel is powerful but closed.
-* Data grids are customizable but are limited.
-* SaaS is full of spreadsheet imposters.
 
 ## The Competitive Landscape
 
@@ -287,7 +283,7 @@ include sorting, filtering, grouping, and basic cell editing.
 <details>
 <summary><b>💲 SAAS Spreadsheets...</b></summary>
 
-I tried SAAS spreadsheets but these “next-gen spreadsheets” were just mediocre web UIs pretending to be Excel.
+SAAS spreadsheets are still closed solutions and lack the full experience of Excel.
 
 * <https://www.equals.app>
 * <https://www.rows.com>
