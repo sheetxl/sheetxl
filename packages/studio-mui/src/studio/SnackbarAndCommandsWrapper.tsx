@@ -13,9 +13,9 @@ import { PartialError, UndoManager } from '@sheetxl/utils';
 import { IWorkbook } from '@sheetxl/sdk';
 
 import {
-  Notifier, NotificationOptions, BusyNotificationOptions,
-  NotificationType, ICommands
- } from '@sheetxl/utils-react';
+  IReactNotifier, EnqueueNotifierOptions, BusyNotifierOptions,
+  NotifierType, ICommands, NotifierProvider, DelegatingReactNotifier
+} from '@sheetxl/utils-react';
 
 import {
   AnimatedTraversingEllipsisIcon, LoadingPanel, useLazyWindow, LazyWindowOptions,
@@ -102,8 +102,8 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
   /* TODO - move to permissions */
   const onceMessageKeys = useRef<Set<string>>(new Set());
 
-  const notifier:Notifier = useMemo(() => {
-    const showMessage = (message: string | React.ReactNode, options?: NotificationOptions): void => {
+  const notifier:IReactNotifier = useMemo(() => {
+    const showMessage = (message: string | React.ReactNode, options?: EnqueueNotifierOptions): void => {
       if (options?.onceKey) {
         if (onceMessageKeys.current.has(options.onceKey)) return;
         const newSet = new Set(onceMessageKeys.current);
@@ -112,13 +112,13 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
       }
 
       const enqueueSnackOptions:OptionsObject = {
-        variant: options?.type ?? NotificationType.Info, //'default' as VariantType,
+        variant: options?.type ?? NotifierType.Info, //'default' as VariantType,
         anchorOrigin: {
           vertical: 'top',
           horizontal: 'center'
         },
         preventDuplicate: options?.preventDuplicate,
-        persist: options?.persist ?? options?.type === NotificationType.Error,
+        persist: options?.persist ?? options?.type === NotifierType.Error,
         action: (key) => {
           return (
             <IconButton onClick={() => closeSnackbar(key)}>
@@ -135,9 +135,9 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
       }
       enqueueSnackbar(message ?? 'Alert', enqueueSnackOptions);
     };
-    return {
+    const delegate = {
       showMessage,
-      showBusy: (message: string | React.ReactNode, _options?: BusyNotificationOptions): Promise<() => void> => {
+      showBusy: (message: string | React.ReactNode, _options?: BusyNotifierOptions): Promise<() => void> => {
         let resolverBlock = null;
         const promise = new Promise<() => void>((resolve) => {
           resolverBlock = resolve;
@@ -180,7 +180,7 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
       showError: (error: any): void => {
         // TODO - support logging?
 
-        let type: NotificationType = NotificationType.Error;
+        let type: NotifierType = NotifierType.Error;
         let message:string = 'Unknown Error';
         let errorValue: Error;
         if (typeof error === 'string') {
@@ -193,7 +193,7 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
         }
 
         if (error instanceof PartialError) {
-          type = NotificationType.Info;
+          type = NotifierType.Info;
         } else {
           // const isUserError = error instanceof UserError;
           // if (!isUserError) {
@@ -211,6 +211,10 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
         });
       }
     }
+
+    const notifierBase = new DelegatingReactNotifier();
+    notifierBase.setDelegate(delegate);
+    return notifierBase;
   }, []);
 
   const onExecute = useCallback(() => {
@@ -218,6 +222,7 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
   }, []);
 
   const commandsStudio = useStudioCommands({
+    notifier,
     workbook,
     setWorkbook,
     importExportDisabled,
@@ -237,7 +242,6 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
     },
     themeOptions,
     undoManager,
-    notifier,
     onExecute
   });
 
@@ -328,7 +332,6 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
 
   const propsWorkbook: WorkbookElementProps & { ref?: React.Ref<HTMLDivElement> } = {
     // ref,
-    notifier,
     commands: commandsStudio
   }
   if (workbook) {
@@ -337,10 +340,10 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
     }
   }
   return (
-    <>
+    <NotifierProvider notifier={notifier}>
       {loadingPane}
       {children ? React.cloneElement(children, propsWorkbook) : null}
-    </>
+    </NotifierProvider>
   );
 }));
 

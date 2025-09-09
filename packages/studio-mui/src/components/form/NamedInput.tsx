@@ -20,7 +20,7 @@ export interface NamedInputProps extends FormControlProps {
    */
   value?: string;
   /**
-   * Notification of the value change
+   * INotifier of the value change
    */
   onChangeInput?: (value: string) => void;
   /**

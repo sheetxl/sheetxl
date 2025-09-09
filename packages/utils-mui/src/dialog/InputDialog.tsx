@@ -9,13 +9,13 @@ import { FormControl } from '@mui/material';
 import { TextField } from '@mui/material';
 
 import {
-  InputOptionsNotificationOptions, useCallbackRef, KeyCodes
+  InputOptionsNotifierOptions, useCallbackRef, KeyCodes
 } from '@sheetxl/utils-react';
 
 import { type OptionsDialogProps } from './useOptionsDialog';
 import { OptionsDialog } from './OptionsDialog';
 
-export interface InputDialogProps extends InputOptionsNotificationOptions, OptionsDialogProps {};
+export interface InputDialogProps extends InputOptionsNotifierOptions, OptionsDialogProps {};
 
 const DEFAULT_INPUT_OPTIONS = ['Input'];
 const InputDialog = memo(

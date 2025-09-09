@@ -248,7 +248,7 @@ export default function PricingSection(props) {
                     </Typography>
                     </Tooltip>
                   </Box>
-                  { (tier.bullets?.length > 0 || tier.details) ? <Divider sx={{ mt: 2, mb: 2, width: '60%', marginLeft: 'auto', marginRight: 'auto' }} /> : null }
+                  { (tier.bullets?.length > 0 || tier.details) ? <Divider sx={{ mt: 2, mb: 2, width: '60%', maxWidth: '120px', marginLeft: 'auto', marginRight: 'auto' }} /> : null }
                   <ul>
                     {tier.bullets.map((line, index) => {
                       if (Array.isArray(line)) {

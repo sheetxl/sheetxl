@@ -18,7 +18,7 @@ import {
 
 import {
   useCallbackRef, useImperativeElement, KeyCodes,
-  NotificationType, CommandButtonType, ICommand
+  useNotifier, IReactNotifier, NotifierType, CommandButtonType, ICommand
 } from '@sheetxl/utils-react';
 
 import {
@@ -54,10 +54,10 @@ const NamedCollectionEditor =
     disabled: propDisabled = false,
     commandPopupButtonProps,
     sx: propSx,
-    notifier,
     ...rest
   } = props;
 
+  const notifier: IReactNotifier = useNotifier();
   const [displayRange, setDisplayRange] = useState<any>(null); // { text: string, fontStyle?: string}
   const [activeRanges, setActiveRanges] = useState<readonly IRange.Coords[]>(() => workbook.getSelectedRanges().getCoords());
   // const [activeAnchor, setActiveAnchor] = useState<WorkbookCellCoords>({
@@ -157,10 +157,10 @@ const NamedCollectionEditor =
     } catch (error: any) {
       // revert
       setRangeText(committedRangeText());
-      notifier.showMessage?.(error.message, { type: NotificationType.Error });
+      notifier.showMessage?.(error.message, { type: NotifierType.Error });
     }
     return null;
-  }, [rangeText, names, floatReference, isReadOnlyOrProtected]);
+  }, [rangeText, names, floatReference, isReadOnlyOrProtected, notifier]);
 
   const updateRangeDisplay = useCallbackRef(() => {
     if (workbook.isClosed()) return;
@@ -415,7 +415,7 @@ const NamedCollectionEditor =
       await workbook.getRanges(address)?.select();
 
     } catch (error: any) {
-      notifier.showMessage?.(error.message, { type: NotificationType.Error });
+      notifier.showMessage?.(error.message, { type: NotifierType.Error });
     }
   }, [names, notifier, workbook]);
 

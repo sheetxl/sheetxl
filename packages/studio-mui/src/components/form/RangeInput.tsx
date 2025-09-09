@@ -39,7 +39,7 @@ export interface RangeInputProps extends FormControlProps {
    */
   value: ICellRanges;
   /**
-   * Notification of the value change. If unable to parse the Range will notify with `null`.
+   * INotifier of the value change. If unable to parse the Range will notify with `null`.
    */
   onChangeInput?: (value: ICellRanges | null) => void;
   /**

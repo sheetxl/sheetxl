@@ -44,6 +44,7 @@ export const createSheetSaxVisitor = (
   mapDxfs?: Map<number, any>,
   onEnd?: () => void,
   onWarning?: (message: string) => void,
+  onProgress?: (amount: number, total?: number) => void,
   paramMap?: Map<string, any>
 ): SaxParser.EventHandler => {
   const delegate = new SaxVisitHandler()
@@ -926,6 +927,7 @@ export const createSheetSaxVisitor = (
     sheet,
     delegate.createEventHandler(sheet, onEnd, onWarning),
     onWarning,
+    onProgress,
     sharedStringHandler,
     paramMap
   );
@@ -977,6 +979,7 @@ export const createSheetDataSaxVisitor = (
   sheet: ISheet.JSON,
   delegate: SaxParser.EventHandler,
   onWarning: (message: string) => void,
+  onProgress: (amount: number, total?: number) => void,
   inlineStringDelegate: SaxParser.EventHandler<number>,
   paramMap?: Map<string, any>
 ): SaxParser.EventHandler => {
@@ -1041,12 +1044,19 @@ export const createSheetDataSaxVisitor = (
   // row oriented
   let lastStyle:ITypes.RangeCoordValue<number> = null;
 
+  // messy way to track progress but we don't have a count of rows up front.
+  let count: number = 0;
+  const progressInterval: number = 8192 * 24;
   const onOpenTag = (tag: SaxParser.Tag) => {
     /* **PERFORMANCE** - we could set the xmlns: true on Saxes and then call tag.local but this is faster (and less robust) */
     let local = tag.name;
     const colon = local.indexOf(":");
     if (colon !== -1) {
       local = local.slice(colon + 1);
+    }
+    count++;
+    if (count % progressInterval === 0) {
+      onProgress(count);
     }
     if (currentCell) {
       const tagAttributes = tag.attributes;

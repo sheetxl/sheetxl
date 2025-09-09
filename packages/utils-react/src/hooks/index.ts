@@ -1,3 +1,5 @@
+export * from './useNotifier';
+
 export * from './useCallbackRef';
 export * from './useDevicePixelRatio';
 export * from './useOnClickOrFocusAway';

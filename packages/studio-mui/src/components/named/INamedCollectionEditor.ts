@@ -6,8 +6,6 @@ import type { Theme } from '@mui/material/styles';
 
 import type { INamedCollection, IWorkbook } from '@sheetxl/sdk';
 
-import type { Notifier } from '@sheetxl/utils-react';
-
 import type { CommandPopupButtonProps, FloatReference } from '@sheetxl/utils-mui';
 
 
@@ -50,6 +48,4 @@ export interface NamedCollectionEditorProps extends React.HTMLAttributes<HTMLDiv
   parentFloat?: FloatReference;
 
   commandPopupButtonProps?: CommandPopupButtonProps;
-
-  notifier?: Notifier;
 }

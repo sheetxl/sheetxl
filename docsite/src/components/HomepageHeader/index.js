@@ -19,7 +19,7 @@ export default function HomepageHeader() {
           {/* <Heading as="h1" className={clsx("hero__title", styles.heroTitle)}>
             <img src="https://www.sheetxl.com/logo-text.svg" height="70" alt={`${siteConfig.title}`}/>
           </Heading> */}
-          <p className={clsx('hero__subtitle', styles.heroSubTitle)}>{siteConfig.tagline}</p>
+          <h1 className={clsx('hero__subtitle', styles.heroSubTitle)}>{siteConfig.tagline}</h1>
           <div className={styles.buttons}>
             <Link
               className="button button--secondary"

@@ -1,14 +1,8 @@
----
-title: Terms and Conditions
----
-
-## Terms of Service
-
----
+# Terms and Conditions
 
 >Last revised on Aug-01-2025
 
-### The Gist
+## The Gist
 
 SheetXL, Inc. (“SheetXL,” “we,” or “us”) provides both open-source and commercially licensed software components. In addition, we maintain an account management service that enables you to register, manage, and renew licenses. Creating an account is required only if you purchase or register a license.
 

@@ -11,13 +11,13 @@ export default async (args: any[], modules?: Modules): Promise<void> => {
   }
 
   const details:LicenseDetails = await LicenseManager.setLicenseKey(licenseKey);
-  const isVerbose: boolean = modules?.program.opts()?.verbose ?? false;
-  if (isVerbose) {
-    if (details.exceptions().length === 0) {
-      console.log(`✅ License key successfully activated and saved for future use.`);
+  // const isVerbose: boolean = modules?.program.opts()?.verbose ?? false;
+  // if (isVerbose) {
+    if (details.hasExceptions()) {
+      console.log(`✅ License key successfully activated.`);
     } else {
       console.error(`❌ License key is invalid or has exceptions:`);
     }
-    LicenseManager.print();
-  }
+    await LicenseManager.print();
+  // }
 }

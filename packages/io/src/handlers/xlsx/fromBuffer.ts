@@ -1,9 +1,8 @@
 // import type * as XLSXTypes from 'xlsx/types'; // TODO - add back
 
 import {
-  Workbook, IWorkbook, Theme, ISheet, IStyleCollection, ResourceCollection, IResource,
-  IStyle, StyleCollection, IComment,
-  OutOfBoundsError, JSONStableStringify, CommonUtils
+  Workbook, IWorkbook, Theme, ISheet, IStyleCollection, ResourceCollection, IResource, IStyle,
+  StyleCollection, IComment, OutOfBoundsError, JSONStableStringify, CommonUtils
 } from '@sheetxl/sdk';
 
 import { SaxParser } from '../../sax';
@@ -37,10 +36,19 @@ export const fromBuffer = async (
 ): Promise<IWorkbook> => {
   const {
     password,
-    onWarning,
     createWorkbookOptions: optionsWB = {},
     ...rest
   } = options ?? {};
+
+  const warnings: [message: string, context: string][] = [];
+  const taskProgress = options?.progress;
+
+  // If or type name if provided use this to override the createWorkbookOptions
+  const onStart = taskProgress?.onStart?.(options?.name ?? 'Parsing XLSX');
+  await Promise.resolve(onStart);
+
+  const onProgress = taskProgress?.onProgress;
+  let amountProgress = 0;
 
   /* the io package is generally loaded dynamically so prefetch here has limited use. */
   const importXlsx = import(/* webpackChunkName: "xlsx", webpackPrefetch: true */ 'xlsx'); //
@@ -177,11 +185,13 @@ export const fromBuffer = async (
               () => {
               // console.log('read end');
               },
-              (message: string): void =>{
-                if (onWarning) {
-                  message = pathTarget + ': ' + message;
-                  onWarning?.(message);
-                }
+              (message: string, context?: string): void => {
+                context = context ? `${context} (${pathTarget})` : pathTarget;
+                warnings.push([message, context]);
+              },
+              (amount: number): void =>{
+                amountProgress = amountProgress + amount;
+                onProgress?.(amountProgress);
               },
               paramMap
             );
@@ -304,7 +314,6 @@ export const fromBuffer = async (
       getRefs,
       getRef,
       parsedRefs: _parsedRefs,
-      onWarning,
       addPerson
     };
 
@@ -434,6 +443,18 @@ export const fromBuffer = async (
     });
     persistResource.endPersist();
 
+    // after done
+    if (warnings.length) {
+      const onWarning = taskProgress?.onWarning;
+      if (onWarning) {
+        for (const warn of warnings) {
+          const [message, context] = warn;
+          onWarning(message, context);
+        }
+      }
+    }
+
+    taskProgress?.onComplete?.(amountProgress);
     // console.profileEnd("Import Excel");
     // console.timeEnd("Import Excel");
     return workbook;

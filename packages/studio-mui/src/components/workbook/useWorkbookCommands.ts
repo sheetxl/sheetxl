@@ -11,7 +11,8 @@ import {
 
 import {
   SimpleCommand, Command, KeyModifiers, ICommands, CommandGroup, useEditMode,
-  Notifier, NotificationType, useCallbackRef, InputOptionsNotificationOptions, ICommand
+  NotifierType, useCallbackRef, InputOptionsNotifierOptions, ICommand,
+  useNotifier, IReactNotifier
 } from '@sheetxl/utils-react';
 
 import {
@@ -33,8 +34,6 @@ export interface useWorkbookCommandsOptions {
    * The workbookElement. Only used for toggling fullscreen.
    */
   workbookElement: IWorkbookElement;
-
-  notifier?: Notifier;
 
   onNewWorkbook?: () => void;
 
@@ -73,7 +72,6 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
   const {
     workbook,
     workbookElement,
-    notifier,
     // onExecute,
     target: commandTarget,
     commands: commandsParent,
@@ -81,6 +79,8 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     onShowSidebar: propOnSHowSidebar,
     onNewWorkbook: propOnNewWorkbook=defaultNewWorkbook
   } = props;
+
+  const notifier: IReactNotifier = useNotifier();
 
   const [activeSheet, setActiveSheet] = useState<ISheet>(workbook?.getSelectedSheet());
   const [sheets, setSheets] = useState<ISheet[]>(workbook?.getSheets().getItems());
@@ -915,7 +915,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         try {
           await named.select();
         } catch (error: any) {
-          notifier?.showMessage?.(error.message, { type: NotificationType.Error })
+          notifier?.showMessage?.(error.message, { type: NotifierType.Error })
         }
       }
     }
@@ -957,12 +957,12 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     commands.getCommand('goto')?.update({
       disabled: !notifier,
     }).updateCallback(() => {
-      const props:InputOptionsNotificationOptions = {
+      const props:InputOptionsNotifierOptions = {
         onInputOption: async (value: string) => {
           try {
             await workbook.getRanges(value).select();
           } catch (error: any) {
-            notifier?.showMessage?.(error.message, { type: NotificationType.Error })
+            notifier?.showMessage?.(error.message, { type: NotifierType.Error })
           }
         },
         onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
