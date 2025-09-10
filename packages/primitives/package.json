@@ -2,6 +2,14 @@
   "name": "@sheetxl/primitives",
   "version": "0.0.0",
   "description": "Primitives - Base types for SheetXL functions.",
+  "homepage": "https://sheetxl.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sheetxl/sheetxl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sheetxl/sheetxl/issues"
+  },
   "license": "SEE LICENSE IN <LICENSE>",
   "private": false,
   "type": "module",
@@ -33,6 +41,11 @@
   "keywords": [
     "sheetxl",
     "spreadsheet",
+    "javascript",
+    "typescript",
+    "data grid",
+    "excel",
+    "xlsx",
     "data-science",
     "vector-api",
     "formulas",

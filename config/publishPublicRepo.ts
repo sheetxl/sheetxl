@@ -340,7 +340,7 @@ async function run(): Promise<1 | 0> {
         await exec(`git tag v${currentVersion} --force`, { cwd: pathPublic });
         await exec(`git push origin v${currentVersion} --force`, { cwd: pathPublic });
       } else {
-        console.log(`   ✨ Creating new tag v${currentVersion}`);
+        console.log(`   🔖 Creating new tag v${currentVersion}`);
         await exec(`git tag v${currentVersion}`, { cwd: pathPublic });
         await exec(`git push origin v${currentVersion}`, { cwd: pathPublic });
       }
@@ -363,7 +363,7 @@ async function run(): Promise<1 | 0> {
         console.log(`   🔄 Updating existing release...`);
         await execa(`gh`, ['release', 'edit', `v${currentVersion}`, '--notes', privateReleaseNotes], { cwd: pathPublic });
       } else {
-        console.log(`   ✨ Creating new release v${currentVersion}`);
+        console.log(`   ⬆️ Creating new release v${currentVersion}`);
         await execa(`gh`, ['release', 'create', `v${currentVersion}`, '--title', `Release v${currentVersion}`, '--notes', privateReleaseNotes], { cwd: pathPublic });
       }
     } catch (error) {

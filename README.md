@@ -15,7 +15,7 @@
 
 **Excel-compatible. API-first. Built for speed.**
 
-If you like SheetXL, give us a star ⭐ to help others find us!
+If you like SheetXL **[give us a star ⭐](https://github.com/sheetxl/sheetxl)** and help others find us!
 
 Whether you're building a custom UI, adding live scripting, or integrating spreadsheet logic into your app, SheetXL gives you full control with zero platform lock-in.
 
@@ -133,7 +133,7 @@ SheetXL is built on four core pillars: extreme performance, deep Excel compatibi
 
   Built with TypeScript and a flexible plugin model, including a fully open-sourced MIT-licensed MUI design system.
 
-### ✨ User Features
+### 🏷️ User Features
 
 * 17B+ cells (The same as Excel)
 * 400+ Excel-compatible formulas
@@ -175,6 +175,7 @@ SheetXL is built on four core pillars: extreme performance, deep Excel compatibi
 
 <details>
 <summary><b>Click to see the full list of Developer Features...</b></summary>
+
 * Built in scripting & Formula support.
 * Built from the ground up using React and CSS-in-JS components.
 * Fully functional MIT Open-sourced Material-UI Application.
@@ -303,12 +304,13 @@ SAAS spreadsheets are still closed solutions and lack the full experience of Exc
 
 Whether you're ready to build, need help, or just want to see more examples, here's where to go next.
 
+* 💬 **[Join our Discord Community](https://discord.gg/NTKdwUgK9p)** - Get help and connect with the
+* ⭐ **[Star us on GitHub](https://github.com/sheetxl/sheetxl)** - If you like SheetXL give us a star ⭐ and help others find us!
 * 📘 **[Developer Docs](https://www.sheetxl.com/docs/guides)** - Guides and tutorials.
 * 🔌 **[API Reference](https://api.sheetxl.com)** - Detailed documentation for all packages.
-* 🌐 **[Live Demo Gallery](https://www.sheetxl.com/demos)** - A showcase of interactive examples.
-* ✨ **[Storybook](https://storybook.sheetxl.com)** - Explore and test individual UI components.
-* 💬 **[Join our Discord Community](https://discord.gg/NTKdwUgK9p)** - Get help and connect with the team.
-* ⭐ **[Star us on GitHub](https://github.com/sheetxl)** - If you like SheetXL, give us a star ⭐ to help others find us!!
+* 👀 **[Live Demo Gallery](https://www.sheetxl.com/demos)** - A showcase of interactive examples.
+* 🖼️ **[Storybook](https://storybook.sheetxl.com)** - Explore and test individual UI components.
+team.
 * 🌐 **[Website](https://www.sheetxl.com)** - Our Website.
 
 ---

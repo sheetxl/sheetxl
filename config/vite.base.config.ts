@@ -36,6 +36,7 @@ interface Pkg {
   sideEffects?: any;
   author?: string;
   repository?: any;
+  bugs?: any;
   homepage?: string;
   keywords?: string[];
 }
@@ -53,12 +54,12 @@ const README_TAIL =
 
 Whether you're ready to build, need help, or just want to see more examples, here's where to go next.
 
+* 💬 **[Join our Discord Community](https://discord.gg/NTKdwUgK9p)** - Get help and connect with the team.
+* ⭐ **[Star us on GitHub](https://github.com/sheetxl/sheetxl)** - If you like SheetXL give us a star ⭐ and help others find us!
 * 📘 **[Developer Docs](https://www.sheetxl.com/docs)** - Guides and tutorials.
 * 🔌 **[API Reference](https://api.sheetxl.com)** - Detailed documentation for all packages.
-* 🌐 **[Live Demo Gallery](https://www.sheetxl.com/demos)** - A showcase of interactive examples.
-* ✨ **[Storybook](https://storybook.sheetxl.com)** - Explore and test individual UI components.
-* 💬 **[Join our Discord Community](https://discord.gg/NTKdwUgK9p)** - Get help and connect with the team.
-* ⭐ **[Star us on GitHub](https://github.com/sheetxl)** - If you find SheetXL useful, we'd appreciate a star!
+* 👀 **[Live Demo Gallery](https://www.sheetxl.com/demos)** - A showcase of interactive examples.
+* 🖼️ **[Storybook](https://storybook.sheetxl.com)** - Explore and test individual UI components.
 * 🌐 **[Website](https://www.sheetxl.com)** - Our Website.
 
 ---
@@ -360,11 +361,14 @@ export function createLibraryConfig(options: CreateViteConfigOptions) {
             if (pkg.sideEffects) {
               jsonPublish.sideEffects = pkg.sideEffects;
             }
+            if (pkg.homepage) {
+              jsonPublish.homepage = pkg.homepage;
+            }
             if (pkg.repository) {
               jsonPublish.repository = pkg.repository;
             }
-            if (pkg.homepage) {
-              jsonPublish.homepage = pkg.homepage;
+            if (pkg.bugs) {
+              jsonPublish.bugs = pkg.bugs;
             }
             if (pkg.author) {
               jsonPublish.author = pkg.author;

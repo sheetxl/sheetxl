@@ -19,7 +19,16 @@ async function main(): Promise<any> {
     description: 'SheetXL CLI',
   }
 
-  let verbose:boolean = false;
+  let quiet:boolean = false;
+  // color code.
+  // TODO - allow for no output with a --quiet flag.
+  SDK.Notifier.setOverrides({
+    warn(message: string, options?: SDK.NotifierOptions): void {
+      const details = options?.details;
+      console.warn(chalk.red(message, details ? chalk.dim(details) : ''));
+    }
+
+  });
   // command mode
   const program:Command = createCommand('sheetxl')
     .hook('preAction', async (
@@ -42,10 +51,10 @@ async function main(): Promise<any> {
   program
     .version(pkg?.version ?? '1.0.0')
     .description(pkg?.description ?? '')
-    .showHelpAfterError('(add --help for additional information)')
-    .addOption(new Option('--verbose', 'To be verbose.'))
+    .showHelpAfterError('Suppress output with --quiet')
+    .addOption(new Option('--quiet', 'To be quiet.'))
     .hook('preAction', () => {
-      verbose = program.opts().verbose;
+      quiet = program.opts().quiet;
     })
     .action(async () => {
       // Default action: if no command provided, start REPL
@@ -103,6 +112,13 @@ async function main(): Promise<any> {
       await module.default(args, modules);
     });
 
+  if (!SDK.LicenseManager.wasPrinted()) {
+    const details = await SDK.LicenseManager.getDetails();
+    if (!quiet && (!details.isEval() || details.hasExceptions())) {
+      await SDK.LicenseManager.printBanner();
+      SDK.Notifier.log('');
+    }
+  }
   await program.parseAsync(process.argv);
 }
 

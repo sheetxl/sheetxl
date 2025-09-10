@@ -2,6 +2,14 @@
   "name": "@sheetxl/studio-vanilla",
   "version": "0.0.0",
   "description": "SheetXL Studio - Vanilla entry point for integrating SheetXL UI.",
+  "homepage": "https://sheetxl.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sheetxl/sheetxl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sheetxl/sheetxl/issues"
+  },
   "license": "SEE LICENSE IN <LICENSE>",
   "private": false,
   "type": "module",
@@ -72,10 +80,14 @@
   "keywords": [
     "sheetxl",
     "spreadsheet",
+    "javascript",
+    "typescript",
+    "data grid",
+    "excel",
+    "xlsx",
     "utilities",
     "sheets",
     "grid",
-    "excel",
     "vanilla",
     "office",
     "automation",

@@ -1,4 +1,4 @@
-import { type LicenseDetails, LicenseManager } from '@sheetxl/sdk';
+import { type LicenseDetails, LicenseManager, Notifier } from '@sheetxl/sdk';
 
 import { Modules } from './Types';
 /**
@@ -11,13 +11,14 @@ export default async (args: any[], modules?: Modules): Promise<void> => {
   }
 
   const details:LicenseDetails = await LicenseManager.setLicenseKey(licenseKey);
-  // const isVerbose: boolean = modules?.program.opts()?.verbose ?? false;
-  // if (isVerbose) {
-    if (details.hasExceptions()) {
-      console.log(`✅ License key successfully activated.`);
-    } else {
-      console.error(`❌ License key is invalid or has exceptions:`);
-    }
+
+  if (details.hasExceptions()) {
+    Notifier.log(`✅ License key successfully activated.`);
+  } else {
+    Notifier.error(`❌ License key is invalid or has exceptions:`);
+  }
+  const quiet: boolean = modules?.program.opts()?.quiet ?? false;
+  if (!quiet) {
     await LicenseManager.print();
-  // }
+  }
 }

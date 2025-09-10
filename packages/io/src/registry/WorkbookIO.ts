@@ -95,6 +95,7 @@ export class DefaultWorkbookIO {
   }
 
   getReadFormatTypeForExt(ext: string): ReadFormatType | null {
+    if (!ext) return null;
     ext = ext.toLowerCase();
     return this._readFormatTypes.find((type) => type.exts.includes(ext)) ?? null;
   }
@@ -104,11 +105,13 @@ export class DefaultWorkbookIO {
   }
 
   getWriteFormatTypeForExt(ext: string): WriteFormatType | null {
+    if (!ext) return null;
     ext = ext.toLowerCase();
     return this._writeFormatType.find((type) => type.ext === ext) ?? null;
   }
 
   getWriteFormatType(text: string): WriteFormatType | null {
+    if (!text) return null;
     text = text.toLowerCase();
     let type:WriteFormatType =  this._writeFormatType.find((type) => type.ext === text) ?? null;
     if (type) return type;
@@ -123,7 +126,8 @@ export class DefaultWorkbookIO {
    */
   getAllReadFormatTypeAsString(): string[] {
     const inputTypes:string[] = [];
-    for (let i=0; i<this._readFormatTypes.length; i++) {
+    const readFormatTypesLength = this._readFormatTypes.length;
+    for (let i=0; i<readFormatTypesLength; i++) {
       inputTypes.push(this._readFormatTypes[i].mimeType);
     }
     return inputTypes;
@@ -213,7 +217,10 @@ export class DefaultWorkbookIO {
       throw new Error(`'options.source' must be provided for load.`);
     }
     const name = options.name;
-    const type = options.formatType;
+    let type = options.formatType;
+    if (!type && name) {
+      type = TextUtils.getFileNameExtension(name);
+    }
 
     // if function resolve
     if (typeof source === 'function') {
