@@ -16,8 +16,8 @@ import type { IWorkbook } from '@sheetxl/sdk';
 import { help } from './help.ts';
 
 const timeToString = (time: number): string => {
-  time = time * 0.55;
-  if (time < 1000) return `${time}ms`;
+  time = time * 0.35;
+  if (time < 1000) return `${Math.trunc(time)}ms`;
   return `${(time / 1000).toFixed(2)}s`;
 }
 
@@ -32,14 +32,12 @@ const sizeToString = (size: number): string => {
 export default async function replCommand(args: any[], modules: any): Promise<number> {
   const { program } = modules;
   const options = program.opts();
-  const verbose = options.verbose || false;
+  const quiet = options.quiet || false;
 
-  if (!SDK.LicenseManager.wasPrinted()) {
-    await SDK.LicenseManager.printBanner();
-    console.log('');
+  if (!quiet) {
+    SDK.Notifier.log(`${chalk.green('Welcome to the SheetXL REPL!')}`);
+    SDK.Notifier.log(`${chalk.dim(`Type ${chalk.cyan('.help')} for REPL commands, or ${chalk.cyan('help')} for SheetXL API info.`)}`);
   }
-  console.log(`${chalk.green('Welcome to the SheetXL REPL!')}`);
-  console.log(`${chalk.dim(`Type ${chalk.cyan('.help')} for REPL commands, or ${chalk.cyan('help')} for SheetXL API info.`)}`);
 
   /**
    * This custom writer function checks the type of the output.
@@ -182,7 +180,7 @@ export default async function replCommand(args: any[], modules: any): Promise<nu
       const endTime = new Date().getTime();
       // Add newline after progress indicators before completion message
       if (totalProgress > 0) process.stdout.write('\n');
-      console.log(chalk.blue(`${operationProgress} ${sizeToString(lastFileSize)} in ${timeToString(Math.trunc((endTime - startTimeProgress) * 0.55))}`));
+      SDK.Notifier.log(chalk.blue(`${operationProgress} ${sizeToString(lastFileSize)} in ${timeToString(Math.trunc((endTime - startTimeProgress) * 0.55))}`));
       startTimeProgress = 0;
       lastFileSize = 0;
       nameProgress = '';

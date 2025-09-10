@@ -1,6 +1,10 @@
 # SheetXL CLI
 
-![SheetXL](https://www.sheetxl.com/logo-text.svg)
+<p align="center">
+  <a href="https://www.sheetxl.com" target="_blank">
+    <img src="https://www.sheetxl.com/logo-text.svg" alt="SheetXL Logo" width="180" />
+  </a>
+</p>
 
 This examples creates a cli for interactive with the '@sheetxl/sdk.
 
@@ -10,7 +14,7 @@ This is also an entry point for debugging node functionality.
 
 ``` shell
 pnpm build
-pnpm sheetxl --verbose extract assets/simple
+pnpm sheetxl extract assets/simple
 ```
 
 ::: note

@@ -2,6 +2,14 @@
   "name": "@sheetxl/utils",
   "version": "0.0.0",
   "description": "Utils - Utilities used by most SheetXL components.",
+  "homepage": "https://sheetxl.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sheetxl/sheetxl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sheetxl/sheetxl/issues"
+  },
   "license": "SEE LICENSE IN <LICENSE>",
   "private": false,
   "type": "module",
@@ -33,6 +41,11 @@
   "keywords": [
     "sheetxl",
     "spreadsheet",
+    "javascript",
+    "typescript",
+    "data grid",
+    "excel",
+    "xlsx",
     "utilities"
   ],
   "gitHead": "148c048e9dc00598c40c8ea2012d2951c73e7e12"

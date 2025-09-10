@@ -14,7 +14,7 @@ import { IWorkbook } from '@sheetxl/sdk';
 
 import {
   IReactNotifier, EnqueueNotifierOptions, BusyNotifierOptions,
-  NotifierType, ICommands, NotifierProvider, DelegatingReactNotifier
+  NotifierType, ICommands, NotifierProvider, DefaultReactNotifier
 } from '@sheetxl/utils-react';
 
 import {
@@ -135,7 +135,7 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
       }
       enqueueSnackbar(message ?? 'Alert', enqueueSnackOptions);
     };
-    const delegate = {
+    const overrides = {
       showMessage,
       showBusy: (message: string | React.ReactNode, _options?: BusyNotifierOptions): Promise<() => void> => {
         let resolverBlock = null;
@@ -212,9 +212,9 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
       }
     }
 
-    const notifierBase = new DelegatingReactNotifier();
-    notifierBase.setDelegate(delegate);
-    return notifierBase;
+    const notifier = new DefaultReactNotifier();
+    notifier.setOverrides(overrides);
+    return notifier;
   }, []);
 
   const onExecute = useCallback(() => {

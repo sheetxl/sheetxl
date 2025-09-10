@@ -20,6 +20,10 @@ export interface NotifierOptions {
    * If provided then then notification provider should not notify if the same id is used again.
    */
   onceKey?: string;
+  /**
+   * Details about the notification.
+   */
+  details?: any;
 }
 
 /**
@@ -45,7 +49,12 @@ export interface INotifier {
    * @param error
    */
   warn(message: string, options?: NotifierOptions): void;
-  // TODO - add an onProgress handler
-  // TODO - add an onBackgroundOperation handler
+
+  /**
+   * For debug logging.
+   *
+   * @param message
+   */
+  debug(message: string, options?: NotifierOptions): void;
 }
 
