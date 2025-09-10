@@ -1,9 +1,8 @@
-export * from './types';
+export * from './coords';
 
 export * from './notifier';
 
-export * from './coords';
-
+export * from './types';
 export * from './utils';
 export * from './mode';
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, type ReactNode } from 'react';
 
-import { DelegatingNotifier, NotifierOptions, INotifier, Notifier } from "@sheetxl/utils";
+import { DefaultNotifier, NotifierOptions, INotifier, Notifier } from "@sheetxl/utils";
 
 /**
  * Indicates the type of notification.
@@ -176,12 +176,15 @@ export interface IReactNotifier extends INotifier {
   // TODO - add an onBackgroundOperation handler
 }
 
-export class DelegatingReactNotifier extends DelegatingNotifier implements IReactNotifier {
-  setDelegate(delegate: Partial<IReactNotifier> | null) {
-    super.setDelegate(delegate);
+export class DefaultReactNotifier extends DefaultNotifier implements IReactNotifier {
+  /** @inheritdoc IReactNotifier.setOverrides */
+  setOverrides(overrides: Partial<IReactNotifier> | null) {
+    super.setOverrides(overrides);
   }
+
+  /** @inheritdoc IReactNotifier.getDelegate */
   getDelegate(): Partial<IReactNotifier> | null {
-    return this._delegate;
+    return this._overrides;
   }
 
   /** @inheritdoc IReactNotifier.showMessage */
@@ -249,7 +252,7 @@ export class DelegatingReactNotifier extends DelegatingNotifier implements IReac
 }
 
 // Create a singleton instance of ReactNotifier
-const ReactNotifier = new DelegatingReactNotifier();
+const ReactNotifier = new DefaultReactNotifier();
 
 // Create the context with the default ReactNotifier instance
 const NotifierContext = createContext<IReactNotifier>(ReactNotifier);
@@ -279,10 +282,10 @@ export interface NotifierProviderProps {
 export const NotifierProvider: React.FC<NotifierProviderProps> = ({ children, notifier }) => {
   // Set the singleton delegate when this provider mounts or when notifier changes
   React.useEffect(() => {
-    const restore = Notifier.getDelegate();
-    Notifier.setDelegate(notifier);
+    const restore = Notifier.getOverrides();
+    Notifier.setOverrides(notifier);
     return () => {
-      Notifier.setDelegate(restore);
+      Notifier.setOverrides(restore);
     };
   }, [notifier]);
 

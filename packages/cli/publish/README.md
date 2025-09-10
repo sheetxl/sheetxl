@@ -1,6 +1,10 @@
 # CLI
 
-![SheetXL](https://www.sheetxl.com/logo-text.svg)
+<p align="center">
+  <a href="https://www.sheetxl.com" target="_blank">
+    <img src="https://www.sheetxl.com/logo-text.svg" alt="SheetXL Logo" width="180" />
+  </a>
+</p>
 
 [![NPM Version](https://img.shields.io/npm/v/sheetxl?color=blue)](https://www.npmjs.com/package/sheetxl)
 

@@ -1,7 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import chalk from 'chalk'; // Import chalk
+
 import { Modules } from './Types';
+import { type WorkbookHandle } from '@sheetxl/io';
+import { Notifier, IWorkbook } from '@sheetxl/sdk';
 
 /**
  * Example node file that extracts workbook information from an xlsx file and converts to JSON.
@@ -14,20 +18,14 @@ export default async (args: any[], modules?: Modules): Promise<void> => {
   const fileName: string = args[0];
   const range: string = args[1];
   if (range) {
-    console.log('extract range:', range);
+    Notifier.log('extract range:', { details: range });
   }
   const options: Record<string, string> = args[2];
   if (options && Object.keys(options).length > 0) {
     // TODO - pass to importer
-    console.log('extract options:', options);
+    Notifier.log('extract options:', { details: options });
   }
-  const isVerbose: boolean = modules.program.opts()?.verbose ?? false;
-  // const moduleCore = await import('../../../../packages/sdk/src/index.ts');
-  const sdk = modules.sdk;
-  // print the license banner. Required for unlicensed versions.
-  isVerbose && sdk.LicenseManager.printBanner();
-  // or set the license key
-  // LicenseManager.setLicenseKey('visit https://my.sheetxl.com to generate a license key.');
+  const quiet: boolean = modules.program.opts()?.quiet ?? false;
 
   let asName: string = fileName;
   // TODO - use io utils for this.
@@ -44,23 +42,21 @@ export default async (args: any[], modules?: Modules): Promise<void> => {
   try {
     buffer = fs.readFileSync(asPath, { flag: 'r' });
   } catch (error) {
-    console.log('Unable to read file:', asPath);
-    console.error(error);
+    Notifier.error('Unable to read file:', { details: asPath });
     process.exit(1);
   }
 
-  let workbook: any = null; // IWorkbook
+  let wbh: WorkbookHandle = null;
   try {
     const moduleIO = modules.io;
-    workbook = await moduleIO.WorkbookIO.read({ source: buffer.buffer });
-    if (isVerbose) {
-      const asJSON = await workbook.toJSON(); // IWorkbook.JSON
-      // TODO - use our util so that the data not printed so awfully.
-      console.log(`Workbook JSON: ${JSON.stringify(asJSON, null, 2)}`);
+    wbh = await moduleIO.WorkbookIO.read({ name: asName, source: buffer.buffer });
+    if (!quiet) {
+      wbh
+      const asJSON: IWorkbook.JSON = await wbh.workbook.toJSON();
+      Notifier.log(chalk.yellow(`${JSON.stringify(asJSON, null, 2)}`));
     }
   } catch (error: any) {
-    console.log(`Unable to parse '${asName}' as a workbook`);
-    console.error(error);
+    Notifier.error(`Unable to parse '${asName}' as a workbook`, { details: error });
     process.exit(1);
   }
 

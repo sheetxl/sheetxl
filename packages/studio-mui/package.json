@@ -2,6 +2,14 @@
   "name": "@sheetxl/studio-mui",
   "version": "0.0.0",
   "description": "Studio - Spreadsheet UI built with SheetXL SDK using React & MUI.",
+  "homepage": "https://sheetxl.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sheetxl/sheetxl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sheetxl/sheetxl/issues"
+  },
   "license": "SEE LICENSE IN <LICENSE>",
   "private": false,
   "type": "module",
@@ -78,10 +86,14 @@
   "keywords": [
     "sheetxl",
     "spreadsheet",
+    "javascript",
+    "typescript",
+    "data grid",
+    "excel",
+    "xlsx",
     "utilities",
     "sheets",
     "grid",
-    "excel",
     "react",
     "material",
     "material-ui",

@@ -2,6 +2,14 @@
   "name": "@sheetxl/formulas",
   "version": "0.0.0",
   "description": "Formulas - TypeScript formulas compatible with Excel built-ins.",
+  "homepage": "https://sheetxl.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sheetxl/sheetxl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sheetxl/sheetxl/issues"
+  },
   "license": "SEE LICENSE IN <LICENSE>",
   "private": false,
   "type": "module",
@@ -40,6 +48,11 @@
   "keywords": [
     "sheetxl",
     "spreadsheet",
+    "javascript",
+    "typescript",
+    "data grid",
+    "excel",
+    "xlsx",
     "formulas"
   ]
 }
