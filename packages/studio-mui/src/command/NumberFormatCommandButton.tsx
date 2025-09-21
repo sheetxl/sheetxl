@@ -7,20 +7,16 @@ import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
 import { TooltipProps } from '@mui/material';
 
-// import { Numbers as NumbersIcon } from '@mui/icons-material';
-
 import { ICell, NumberFormat, IFont } from '@sheetxl/sdk';
 
 import { useCommands, KeyCodes, ICommands } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandPopupButtonProps, defaultCreatePopupPanel, ExhibitPopupPanelProps,
-  ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, CommandPopupButton, themeIcon
+  ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, CommandPopupButton
 } from '@sheetxl/utils-mui';
 
-import {
-  SelectedIcon, CommaIcon, PercentIcon, CurrencyDollarIcon, IncreaseDecimalIcon2, DecreaseDecimalIcon2
-} from '@sheetxl/utils-mui';
+import { SelectedIcon } from '@sheetxl/utils-mui';
 
 export interface NumberFormatCommandButtonProps extends CommandPopupButtonProps {
 }
@@ -199,35 +195,30 @@ export const NumberFormatCommandButton = memo(
           command={commands.getCommand('formatNumberFormatAccountingStyle')}
           commandHook={commandHookNoBefore}
           scope={scope}
-          icon={<CurrencyDollarIcon/>}
         />
         <CommandButton
           // {...buttonProps}
           command={commands.getCommand('formatNumberFormatPercentStyle')}
           commandHook={commandHookNoBefore}
           scope={scope}
-          icon={<PercentIcon/>}
         />
         <CommandButton
           // {...buttonProps}
           command={commands.getCommand('formatNumberFormatCommaStyle')}
           commandHook={commandHookNoBefore}
           scope={scope}
-          icon={<CommaIcon/>}
         />
         <CommandButton
           // {...buttonProps}
           command={commands.getCommand('formatNumberFormatIncreaseDecimal')}
           commandHook={commandHookNoBefore}
           scope={scope}
-          icon={themeIcon(<IncreaseDecimalIcon2/>)}
         />
         <CommandButton
           // {...buttonProps}
           command={commands.getCommand('formatNumberFormatDecreaseDecimal')}
           commandHook={commandHookNoBefore}
           scope={scope}
-          icon={themeIcon(<DecreaseDecimalIcon2/>)}
         />
       </Box>
     );

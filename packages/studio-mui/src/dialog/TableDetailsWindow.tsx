@@ -16,8 +16,7 @@ import {
 } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, ExhibitDivider, InternalWindow, InternalWindowProps, IInternalWindowElement,
-  themeIcon, InsertTableIcon, // ClearFormatsIcon,
+  CommandButton, ExhibitDivider, InternalWindow, InternalWindowProps, IInternalWindowElement
 } from '@sheetxl/utils-mui';
 
 import { useModelListener, CommandContext } from '@sheetxl/react';
@@ -299,15 +298,12 @@ export const TableDetailsWindow: React.FC<TableDetailsWindowProps> = memo((props
                 variant={CommandButtonType.Menuitem}
                 command={commands.getCommand('convertTableToRange')}
                 commandState={table}
-                icon={themeIcon(<InsertTableIcon/>)}
               />
               <CommandButton
                 variant={CommandButtonType.Menuitem}
                 commandState={table}
                 command={commands.getCommand('deleteTable')}
                 // commandHook={commandHook}
-
-                icon={themeIcon(<InsertTableIcon/>)}
               />
             </Box>
           </Box>

@@ -2,11 +2,11 @@ import React, { memo, forwardRef, useCallback } from 'react';
 
 import { IThemeCollection, ITheme } from '@sheetxl/sdk';
 
-import { KeyCodes } from '@sheetxl/utils-react';
+import { KeyCodes, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
   ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitPopupPanelProps,
-  ExhibitPopupIconButtonProps, PopupButtonType, Theme2Icon, themeIcon
+  ExhibitPopupIconButtonProps, PopupButtonType
 } from '@sheetxl/utils-mui';
 
 import ThemeSelectPanel, { ThemeSelectPanelProps } from './ThemeSelectPanel';
@@ -46,7 +46,7 @@ export const ThemeSelectPopupButton: React.FC<ThemeSelectPopupButtonProps & { re
     ...rest
   } = props;
 
-  const icon = propIcon || (themeIcon(<Theme2Icon/>))
+  const icon = propIcon || <DynamicIcon iconKey="Theme2" />;
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps): React.ReactElement<any> => {
     const { closeFloatAll } = props;
     return (

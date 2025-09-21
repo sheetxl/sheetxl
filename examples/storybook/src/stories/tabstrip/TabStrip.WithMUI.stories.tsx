@@ -4,12 +4,9 @@ import { Theme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import { IconButton } from '@mui/material';
 
-import { Menu as MenuIcon } from '@mui/icons-material';
-import { AddCircleOutline as AddCircleOutlineIcon } from '@mui/icons-material';
-
 import { CommonUtils } from '@sheetxl/utils';
 import { TabStrip } from '@sheetxl/react';
-
+import { DynamicIcon } from '@sheetxl/utils-react';
 import { ExhibitIconButton } from '@sheetxl/utils-mui';
 import {
   createScrollEdgeButton, createScrollStartButton, createScrollEndButton
@@ -132,7 +129,7 @@ const Template: React.FC = (props) => {
           dense={true}
           outlined={false}
           color="primary" aria-label="menu"
-          icon={<MenuIcon />}
+          icon={<DynamicIcon iconKey="Menu" />}
         />
       </TabStrip>
       <div style={{ minWidth: '4px'}}/>
@@ -150,7 +147,7 @@ const Template: React.FC = (props) => {
         aria-label="addTab"
         size="small"
       >
-        <AddCircleOutlineIcon/>
+        <DynamicIcon iconKey="AddCircle" />
       </IconButton>
     </Box>
   );

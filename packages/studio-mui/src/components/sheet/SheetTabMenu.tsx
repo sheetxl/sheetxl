@@ -7,10 +7,8 @@ import { SxProps } from '@mui/system';
 
 import { Box } from '@mui/material';
 
-import { Lock as LockIcon } from '@mui/icons-material';
-
 import {
-  ICommand, Command, ICommands, CommandButtonType
+  DynamicIcon, ICommand, Command, ICommands, CommandButtonType
 } from '@sheetxl/utils-react';
 
 import { IWorkbook, IColor, IWorkbookProtection } from '@sheetxl/sdk';
@@ -18,11 +16,8 @@ import { IWorkbook, IColor, IWorkbookProtection } from '@sheetxl/sdk';
 import { TabStripRef, useModelListener, CommandContext } from '@sheetxl/react';
 
 import {
-  CommandButton, ColorizedStrokeIcon,
-  ExhibitMenuItem, ExhibitDivider, FloatReference, themeIcon
+  CommandButton, ExhibitMenuItem, ExhibitDivider, FloatReference
 } from '@sheetxl/utils-mui';
-
-import { VisibilityOffIcon } from '@sheetxl/utils-mui';
 
 import { AutoColorPosition } from '../color';
 
@@ -144,12 +139,11 @@ const SheetTabMenu: React.FC<SheetTabMenuProps> = memo(forwardRef<HTMLDivElement
       command={commands?.getCommand('protectionSheetToggle') as any}//Command<boolean>}
       {...commandButtonProps}
       variant={CommandButtonType.Menuitem}
-      icon={<LockIcon/>}
     />
     <ColorCommandButton
       variant={CommandButtonType.Menuitem}
       command={(commands.getCommand('formatSheetTabColor') as Command<IColor, CommandContext.Color>)}
-      icon={<ColorizedStrokeIcon/>}
+      icon={<DynamicIcon iconKey="stroke.colored" />}
       // onSelectColor={(color: Color.Color | null, isCustom: boolean) => {
       //   // handleRecent(color, isCustom);
       // }}
@@ -165,7 +159,6 @@ const SheetTabMenu: React.FC<SheetTabMenuProps> = memo(forwardRef<HTMLDivElement
       command={commands.getCommand('hideSheet')}
       {...commandButtonProps}
       variant={CommandButtonType.Menuitem}
-      icon={themeIcon(<VisibilityOffIcon/>)}
     />
     {/* TODO - move sheet left/move sheet right commands */}
   </>);

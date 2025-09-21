@@ -2,13 +2,8 @@ import React from 'react';
 
 import { IconButton } from '@mui/material';
 
-import { ArrowLeft as ArrowLeftIcon } from '@mui/icons-material';
-import { ArrowUpward as ArrowUpwardIcon } from '@mui/icons-material';
-import { ArrowRight as ArrowRightIcon } from '@mui/icons-material';
-import { ArrowDownward as ArrowDownwardIcon } from '@mui/icons-material';
-
 import {
-  defaultCreateScrollEdgeButton, ScrollbarOrientation, ScrollButtonProps
+  defaultCreateScrollEdgeButton, ScrollbarOrientation, ScrollButtonProps, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import { SimpleTooltip } from '../components';
@@ -62,7 +57,7 @@ export const createScrollButton = (props: ScrollButtonProps, icon: React.ReactEl
 export const createScrollStartButton = (props: ScrollButtonProps) => {
   return createScrollButton(
     props,
-    (ScrollbarOrientation.Horizontal ? <ArrowLeftIcon fontSize="small"/> : <ArrowUpwardIcon fontSize="small"/>),
+    (ScrollbarOrientation.Horizontal ? <DynamicIcon iconKey="ArrowLeft" size="small"/> : <DynamicIcon iconKey="ArrowUpward" size="small"/>),
     `Scroll ${props.orientation === ScrollbarOrientation.Horizontal ? 'Left' : 'Up'}`,
     `Scroll ${props.orientation === ScrollbarOrientation.Horizontal ? 'left' : 'up'}, 'Ctrl+Click' to scroll to the beginning`
   );
@@ -71,7 +66,7 @@ export const createScrollStartButton = (props: ScrollButtonProps) => {
 export const createScrollEndButton = (props: ScrollButtonProps) => {
   return createScrollButton(
     props,
-    (ScrollbarOrientation.Horizontal ? <ArrowRightIcon fontSize="small"/> : <ArrowDownwardIcon fontSize="small"/>),
+    (ScrollbarOrientation.Horizontal ? <DynamicIcon iconKey="ArrowRight" size="small"/> : <DynamicIcon iconKey="ArrowDownward" size="small"/>),
     `Scroll ${props.orientation === ScrollbarOrientation.Horizontal ? 'Right' : 'Down'}`,
     `Scroll ${props.orientation === ScrollbarOrientation.Horizontal ? 'right' : 'down'}, 'Ctrl+Click' to scroll to the end`
   )

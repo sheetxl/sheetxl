@@ -2,9 +2,10 @@ import React, { memo, forwardRef } from 'react';
 
 import clsx from 'clsx';
 
+import { DynamicIcon, type DynamicIconProps } from '@sheetxl/utils-react';
+
 import { Theme, styled } from '@mui/material/styles';
 import { Box, BoxProps } from '@mui/material';
-
 
 export interface ThemedIconProps extends BoxProps {
   size?: 'small' | 'medium' | 'large';
@@ -37,6 +38,14 @@ export const createStrokeShadowFilter = (shadowRadius: number=1) => {
   }
 }
 
+export const ArrowDownIcon = (props: DynamicIconProps) => {
+  return <DynamicIcon {...props} iconKey="ArrowDownOutline"/>
+}
+
+export const ArrowRightIcon = (props: DynamicIconProps) => {
+  return <DynamicIcon {...props} iconKey="ArrowRightOutline"/>;
+}
+
 const ThemeableIcon: React.FC<ThemedIconProps & { ref?: any }> = memo(
   forwardRef<React.ReactElement<any, any>, ThemedIconProps>((props, refForwarded) => {
   const {
@@ -51,15 +60,15 @@ const ThemeableIcon: React.FC<ThemedIconProps & { ref?: any }> = memo(
   // to trigger invalidation
 
   // let padding;
-  let width = 24;
-  let height = 24;
+  let width: any = '1rem';
+  let height: any = '1rem';
   if (size === 'medium') {
-    width = 32;
-    height = 32;
+    width = '1.25rem';
+    height = '1.25rem';
     // padding = '2px 2px';
   } else if (size === 'large') {
-    width = 42;
-    height = 42;
+    width = '1.5rem';
+    height = '1.5rem';
     // padding = '4px 4px';
   }
 
@@ -156,13 +165,4 @@ const ThemedIcon:any = styled(ThemeableIcon)(({ theme }) => {
   }
 });
 
-export const themeIcon = (element: React.ReactElement<any>) => {
-  return (
-    <ThemedIcon>
-      {element}
-    </ThemedIcon>
-  )
-}
-
 export { ThemedIcon };
-export default ThemedIcon;

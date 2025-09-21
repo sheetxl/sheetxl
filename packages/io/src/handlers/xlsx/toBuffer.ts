@@ -10,7 +10,7 @@ import type { WriteXLSXOptions } from './Types';
 
 export const toBuffer: WorkbookToHandler = async (wbModel: IWorkbook, _options?: WriteXLSXOptions): Promise<ArrayBufferLike> => {
   const XLSX = await import(/* webpackChunkName: "xlsx", webpackPrefetch: true */ 'xlsx');
-  const wbJSON:IWorkbook.JSON = await wbModel.toJSON(true/*excludeData*/);
+  const wbJSON:IWorkbook.JSON = await wbModel.toJSON(true/*ignoreData*/);
   const wbx = XLSX.utils.book_new();
 
   for (let i=0; i<wbJSON.sheets.length; i++) {

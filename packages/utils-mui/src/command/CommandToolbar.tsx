@@ -8,15 +8,11 @@ import { Toolbar, type ToolbarProps } from '@mui/material';
 import { Typography } from '@mui/material';
 
 import {
-  ICommands, useCommands, KeyCodes, ICommand, useImperativeElement
+  ICommands, useCommands, KeyCodes, ICommand, useImperativeElement,
+  type CommandButtonOptions, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import { useFloatStack, FloatReference } from '../float';
-
-import CheckIcon from '../icons/CheckIcon';
-import { themeIcon } from '../theme';
-
-import { type CommandButtonOptions } from './CommandButton';
 
 export interface CommandToolbarPopupButtonProps extends CommandButtonOptions {
   parentFloat: FloatReference;
@@ -58,12 +54,13 @@ export interface LabelIconProps extends BoxProps {
   icon?: React.ReactElement<any>;
 }
 
+const DefaultIcon = <DynamicIcon iconKey="Check"/>;
 export const LabelIcon = (props: LabelIconProps) => {
   const {
     command,
     label,
     scope,
-    icon=<CheckIcon/>,
+    icon: propIcon = DefaultIcon,
     sx: sxProps,
     ...rest
   } = props;
@@ -87,7 +84,7 @@ export const LabelIcon = (props: LabelIconProps) => {
       }}
       {...rest}
     >
-      {icon ? themeIcon(icon) : null}
+      {propIcon}
       <Typography
         component="div"
         sx={{

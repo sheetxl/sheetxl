@@ -108,7 +108,7 @@ export interface ICommand<STATE extends any=any, CONTEXT extends any=void> {
   label(scope?: string, context?: DynamicContext<CONTEXT>): string;
   tags(context?: DynamicContext<CONTEXT>): string[];
   description(context?: DynamicContext<CONTEXT>): string;
-  icon(context?: DynamicContext<CONTEXT>): React.ReactNode;
+  icon(context?: DynamicContext<CONTEXT>): React.ReactElement | string;
 }
 
 export class Command<STATE extends any=void, CONTEXT extends any=void> implements ICommand<STATE, CONTEXT> {
@@ -118,7 +118,7 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
   protected _label: DynamicValue<string, CONTEXT>;
   protected _scopedLabels?: Record<string, DynamicValue<string, CONTEXT>>;
   protected _description?: DynamicValue<string, CONTEXT>;
-  protected _icon: DynamicValue<React.ReactNode, CONTEXT>;
+  protected _icon: DynamicValue<React.ReactElement | string, CONTEXT>;
   protected _tags: DynamicValue<string[], CONTEXT>;
 
   protected _shortcut: DynamicValue<IKeyStroke | IKeyStroke[] | null, CONTEXT>;
@@ -134,7 +134,7 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
 
   constructor(
     key: string,
-    target: ICommands.ITarget | (() => ICommands.ITarget),
+    target: ICommands.ITarget | (() => ICommands.ITarget) | null,
     props?: ICommandProperties<STATE, CONTEXT>,
     callback?: ICommandCallback<STATE>
   ) {
@@ -165,7 +165,6 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
 
   target() { return (typeof this._target === "function") ? this._target() : this._target };
   label(scope?: string, scopedContext?: CONTEXT): string {
-
     const _label = this._scopedLabels?.[scope] || this._label;
     let label: string = null;
     if (typeof _label === "function") {
@@ -179,7 +178,7 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
   };
   description(context?: DynamicContext<CONTEXT>): string { return this._resolve<string>(this._description, context) };
   tags(context?: DynamicContext<CONTEXT>): string[] { return this._resolve<string[]>(this._tags, context) };
-  icon(context?: DynamicContext<CONTEXT>): React.ReactNode { return this._resolve<React.ReactNode>(this._icon, context) };
+  icon(context?: DynamicContext<CONTEXT>): React.ReactElement | string { return this._resolve<React.ReactElement | string>(this._icon, context) };
 
   shortcut() { return this._resolve<IKeyStroke | IKeyStroke[] | null>(this._shortcut) };
   disabled() { return this._resolve<boolean>(this._disabled) || !this._callback };

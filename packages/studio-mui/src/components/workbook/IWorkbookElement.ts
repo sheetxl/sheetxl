@@ -77,7 +77,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    * Callback for when the workbook is loaded. Useful for hiding/showing
    * loading panels.
    */
-  onElementLoad?: (event: WorkbookLoadEvent) => void;
+  onElementLoad?: (event: WorkbookLoadEvent) => void | Promise<void>;
   /**
    * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
    */
@@ -185,11 +185,21 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    */
   sheetProps?: SheetProps;
   /**
+   * Allows users to Wrap stage children in Top level Context
+   */
+  sheetWrapper?: (children: React.ReactNode) => React.ReactElement;
+  /**
    * Render custom ISheetElement.
    * @param props
    * @returns A React Element representing the Sheet.
    */
   renderSheet?: (props: SheetProps) => React.ReactElement;
+  /**
+   * Optional sidebar element.
+   */
+  // TODO - remove this and use sheetWrapper instead
+  sideBarElement?: React.ReactElement;
+
   /**
    * Show the horizontal scrollbar
    */

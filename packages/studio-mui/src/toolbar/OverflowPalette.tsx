@@ -12,12 +12,10 @@ import { Theme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import { TooltipProps } from '@mui/material';
 
-import { MoreHoriz as MoreHorizIcon } from '@mui/icons-material';
-
-import { useImperativeElement, useCallbackRef } from '@sheetxl/utils-react';
+import { useImperativeElement, useCallbackRef, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
-  ThemedIcon, ExhibitTooltip, ExhibitPopupIconButton, ExhibitPopupPanelProps,
+  ExhibitTooltip, ExhibitPopupIconButton, ExhibitPopupPanelProps,
   defaultCreatePopupPanel, useFloatStack, FloatReference
 } from '@sheetxl/utils-mui';
 
@@ -277,6 +275,7 @@ const OverflowPalette =
           display: 'flex',
           maxWidth: '100%',
           flex: '1 1 100%',
+          alignItems: 'center',
           //flex: 'none', // setting to none will cause the popup button to be alight left. Not sure which is better
           // flexWrap: 'wrap'
         }}
@@ -284,6 +283,7 @@ const OverflowPalette =
         {inlinedChildren ?? refedChildren}
       </Box>
       <Box
+        className="overflow-palette-popup-button"
         sx={{
           display: (popupChildren !== null && popupChildren.length === 0) ? 'none' : 'flex', // Hide once initialized if no longer needed
           flex: '1 1 0',
@@ -305,9 +305,7 @@ const OverflowPalette =
             );
           }}
           icon={
-            <ThemedIcon>
-              <MoreHorizIcon/>
-            </ThemedIcon>
+            <DynamicIcon iconKey='MoreHorizontal'/>
           }
         />
       </Box>

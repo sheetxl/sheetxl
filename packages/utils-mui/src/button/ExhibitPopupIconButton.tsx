@@ -38,8 +38,8 @@ export interface ExhibitPopupIconButtonProps extends ExhibitPopupButtonProps {
 const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any }> = memo(
     forwardRef<any, ExhibitPopupIconButtonProps>((props, refForwarded) => {
   const {
-    dense=true,
-    outlined: propOutlined=false,
+    dense = true,
+    outlined: propOutlined = false,
     label: propLabel,
     selected: propSelected = false,
     onQuickClick,
@@ -108,7 +108,7 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
   const anchorRef = useRef(null);
   const popupIconRef = useRef(null);
 
-  const movableStack = useFloatStack({
+  const floatStack = useFloatStack({
     anchor: anchorRef.current,
     label: propLabel as string,
     createPopupPanel: createPopupPanel,
@@ -120,15 +120,15 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
 
   const handleQuickClick = useCallbackRef((e: React.MouseEvent<any>) => {
     onQuickClick?.(e);
-    movableStack.reference.close(0);
-  }, [onQuickClick, movableStack]);
+    floatStack.reference.close(0);
+  }, [onQuickClick, floatStack]);
 
   const handleToggle = useCallbackRef(() => {
     if (!isOpen)
-      movableStack.reference.open(0);
+      floatStack.reference.open(0);
     else
-      movableStack.reference.close(0);
-  }, [isOpen, movableStack, parentFloat, propLabel]);
+      floatStack.reference.close(0);
+  }, [isOpen, floatStack, parentFloat, propLabel]);
 
   const styling = useMemo(() => {
     const borderStyling = {
@@ -220,7 +220,7 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
         // @ts-ignore
         return theme.palette.text.icon;// ?? theme.palette.action.active;
       },
-      "&.Mui-disabled path.styled": {
+      "&.Mui-disabled > .icon path": {
         filter: 'grayscale(65%)',
         opacity: '.8'
       },
@@ -277,9 +277,9 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
       if (e.keyCode === KeyCodes.Space) {
         handleToggle();
       } else if (e.keyCode === KeyCodes.F4 || e.keyCode === KeyCodes.Down) {
-        movableStack.reference.open(0);
+        floatStack.reference.open(0);
       } else if (e.keyCode === KeyCodes.Up) {
-        movableStack.reference.close(0);
+        floatStack.reference.close(0);
       }
     }
   }
@@ -297,7 +297,7 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
       edge: "end",
       // onMouseDown:(e: React.MouseEvent<HTMLElement>) => e.preventDefault(),
       // onMouseUp: handleQuickClick,
-      onMouseEnter: () => { movableStack.reference.parent.closeChild() },
+      onMouseEnter: () => { floatStack.reference.parent.closeChild() },
       onMouseDown: (e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault(); handleQuickClick(e) },
       touchRippleRef: touchRippleRef as any,
       children: icon,
@@ -344,7 +344,7 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
         sx={{
           paddingLeft: `${(dense) ? 0 : 2}px`,
           paddingRight: `${(dense) ? 0 : 2}px`,
-          width: () => '1em',
+          width: () => 'calc(var(--icon-size, 1.25em) * 0.8)',
           // flex: '1 1 100%',
           // alignSelf: 'stretch',
           ...styling.quickButtonStyling,
@@ -423,7 +423,7 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
       sx={{
         display: 'flex',
         flex: '1 1 100%',
-        alignItems: 'center',
+        alignItems: 'stretch',
         width: 'fit-content',
         // bgcolor: 'background.paper',
         '&:not(.Mui-disabled)': {
@@ -474,7 +474,7 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
       }}
     >
       {buttonRoot}
-      {movableStack.component}
+      {floatStack.component}
     </Box>
   );
 }));

@@ -7,13 +7,11 @@ import { IconButton } from '@mui/material';
 import { FormControl, type FormControlProps } from '@mui/material';
 import { FormHelperText } from '@mui/material';
 
-import { DatasetLinked as DatasetLinkedIcon } from '@mui/icons-material';
-
 import { type IWorkbook, type ICellRange } from '@sheetxl/sdk';
 
-import { useRangeListener } from '@sheetxl/react';
+import { DynamicIcon } from '@sheetxl/utils-react';
 
-import { type IWorkbookElement } from '@sheetxl/studio-mui';
+import { type IWorkbookElement, useRangeListener } from '@sheetxl/studio-mui';
 
 export interface BoundedWidgetElementProps extends FormControlProps {
   range: ICellRange;
@@ -74,7 +72,7 @@ export const BoundedWidget = memo((props: BoundedWidgetProps) => {
             setAddress(address === null ? workbook.getSelectedCell().getA1() : null);
           }}
         >
-          <DatasetLinkedIcon/>
+          <DynamicIcon iconKey='DataSetLinked'/>
         </IconButton>
       </Box>
       <FormHelperText>

@@ -1,14 +1,10 @@
 import React, { memo, forwardRef, useCallback } from 'react';
 
-import {
-  FilterToggleIcon, FilterReapplyIcon, FilterClearIcon
-} from '@sheetxl/utils-mui';
-
 import { ICommands, CommandButtonType } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps, defaultCreatePopupPanel,
-  ExhibitPopupPanelProps, themeIcon
+  ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 
@@ -41,19 +37,16 @@ export const FilterCommandButton = memo(
         {...commandButtonProps}
         scope={'filter'}
         command={commands.getCommand('autoFilterToggle')}
-        icon={themeIcon(<FilterToggleIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         scope={'filter'}
         command={commands.getCommand('autoFilterClear')}
-        icon={themeIcon(<FilterClearIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         scope={'filter'}
         command={commands.getCommand('autoFilterReapply')}
-        icon={themeIcon(<FilterReapplyIcon/>)}
       />
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -69,7 +62,7 @@ export const FilterCommandButton = memo(
       label="Filter" // Sort & Filter
       tooltip={(<><span>Organize your data so it's easier to analyze.</span><br/><span>You can sort the selected data from smallest to largest or largest to smallest.</span></>)} // You can sort the selected data from smallest to largest, largest to smallest, or filter our specific values
       createPopupPanel={createPopupPanel}
-      icon={themeIcon(<FilterToggleIcon/>)}
+      icon={'FilterToggle'}
       {...rest}
     />
   )

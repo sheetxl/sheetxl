@@ -2,6 +2,8 @@ import React, { memo, useState, useMemo, forwardRef } from 'react';
 
 import clsx from 'clsx';
 
+import { DynamicIcon } from '@sheetxl/utils-react';
+
 import { Theme } from '@mui/material/styles';
 
 import { MenuItem, MenuItemProps } from '@mui/material';
@@ -9,10 +11,11 @@ import { ListItemIcon } from '@mui/material';
 
 import { ChipStrip } from '../components';
 import { ExhibitIconButtonProps } from './ExhibitIconButton';
-import { BLANK_ICON } from './ExhibitIconButton';
 import { ExhibitTooltip, ExhibitTooltipProps } from './ExhibitTooltip';
 
 import { FloatReference } from '../float/useFloatStack';
+
+const BLANK_ICON = <DynamicIcon/>;
 
 export interface ExhibitMenuItemProps extends MenuItemProps {
   icon?: React.ReactNode | (() => React.ReactNode);
@@ -131,7 +134,7 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
       }}
       sx={{
         flex: '1 1 100%',
-        "&.Mui-disabled path.styled": {
+        "&.Mui-disabled > .icon path": {
           filter: 'grayscale(65%)',
         },
         '&.Mui-selected': {

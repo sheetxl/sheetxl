@@ -6,15 +6,13 @@ import { useSnackbar, OptionsObject } from 'notistack';
 
 import { IconButton } from '@mui/material';
 
-import { CancelOutlined as  CancelOutlinedIcon } from '@mui/icons-material';
-
 import { PartialError, UndoManager } from '@sheetxl/utils';
 
 import { IWorkbook } from '@sheetxl/sdk';
 
 import {
   IReactNotifier, EnqueueNotifierOptions, BusyNotifierOptions,
-  NotifierType, ICommands, NotifierProvider, DefaultReactNotifier
+  NotifierType, ICommands, NotifierProvider, DefaultReactNotifier, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import {
@@ -121,8 +119,10 @@ const SnackbarAndCommandsWrapper: React.FC<SnackbarAndCommandsWrapperProps & { r
         persist: options?.persist ?? options?.type === NotifierType.Error,
         action: (key) => {
           return (
-            <IconButton onClick={() => closeSnackbar(key)}>
-              <CancelOutlinedIcon/>
+            <IconButton
+              onClick={() => closeSnackbar(key)}
+            >
+              <DynamicIcon iconKey="Cancel" />
             </IconButton>
           )
         }

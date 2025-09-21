@@ -11,13 +11,10 @@ import { Slider } from '@mui/material';
 import { Typography } from '@mui/material';
 import { IconButton } from '@mui/material';
 
-import { Add as AddIcon } from '@mui/icons-material';
-import { Remove as RemoveIcon } from '@mui/icons-material';
-
 import { ISheet, IFont, CommonUtils } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, KeyCodes, useMouseDownAndHoldListener
+  useCallbackRef, KeyCodes, useMouseDownAndHoldListener, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import { useModelListener } from '@sheetxl/react';
@@ -178,7 +175,7 @@ const SheetZoomScale = memo(forwardRef<HTMLElement, SheetZoomScaleProps>((props:
           size="small"
           onPointerDown={(e: React.PointerEvent) => { if (e.button === 0) { zoomOutClick(e); return } ; e.preventDefault() }}
         >
-          <RemoveIcon/>
+          <DynamicIcon iconKey="Remove" />
         </IconButton>
       </SimpleTooltip>
       <Slider
@@ -277,7 +274,7 @@ const SheetZoomScale = memo(forwardRef<HTMLElement, SheetZoomScaleProps>((props:
             size="small"
             onPointerDown={(e: React.PointerEvent) => { if (e.button === 0) { zoomInClick(e); return } ; e.preventDefault() }}
           >
-            <AddIcon/>
+            <DynamicIcon iconKey="Add" />
           </IconButton>
         </SimpleTooltip>
       <Box

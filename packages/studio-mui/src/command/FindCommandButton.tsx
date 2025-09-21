@@ -1,16 +1,10 @@
 import React, { memo, forwardRef, useCallback } from 'react';
 
-// import { Search as SearchIcon } from '@mui/icons-material';
-
 import { Command, ICommands, CommandButtonType } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, CommandPopupButton, CommandPopupButtonProps, FindIcon,
-  defaultCreatePopupPanel, ExhibitPopupPanelProps, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  FindReplaceIcon, GotoIcon
+  CommandButton, CommandPopupButton, CommandPopupButtonProps,
+  defaultCreatePopupPanel, ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 export interface FindCommandButtonProps extends CommandPopupButtonProps {
@@ -41,17 +35,14 @@ export const FindCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('find') as Command<boolean>}
-        icon={themeIcon(<FindIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('findReplace') as Command<boolean>}
-        icon={themeIcon(<FindReplaceIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('goto') as Command<boolean>}
-        icon={themeIcon(<GotoIcon/>)}
       />
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -66,7 +57,7 @@ export const FindCommandButton = memo(
       label="Find & Select"
       tooltip="Find and replace cells or go to a specific location."
       quickCommand={'find'}
-      icon={themeIcon(<FindIcon/>)}
+      icon={'Find'}
       {...rest}
     />
   )

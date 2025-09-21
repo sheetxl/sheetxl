@@ -26,10 +26,6 @@ import {
   ExhibitDivider,
 } from '@sheetxl/utils-mui';
 
-import {
-  PresetStylesIcon, themeIcon, ClearFormatsIcon // NewPresetStylesIcon
-} from '@sheetxl/utils-mui';
-
 import { TableStylePreview, TableStyleCanvasPreview } from '../components/table';
 
 export interface PresetTableStylesCommandButtonProps extends CommandPopupButtonProps {
@@ -118,11 +114,10 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         command={commands.getCommand('formatTableStyleClearCellStyles')}
         commandState={tableStyle}
         disabled={disabled}
-        icon={themeIcon(<PresetStylesIcon/>)}
       />
       <CommandButton // as the default action this should be first but we are being consistent with excel for now.
         {...commandButtonProps}
-        sx={{ // We want to indicate that this is the default action.
+        style={{ // We want to indicate that this is the default action.
           fontWeight: 550
         }}
         command={commands.getCommand('formatTableStyle')}
@@ -130,7 +125,6 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
           name: tableStyle.getName()
         }}
         disabled={disabled}
-        icon={themeIcon(<PresetStylesIcon/>)}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
@@ -138,7 +132,6 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         command={commands.getCommand('setDefaultTableStyle')}
         commandState={tableStyle.getName()}
         disabled={disabled}
-        // icon={themeIcon(<PresetStylesIcon/>)}
       />
       <ExhibitDivider orientation="horizontal"/>
       {/*
@@ -147,13 +140,11 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         command={commands.getCommand('modifyTableStyle')}
         commandState={tableStyle?.getName()}
         disabled={disabled || !tableStyle || tableStyle.isBuiltIn()}
-        // icon={themeIcon(<ModifyPresetStylesIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('duplicateTableStyle')}
         commandState={tableStyle?.getName()}
-        // icon={themeIcon(<ModifyPresetStylesIcon/>)}
       />
       */}
       <CommandButton
@@ -161,7 +152,6 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         command={commands.getCommand('deleteTableStyle')}
         commandState={tableStyle?.getName()}
         disabled={disabled || !tableStyle || tableStyle.isBuiltIn()}
-        // icon={themeIcon(<RemovePresetStylesIcon/>)}
       />
     </>
     );
@@ -427,7 +417,6 @@ export const PresetTableStylesCommandButton = memo(
           command={commands.getCommand('formatTableStyleClearTableStyle')}
           commandHook={commandHook}
           disabled={propDisabled}
-          icon={themeIcon(<ClearFormatsIcon/>)}
         />
         </>
       )
@@ -461,8 +450,9 @@ export const PresetTableStylesCommandButton = memo(
 
   const isDisabled = propDisabled || !command || command.disabled();
   const icon = useMemo(() => {
-    if (!context || !usePreviewIcon)
-      return themeIcon(<PresetStylesIcon/>);
+    if (!context || !usePreviewIcon) {
+      return command?.icon();
+    }
     // return (
     //   <TableFormatPreview
     //     // value={(style as any)?.getName() ?? 'Custom'}
@@ -481,7 +471,7 @@ export const PresetTableStylesCommandButton = memo(
     //     }}
     //   />
     // );
-  }, [table, bodyStyle, isDisabled]);
+  }, [table, bodyStyle, isDisabled, command]);
 
   return (
     <CommandPopupButton

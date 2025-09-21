@@ -7,11 +7,9 @@ import { Button } from '@mui/material';
 import { Box } from '@mui/material';
 import { TabProps } from '@sheetxl/react';
 
-import { Lock as LockIcon } from '@mui/icons-material';
-
 import { ISheet, IColor } from '@sheetxl/sdk';
 
-import { RoundedTab } from '@sheetxl/utils-react';
+import { RoundedTab, DynamicIcon } from '@sheetxl/utils-react';
 import { useModelListener } from '@sheetxl/react';
 
 export interface SheetTabProps extends TabProps {
@@ -212,7 +210,7 @@ const SheetTab = memo(forwardRef<HTMLElement, TabProps>((props: SheetTabProps, r
               {children}
               {indicator}
             </Box>
-            {isProtected ? <LockIcon sx={{scale: '0.80', marginLeft: '2px', width: '22px', height : '22px'}} color="secondary" /> : <Box sx={{minHeight: '22px'}}/>}
+            {isProtected ? <DynamicIcon iconKey="Lock" style={{scale: '0.80', marginLeft: '2px', width: '22px', height : '22px'}} color="secondary" /> : <Box sx={{minHeight: '22px'}}/>}
           </Box>
           </>
         </Button>

@@ -10,12 +10,9 @@ import clsx from 'clsx';
 import { Box } from '@mui/material';
 import { IconButton } from '@mui/material';
 
-import { Menu as MenuIcon } from '@mui/icons-material';
-import { AddCircleOutline as AddCircleOutlineIcon } from '@mui/icons-material';
-
 import { IWorkbook, ISheet, IWorkbookProtection } from '@sheetxl/sdk';
 
-import { useCallbackRef, ICommands } from '@sheetxl/utils-react';
+import { useCallbackRef, ICommands, DynamicIcon } from '@sheetxl/utils-react';
 import { GridStyle } from '@sheetxl/grid-react';
 import { TabStrip, useModelListener } from '@sheetxl/react';
 import { SimpleTooltip } from '@sheetxl/utils-mui';
@@ -341,7 +338,7 @@ const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
           onMouseDown={(e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault() }}
           onClick={() => handleSheetAdd()}
         >
-          <AddCircleOutlineIcon/>
+          <DynamicIcon iconKey="AddCircle" />
         </IconButton>
       </SimpleTooltip>
     )
@@ -442,7 +439,7 @@ const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
                 allSheetsMenuReference.close(0);
               }
             }}
-            icon={<MenuIcon/>}
+            icon={<DynamicIcon iconKey="Menu" />}
           />
         </SimpleTooltip>
       </TabStrip>

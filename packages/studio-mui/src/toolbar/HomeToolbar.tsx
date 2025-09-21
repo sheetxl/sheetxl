@@ -1,19 +1,16 @@
 import React, { useCallback, useState, useEffect, memo, forwardRef } from 'react';
 
-import { useCommands, Command } from '@sheetxl/utils-react';
-
 import { IColor, IScript } from '@sheetxl/sdk';
 
-import { CommandContext, IScriptEditor } from '@sheetxl/react';
+import { useCommands, Command, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
-  ColorizedFillIcon, ColorizedTextIcon, TextItalicIcon, TextBoldIcon, FormatPaintIcon
-} from '@sheetxl/utils-mui';
-
+  CommandContext, type CommandButtonProps, IScriptEditor, DefaultTaskPaneRegistry, useTaskPaneArea
+} from '@sheetxl/react';
 
 import {
-  CommandButton, ExhibitDivider, themeIcon,
-  CommandToolbar, CommandToolbarButtonProps, CommandToolbarProps, ICommandToolbarElement,
+  CommandButton, ExhibitDivider,
+  CommandToolbar, type CommandToolbarButtonProps, type CommandToolbarProps, ICommandToolbarElement,
 } from '@sheetxl/utils-mui';
 
 import { AutoColorPosition } from '../components';
@@ -30,16 +27,18 @@ import {
 
  import { OverflowPalette } from './OverflowPalette';
 
-import { RunScriptCommandButton } from '../script';
+import { RunScriptCommandButton } from '../scripting';
 
 // import { CommandButton }  from '@sheetxl/utils-mui';
-// import { SelectAll as SelectAllIcon } from '@mui/icons-material';
-// import { AccountTree as AccountTreeIcon } from '@mui/icons-material';
 
 // import { NestingPopupButton } from '@sheetxl/utils-mui';
 // import { PopupButtonType } from '@sheetxl/utils-mui';
 
 export interface HomeToolbarProps extends Omit<CommandToolbarProps, "createToolbarPalette"> {
+}
+
+const defaultCreateCommandButton = (props: CommandButtonProps): React.ReactElement => {
+  return <CommandButton {...props} />;
 }
 
 /**
@@ -94,17 +93,42 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
     };
   }, [contextScript]);
 
+
+  const taskPaneArea = useTaskPaneArea();
+  // const service = useCommandUIService();
+  // const surface = service.createSurface(variant);
+
   const createToolbarPalette = useCallback((props: CommandToolbarButtonProps) => {
     const {
       commandButtonProps,
       commandPopupProps
     } = props;
 
+    const entries = DefaultTaskPaneRegistry.findContributions('ribbon/home');
+
+    let commandsEntries: React.ReactElement[];
+    const entriesLength = entries.length;
+    if (entriesLength > 0) {
+      commandsEntries = [];
+      for (let i=0; i<entriesLength; i++) {
+        const entry = entries[i];
+        // TODO refactor as this is silly.
+        const command = entry.createCommand?.(taskPaneArea);
+        if (!command) continue;
+        const propsCommandButton = {
+          command,
+          ...commandPopupProps
+        };
+        const createCommandButton = entry.createCommandButton ?? defaultCreateCommandButton;
+        const button = createCommandButton(propsCommandButton);
+        commandsEntries.push(button);
+      }
+    }
     const formatFontColor = (
       <ColorCommandButton
         {...commandPopupProps}
         command={(commands.getCommand('formatFontColor') as Command<IColor, CommandContext.Color>)}
-        icon={<ColorizedTextIcon/>}
+        icon={<DynamicIcon iconKey="text.colored" />}
         isSplit={true}
         panelProps={{
           disableAlpha: true, // Excel doesn't allow alpha
@@ -118,7 +142,7 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <ColorCommandButton
         {...commandPopupProps}
         command={(commands.getCommand('formatFillColor') as Command<IColor, CommandContext.Color>)}
-        icon={<ColorizedFillIcon/>}
+        icon={<DynamicIcon iconKey="fill.colored" />}
         isSplit={true}
         panelProps={{
           disableAlpha: true,
@@ -187,7 +211,6 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatPainterToggle') as Command<boolean>)}
-        icon={themeIcon(<FormatPaintIcon/>)}
       />
       <WalkingCopyCommandButton
         {...commandButtonProps}
@@ -205,12 +228,10 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatBoldToggle') as Command<boolean>)}
-        icon={<TextBoldIcon/>}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatItalicToggle') as Command<boolean>)}
-        icon={<TextItalicIcon/>}
       />
       <UnderlineCommandButton
         {...commandPopupProps}
@@ -218,15 +239,11 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <TextEffectsCommandButton
         {...commandPopupProps}
       />
-      {formatFontColor}
-      <ExhibitDivider/>
-      {formatFillColor}
       <BorderCommandButton
         {...commandPopupProps}
       />
-      <MergeCommandButton
-        {...commandPopupProps}
-      />
+      {formatFillColor}
+      {formatFontColor}
       <ExhibitDivider/>
       <HorizontalAlignCommandButton
         {...commandPopupProps}
@@ -234,10 +251,13 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <VerticalAlignCommandButton
         {...commandPopupProps}
       />
+      <TextRotateCommandButton
+        {...commandPopupProps}
+      />
       <TextOverflowCommandButton
         {...commandPopupProps}
       />
-      <TextRotateCommandButton
+      <MergeCommandButton
         {...commandPopupProps}
       />
       <ExhibitDivider/>
@@ -279,6 +299,7 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
 
       {findButton}
       {runScriptButton}
+      {commandsEntries}
 
       {/* <ExhibitDivider/>
       <CommandButton
@@ -332,7 +353,7 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       </OverflowPalette>);
     return children;
     // return defaultCreatePopupPanel({...props, children});
-  }, [commands, resolvedCommands, showRunScript]);
+  }, [commands, resolvedCommands, showRunScript, taskPaneArea]);
 
   return (
     <CommandToolbar

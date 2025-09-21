@@ -12,18 +12,7 @@ import { ICommand, Command, ICommands, CommandButtonType } from '@sheetxl/utils-
 import { useModelListener } from '@sheetxl/react';
 
 import {
-  SimpleCommandPopupButton, FloatReference, ExhibitDivider,
-  CommandButton, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  DrawToFrontIcon, DrawToBackIcon, DrawMoveForwardIcon,
-  DrawMoveBackwardIcon, DrawAspectIcon, DrawResizeIcon,
-  DrawAlignLeftIcon, DrawAlignCenterIcon, DrawAlignRightIcon,
-  DrawAlignTopIcon, DrawAlignMiddleIcon, DrawAlignBottomIcon,
-  DrawAlignDistributeHorzIcon, DrawAlignDistributeVertIcon
-  // DrawFlipHorzIcon, DrawFlipVertIcon, DrawGroupIcon, DrawUngroupIcon,
-  // DrawSwapHorzIcon, DrawSwapVertIcon
+  SimpleCommandPopupButton, FloatReference, ExhibitDivider, CommandButton
 } from '@sheetxl/utils-mui';
 
 import { WalkingCopyCommandButton } from '../../command/WalkingCopyCommandButton';
@@ -105,55 +94,7 @@ const MovableContextMenu: React.FC<MovableContextMenuProps> = memo(forwardRef<HT
   const contextOptions = [];
   const contextBefore = [];
 
-  const icons = (command: ICommand) => {
-    const commandKey:string = command?.key();
-    switch (commandKey) {
-      case 'moveToFront':
-        return themeIcon(<DrawToFrontIcon/>);
-      case 'moveForward':
-        return themeIcon(<DrawMoveForwardIcon/>);
-      case 'moveToBack':
-        return themeIcon(<DrawToBackIcon/>);
-      case 'moveBackward':
-        return themeIcon(<DrawMoveBackwardIcon/>);
-      case 'toggleLockAspectRatio':
-        return themeIcon(<DrawAspectIcon/>);
-      case 'formatDrawAlignLeft':
-        return themeIcon(<DrawAlignLeftIcon/>);
-      case 'formatDrawAlignCenter':
-        return themeIcon(<DrawAlignCenterIcon/>);
-      case 'formatDrawAlignRight':
-        return themeIcon(<DrawAlignRightIcon/>);
-      case 'formatDrawAlignTop':
-        return themeIcon(<DrawAlignTopIcon/>);
-      case 'formatDrawAlignMiddle':
-        return themeIcon(<DrawAlignMiddleIcon/>);
-      case 'formatDrawAlignBottom':
-        return themeIcon(<DrawAlignBottomIcon/>);
-      case 'formatDrawDistributeHorz':
-        return themeIcon(<DrawAlignDistributeHorzIcon/>);
-      case 'formatDrawDistributeVert':
-        return themeIcon(<DrawAlignDistributeVertIcon/>);
-      // case 'formatDrawFlipHorz':
-      //   return themeIcon(<DrawFlipHorzIcon/>);
-      // case 'formatDrawFlipVert':
-      //   return themeIcon(<DrawFlipVertIcon/>);
-      // case 'formatDrawSwapShapesHorz':
-      //   return themeIcon(<DrawSwapHorzIcon/>);
-      // case 'formatDrawSwapShapesVert':
-      //   return themeIcon(<DrawSwapVertIcon/>);
-      // case 'formatDrawGroup':
-      //   return themeIcon(<DrawGroupIcon/>);
-      // case 'formatDrawUngroup':
-      //   return themeIcon(<DrawUngroupIcon/>);
-      case 'formatAnchorTypeTwoCell':
-      case 'formatAnchorTypeOneCell':
-      case 'formatAnchorTypeAbsolute':
-        return themeIcon(<DrawResizeIcon/>);
-      default:
-        return null;
-    }
-  };
+
   const items = (<>
     {/* <CommandButton
       command={commands.getCommand('cut')}
@@ -175,7 +116,6 @@ const MovableContextMenu: React.FC<MovableContextMenuProps> = memo(forwardRef<HT
         'moveForward',
       ]}
       quickCommand={'moveToFront'}
-      icon={icons}
     />
     <SimpleCommandPopupButton
       {...commandPopupProps}
@@ -184,13 +124,11 @@ const MovableContextMenu: React.FC<MovableContextMenuProps> = memo(forwardRef<HT
         'moveBackward',
       ]}
       quickCommand={'moveToBack'}
-      icon={icons}
     />
     <ExhibitDivider orientation="horizontal"/>
     <CommandButton
       {...commandButtonProps}
       command={(commands.getCommand('toggleLockAspectRatio') as Command<boolean>)}
-      icon={themeIcon(<DrawAspectIcon/>)}
     />
     <ExhibitDivider orientation="horizontal"/>
     <SimpleCommandPopupButton
@@ -217,13 +155,7 @@ const MovableContextMenu: React.FC<MovableContextMenuProps> = memo(forwardRef<HT
         // 'formatDrawUngroup'
       ]}
       label="Align"
-      icon={(command: ICommand) => {
-        const icon = icons(command);
-        if (icon) {
-          return icon;
-        }
-        return themeIcon(<DrawAlignLeftIcon/>)
-      }}
+      icon="DrawAlignLeft"
       tooltip="Quickly change the placement of your drawings."
     />
     <ExhibitDivider orientation="horizontal"/>
@@ -235,13 +167,7 @@ const MovableContextMenu: React.FC<MovableContextMenuProps> = memo(forwardRef<HT
         'formatAnchorTypeAbsolute'
       ]}
       label="Sizing"
-      icon={(command: ICommand) => {
-        const icon = icons(command);
-        if (icon) {
-          return icon;
-        }
-        return themeIcon(<DrawResizeIcon/>)
-      }}
+      icon="DrawResize"
       tooltip="Determine how the drawing size will adjust as the cell sizes adjust."
     />
     {contextOptions}

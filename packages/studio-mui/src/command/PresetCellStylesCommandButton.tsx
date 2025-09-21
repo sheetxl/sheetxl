@@ -32,10 +32,6 @@ import {
   ExhibitIconButton, ExhibitIconButtonProps, ContextMenu, defaultCreatePopupPanel
 } from '@sheetxl/utils-mui';
 
-import {
-  PresetStylesIcon, themeIcon, NewPresetStylesIcon
-} from '@sheetxl/utils-mui';
-
 export interface PresetCellStylesCommandButtonProps extends CommandPopupButtonProps {
 
   command: ICommand<IStyle.INamed, CommandContext.NamedStyle>;
@@ -111,7 +107,7 @@ const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>
       // }
       sx={{
         width: '100px',
-        // height: '20px',
+        height: '100%',
         textOverflow: 'ellipsis',
         display: 'flex',
         alignItems: 'stretch',
@@ -153,12 +149,8 @@ const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>
         rowCount={1}
         columnCount={1}
         style={{
-          display: 'flex',
-          flex: '1 1 100%',
+          height: '100%',
           width: '100%',
-          maxWidth: '100%',
-          justifyContent: 'start',
-          alignItems: 'stretch',
           ...borderProps?.style
         }}
         {...borderProps}
@@ -195,9 +187,9 @@ const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>
             paddingRight: '4px',
             marginLeft: '-1px', // render render fills extend 1px in all directions
             marginTop: '-1px',
-            marginRight: '-1px',
-            marginBottom: '-1px',
-            overflow: 'hidden',
+            marginRight: '-2px', // to account for -1 left
+            marginBottom: '-2px', // to account for -1 top
+            // overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
           }}
@@ -251,13 +243,12 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
     const menus = (<>
       <CommandButton
         {...commandButtonProps}
-        sx={{ // We want to indicate that this is the default action.
+        style={{ // We want to indicate that this is the default action.
           fontWeight: 550
         }}
         command={commands.getCommand('formatCellStyle')}
         commandState={namedStyle}
         disabled={disabled}
-        icon={themeIcon(<PresetStylesIcon/>)}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
@@ -272,7 +263,6 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
         //   }
         // }}
         commandState={{ named: namedStyle }}
-        // icon={themeIcon(<ModifyPresetStylesIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
@@ -287,7 +277,6 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
         // }}
         commandState={namedStyle}
         disabled={disabled || namedStyle?.getName() === IStyle.BuiltInName.Normal}
-        // icon={themeIcon(<RemovePresetStylesIcon/>)}
       />
     </>
     );
@@ -619,7 +608,6 @@ export const PresetCellStylesCommandButton = memo(
           context={'styles'} // Note - not a single style
           commandHook={commandHook}
           disabled={propDisabled}
-          icon={themeIcon(<NewPresetStylesIcon/>)}
         />
       </Box>
     );
@@ -635,8 +623,9 @@ export const PresetCellStylesCommandButton = memo(
 
   const isDisabled = propDisabled || !command || command.disabled();
   const icon = useMemo(() => {
-    if (!context || !usePreviewIcon)
-      return themeIcon(<PresetStylesIcon/>);
+    if (!context || !usePreviewIcon) {
+      return command?.icon();
+    }
     return (
       <StaticCellRenderer
         value={named?.getName() ?? 'Custom'}
@@ -647,16 +636,21 @@ export const PresetCellStylesCommandButton = memo(
         className={"outline-hover"}
         disabled={isDisabled}
         sx={{
-          maxHeight: '24px',
-          height: '24px',
-          marginRight: '2px',
-          // overflow: 'hidden',
+          marginRight: '4px',
+          borderRadius: '2px',
+          minHeight: `calc(100% - 2px)`,
+          overflow: 'hidden',
           outline:(theme: Theme) => `1px solid ${theme.palette.action.hover}`
         }}
-        borderProps={{}}
+        borderProps={{
+          style: {
+            height: 'calc(100% - 2px)',
+            width: 'calc(100% - 1px)',
+          }
+        }}
       />
     );
-  }, [named, bodyStyle, isDisabled]);
+  }, [named, bodyStyle, isDisabled, command]);
 
   return (
     <CommandPopupButton

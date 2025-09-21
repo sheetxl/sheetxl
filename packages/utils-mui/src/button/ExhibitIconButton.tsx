@@ -9,17 +9,15 @@ import { Box } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
 
-import { BlankIcon, CheckIcon } from '../icons';
+import { DynamicIcon } from '@sheetxl/utils-react';
 
 import { ExhibitTooltip, ExhibitTooltipProps } from './ExhibitTooltip';
 
 import { FloatReference } from '../float/useFloatStack';
 import { SimpleTooltip } from '../components';
 
-import { themeIcon } from '../theme';
-
-export const BLANK_ICON = <BlankIcon/>;
-const DEFAULT_TOGGLE_ICON = themeIcon(<CheckIcon/>);
+const BLANK_ICON = <DynamicIcon/>;
+const DEFAULT_TOGGLE_ICON = <DynamicIcon iconKey="Check"/>;
 
 export interface ExhibitIconButtonProps extends IconButtonProps {
   dense?: boolean;
@@ -61,6 +59,7 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
     children,
     primary,
     sx: propSx,
+    disabled: disabledProp,
     className: propClassName,
     onFocus: propOnFocus,
     onBlur: propOnBlur,
@@ -98,7 +97,7 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
         return `solid ${(outlined ? theme.palette.divider : 'transparent' )} 1px`
       },
     },
-    "&.Mui-disabled path.styled": {
+    "&.Mui-disabled > .icon path": {
       filter: 'grayscale(65%)',
       opacity: '.8'
     },
@@ -159,6 +158,7 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
       className={clsx({
         'Mui-focusVisible': hasFocus,
         'Mui-selected': selected,
+        'Mui-disabled': disabledProp,
       }, propClassName)}
       onFocus={(event: React.FocusEvent<HTMLButtonElement>) => {
         setFocus(true);
@@ -177,6 +177,7 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
       sx={buttonStyling}
       edge="end"
       {...rest}
+      disabled={disabledProp || false}
     >
       {icon}
       {children}

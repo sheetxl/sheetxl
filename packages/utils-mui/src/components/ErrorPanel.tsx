@@ -6,8 +6,7 @@ import { Paper } from '@mui/material';
 import { Box, BoxProps } from '@mui/material';
 import { Typography } from '@mui/material';
 
-import { Error as ErrorIcon } from '@mui/icons-material';
-
+import { DynamicIcon } from '@sheetxl/utils-react';
 import { StackTrace } from './StackTrace';
 
 export interface ErrorPanelProps extends BoxProps {
@@ -100,7 +99,7 @@ const ErrorPanel: React.FC<ErrorPanelProps & { ref?: any }> = memo(
   forwardRef<any, ErrorPanelProps>((props, refForwarded) => {
   const {
     sx: propSx,
-    icon = <ErrorIcon style={{ fontSize: 48 }}/>,
+    icon = <DynamicIcon iconKey='Error' style={{ fontSize: 48 }} />,
     error,
     hideStackTrace = false,
     stackTraceExpanded = false,

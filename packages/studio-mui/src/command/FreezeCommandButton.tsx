@@ -4,11 +4,7 @@ import { ICommands, CommandButtonType } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitPopupPanelProps, ExhibitDivider, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  FreezeIcon, FreezeBothIcon, FreezeRowsIcon, FreezeColumnsIcon, MergeUnMergeIcon
+  defaultCreatePopupPanel, ExhibitPopupPanelProps, ExhibitDivider
 } from '@sheetxl/utils-mui';
 
 /**
@@ -36,23 +32,19 @@ export const FreezeCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('freezeToggle')}
-        icon={themeIcon(<FreezeBothIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('freezeToggleHorizontal')}
-        icon={themeIcon(<FreezeRowsIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('freezeToggleVertical')}
-        icon={themeIcon(<FreezeColumnsIcon/>)}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('unfreeze')}
-        icon={<MergeUnMergeIcon/>}
       />
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -68,7 +60,7 @@ export const FreezeCommandButton = memo(
       label="Freeze Panes"
       tooltip="Freeze a portion of the sheet to keep it visible while you scroll through the rest of the sheet.\n\nUseful for viewing data in other parts of your worksheet without losing your headers or labels."
       // selected={commandPrimaryToggle?.state()}
-      icon={<FreezeIcon/>}
+      icon={'Freeze'}
       {...rest}
     />
   )

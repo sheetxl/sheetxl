@@ -8,9 +8,7 @@ import { type IconButtonProps } from '@mui/material';
 
 // import { TouchRippleActions, TouchRippleProps } from '@mui/material';
 // import { ButtonBaseProps } from '@mui/material'
-
-// import { ArrowDropDown as ArrowDropDownIcon } from '@mui/icons-material';
-import { ArrowDownOutlineIcon as ArrowDropDownIcon } from '../icons';
+import { ArrowDownIcon } from '../theme';
 
 import { type ExhibitFloatPanelProps } from './ExhibitFloatPanel';
 import { FloatReference } from './useFloatStack';
@@ -159,21 +157,21 @@ export const defaultCreatePopupPanel = (props: ExhibitPopupPanelProps): React.Re
 }
 
 export const createDownArrow = (isSplit: boolean, dense: boolean, rotate: boolean) => {
+  let transform: string;
+  // if (isSplit)
+  //   retValue = 'translateX(-7px)';
+  // if (dense) {
+  //   transform = (transform ? transform + ' ' : '') + 'scale(0.80)';
+  // }
+  if (rotate) {
+    transform = (transform ? transform + ' ' : '') + 'rotate(180deg)';
+  }
   return (
-    <ArrowDropDownIcon
-      sx={{
-        marginLeft: isSplit ? undefined : dense ? '-5px' : '-3px',
-        marginRight: isSplit ? undefined : dense ? '-5px' : '-6px',
-        transform: () => {
-          let retValue: string | undefined = undefined;
-          // if (isSplit)
-          //   retValue = 'translateX(-7px)';
-          if (dense)
-            retValue = (retValue ? retValue + ' ' : '') + 'scale(0.8)';
-          if (rotate)
-            retValue = (retValue ? retValue + ' ' : '') + 'rotate(180deg)';
-          return retValue;
-        }
+    <ArrowDownIcon
+      style={{
+        marginLeft: isSplit ? undefined : dense ? '-0.25rem' : '-3px',
+        marginRight: isSplit ? undefined : dense ? '-0.25rem' : '-6px',
+        transform
       }}
       color='inherit'
     />

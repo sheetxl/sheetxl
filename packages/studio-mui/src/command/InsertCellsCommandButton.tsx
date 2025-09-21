@@ -4,11 +4,7 @@ import { CommandButtonType, ICommands, useCommands } from '@sheetxl/utils-react'
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps, defaultCreatePopupPanel,
-  ExhibitPopupPanelProps, ExhibitDivider, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  InsertCells, InsertColumn2Icon, InsertRowIcon, BlankIcon
+  ExhibitPopupPanelProps, ExhibitDivider
 } from '@sheetxl/utils-mui';
 
 export interface InsertCellsCommandButtonProps extends CommandPopupButtonProps {
@@ -61,18 +57,6 @@ export const InsertCellsCommandButton = memo(
     return { singleCommand, allDisabled: count === 0 };
   }, [resolvedCommands]);
 
-  // TODO - Move to CommandButtonRegistry
-  const commandIcons:Map<string, React.ReactElement> = useMemo(() => {
-    const mapIcons = new Map();
-    mapIcons.set('insertCellsShiftDown', themeIcon(<InsertCells/>));
-    mapIcons.set('insertCellsShiftRight', themeIcon(<InsertCells sx={{ transform: 'rotate(270deg)'}}/>));
-    mapIcons.set('insertRows', themeIcon(<InsertRowIcon/>));
-    // mapIcons.set('insertRowsAfter', themeIcon(<InsertColumnIcon sx={{ transform: 'rotate(90deg)'}}/>));
-    mapIcons.set('insertColumns', themeIcon(<InsertColumn2Icon/>));
-
-    return mapIcons;
-  }, []);
-
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     let addSheet = null;
     const commandButtonProps = {
@@ -88,7 +72,6 @@ export const InsertCellsCommandButton = memo(
         <CommandButton
           {...commandButtonProps}
           command={commands.getCommand('addSheet')}
-          icon={themeIcon(<BlankIcon/>)}
         />
       </>);
     const children = (<>
@@ -96,42 +79,34 @@ export const InsertCellsCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={resolvedCommands[0]}
-        icon={commandIcons.get(commandKeys[0])}
       />
       {/* Note - Excel shows right before down in menu but this feels inconsistent with rows columns.*/}
       <CommandButton
         {...commandButtonProps}
         command={resolvedCommands[1]}
-        icon={commandIcons.get(commandKeys[1])}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={resolvedCommands[2]}
-        icon={commandIcons.get(commandKeys[2])}
       />
       {/* <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('insertRowsAfter')}
-        icon={commandIcons.get('insertRowsAfter')}
       /> */}
       {/* <ExhibitDivider orientation="horizontal"/> */}
       <CommandButton
         {...commandButtonProps}
         command={resolvedCommands[3]}
-        icon={commandIcons.get(commandKeys[3])}
       />
       {/* <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('insertColumnsAfter')}
-        icon={commandIcons.get('insertColumnsAfter')}
       /> */}
       {addSheet}
     </>);
     return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, resolvedCommands, propCommandHook, scope, commandIcons]);
-
-
+  }, [propDisabled, resolvedCommands, propCommandHook, scope]);
 
   // if single command show regular menu
   if (singleCommand) {
@@ -143,7 +118,6 @@ export const InsertCellsCommandButton = memo(
         // scope={scope} // Remove the popup scope
         disabled={propDisabled}
         command={singleCommand}
-        icon={commandIcons.get(singleCommand.key())}
         {...rest}
       />
     )
@@ -163,7 +137,6 @@ export const InsertCellsCommandButton = memo(
       // label={activeCommand?.label() ?? `Insert Cells`}
       tooltip={(<><span>Insert new cells, rows or columns to your workbook.</span><br/><span>To insert multiple rows or columns at a time, select multiple rows or columns in the sheet and click Insert.</span></>)}
       createPopupPanel={createPopupPanel}
-      icon={themeIcon(<InsertColumn2Icon/>)}
       {...rest}
     />
   );

@@ -3,6 +3,8 @@ import {
   useEffect, useRef, useState
 } from 'react';
 
+import { CommonUtils } from '@sheetxl/utils';
+
 import { ICommand, ICommandHook } from './Command';
 import { ICommands } from './ICommands';
 
@@ -14,16 +16,17 @@ export interface ICommandsListeners<STATE extends any, CONTEXT extends any=void>
   onChange?(commands: ICommands.IGroup): void;
 }
 
+// TODO - this should resolve the entire hierarchy of commands?
 const resolveCommands = <STATE=any, CONTEXT=any>(commands: ICommands.IGroup, keys: string[]): ICommand<STATE, CONTEXT>[] => {
-  const resolved = [];
-  if (keys) {
-    for (let i=0; i<keys.length; i++) {
-      const key = keys[i];
-      const command = key ? commands?.getCommand(key) as ICommand<STATE, CONTEXT> : null;
-      resolved.push(command);
-    }
+  if (!keys || !commands || keys.length === 0) return CommonUtils.EmptyArray;
+  const keysLength = keys.length;
+  const resolved = new Array<ICommand<STATE, CONTEXT>>(keysLength);
+  for (let i=0; i<keysLength; i++) {
+    const key = keys[i];
+    const command = key ? commands.getCommand(key) as ICommand<STATE, CONTEXT> : null;
+    resolved[i] = command;
   }
-  return resolved
+  return resolved;
 }
 
 /**

@@ -1,11 +1,13 @@
 import React, { memo, forwardRef, useCallback } from 'react';
 
-import { CommandButtonType, ICommands, ICommand, useCommands } from '@sheetxl/utils-react';
+import {
+  CommandButtonType, type CommandButtonProps, ICommands, ICommand, useCommands
+} from '@sheetxl/utils-react';
 
 import { defaultCreatePopupPanel, type ExhibitPopupPanelProps } from '../float';
 import { ExhibitDivider } from '../components';
 
-import { CommandButton, type CommandButtonProps } from './CommandButton';
+import { CommandButton } from './CommandButton';
 import { CommandPopupButton, type CommandPopupButtonProps } from './CommandPopupButton';
 
 export interface SimpleCommandPopupButtonProps extends CommandPopupButtonProps {
@@ -45,7 +47,6 @@ export const SimpleCommandPopupButton = memo(
     renderCommandButton = defaultRenderCommandButton,
     scope,
     commands,
-    icon,
     quickCommand: quickCommandKey,
     popupScope = quickCommandKey,
     commandState: propCommandState,
@@ -62,7 +63,6 @@ export const SimpleCommandPopupButton = memo(
       // parentFloat: props.floatReference,
       commandHook: propCommandHook,
       commandState: propCommandState,
-      icon,
       scope: popupScope,
       disabled: propDisabled
     }
@@ -90,7 +90,7 @@ export const SimpleCommandPopupButton = memo(
       children.push(button);
     }
     return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, propCommandHook, propCommandState, popupScope, popupCommandKeys, icon, renderCommandButton]);
+  }, [propDisabled, propCommandHook, propCommandState, popupScope, popupCommandKeys, renderCommandButton]);
 
   if (!popupCommandKeys) {
     return renderCommandButton({
@@ -100,7 +100,6 @@ export const SimpleCommandPopupButton = memo(
       commandState: propCommandState,
       scope,
       command: resolved[0],
-      icon,
       ...rest
     });
   }
@@ -113,7 +112,6 @@ export const SimpleCommandPopupButton = memo(
       commandState={propCommandState}
       scope={scope}
       quickCommand={quickCommandKey}
-      icon={icon}
       createPopupPanel={createPopupPanel}
       {...rest}
     />
