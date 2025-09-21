@@ -20,13 +20,15 @@ import { UndoManager, CommonUtils } from '@sheetxl/utils';
 import { IWorkbook, Workbook, ITransaction } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, ICommand, ICommands, CommandGroup
+  useCallbackRef, ICommand, ICommands, CommandGroup, DefaultDynamicIconService, DynamicIcon
 } from '@sheetxl/utils-react';
 
-import { useDocThemes } from '@sheetxl/react';
+import {
+  TaskPaneProvider, TaskPaneAreaProps, ITaskPaneAreaElement, useDocThemes
+} from '@sheetxl/react';
 
 import {
-  LoadingPanel, ErrorPanel, createExhibitTheme, ModalProvider, ErrorAlertIcon,
+  LoadingPanel, ErrorPanel, createExhibitTheme, ModalProvider,
   useResolvedThemeMode, ThemeModeOptions, ThemeMode
 } from '@sheetxl/utils-mui';
 
@@ -39,12 +41,16 @@ import { WorkbookIO, type ReadWorkbookOptions, type WorkbookHandle } from '../io
 
 import { ToastError } from '../toast';
 
-import {
-  StudioToolbar, StudioToolbarProps
-} from './StudioToolbar';
-
+import { StudioToolbar, StudioToolbarProps } from './StudioToolbar';
 import { StudioProps } from './StudioProps';
 import { SnackbarAndCommandsWrapper } from './SnackbarAndCommandsWrapper';
+import { StudioTaskPaneArea } from './StudioTaskPaneArea';
+
+// import { AIPlugin } from '../ai/plugin';
+import { ScriptingPlugin } from '../scripting/plugin';
+
+// AIPlugin();
+ScriptingPlugin();
 
 /**
  * Fully functional application. Wraps a workbook in a simple container for a standalone application.
@@ -235,10 +241,12 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     }
   }, [commandsParent]);
 
-  const onElementLoad = useCallbackRef((event: WorkbookLoadEvent) => {
+  const onElementLoad = useCallbackRef(async (event: WorkbookLoadEvent) => {
     setViewportDOM(event.source.getViewportElement());
     setWorkbookLoaded(event);
     commandsApplication.activate(`sheet`);
+    // ensure icons are loaded
+    await DefaultDynamicIconService.prefetch();
     propOnElementLoad?.(event);
   }, [commandsApplication]);
 
@@ -384,6 +392,17 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     }
   }, [propSx]);
 
+  const [sideBar, setSideBar] = useState<React.ReactElement>(null);
+  const createTaskPaneArea = useCallback((props: TaskPaneAreaProps, ref: React.Ref<ITaskPaneAreaElement>) => {
+    return <StudioTaskPaneArea
+      ref={ref}
+      themeOptions={isDarkMode ? themeOptions.dark : themeOptions.light}
+      model={workbook}
+      commands={commandsApplication}
+      {...props}
+    />;
+  }, [commandsApplication, workbook, isDarkMode, themeOptions])
+
   const refLocal = mergeRefs([refWorkbook, refForwarded]);
 
   // We show the loading panel
@@ -393,11 +412,11 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     if (workbookResolved.error || !workbookResolved.workbook) {
       return fallbackRender({ error: workbookResolved.error });
     }
-    let headersTheme = null;
+    let appTheme = null;
     let gridTheme = null;
     let enableDarkImages = false;
     if (themeOptions) {
-      headersTheme = isDarkMode ? themeOptions.dark : themeOptions.light;
+      appTheme = isDarkMode ? themeOptions.dark : themeOptions.light;
       gridTheme = isDarkMode && themeOptions.enableDarkGrid ? themeOptions.dark : themeOptions.light;
       enableDarkImages = themeOptions.enableDarkImages;
     }
@@ -421,9 +440,10 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
         }}
         renderLoadingPanel={renderLoadingPanel}
         gridTheme={gridTheme}
-        headersTheme={headersTheme}
+        headersTheme={appTheme}
         enableDarkImages={enableDarkImages}
-        className={clsx(propClassName, 'sheetxl-workbook')}
+        sideBarElement={sideBar}
+        className={clsx(propClassName)} //, 'sheetxl-studio')}
         // standalone application turns of context menu
         onContextMenu={e=> e.preventDefault()}
         {...rest}
@@ -462,28 +482,35 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
             </SvgIcon>)
           ,
           error: (
-            <ErrorAlertIcon
+            <DynamicIcon iconKey="ErrorAlert"
               style={{ marginRight: '8px' }}
             />
           ),
         }}
       >
-        <ModalProvider>
-          <SnackbarAndCommandsWrapper
-            workbook={workbookResolved?.workbook}
-            setWorkbook={setWorkbook}
-            importExportDisabled={importExportDisabled}
-            titlePlaceHolder={titlePlaceHolder}
-            titleWorkbook={titleWorkbook}
-            setWorkbookTitle={setWorkbookTitle}
-            refWorkbookTitle={refWorkbookTitle}
-            commands={commandsApplication}
-            undoManager={undoManager}
-            themeOptions={themeOptions}
-          >
-            {renderedWorkbook}
-          </SnackbarAndCommandsWrapper>
-        </ModalProvider>
+        <TaskPaneProvider
+          createArea={createTaskPaneArea}
+          onUpdateArea={(areaElement) => {
+            setSideBar(areaElement as any);
+          }}
+        >
+          <ModalProvider>
+            <SnackbarAndCommandsWrapper
+              workbook={workbookResolved?.workbook}
+              setWorkbook={setWorkbook}
+              importExportDisabled={importExportDisabled}
+              titlePlaceHolder={titlePlaceHolder}
+              titleWorkbook={titleWorkbook}
+              setWorkbookTitle={setWorkbookTitle}
+              refWorkbookTitle={refWorkbookTitle}
+              commands={commandsApplication}
+              undoManager={undoManager}
+              themeOptions={themeOptions}
+            >
+              {renderedWorkbook}
+            </SnackbarAndCommandsWrapper>
+          </ModalProvider>
+        </TaskPaneProvider>
       </SnackbarProvider>
     </ErrorBoundary>
   )

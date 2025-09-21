@@ -1,0 +1,140 @@
+/* Global defaults (theme can override) */
+:root {
+  --icon-size-sm: 0.875rem; /* 14px if root = 16px */
+  --icon-size-md: 1rem;     /* 16px (default) */
+  --icon-size-lg: 1.25rem;  /* 20px */
+  --icon-size-xl: 1.5rem;   /* 24px */
+}
+
+/* Local root (scoped) */
+.Icon {
+  /* --icon-size: var(--icon-size-md); */
+
+  font-size: var(--icon-size, var(--icon-size-md));
+  min-width: var(--icon-size, var(--icon-size-md));
+  min-height: var(--icon-size, var(--icon-size-md));
+
+  --icon-stroke-em: 0.085em; /* needed for walkable but should be dynamic */
+
+  --icon-color:            currentColor;
+  --icon-secondary-color:  color-mix(in oklab, currentColor 65%, transparent);
+  --icon-tertiary-color:   color-mix(in oklab, currentColor 40%, transparent);
+  --icon-line-color:       currentColor;
+
+  --icon-main-opacity:      1;
+  --icon-secondary-opacity: 0.45;
+  --icon-tertiary-opacity:  0.25;
+  --icon-line-opacity:      1;
+
+  --icon-filter: none;
+  filter: var(--icon-filter);
+
+  /* box behavior */
+  /* inline element that can align with text */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* avoid extra vertical slack from line boxes */
+  line-height: 1;
+
+  /* better default next to text; tweak if needed */
+  vertical-align: middle;
+  flex: 0 0 auto; /* prevent shrink in flex rows */
+}
+
+.Icon :global(.sm) {
+  --font-size:   var(--icon-size-sm);
+}
+.Icon :global(.md) {
+  --font-size:   var(--icon-size-md);
+}
+.Icon :global(.lg) {
+  --font-size:   var(--icon-size-lg);
+}
+.Icon :global(.xl) {
+  --font-size:   var(--icon-size-xl);
+}
+
+.Icon > svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.Icon > img {
+  aspect-ratio: 1 / 1;
+  display: block;
+  /* vertical-align: middle; */
+  line-height: 1;
+}
+
+
+/* Defaults: any painted path is main tone unless overridden */
+.Icon :global(.fill),
+.Icon :global(.line) {
+  --layer-color:   var(--icon-color);
+  --layer-opacity: var(--icon-main-opacity);
+}
+
+/* Tones */
+.Icon :global(.secondary) {
+  --layer-color:   var(--icon-secondary-color);
+  /* --layer-opacity: var(--icon-secondary-opacity); */
+}
+.Icon :global(.tertiary) {
+  --layer-color:   var(--icon-tertiary-color);
+  /* --layer-opacity: var(--icon-tertiary-opacity); */
+}
+
+/* Semantics (pull from globals with fallbacks) */
+.Icon :global(.primary)            { --layer-color: var(--sxl-app-color-primary, var(--icon-primary,            #595b5e)); }
+.Icon :global(.secondary)          { --layer-color: var(--sxl-app-color-secondary,          #9c27b0); }
+.Icon :global(.secondary.light)    { --layer-color: var(--sxl-app-color-secondary-light,    #a060ac); }
+.Icon :global(.success)            { --layer-color: var(--sxl-app-color-success,            #22c55e); }
+.Icon :global(.success.light)      { --layer-color: var(--sxl-app-color-success-light,      #22c55e); }
+.Icon :global(.info)               { --layer-color: var(--sxl-app-color-info,               #3b82f6); }
+.Icon :global(.warn)               { --layer-color: var(--sxl-app-color-warn,               #f59e0b); }
+.Icon :global(.error)              { --layer-color: var(--sxl-app-color-error,              #ef4444); }
+.Icon :global(.error.light)        { --layer-color: var(--sxl-app-color-error-light,        #f87171); }
+.Icon :global(.grey)               { --layer-color: var(--sxl-app-color-grey,               #cccccc); }
+.Icon :global(.shadow)             { --layer-color: var(--sxl-app-color-shadow,             #cccccc); }
+
+/* Paint (skip themed styling for .fixed) */
+.Icon :global(.fill:not(.fixed)) {
+  fill: var(--layer-color);
+  opacity: var(--layer-opacity);
+  stroke: none;
+}
+.Icon :global(.line:not(.fixed)) {
+  fill: none;
+  stroke: var(--layer-color, var(--icon-line-color));
+  stroke-width: var(--icon-stroke-em);
+  opacity: var(--layer-opacity, var(--icon-line-opacity));
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  stroke-linecap: var(--icon-linecap, round);
+  stroke-linejoin: var(--icon-linejoin, round);
+  stroke-miterlimit: var(--icon-miter, 4);
+}
+
+/* Modifiers */
+@media (prefers-color-scheme: dark) {
+  .Icon :global(.invert-dark) { filter: invert(1) hue-rotate(180deg); }
+}
+
+.Icon :global(.muted) {
+  opacity: calc(var(--layer-opacity, 1) * 0.6);
+}
+
+/* Animation for walking */
+@keyframes sxl-walk {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Only animate the paths that opted in with .walkable AND are 'line' */
+:global(.icon.walking) :global(.walkable.line) {
+  stroke-dasharray: var(--walk-dash-length, 5px) var(--walk-dash-gap, 2px);
+  stroke-dashoffset: calc(var(--walk-dash-length, 5px) + var(--walk-dash-gap, 2px));
+  animation: sxl-walk var(--walk-duration, 960ms) linear infinite;
+  will-change: stroke-dashoffset;
+}

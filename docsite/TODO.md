@@ -3,16 +3,15 @@
 # DOCUMENTATION
 
 ## Post go live
+- Make home page more developer guides centric
+- Update Developer features
+
 - animated gifs (where demos?)
 
 - Support needs a more clear contact us.
 - Support is hidden in docs?
 
-- Make home page more developer guides centric
-- Update Developer features
-
-! Concepts Overview () (What is this even?)
-! Merge our ecosystem into concepts?
+! Concepts Overview (Merge our ecosystem into concepts)
 
 ! Working with Data is a wreak
 - Add Values Types (Primitives)
@@ -21,12 +20,9 @@
 - Add an example with 1m rows? (save as sxls)
 
 ! Re-enable StudioMUI Widget?
-- terms and privacy as root urls (not docs)
+- terms, privacy, support as root urls (not docs)
 
-## Working with Data
-
-- setValues/getValues allows for array setting.
-- (This is the simplest way to write data in batch but is not as efficient as vector apis)
+- (Working with Data) - setValues/getValues allows for array setting.
 
 ## Clean up
 

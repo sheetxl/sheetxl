@@ -12,11 +12,9 @@ import { Button } from '@mui/material';
 import { IconButton } from '@mui/material';
 import { Typography } from '@mui/material';
 
-import { Colorize as ColorizeIcon } from '@mui/icons-material';
-
 import { IColor, Color, ITheme, CommonUtils } from '@sheetxl/sdk';
 
-import { useCallbackRef } from '@sheetxl/utils-react';
+import { useCallbackRef, DynamicIcon } from '@sheetxl/utils-react';
 
 import { LoadingPanel } from '@sheetxl/utils-mui';
 
@@ -342,7 +340,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
       }}
       onClick={onEyeDropClick}
     >
-      <ColorizeIcon/>
+      <DynamicIcon iconKey="Colorize" />
     </IconButton>
     );
   }, [colorPalettes, darkMode]);

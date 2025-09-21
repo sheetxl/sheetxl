@@ -1,82 +1,17 @@
 import React, { useRef, useMemo, memo, forwardRef, useCallback } from 'react';
 
-import { SxProps } from '@mui/system';
-import { Theme } from '@mui/material/styles';
-
 import {
-  useCommand, ICommand, CommandButtonType, ICommandHook, KeyCodes, IKeyStroke
+  useCommand, ICommand, CommandButtonType, ICommandHook, KeyCodes,
+  CommandButtonRefAttribute, CommandButtonProps, DynamicIcon
 } from '@sheetxl/utils-react';
 
-import { type ExhibitTooltipProps } from '../button';
-
-import { ExhibitIconButton, ExhibitMenuItem, SelectedIcon, BLANK_ICON } from '../button';
+import { ExhibitIconButton, ExhibitMenuItem, SelectedIcon } from '../button';
 
 import { CommandTooltip } from './CommandTooltip';
 
-export type CommandButtonRefAttribute = {
-  ref?: React.Ref<HTMLDivElement>;
-};
+const BLANK_ICON = <DynamicIcon/>;
 
-export interface CommandButtonOptions<STATE=any, CONTEXT=any> extends Omit<React.HTMLAttributes<HTMLElement>, "color" | "label"> {
-  /**
-   * Allow for listeners against a specific buttons execute rather then the command.
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommandHook<STATE, CONTEXT>;
-  /**
-   * Optional string to enable the command label to be configured based on the scope of how it is being used.
-   */
-  scope?: string;
-
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-  // show label?
-
-  /**
-   * The shortcut to display.
-   *
-   * @remarks
-   * This is display only and doesn't actually track the shortcut.
-   * Override the display for the shortcut on the command (if available).
-   */
-  shortcut?: IKeyStroke | IKeyStroke[];
-
-  selected?: boolean;
-  disabled?: boolean;
-  disableHover?: boolean;
-  /**
-   * Tooltip properties. If this is specified then the tooltips are used.
-   * Do not provide a child as this component will be the child.
-   */
-  tooltipProps?: Omit<ExhibitTooltipProps, 'children'>;
-  /**
-   * How the button will be styles.
-   * @defaultValue CommandButtonType.Toolbar
-   */
-  variant?: CommandButtonType;
-  /**
-   * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
-   */
-  sx?: SxProps<Theme>;
-  /**
-   * Optional state for this specific command button.
-   * @defaultValue to undefined
-   */
-  commandState?: STATE;
-
-  context?: CONTEXT;
-}
-
-export interface CommandButtonProps<STATE=any, CONTEXT=any> extends CommandButtonOptions {
-  command: ICommand<STATE, CONTEXT>;
-
-  // ref?: React.Ref<unknown>;
-}
-
-
-export const CommandButton: React.FC<CommandButtonProps & CommandButtonRefAttribute> = memo(
+export const CommandButton = memo(
   forwardRef<any, CommandButtonProps & CommandButtonRefAttribute>((props, refForwarded) => {
   const {
     command,
@@ -137,10 +72,19 @@ export const CommandButton: React.FC<CommandButtonProps & CommandButtonRefAttrib
   }, [_, propCommandHook, commandState]);
 
   const icon = useMemo(() => {
+    if (propIcon) {
+      return typeof propIcon === "function" ? propIcon(command) : propIcon ;
+    }
     // If we are a menu and not selected we don't want the default checkmark icon
-    if (!propIcon && variant !== CommandButtonType.Toolbar && !command?.state())
+    let commandIcon = command?.icon(context);
+    if (commandIcon) {
+      if (typeof commandIcon === "string") {
+        commandIcon = <DynamicIcon iconKey={commandIcon}/>;
+      }
+      return commandIcon;
+    }
+    if (variant !== CommandButtonType.Toolbar && !command?.state())
       return BLANK_ICON;
-    return typeof propIcon === "function" ? propIcon(command) : propIcon ;
   }, [_, propIcon]);
 
   const buttonProps = useMemo(() => {

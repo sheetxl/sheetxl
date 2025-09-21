@@ -1,19 +1,17 @@
 import React, { useState, memo, forwardRef, useCallback } from 'react';
 
-import { UndoIcon, RedoIcon } from '@sheetxl/utils-mui';
-
 import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
 
 import { UndoManager } from '@sheetxl/utils';
 
 import {
-  UndoContext, useCommands, KeyCodes, ICommands, CommandButtonType
+  UndoContext, useCommands, KeyCodes, ICommands, DynamicIcon, CommandButtonType
 } from '@sheetxl/utils-react';
 
 import {
   CommandPopupButton, CommandPopupButtonProps, defaultCreatePopupPanel,
-  ExhibitDivider, ExhibitMenuItem, themeIcon, BlankIcon, ExhibitPopupPanelProps
+  ExhibitDivider, ExhibitMenuItem, ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 export interface UndoRedoCommandButtonProps extends CommandPopupButtonProps {
@@ -95,8 +93,7 @@ export const UndoRedoCommandButton = memo(
           padding: !isEmpty ? '0 0' : undefined,
           minWidth: '180px'
         }}
-        icon={null}
-        // icon={<BlankIcon/>}
+        icon={<DynamicIcon/>}
         onMouseEnter={() => { setActionCount(0); }}
         onMouseDown={(e: React.MouseEvent) => { if (e.button !== 0) return; e.preventDefault()}}
         onMouseUp={(e) => { if (e.button !== 0) return; handleClick(actionCount) }}
@@ -134,12 +131,11 @@ export const UndoRedoCommandButton = memo(
             maxWidth: '360px', // TODO - make this the width of some piece of predetermined text
             display: 'flex',
           }}
-          // icon={null}
-          icon={<BlankIcon/>}
           disabled={disabled}
           selected={i < actionCount}
           key={`action:${i}`}
-          // icon={} // Once we have icons in registry we can use them here.
+          // TODO - we can find the icon from the command key
+          icon={<DynamicIcon/>}
           onMouseEnter={ () => {
             setActionCount(i+1);
           } }
@@ -170,7 +166,7 @@ export const UndoRedoCommandButton = memo(
             >
               {action}
             </Typography>
-            <BlankIcon/>
+            <DynamicIcon/>
           </Box>
         </ExhibitMenuItem>
       )
@@ -236,7 +232,7 @@ export const UndoRedoCommandButton = memo(
       label={command?.label() ?? (isRedo ? 'Redo' : 'Undo')}
       tooltip={(<><span>{`${command?.label() ?? 'No'} last actions.`}</span></>)}
       createPopupPanel={createPopupPanel}
-      icon={icon ?? themeIcon(isRedo ? <RedoIcon/> : <UndoIcon/>)}
+      icon={icon ?? (isRedo ? 'Redo' : 'Undo')}
       selected={false} // ignore state
       {...rest}
     />

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 
+import { useMediaQuery } from '@mui/material';
+
 import { CommonUtils, UndoManager } from '@sheetxl/utils';
 import { IWorkbook } from '@sheetxl/sdk';
 
@@ -175,7 +177,8 @@ export const useStudioCommands = (
             'saveWorkbook': `as ${handler.description}`
           },
           tags: handler.tags,
-          description: `Save the workbook to the desktop${isDefault ? '' : ` as ${handler.description}`}.`
+          description: `Save the workbook to the desktop${isDefault ? '' : ` as ${handler.description}`}.`,
+          icon: 'FileDownloadAsSheet'
         };
         if (isDefault) {
           commandProperties.shortcut = {
@@ -203,9 +206,14 @@ export const useStudioCommands = (
               notifier.showError(error);
             });
           }));
-
         }
-        const commandKey = isDefault ? 'saveWorkbook' : `saveWorkbookAs${handler.key}`;
+        const formatKey = handler.key;
+        const commandKey = isDefault ? 'saveWorkbook' : `saveWorkbookAs${formatKey}`;
+        if (formatKey === 'CSV') {
+          commandProperties.icon = 'FileDownloadAsCSV';
+        } else if (formatKey === 'Excel') {
+          commandProperties.icon = 'FileDownloadAsExcel';
+        }
         commandsExport.push(new Command<string>(commandKey, target, commandProperties, (inputName: string) => {
           exportToFile(workbook, inputName ?? workbookTitle, handler)
             .catch(error => {
@@ -219,6 +227,7 @@ export const useStudioCommands = (
           'workbook': 'Open\u2026', // '...'  // ellipsis
         },
         description: 'Open a workbook from the desktop.',
+        icon: 'FileOpen',
         shortcut: {
           key: 'O',
           modifiers: [KeyModifiers.Ctrl]
@@ -275,6 +284,7 @@ export const useStudioCommands = (
           'workbook': 'From Web\u2026', // '...' // ellipsis
         },
         description: 'Open a workbook from the web.',
+        // icon: 'FileOpen',
       }, async function(url: string) {
         if (!url) {
           const results = await notifier.showInputOptions({
@@ -333,6 +343,7 @@ export const useStudioCommands = (
       new SimpleCommand('help', target, {
         label: 'Show Help',
         description: 'Provide Help.',
+        icon: 'Documentation',
         shortcut: {
           key: 'F1'
         }
@@ -340,6 +351,7 @@ export const useStudioCommands = (
       new SimpleCommand('showKeyboardShortcuts', target, {
         label: 'Keyboard Shortcuts',
         description: 'Show keyboard shortcuts.',
+        icon: 'Keyboard',
         shortcut: {
           key: '/',
           modifiers: [KeyModifiers.Ctrl]
@@ -348,24 +360,28 @@ export const useStudioCommands = (
       new Command<string>('gotoUrlGithub', target, {
         label: 'Github',
         description: 'Download examples, explore source code, and leave a star.',
+        icon: 'Github'
       }, () => {
         window?.open('https://github.com/sheetxl/sheetxl');
       }),
       new Command<string>('gotoUrlDiscord', target, {
         label: 'Discord',
         description: 'Join our community on discord.',
+        icon: 'Discord'
       }, () => {
         window?.open('https://discord.gg/NTKdwUgK9p');
       }),
       new Command<string>('gotoUrlDocumentation', target, {
         label: 'Documentation',
         description: 'Read the documentation.',
+        icon: 'Documentation'
       }, () => {
         window?.open('https://www.sheetxl.com/docs');
       }),
       new Command<string>('gotoUrlIssue', target, {
         label: 'Create Issue',
         description: 'Create an issue to identify a bug or a feature request.',
+        icon: 'Ticket'
       }, () => {
         window?.open('https://github.com/sheetxl/sheetxl/issues');
       }),
@@ -429,6 +445,7 @@ export const useStudioCommands = (
     // disabled: propDisabled,
   });
 
+  const darkModeSystemDefault = useMediaQuery('(prefers-color-scheme: dark)');
   const { themeMode: defaultThemeMode } = useResolvedThemeMode();
   useEffect(() => {
     if (!themeOptions || !commands) return;
@@ -440,12 +457,14 @@ export const useStudioCommands = (
       scopedLabels: {
         'appearance': currentDark ? 'Dark Mode' : 'Light Mode'
       },
+      icon: currentDark ? 'DarkMode' : 'LightMode'
     }).updateCallback(() => {
       onModeChange(currentDark ? ThemeMode.Light : ThemeMode.Dark);
     });
 
     commands.getCommand('defaultThemeMode').update({
-      state: !themeOptions.mode
+      state: !themeOptions.mode,
+      icon: darkModeSystemDefault ? 'SystemDefaultDarkMode' : 'SystemDefaultLightMode',
     }).updateCallback(() => {
       onModeChange(null);
     });

@@ -2,23 +2,16 @@ import React, {
   useMemo, memo, forwardRef, useCallback
  } from 'react';
 
- import clsx from 'clsx';
+import clsx from 'clsx';
 
 import { Box } from '@mui/material';
-
-import { FormatAlignLeft as FormatAlignLeftIcon } from '@mui/icons-material';
-import { FormatAlignRight as FormatAlignRightIcon } from '@mui/icons-material';
-import { FormatAlignCenter as FormatAlignCenterIcon } from '@mui/icons-material';
-import { FormatAlignJustify as FormatAlignJustifyIcon } from '@mui/icons-material';
 
 import { Command, ICommands, useCommands, CommandButtonType } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitDivider, themeIcon, ExhibitPopupPanelProps
+  defaultCreatePopupPanel, ExhibitDivider, ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
-
-import { FormatIndentIncreaseIcon, FormatIndentDecreaseIcon } from '@sheetxl/utils-mui';
 
 export const HorizontalAlignCommandButton = memo(
   forwardRef<HTMLElement, CommandPopupButtonProps>((props, refForwarded) => {
@@ -42,29 +35,15 @@ export const HorizontalAlignCommandButton = memo(
   ]
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
-  const activeCommandKey = useMemo(() => {
+  const activeCommand = useMemo(() => {
     for (let i=0; i<resolvedCommands.length; i++) {
       if ((resolvedCommands[i] as Command<boolean>)?.state()) {
-        return resolvedCommands[i].key();
+        return resolvedCommands[i];
       }
     }
     // default
-    return resolvedCommands[0]?.key();
+    return resolvedCommands[0];
   }, [resolvedCommands])
-
-  // TODO - Move to CommandButtonRegistry
-  const commandIcons:Map<string, React.ReactElement> = useMemo(() => {
-    const mapIcons = new Map();
-    mapIcons.set('formatAlignLeftToggle', themeIcon(<FormatAlignLeftIcon/>));
-    mapIcons.set('formatAlignCenterToggle', themeIcon(<FormatAlignCenterIcon/>));
-    mapIcons.set('formatAlignRightToggle', themeIcon(<FormatAlignRightIcon/>));
-    mapIcons.set('formatAlignJustifyToggle', themeIcon(<FormatAlignJustifyIcon/>));
-    mapIcons.set('formatAlignCenterContinuousToggle', themeIcon(<FormatAlignCenterIcon/>)); // FormatAlignCenterContinuousIcon
-    mapIcons.set('formatAlignFillToggle', themeIcon(<FormatAlignJustifyIcon/>)); // FormatAlignFillIcon
-    mapIcons.set('formatAlignDistributedHorizontalToggle', themeIcon(<FormatAlignJustifyIcon/>)); // FormatAlignDistributedHorizontalIcon
-
-    return mapIcons;
-  }, []);
 
   const commandHookNoBefore = useMemo(() => {
     if (!propCommandHook) return null;
@@ -85,38 +64,31 @@ export const HorizontalAlignCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatAlignLeftToggle') as Command<boolean>)}
-        icon={commandIcons.get('formatAlignLeftToggle')}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatAlignCenterToggle') as Command<boolean>)}
-        icon={commandIcons.get('formatAlignCenterToggle')}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatAlignRightToggle') as Command<boolean>)}
-        icon={commandIcons.get('formatAlignRightToggle')}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatAlignJustifyToggle') as Command<boolean>)}
-        icon={commandIcons.get('formatAlignJustifyToggle')}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatAlignCenterContinuousToggle') as Command<boolean>)}
-        icon={commandIcons.get('formatAlignCenterContinuousToggle')}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatAlignFillToggle') as Command<boolean>)}
-        icon={commandIcons.get('formatAlignFillToggle')}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('formatAlignDistributedHorizontalToggle') as Command<boolean>)}
-        icon={commandIcons.get('formatAlignDistributedHorizontalToggle')}
       />
     </>
     );
@@ -135,14 +107,12 @@ export const HorizontalAlignCommandButton = memo(
           commandHook={commandHookNoBefore}
           scope={scope}
           disabled={propDisabled}
-          icon={themeIcon(<FormatIndentDecreaseIcon/>)}
         />
         <CommandButton
           command={commands.getCommand('formatIndentIncrease')}
           commandHook={commandHookNoBefore}
           scope={scope}
           disabled={propDisabled}
-          icon={themeIcon(<FormatIndentIncreaseIcon/>)}
         />
       </Box>
     );
@@ -180,9 +150,9 @@ export const HorizontalAlignCommandButton = memo(
       createPopupPanel={createPopupPanel}
       label="Horizontal Alignment"
       tooltip="Configure how text is placed in the horizontal direction of the cell."
-      quickCommand={activeCommandKey}
+      quickCommand={activeCommand?.key()}
       // selected={isSelected}
-      icon={commandIcons.get(activeCommandKey) ?? <FormatAlignLeftIcon/>}
+      icon={activeCommand?.icon() ?? 'FormatAlignLeft'}
       {...rest}
     />
   )

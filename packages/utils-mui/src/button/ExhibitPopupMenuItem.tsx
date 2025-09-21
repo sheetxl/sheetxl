@@ -12,8 +12,7 @@ import { Divider } from '@mui/material'
 import { MenuItem } from '@mui/material';
 import { TooltipProps } from '@mui/material';
 
-// import { ArrowRight as ArrowRightIcon } from '@mui/icons-material';
-import { ArrowRightOutlineIcon as ArrowRightIcon } from '../icons';
+import { ArrowRightIcon } from '../theme';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
@@ -92,7 +91,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
     }
   }, [popupProps]);
 
-  const movableStack = useFloatStack({
+  const floatStack = useFloatStack({
     anchor: anchorRef.current,
     label: propLabel as string,
     createPopupPanel: createPopupPanel,
@@ -106,19 +105,19 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
   const handleQuickClick = useCallbackRef((e: React.MouseEvent<any>) => {
     if (e.button !== 0) return;
     onQuickClick?.(e);
-    movableStack.reference.close(0);
+    floatStack.reference.close(0);
   }, [onQuickClick]);
 
   const arrowIcon = (
     <ArrowRightIcon
-      sx={{
-        transform: () => {
-          let retValue = undefined;
-          // if (isOpen)
-          //   retValue = (retValue ? retValue + " " : "") + 'rotate(180deg)';
-          return retValue;
-        }
-      }}
+      // style={{
+      //   transform: () => {
+      //     let retValue = undefined;
+      //     // if (isOpen)
+      //     //   retValue = (retValue ? retValue + " " : "") + 'rotate(180deg)';
+      //     return retValue;
+      //   }
+      // }}
     />
   );
 
@@ -169,7 +168,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
 
     onMouseOver: () => { setHovered(true); },
     onMouseLeave: () => { setHovered(false); },
-    onMouseEnter: () => { movableStack.reference.open() },
+    onMouseEnter: () => { floatStack.reference.open() },
     onMouseDown: (e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault() },
     // onMouseUp: (e) => setOpen(false)
   }
@@ -179,7 +178,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
     const quickButtonProps:ExhibitQuickButtonProps = {
       tabIndex: -1,
       disabled: propDisabled,
-      onMouseEnter: () => { movableStack.reference.parent.closeChild() },
+      onMouseEnter: () => { floatStack.reference.parent.closeChild() },
       onMouseDown: (e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault(); handleQuickClick(e) },
       className: clsx('quick-left', {
         // ['Mui-selected']: isOpen,
@@ -233,9 +232,9 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
           onClick={(e) => {
             e.preventDefault();
             if (isOpen)
-              movableStack.reference.close();
+              floatStack.reference.close();
             else
-              movableStack.reference.open();
+              floatStack.reference.open();
           }}
         >
           { arrowIcon }
@@ -261,9 +260,9 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
         onClick={(e) => {
           e.preventDefault();
           if (isOpen)
-            movableStack.reference.close();
+            floatStack.reference.close();
           else
-            movableStack.reference.open();
+            floatStack.reference.open();
         }}
         {...eventListeners}
       >
@@ -311,9 +310,8 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
           borderBottomRightRadius: '0px',
           marginRight: '-1px',
         },
-        "&.Mui-disabled path.styled": {
+        "&.Mui-disabled > .icon path": {
           filter: 'grayscale(65%)',
-          opacity: '.8'
         },
         ...propSx
       }}
@@ -345,7 +343,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
       }}
     >
       {buttonRoot}
-      {movableStack.component}
+      {floatStack.component}
     </Box>
   );
 }));

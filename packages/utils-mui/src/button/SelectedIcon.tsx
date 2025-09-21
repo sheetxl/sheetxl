@@ -6,10 +6,10 @@ import { alpha } from '@mui/system';
 
 import { Box } from '@mui/material';
 
-import { CheckIcon } from '../icons/CheckIcon';
-import { BlankIcon } from '../icons/BlankIcon';
+import { DynamicIcon } from '@sheetxl/utils-react';
 
-import { themeIcon } from '../theme';
+const BLANK_ICON = <DynamicIcon/>;
+const DEFAULT_TOGGLE_ICON = <DynamicIcon iconKey="Check"/>;
 
 export interface SelectedIconProps extends React.HTMLAttributes<HTMLElement> {
   /**
@@ -53,10 +53,9 @@ const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>((props: 
 
   let children = propChildren;
   if (children === null)
-    children = <BlankIcon/>;
+    children = BLANK_ICON;
   if (!children)
-    children = <CheckIcon/>;
-  children = themeIcon(children as any);
+    children = DEFAULT_TOGGLE_ICON;
 
   return (
     <Box

@@ -3,11 +3,7 @@ import React, { memo, forwardRef } from 'react';
 import { Command, useCallbackRef } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, CommandToolbar, CommandToolbarButtonProps, CommandToolbarProps, ExhibitDivider, LabelIcon, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  CalculateIcon, CalculateSheetIcon, FormulaViewIcon
+  CommandButton, CommandToolbar, CommandToolbarButtonProps, CommandToolbarProps, ExhibitDivider
 } from '@sheetxl/utils-mui';
 
 import { OverflowPalette } from './OverflowPalette';
@@ -102,28 +98,20 @@ const FormulaToolbar = memo(forwardRef<HTMLDivElement, FormulaToolbarProps>((pro
         {...commandButtonProps}
         command={(commands.getCommand('sheetViewToggleFormulaView') as Command<boolean>)}
         scope={"view"}
-        icon={themeIcon(<FormulaViewIcon/>)}
-        // icon={<LabelIcon
-        //   command={commands.getCommand('sheetViewToggleFormulaView')}
-        //   scope={"view"}
-        // />}
       />
       <ExhibitDivider/>
       {/* calculate options*/}
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('calculateAll'))}
-        icon={themeIcon(<CalculateIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('calculate'))}
-        icon={themeIcon(<CalculateSheetIcon/>)}
       />
       {/* <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('calculateSettings'))} // calculateSettings
-        icon={themeIcon(<CalculateSettingsIcon/>)}
       /> */}
       {/* add automation here */}
     </OverflowPalette>);

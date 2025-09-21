@@ -21,7 +21,7 @@ import {
 
 import {
   ScrollPane, ScrollbarProps, ToolTipPlacement, KeyModifiers, SimpleCommand,
-  useCallbackRef, useImperativeElement, SplitPane, useNotifier, IReactNotifier,
+  useCallbackRef, useImperativeElement, SplitPane,
 } from '@sheetxl/utils-react';
 
 import { GridStyle } from '@sheetxl/grid-react';
@@ -41,7 +41,6 @@ import {
 import { createGridStyleFromMUITheme } from '../../theme';
 import { renderWorkbookToolbars } from '../../toolbar';
 import { type IFormulaBarElement } from '../formulaBar';
-import { ScriptWorkspace, type IScriptWorkspaceElement } from '../../script';
 
 import useWorkbookCommands from './useWorkbookCommands';
 
@@ -58,6 +57,7 @@ import { renderMovableContextMenu, renderFilterColumnMenu, renderWorkbookContext
   renderWorkbookFormulaBar, renderWorkbookLoadingPanel, renderWorkbookSheet,
   renderWorkbookStatusBar, renderWorkbookStrip
 } from './WorkbookRenderers';
+import { on } from 'events';
 
 // let currentUrl: string = '';
 // if (typeof window === "object") {
@@ -128,7 +128,10 @@ const WorkbookElement =
     loadingPanelProps: propsLoadingPanel,
 
     sheetProps: propsSheet,
+    sheetWrapper: propsSheetWrapper,
     renderSheet: propRenderSheet = renderWorkbookSheet,
+
+    sideBarElement: propSideBarElement,
 
     showHorizontalScrollbar: propShowHorizontalScrollbar,
     showVerticalScrollbar: propShowVerticalScrollbar,
@@ -138,7 +141,6 @@ const WorkbookElement =
     ...rest
   } = props;
 
-  const notifier: IReactNotifier = useNotifier();
   const appTheme = useTheme();
   const docThemes = useDocThemes();
 
@@ -201,13 +203,16 @@ const WorkbookElement =
   const refPropLoaded = useRef<(event: WorkbookLoadEvent) => void>(null);
   useLayoutEffect(() => {
     if (!isSheetLoaded || !refLocal.current) return;
-    setLoaded(true);
-    if (refPropLoaded.current !== propOnElementLoad) {
-      propOnElementLoad?.({
-        source: refLocal.current
-      });
-      refPropLoaded.current = propOnElementLoad;
+    const onLoaded = async () => {
+      if (refPropLoaded.current !== propOnElementLoad) {
+        await propOnElementLoad?.({
+          source: refLocal.current
+        });
+        refPropLoaded.current = propOnElementLoad;
+      }
+      setLoaded(true);
     }
+    onLoaded();
   }, [isSheetLoaded, refLocal.current]);
 
   setGlobalIWorkbookElement(refLocal.current);
@@ -280,8 +285,6 @@ const WorkbookElement =
     refSheet.current.focus();
   }, []);
 
-  const [isShowSidebar, setShowSidebar] = useState<boolean>(false);
-  const refSidebar = useRef<IScriptWorkspaceElement>(null);
 
   const commandsWorkbook = useWorkbookCommands({
     workbook,
@@ -291,14 +294,7 @@ const WorkbookElement =
     commands: propCommandsParent,
     darkMode: gridStyle.body.darkMode,
     onNewWorkbook: propOnNewWorkbook,
-    onShowSidebar: () => {
-      if (isShowSidebar) {
-        refSidebar.current?.focus();
-      } else {
-        // will autoFocus (if already showing then refocus)
-        setShowSidebar(true)
-      }
-    }
+
   });
 
   const popperRef = useRef(null);
@@ -394,7 +390,7 @@ const WorkbookElement =
       )
     }
     return retValue;
-  }, [propRenderTabs, propsTabs, notifier, appTheme, workbook, gridTheme, isFullWidth, commandsWorkbook, showTabs]);
+  }, [propRenderTabs, propsTabs, appTheme, workbook, gridTheme, isFullWidth, commandsWorkbook, showTabs]);
 
   const createTabStripSharedScrollbar = useCallback((props: ScrollbarProps) => {
     const isFireFox = CommonUtils.getOS() === CommonUtils.OSType.Firefox;
@@ -985,7 +981,7 @@ const WorkbookElement =
       handleFilterMenu(e, filter);
     }
 
-    return propRenderSheet({
+    const renderedSheet = propRenderSheet({
       style: styleFlexFull,
       onFocus: handleSheetFocus,
       gridStyle,
@@ -1027,55 +1023,16 @@ const WorkbookElement =
         ...propsSheet?.cellRenderProps
       }
     }, refSheet);
-  }, [propRenderSheet, commandsWorkbook, propsSheet, sheet, gridStyle, notifier, propOnRepeatCommandChange]);
-
-  const sideBar = useMemo(() => {
-    if (!isShowSidebar) return null;
-    const disabled = !protection.isStructureAllowed();
-    return (
-      <ScriptWorkspace
-        sx={{
-          marginBottom: (theme: Theme) => {
-            return theme.spacing(0.5); // same as top
-          },
-          border: (theme: Theme) => { // same as toolbar
-            return `solid ${(!disabled ? alpha(theme.palette.divider, 0.2) : theme.palette.action.disabled)} 1px`
-          },
-          borderRadius: (theme: Theme) => {
-            return `${theme.shape.borderRadius}px`
-          },
-          overflow: 'hidden' // because of the rounded borders
-          // I can't decide. Should this have square borders on right (near tabs, perhaps just when tabs are showing?)
-          // borderTopRightRadius: (theme: Theme) => {
-          //   return `${theme.shape.borderRadius}px`
-          // },
-          // borderBottomRightRadius: (theme: Theme) => {
-          //   return `${theme.shape.borderRadius}px`
-          // },
-        }}
-        onClose={() => {
-          setShowSidebar(false)
-          // TODO - hack. Figure out why sidebar is not returning focus?
-          requestAnimationFrame(() => {
-            refSheet.current.focus();
-          });
-        }}
-        readOnly={disabled}
-        commands={commandsWorkbook}
-        ref={refSidebar}
-        scripts={workbook.getScripts()}
-      >
-        {/* TODO - refactor into generic sidebar that has ScriptWorkspace */}
-      </ScriptWorkspace>
-    )
-  }, [isShowSidebar, commandsWorkbook, workbook, notifier, protection]);
+    if (!propsSheetWrapper) return renderedSheet
+    return propsSheetWrapper(renderedSheet);
+  }, [propRenderSheet, propsSheetWrapper, commandsWorkbook, propsSheet, sheet, gridStyle, propOnRepeatCommandChange]);
 
   const mainArea = useMemo(() => {
     const scrollPane = (
       <ScrollPane
         style={{
           ...styleFlexFull,
-          marginRight: sideBar && isFullWidth ? '0px' : '6px'
+          marginRight: propSideBarElement && isFullWidth ? '0px' : '6px'
         }}
         viewport={viewport}
         touchElement={refSheet.current?.getGridElement()?.stage}
@@ -1135,7 +1092,7 @@ const WorkbookElement =
             flexDirection: 'column'
           }
         }}
-        elementAfter={sideBar}
+        elementAfter={propSideBarElement}
         paneAfterProps={{
           style: {
             marginLeft: isFullWidth ? '0px' : '4px',
@@ -1144,7 +1101,7 @@ const WorkbookElement =
         }}
       />
     );
-  }, [showHorizontalScrollbar, showTabs, createTabStripSharedScrollbar, showVerticalScrollbar, viewport, sideBar, sheetElement, workbookStrip, appTheme, isFullWidth]);
+  }, [showHorizontalScrollbar, showTabs, createTabStripSharedScrollbar, showVerticalScrollbar, viewport, propSideBarElement, sheetElement, workbookStrip, appTheme, isFullWidth]);
 
   const tooltip = useMemo(() => {
     return (

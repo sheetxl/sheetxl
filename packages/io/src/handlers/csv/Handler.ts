@@ -20,7 +20,7 @@ export const toBufferCSV: WorkbookToHandler = async (workbook: IWorkbook, option
   const {
     trimLeadingBlankRow = true,
     trimLeadingBlankColumn = true,
-    excludeHidden = false,
+    ignoreHidden = false,
     sheetKey = null,
     papaParseConfig = {},
   } = options || {};
@@ -44,7 +44,7 @@ export const toBufferCSV: WorkbookToHandler = async (workbook: IWorkbook, option
   const asArray:any[] = [];
   let currentCol:any[] = null;
 
-  let range = sheet.getUsedRange({ excludeHidden });
+  let range = sheet.getUsedRange({ ignoreHidden });
   if (!range) {
     throw new Error('Nothing to export'); // unable to parse
   }

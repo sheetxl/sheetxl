@@ -3,7 +3,7 @@ import React, { forwardRef, memo, useRef, useMemo } from 'react';
 import { type TooltipProps } from '@mui/material';
 
 import {
-  ICommand, ICommands, CommandButtonType, ICommandHook, useCommands, useCallbackRef
+  ICommand, ICommands, CommandButtonType, ICommandHook, useCommands, useCallbackRef, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import {
@@ -27,7 +27,7 @@ export interface CommandPopupButtonProps<STATE=any, CONTEXT=any> extends Omit<Ex
 
   commands: ICommands.IGroup;
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
+  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode) | string;
 
   label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
 
@@ -60,7 +60,7 @@ export interface CommandPopupButtonProps<STATE=any, CONTEXT=any> extends Omit<Ex
 }
 
 const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = memo(
-    forwardRef<any, CommandPopupButtonProps>((props, refForwarded) => {
+    forwardRef<HTMLDivElement, CommandPopupButtonProps>((props, refForwarded) => {
   const {
     variant = CommandButtonType.Toolbar,
     quickCommand: quickCommandKey,
@@ -120,16 +120,15 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
       label = quickCommand?.label?.(propScope);
     }
 
-    let icon = null;
-    if (propIcon) {
-      if (typeof propIcon === 'function') {
-        icon = propIcon(quickCommand);
-      } else {
-        icon = propIcon;
-      }
-    }
+    let icon = propIcon;
     if (!icon) {
       icon = quickCommand?.icon?.();
+    }
+
+    if (typeof icon === 'string') {
+      icon = <DynamicIcon iconKey={icon}/>;
+    } else if (typeof icon === 'function') {
+      icon = icon(quickCommand);
     }
 
     return { label, icon }

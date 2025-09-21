@@ -1,4 +1,3 @@
-
 # SheetXL Contributing Guide
 
 Welcome, and thank you for your interest in contributing to SheetXL!

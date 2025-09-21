@@ -6,12 +6,12 @@ import {
 
 import { IColor } from '@sheetxl/sdk';
 
+import { DynamicIcon } from '@sheetxl/utils-react';
 import { CommandContext } from '@sheetxl/react';
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitPopupPanelProps, ExhibitDivider,
-  ColorizedStrokeIcon, LabelIcon
+  defaultCreatePopupPanel, ExhibitPopupPanelProps, ExhibitDivider, LabelIcon
 } from '@sheetxl/utils-mui';
 
 import { ColorCommandButton } from '../command/ColorCommandButton';
@@ -53,7 +53,7 @@ export const ViewGridLinesCommandButton = memo(
       <ColorCommandButton
         {...commandButtonProps}
         command={(commands.getCommand('sheetViewFormatGridlinesColor') as Command<IColor, CommandContext.Color>)}
-        icon={<ColorizedStrokeIcon/>}
+        icon={<DynamicIcon iconKey="stroke.colored" />}
         panelProps={{
           disableAlpha: true
         }}

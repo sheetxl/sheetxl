@@ -4,10 +4,8 @@ import { CommandButtonType, ICommands, useCommands } from '@sheetxl/utils-react'
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps, ExhibitDivider,
-  ExhibitPopupPanelProps, defaultCreatePopupPanel, themeIcon
+  ExhibitPopupPanelProps, defaultCreatePopupPanel
 } from '@sheetxl/utils-mui';
-
-import { RemoveColumn2Icon, RemoveRowIcon, RemoveCellsIcon, BlankIcon } from '@sheetxl/utils-mui';
 
 export interface DeleteCellsCommandButtonProps extends CommandPopupButtonProps {
   disableSheet?: boolean;
@@ -59,18 +57,6 @@ export const DeleteCellsCommandButton = memo(
     return { singleCommand, allDisabled: count === 0 };
   }, [resolvedCommands]);
 
-
-  // TODO - Move to CommandButtonRegistry
-  const commandIcons:Map<string, React.ReactElement> = useMemo(() => {
-    const mapIcons = new Map();
-    mapIcons.set('deleteCellsShiftUp', themeIcon(<RemoveCellsIcon sx={{ transform: 'rotate(0deg)'}}/>));
-    mapIcons.set('deleteCellsShiftLeft', themeIcon(<RemoveCellsIcon sx={{ transform: 'rotate(270deg)'}}/>));
-    mapIcons.set('deleteRows', themeIcon(<RemoveRowIcon/>));
-    mapIcons.set('deleteColumns', themeIcon(<RemoveColumn2Icon/>));
-
-    return mapIcons;
-  }, []);
-
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const commandButtonProps = {
       variant: CommandButtonType.Menuitem,
@@ -86,7 +72,6 @@ export const DeleteCellsCommandButton = memo(
         <CommandButton
           {...commandButtonProps}
           command={commands.getCommand('deleteSheet')}
-          icon={themeIcon(<BlankIcon/>)}
         />
       </>);
     const children = (<>
@@ -94,30 +79,25 @@ export const DeleteCellsCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('deleteCellsShiftUp')}
-        icon={commandIcons.get('deleteCellsShiftUp')}
       />
       {/* Note - Excel shows left before up in menu but this feels inconsistent with rows columns.*/}
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('deleteCellsShiftLeft')}
-        icon={commandIcons.get('deleteCellsShiftLeft')}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('deleteRows')}
-        icon={commandIcons.get('deleteRows')}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('deleteColumns')}
-        icon={commandIcons.get('deleteColumns')}
       />
       {deleteSheet}
     </>);
     return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, propCommandHook, scope, commandIcons]);
-
+  }, [propDisabled, propCommandHook, scope]);
 
   // if single command shows a regular menu
   if (singleCommand) {
@@ -129,7 +109,6 @@ export const DeleteCellsCommandButton = memo(
         // scope={scope} // Remove the popup scope
         disabled={propDisabled}
         command={singleCommand}
-        icon={commandIcons.get(singleCommand.key())}
         {...rest}
       />
     )
@@ -149,7 +128,6 @@ export const DeleteCellsCommandButton = memo(
       // label={label}
       tooltip={(<><span>Delete cells, rows, columns or sheets from your workbook.</span><br/><span>To delete multiple rows or columns at a time, select multiple rows or columns in the sheet and click Delete.</span></>)}
       createPopupPanel={createPopupPanel}
-      icon={themeIcon(<RemoveColumn2Icon/>)}
       {...rest}
     />
   )

@@ -2,11 +2,9 @@ import React, { memo, forwardRef, useCallback } from 'react';
 
 import { CommandButtonType, ICommands } from '@sheetxl/utils-react';
 
-import { FillDownIcon } from '@sheetxl/utils-mui';
-
 import {
-  CommandButton, CommandPopupButton, CommandPopupButtonProps, defaultCreatePopupPanel,
-  ExhibitPopupPanelProps, themeIcon
+  CommandButton, CommandPopupButton, CommandPopupButtonProps,
+  defaultCreatePopupPanel, ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 export interface FillCommandButtonProps extends CommandPopupButtonProps {
@@ -34,22 +32,18 @@ export const FillCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('fillDown')}
-        icon={themeIcon(<FillDownIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('fillRight')}
-        icon={themeIcon(<FillDownIcon sx={{ transform: 'rotate(270deg)'}}/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('fillUp')}
-        icon={themeIcon(<FillDownIcon sx={{ transform: 'rotate(180deg)'}}/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('fillLeft')}
-        icon={themeIcon(<FillDownIcon sx={{ transform: 'rotate(90deg)'}}/>)}
       />
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -64,7 +58,7 @@ export const FillCommandButton = memo(
       label="Fill"
       tooltip="Fill the selected cells with the value from one of the corners."
       createPopupPanel={createPopupPanel}
-      icon={themeIcon(<FillDownIcon/>)}
+      icon={'FillDown'}
       {...rest}
     />
   )

@@ -7,14 +7,13 @@ import { SxProps, alpha } from '@mui/system';
 
 import { Box } from '@mui/material';
 
-import { Lock as LockIcon } from '@mui/icons-material';
-
 import { IWorkbook, ISheet, IWorkbookProtection } from '@sheetxl/sdk';
 
 import { GridStyle } from '@sheetxl/grid-react';
 
+import { DynamicIcon } from '@sheetxl/utils-react';
+
 import { ExhibitMenuItem, SelectedIcon, FloatReference } from '@sheetxl/utils-mui';
-import { VisibilityOffIcon, themeIcon } from '@sheetxl/utils-mui';
 
 import { useModelListener } from '@sheetxl/react';
 
@@ -111,10 +110,10 @@ const SheetsAllMenu = memo(forwardRef<HTMLDivElement, SheetsAllMenuProps>((props
 
       let iconStatus = null;
       if (protectionSheet) {
-        iconStatus = <LockIcon color="secondary"/>;
+        iconStatus = <DynamicIcon iconKey="Lock"/>;
       }
       if (visibility !== ISheet.Visibility.Visible) { // overrides protection icon on purpose
-        iconStatus = themeIcon(<VisibilityOffIcon style={{ opacity: !protectionWorkbook.isStructureAllowed() ? 0.7 : 1 }} color="secondary"/>);
+        iconStatus = <DynamicIcon iconKey="VisibilityOff" style={{ opacity: !protectionWorkbook.isStructureAllowed() ? 0.7 : 1 }} color="secondary"/>;
       }
       if (iconStatus) {
         iconStatus = (

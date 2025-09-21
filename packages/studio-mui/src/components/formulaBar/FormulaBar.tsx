@@ -9,13 +9,10 @@ import { useTheme, Theme, alpha, getOverlayAlpha } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import { Paper } from '@mui/material';
 
-import { ExpandLess as ExpandLessIcon } from '@mui/icons-material';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-
 import { IWorkbook, IFont, ISheet, ICell, IRangeSelection, EditMode } from '@sheetxl/sdk';
 
 import {
-  useEditMode, useCallbackRef, useImperativeElement, SplitPane
+  useEditMode, useCallbackRef, useImperativeElement, SplitPane, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import { TextStyle, ICellEditorElement } from '@sheetxl/grid-react';
@@ -25,9 +22,7 @@ import {
   createCellEditStateFromCell as defaultCreateCellEditStateFromCell
 } from '@sheetxl/react';
 
-import {
-  FunctionIcon, CheckSuccessIcon, CloseErrorIcon, themeIcon, ExhibitIconButton
-} from '@sheetxl/utils-mui';
+import { ExhibitIconButton } from '@sheetxl/utils-mui';
 
 import {
   NamedCollectionEditor, NamedCollectionEditorProps, INamedCollectionEditorElement
@@ -220,8 +215,8 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
       >
         <ExhibitIconButton
           sx={{
-            padding: '0px',
-            margin: '0px 0px',
+            // padding: '0px',
+            // margin: '0px 0px',
             border: 'none !important',
             '&.Mui-focusVisible': { // we still want the focus outline
               border: 'none',
@@ -234,7 +229,7 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
           outlined={false}
           color="warning"
           aria-label="cancel-formula-edit"
-          icon={themeIcon(<CloseErrorIcon/>)}
+          icon={<DynamicIcon iconKey="CloseError" />}
           tooltipProps={{
             label: 'Cancel',
             simple: true
@@ -245,8 +240,8 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
         />
         <ExhibitIconButton
           sx={{
-            padding: '0px',
-            margin: '0px 0px',
+            // padding: '0px',
+            // margin: '0px 0px',
             border: 'none !important',
             '&.Mui-focusVisible': { // we still want the focus outline
               border: 'none',
@@ -259,7 +254,7 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
           outlined={false}
           color="primary"
           aria-label="commit-formula-edit"
-          icon={themeIcon(<CheckSuccessIcon/>)}
+          icon={<DynamicIcon iconKey="CheckSuccess" />}
           tooltipProps={{
             label: 'Enter',
             simple: true
@@ -270,8 +265,8 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
         />
         <ExhibitIconButton
           sx={{
-            padding: '0px',
-            margin: '0px 0px',
+            // padding: '0px',
+            // margin: '0px 0px',
             border: 'none !important',
             '&.Mui-focusVisible': { // we still want the focus outline
               border: 'none',
@@ -284,7 +279,7 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
           outlined={false}
           disabled={true} // TODO - implement
           aria-label="commit-formula-function"
-          icon={themeIcon(<FunctionIcon sx={{transform: 'scale(0.85)' }}/>)}
+          icon={<DynamicIcon iconKey="Function" style={{transform: 'scale(0.85)' }}/>}
           tooltipProps={{
             label: 'Insert Function',
             simple: true
@@ -322,6 +317,7 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
             '& .editor-placement': {
               top: '2px !important',
             },
+            minHeight: "calc(100% - 2px)",
             // minHeight: "1.2em",
             boxShadow: "none",
             borderRadius : (theme: Theme) => {
@@ -367,8 +363,6 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
               flex: '1 1 100%',
               position: 'relative',
               alignSelf: 'baseline',
-              // paddingTop: "2px",
-              // paddingBottom: "3px",
               paddingLeft: (theme: Theme) => { return theme.spacing(1) },
               paddingRight: (theme: Theme) => { return theme.spacing(1) },
             }}
@@ -408,7 +402,7 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
             dense={true}
             outlined={false}
             aria-label="toggle-expand-formula-edit"
-            icon={themeIcon(linesVisible > 1 ? <ExpandLessIcon/> : <ExpandMoreIcon/>)}
+            icon={<DynamicIcon iconKey={linesVisible > 1 ? "ExpandLess" : "ExpandMore"} />}
             tooltipProps={{
               label: `${linesVisible > 1 ? 'Collapse' : 'Expand'} Formula Bar`,
               simple: true

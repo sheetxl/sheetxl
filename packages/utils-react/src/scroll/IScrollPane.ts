@@ -1,5 +1,5 @@
 
-import type { Dimensions, TopLeft } from '@sheetxl/utils';
+import type { Size, TopLeft } from '@sheetxl/utils';
 
 import type { ScrollableViewport } from '../types';
 import type { ScrollbarProps } from './IScrollbar';
@@ -23,7 +23,7 @@ export interface ScrollPaneProps extends React.HTMLAttributes<HTMLDivElement> {
   showHorizontalScrollbar?: boolean;
   showVerticalScrollbar?: boolean;
 
-  createScrollCorner?: (dims: Dimensions) => React.ReactNode;
+  createScrollCorner?: (size: Size) => React.ReactNode;
   createHorizontalScrollbar?: (props: ScrollbarRefProps) => React.ReactNode;
   createVerticalScrollbar?: (props: ScrollbarRefProps) => React.ReactNode;
   /**

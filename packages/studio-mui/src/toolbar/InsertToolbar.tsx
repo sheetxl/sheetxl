@@ -1,25 +1,17 @@
 import React, { memo, forwardRef } from 'react';
 
-// import { AddPhotoAlternate as AddPhotoAlternateIcon } from '@mui/icons-material';
-// import { TableView as TableViewIcon } from '@mui/icons-material';
-
 import { useCallbackRef } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandToolbar, ExhibitDivider,
-  CommandToolbarButtonProps, CommandToolbarProps, themeIcon,
+  CommandToolbarButtonProps, CommandToolbarProps,
   ICommandToolbarElement
-} from '@sheetxl/utils-mui';
-
-import {
-  InsertHyperlinkIcon, InsertCommentIcon, InsertTableIcon
 } from '@sheetxl/utils-mui';
 
 import { OverflowPalette } from './OverflowPalette';
 
 import { InsertImageCommandButton } from '../command/InsertImageCommandButton';
 import { InsertChartCommandButton } from '../chart/command/InsertChartCommandButton';
-
 
 const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
   const {
@@ -40,33 +32,39 @@ const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolba
     <OverflowPalette
       parentFloat={parentFloat}
     >
+      {/* pivot */}
+      <CommandButton
+        {...commandButtonProps}
+        command={(commands.getCommand('insertTable'))}
+      />
+      {/* forms */}
+      <InsertImageCommandButton
+        {...commandPopupProps}
+      />
+      {/* shapes */}
+      {/* checkbox / controls */}
       {__DEV__ ? <>
         <InsertChartCommandButton
           {...commandPopupProps}
         />
         <ExhibitDivider/>
       </>: null}
+      {/* sparklines */}
+      {/* slicer */}
+      {/* timeline? */}
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('updateHyperlink'))}
-        icon={themeIcon(<InsertHyperlinkIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('updateComments'))}
-        icon={themeIcon(<InsertCommentIcon/>)}
       />
-      <InsertImageCommandButton
-        {...commandPopupProps}
-      />
-      <CommandButton
-        {...commandButtonProps}
-        command={(commands.getCommand('insertTable'))}
-        icon={themeIcon(<InsertTableIcon/>)} // TODO - create a custom multi-color icon that is nicer.
-      />
+      {/* textbox / smartArt / header & footer */}
+      {/* symbols (math + unicode) */}
     </OverflowPalette>);
 
-    // pivot
+
     // shapes
     // map
     // custom widgets

@@ -18,25 +18,17 @@ import { MenuItem } from '@mui/material';
 import { FormControl } from '@mui/material';
 import { Select, SelectChangeEvent, type SelectProps } from '@mui/material';
 
-// Note - we could do all of this with a single icon but I think it is more clear and flexible to have separate icons
-import { ArrowUpward as ArrowUpwardIcon } from '@mui/icons-material';
-import { ArrowDownward as ArrowDownwardIcon } from '@mui/icons-material';
-import { ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
-
 import { IRange, ICell, ICellRange, IWorkbook } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, KeyCodes, KeyModifiers
+  useCallbackRef, KeyCodes, KeyModifiers, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import {
-  ExhibitDivider, ExhibitOptionButton, themeIcon
+  ExhibitDivider, ExhibitOptionButton
 } from '@sheetxl/utils-mui';
 
 import {
-  FindOptionsIcon, FindReplaceToggleIcon, FindCaseSensitiveIcon, FindWholeWordIcon,
-  FindRegExIcon, FindReplaceIcon, FindReplaceAllIcon,
   InternalWindow, InternalWindowProps, IInternalWindowElement
 } from '@sheetxl/utils-mui';
 
@@ -496,7 +488,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
           }}
           preventFocus={true}
           label="Toggle Additional Options"
-          icon={themeIcon(<FindOptionsIcon/>)}
+          icon={<DynamicIcon iconKey="FindOptions" />}
         />
         <ExhibitOptionButton
           // tabIndex={2}  // FocusTrap is not behaving as expected
@@ -506,7 +498,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
           }}
           preventFocus={true}
           label="Toggle Replace"
-          icon={themeIcon(<FindReplaceToggleIcon/>)}
+          icon={<DynamicIcon iconKey="FindReplaceToggle" />}
           shortcut={{ key: isShowReplace ? 'F' : 'H', modifiers: [KeyModifiers.Ctrl]}}
         />
       </Box>
@@ -578,7 +570,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                       }}
                       label="Match Case"
                       shortcut={{ key: 'C', modifiers: [KeyModifiers.Alt] }}
-                      icon={themeIcon(<FindCaseSensitiveIcon />)}// sx={{transform: 'scale(0.70)'}} />)}
+                      icon={<DynamicIcon iconKey="FindCaseSensitive" />} // sx={{transform: 'scale(0.70)'}} />)}
                     />
                     <ExhibitOptionButton
                       // tabIndex={6}  // FocusTrap is not behaving as expected
@@ -594,7 +586,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                       }}
                       label="Match Entire Cell"
                       shortcut={{ key: 'E', modifiers: [KeyModifiers.Alt] }}
-                      icon={themeIcon(<FindWholeWordIcon />)}// sx={{transform: 'scale(0.70)'}} />)}
+                      icon={<DynamicIcon iconKey="FindWholeWord" />} // sx={{transform: 'scale(0.70)'}} />)}
                     />
                     <ExhibitOptionButton
                       // tabIndex={6}  // FocusTrap is not behaving as expected
@@ -610,7 +602,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                       }}
                       label="Use Regular Expression"
                       shortcut={{ key: 'R', modifiers: [KeyModifiers.Alt] }}
-                      icon={themeIcon(<FindRegExIcon />)}// sx={{transform: 'scale(0.70)'}} />)}
+                      icon={<DynamicIcon iconKey="FindRegEx" />} // sx={{transform: 'scale(0.70)'}} />)}
                     />
                   </Box>
                 </InputAdornment>
@@ -655,7 +647,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
             touchRippleRef={refRipplePrev}
             label="" //label="Previous Match" - TODO - implement reverse in scanCells. - This put this back BEFORE next button)
             shortcut={{ key: 'Enter', modifiers: [KeyModifiers.Shift]}}
-            icon={themeIcon(options.findOptions.orientation !== IRange.Orientation.Column ? <ArrowBackIcon/> : <ArrowUpwardIcon/>)}
+            icon={<DynamicIcon iconKey={options.findOptions.orientation !== IRange.Orientation.Column ? "ArrowBack" : "ArrowUpward"} />}
             disabled={!options.findText}
           />
           <ExhibitOptionButton
@@ -667,7 +659,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
             touchRippleRef={refRippleNext}
             label="Next Match"
             shortcut={{ key: 'Enter'}}
-            icon={themeIcon(options.findOptions.orientation !== IRange.Orientation.Column ? <ArrowForwardIcon/> : <ArrowDownwardIcon/>)}
+            icon={<DynamicIcon iconKey={options.findOptions.orientation !== IRange.Orientation.Column ? "ArrowForward" : "ArrowDownward"} />}
             disabled={!options.findText}
           />
         </Box>
@@ -735,7 +727,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               touchRippleRef={refRippleReplace}
               label="Replace"
               shortcut={{ key: 'Enter'}}
-              icon={themeIcon(<FindReplaceIcon/>)}
+              icon={<DynamicIcon iconKey="FindReplace" />}
               disabled={!options.findText}
             />
             <ExhibitOptionButton
@@ -747,7 +739,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               touchRippleRef={refRippleReplaceAll}
               label="Replace All"
               shortcut={{ key: 'Enter', modifiers: [KeyModifiers.Ctrl, KeyModifiers.Alt]}}
-              icon={themeIcon(<FindReplaceAllIcon/>)}
+              icon={<DynamicIcon iconKey="FindReplaceAll" />}
               disabled={!options.findText}
             />
             {/* <Box // spacing

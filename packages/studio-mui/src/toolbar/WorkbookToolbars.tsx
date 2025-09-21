@@ -166,7 +166,11 @@ const ToolbarSelectTabs = memo((props: any) => {
         },
         ...propsSX
       }}
-      TabIndicatorProps={{ children: <span className="MuiTabs-indicatorSpan" /> }}
+      slotProps={{
+        indicator: {
+          children: <span className="MuiTabs-indicatorSpan" />
+        }
+      }}
       {...rest}
     >
       {tabs}

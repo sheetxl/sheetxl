@@ -1,4 +1,4 @@
-import { PaintableText, Dimensions } from '../types';
+import { PaintableText, Size } from '../types';
 
 /**
  * Simple DOM element to measure text size for non-rich text.
@@ -21,7 +21,7 @@ export interface TextMeasurerOptions {
   scale?: number;
 }
 
-export interface TextDimensions extends Dimensions {
+export interface TextDimensions extends Size {
   maxLineHeight: number;
 }
 export interface TextMeasurer {

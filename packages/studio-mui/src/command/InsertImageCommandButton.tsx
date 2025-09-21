@@ -4,11 +4,7 @@ import { CommandButtonType, ICommands, useCommands } from '@sheetxl/utils-react'
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps, defaultCreatePopupPanel,
-  ExhibitPopupPanelProps, themeIcon, //ExhibitDivider,
-} from '@sheetxl/utils-mui';
-
-import {
-  InsertImageIcon,
+  ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 export interface InsertImageCommandButtonProps extends CommandPopupButtonProps {
@@ -69,18 +65,15 @@ export const InsertImageCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('insertImageFromFile')}
-        icon={themeIcon(<InsertImageIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('insertImageFromURL')}
-        icon={themeIcon(<InsertImageIcon/>)}
       />
       {/* <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('insertImageFromUnsplash')}
-        icon={themeIcon(<InsertImageIcon/>)}
       /> */}
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -96,7 +89,6 @@ export const InsertImageCommandButton = memo(
         // scope={scope} // Remove the popup scope
         disabled={propDisabled}
         command={singleMenuCommand}
-        icon={themeIcon(<InsertImageIcon/>)}
         {...rest}
       />
     )
@@ -114,7 +106,7 @@ export const InsertImageCommandButton = memo(
       // label={`Insert Image\u2026`}
       tooltip={`Insert a picture from the web to complement your data.`}
       createPopupPanel={createPopupPanel}
-      icon={themeIcon(<InsertImageIcon/>)}
+      icon={'InsertImage'}
       {...rest}
     />
   );

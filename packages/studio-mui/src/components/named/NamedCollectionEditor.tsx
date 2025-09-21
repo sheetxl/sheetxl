@@ -18,18 +18,13 @@ import {
 
 import {
   useCallbackRef, useImperativeElement, KeyCodes,
-  useNotifier, IReactNotifier, NotifierType, CommandButtonType, ICommand
+  useNotifier, IReactNotifier, NotifierType, CommandButtonType
 } from '@sheetxl/utils-react';
 
 import {
   CommandButton, useFloatStack, defaultCreatePopupPanel, ExhibitDivider, ExhibitTooltip,
   ExhibitPopupIconButton, ExhibitQuickButtonProps, ExhibitPopupPanelProps,
-  themeIcon, SimpleCommandPopupButton, ExhibitMenuHeader
-} from '@sheetxl/utils-mui';
-
-import {
-  CellSelectionInsertIcon, InsertTableIcon, CellSelectionIcon, CellSelectionEditIcon,
-  CellSelectionRemoveIcon
+  SimpleCommandPopupButton, ExhibitMenuHeader
 } from '@sheetxl/utils-mui';
 
 import { useModelListener } from '@sheetxl/react';
@@ -318,6 +313,7 @@ const NamedCollectionEditor =
             },
             paddingTop: '0px',
             paddingBottom: '0px',
+            height: '1rem',
             // fontSize: (theme: Theme) => {
             //   return `${Math.round(theme.typography.fontSize)}px`;
             // },
@@ -331,6 +327,7 @@ const NamedCollectionEditor =
             color: (theme: Theme) => theme.palette.text.secondary,
             'input': {
               padding: '0',
+              height: '1rem',
               textAlign: 'left',
               "&:hover:not(.Mui-disabled):not(.Mui-error)": { // hover
                 color: (theme: Theme) => theme.palette.text.primary,
@@ -506,18 +503,7 @@ const NamedCollectionEditor =
             label={item.getName()}
             quickCommand={'selectNamed'}
             disabled={!item.getRanges() || propDisabled}
-            icon={(command: ICommand) => {
-              const commandKey: string = command.key();
-              switch (commandKey) {
-                case 'editNamedReference':
-                  return themeIcon(<CellSelectionEditIcon/>);
-                case 'deleteNamedReference':
-                  return themeIcon(<CellSelectionRemoveIcon/>);
-                default:
-                  return themeIcon(<CellSelectionIcon/>);
-              }
-              // // icon={selected ? <SelectedIcon/> : undefined}
-            }}
+            icon="NamedRange"
           />
         );
       } else if (type === 'table') {
@@ -533,15 +519,7 @@ const NamedCollectionEditor =
             label={item.getName()}
             quickCommand={'selectNamed'}
             disabled={!ranges || propDisabled}
-            icon={(command: ICommand) => {
-              const commandKey: string = command.key();
-              switch (commandKey) {
-                case 'selectNamed':
-                  return themeIcon(<InsertTableIcon/>);
-                default:
-                  return themeIcon(<InsertTableIcon/>);
-              }
-            }}
+            icon={"InsertTable"}
           />
         );
       }
@@ -562,7 +540,6 @@ const NamedCollectionEditor =
             {...commandButtonProps}
             scope='namedItem'
             command={commandPopupButtonProps?.commands.getCommand('addNamedReference')}
-            icon={themeIcon(<CellSelectionInsertIcon/>)}
           />
         ) : null}
         {(menus && menus.length > 0) ? (<>
@@ -610,7 +587,7 @@ const NamedCollectionEditor =
             flex: '1 1 100%',
             width: '100%',
             // height: '100%',
-            height: '27px', // TODO - make this a function of the font similar to formulaEditor
+            // height: '27px', // TODO - make this a function of the font similar to formulaEditor
           },
           ...propSx
         }}

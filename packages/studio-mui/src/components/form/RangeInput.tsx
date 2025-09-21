@@ -14,8 +14,8 @@ import { TextField } from '@mui/material';
 
 import { ICellRanges } from '@sheetxl/sdk';
 
-import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
-import { ExhibitOptionButton, themeIcon, SelectRangeModeIcon } from '@sheetxl/utils-mui';
+import { useCallbackRef, KeyCodes, DynamicIcon } from '@sheetxl/utils-react';
+import { ExhibitOptionButton } from '@sheetxl/utils-mui';
 
 export interface RangeInputProps extends FormControlProps {
   /**
@@ -160,7 +160,7 @@ const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivElement> }
         }}
         label="Select Range"
         // shortcut={{ key: 'C', modifiers: [KeyModifiers.Alt] }}
-        icon={themeIcon(<SelectRangeModeIcon/>)}// sx={{transform: 'scale(0.70)'}} />)}
+        icon={<DynamicIcon iconKey="SelectRangeMode" />}
       />
       </InputAdornment>
     )

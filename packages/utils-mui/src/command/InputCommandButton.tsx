@@ -6,13 +6,15 @@ import { IconButton } from '@mui/material'
 import { Input } from '@mui/material';
 
 import {
-  useCallbackRef, useCommand, ICommand, CommandButtonType, ICommandHook, KeyCodes
+  useCallbackRef, useCommand, ICommand, CommandButtonType, ICommandHook, KeyCodes,
+  type CommandButtonProps, DynamicIcon
 } from '@sheetxl/utils-react';
 
-import { ExhibitMenuItem, ExhibitIconButton, BLANK_ICON } from '../button';
+import { ExhibitMenuItem, ExhibitIconButton } from '../button';
 
-import { type CommandButtonProps } from './CommandButton';
 import { CommandTooltip } from './CommandTooltip';
+
+const BLANK_ICON = <DynamicIcon/>;
 
 export interface InputCommandButtonProps<STATE=any, CONTEXT=any> extends CommandButtonProps<STATE, CONTEXT> {
   // TODO - move to command buttons
@@ -92,8 +94,15 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
   }, [command?.state()]);
 
   const icon = useMemo(() => {
-    return typeof propIcon === "function" ? propIcon(command) : propIcon ;
-  }, [_, propIcon]);
+    let retValue = typeof propIcon === "function" ? propIcon(command) : propIcon ;
+    if (retValue) {
+      retValue = command?.icon();
+    }
+    if (typeof retValue === 'string') {
+      retValue = <DynamicIcon iconKey={retValue} />;
+    }
+    return retValue;
+  }, [_, propIcon, command?.icon]);
 
   const label = useMemo(() => {
     if (propLabel === undefined)

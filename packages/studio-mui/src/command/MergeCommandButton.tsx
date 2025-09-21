@@ -4,11 +4,7 @@ import { ICommands, CommandButtonType } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitPopupPanelProps, ExhibitDivider, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  MergeAllIcon, MergeHorizontalIcon, MergeVerticalIcon, MergeUnMergeIcon
+  defaultCreatePopupPanel, ExhibitPopupPanelProps, ExhibitDivider
 } from '@sheetxl/utils-mui';
 
 export interface MergeCommandButtonProps extends CommandPopupButtonProps {}
@@ -38,23 +34,19 @@ export const MergeCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('mergeToggle')}
-        icon={themeIcon(<MergeAllIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('mergeHorizontal')}
-        icon={themeIcon(<MergeHorizontalIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('mergeVertical')}
-        icon={themeIcon(<MergeVerticalIcon/>)}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('unmerge')}
-        icon={themeIcon(<MergeUnMergeIcon/>)}
       />
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -71,7 +63,7 @@ export const MergeCommandButton = memo(
       tooltip="Combine or split cells."
       createPopupPanel={createPopupPanel}
       // disabled={propDisabled || commandPrimaryToggle?.disabled()}
-      icon={themeIcon(<MergeAllIcon/>)}
+      icon={'MergeAll'}
       {...rest}
     />
   )
