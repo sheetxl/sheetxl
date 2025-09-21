@@ -13,13 +13,7 @@ import { CommandContext } from '@sheetxl/react';
 
 import {
   CommandPopupButtonProps, defaultCreatePopupPanel, ExhibitPopupPanelProps,
-  ExhibitMenuItem, CommandPopupButton, themeIcon, FormulaLookupReferenceIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  FormulaGroupIcon, FormulaLogicalIcon, FormulaCubeIcon, FormulaFinancialIcon, FormulaTextIcon, FormulaMathTrigIcon,
-  FormulaStatisticalIcon, FormulaEngineeringIcon, FormulaInformationIcon, FormulaDateTimeIcon, FormulaDatabaseIcon,
-  FormulaWebIcon, FormulaCustomIcon
+  ExhibitMenuItem, CommandPopupButton
 } from '@sheetxl/utils-mui';
 
 export interface InsertFunctionCommandButtonProps extends CommandPopupButtonProps {
@@ -44,73 +38,73 @@ interface CategoryDesc {
   key: string;
   label: string;
   categories?: string[];
-  icon: React.ReactElement;
+  icon: string | React.ReactElement;
 }
 const Categories: CategoryDesc[] = [
   {
     key: 'financial',
     label: 'Financial',
-    icon: <FormulaFinancialIcon/>
+    icon: 'FormulaFinancial'
   },
   {
     key: 'logical',
     label: 'Logical',
-    icon: <FormulaLogicalIcon/>
+    icon: 'FormulaLogical'
   },
   {
     key: 'text',
     label: 'Text',
-    icon: <FormulaTextIcon/>
+    icon: 'FormulaText'
   },
   {
     key: 'dateTime',
     label: 'Date & Time',
-    icon: <FormulaDateTimeIcon/>
+    icon: 'FormulaDateTime'
   },
   {
     key: 'lookupReference',
     label: 'Lookup & Reference',
-    icon: <FormulaLookupReferenceIcon/>
+    icon: 'FormulaLookupReference'
   },
   {
     key: 'mathTrig',
     label: 'Math & Trig',
-    icon: <FormulaMathTrigIcon/>
+    icon: 'FormulaMathTrig'
   },
   {
     key: 'statDist',
     label: 'Statistical',
-    icon: <FormulaStatisticalIcon/>
+    icon: 'FormulaStatistical'
   },
   {
     key: 'engineering',
     label: 'Engineering',
-    icon: <FormulaEngineeringIcon/>
+    icon: 'FormulaEngineering'
   },
   {
     key: 'information',
     label: 'Information',
-    icon: <FormulaInformationIcon/>
+    icon: 'FormulaInformation'
   },
   {
     key: 'cube',
     label: 'Cube',
-    icon: <FormulaCubeIcon/>
+    icon: 'FormulaCube'
   },
   {
     key: 'database',
     label: 'Database',
-    icon: <FormulaDatabaseIcon/>
+    icon: 'FormulaDatabase'
   },
   {
     key: 'web',
     label: 'Web',
-    icon: <FormulaWebIcon/>
+    icon: 'FormulaWeb'
   },
   {
     key: 'custom',
     label: 'Custom',
-    icon: <FormulaCustomIcon/>
+    icon: 'FormulaCustom'
   },
   // more functions? (another grouping? Why)
 ];
@@ -154,7 +148,7 @@ const InsertFunctionCommandButton = memo((props: any) => { // TODO - type
         label: promiseLabel,
         maxWidth: 1000
       }}
-      // icon={selected ? <SelectedIcon/> : undefined}
+      // icon={selected ? <Selected' : undefined}
       onMouseDown={(e: React.MouseEvent) => { if (e.button !== 0) return; e.preventDefault()}}
       onMouseUp={(e) => { if (e.button !== 0) return; handleInsert(propFunction) }}
       onKeyDown={(e: React.KeyboardEvent) => {
@@ -226,7 +220,7 @@ const InsertFunctionCommandPopupButton = memo(
       createPopupPanel={createPopupPanel}
       label={categoryDesc.label}
       tooltip={`Insert Function`} // ${categoryDesc.label}
-      icon={themeIcon(mapCategories.get(category)?.icon ?? <FormulaGroupIcon/>)}
+      icon={mapCategories.get(category)?.icon ?? 'FormulaGroup'}
       {...rest}
     />
   )

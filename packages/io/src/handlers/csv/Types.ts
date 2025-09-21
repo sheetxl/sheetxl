@@ -16,7 +16,7 @@ export interface WriteCSVOptions extends WriteWorkbookOptions {
    * Indicate whether hidden columns and rows are skipped in the CSV output.
    * @defaultValue false
    */
-  excludeHidden?: boolean;
+  ignoreHidden?: boolean;
   /**
    * Indicates whether the leading blank rows should be trimmed.
    *

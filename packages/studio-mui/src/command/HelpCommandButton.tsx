@@ -1,15 +1,10 @@
 import React, { memo, forwardRef, useCallback } from 'react';
 
-import { Keyboard as KeyboardIcon } from '@mui/icons-material';
-
-import { ICommand, ICommands, CommandButtonType } from '@sheetxl/utils-react';
+import { ICommand, ICommands, CommandButtonType, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps, defaultCreatePopupPanel,
-  ExhibitPopupPanelProps, ExhibitDivider, themeIcon
-} from '@sheetxl/utils-mui';
-import {
-  HelpIcon, GithubIcon, DiscordIcon, DocumentationIcon, TicketIcon
+  ExhibitPopupPanelProps, ExhibitDivider
 } from '@sheetxl/utils-mui';
 
 export interface HelpCommandButtonProps extends CommandPopupButtonProps {}
@@ -44,28 +39,23 @@ export const HelpCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('showKeyboardShortcuts')}
-        icon={themeIcon(<KeyboardIcon/>)}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('gotoUrlGithub')}
-        icon={themeIcon(<GithubIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('gotoUrlDiscord')}
-        icon={themeIcon(<DiscordIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('gotoUrlDocumentation')}
-        icon={themeIcon(<DocumentationIcon/>)}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('gotoUrlIssue')}
-        icon={themeIcon(<TicketIcon/>)}
       />
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -82,7 +72,7 @@ export const HelpCommandButton = memo(
       label="Help"
       tooltip="Help, feedback, and keyboard shortcuts."
       createPopupPanel={createPopupPanel}
-      icon={themeIcon(<HelpIcon sx={{transform: 'scale(0.75)'}}/>)}
+      icon={<DynamicIcon iconKey="Help" style={{transform: 'scale(0.75)'}}/>}
       {...rest}
     />
   )

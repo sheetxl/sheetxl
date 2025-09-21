@@ -3,7 +3,8 @@ import React, { useState, memo } from 'react';
 import { type Theme } from '@mui/material/styles';
 
 import { Box, Typography, IconButton } from '@mui/material';
-import { ContentCopy, BugReport } from '@mui/icons-material';
+
+import { DynamicIcon } from '@sheetxl/utils-react';
 
 export interface StackTraceProps {
   /**
@@ -199,7 +200,7 @@ const StackTrace: React.FC<StackTraceProps> = memo(({
           sx={{ color: 'inherit', opacity: 0.7, '&:hover': { opacity: 1 } }}
           title="Copy stack trace"
         >
-          <ContentCopy sx={{ fontSize: '0.875rem' }} />
+          <DynamicIcon iconKey='ContentCopy' style={{ fontSize: '0.875rem' }} />
         </IconButton>
         <IconButton
           size="small"
@@ -211,7 +212,7 @@ const StackTrace: React.FC<StackTraceProps> = memo(({
           sx={{ color: 'inherit', opacity: 0.7, '&:hover': { opacity: 1 } }}
           title="Log error to console"
         >
-          <BugReport sx={{ fontSize: '0.875rem' }} />
+          <DynamicIcon iconKey='BugReport' style={{ fontSize: '0.875rem' }} />
         </IconButton>
       </Box>
       <Box

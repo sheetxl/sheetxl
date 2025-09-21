@@ -33,7 +33,6 @@ export const WorkbookViewCommandButton = memo(
       commandHook: propCommandHook,
       scope,
       disabled: propDisabled
-      // icon={themeIcon(<TextHorizontalOverflowIcon/>)}
     }
     const children = (<>
       <CommandButton

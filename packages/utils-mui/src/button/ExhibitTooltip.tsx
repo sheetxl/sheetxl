@@ -35,7 +35,6 @@ export interface ExhibitTooltipProps extends Omit<TooltipProps, "title"> {
 
   componentDisabled?: boolean;
 
-
   chips?: string | string[] | React.ReactNode | React.ReactNode[];
 }
 

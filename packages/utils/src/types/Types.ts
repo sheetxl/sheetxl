@@ -84,7 +84,7 @@ export interface Point {
 /**
  * Represents a shape that has a width and height.
  */
-export interface Dimensions {
+export interface Size {
   /**
    * The width of the shape.
    */
@@ -96,12 +96,12 @@ export interface Dimensions {
 };
 
 /**
- * Represents a point with dimensions.
+ * Represents a point with size.
  */
-export interface Bounds extends Point, Dimensions {}
+export interface Bounds extends Point, Size {}
 
 /**
- * Flags for indicating which dimensions are set.
+ * Flags for indicating which size properties are set.
  */
 export interface DimensionsFlags {
   /**

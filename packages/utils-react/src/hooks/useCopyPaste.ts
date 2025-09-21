@@ -115,6 +115,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       new SimpleCommand('cut', refCommandSourceTarget, {
         label: 'Cut',
         description: 'Remove the selection and put it on the clipboard so you can paste it somewhere else.',
+        icon: 'cut',
         shortcut: {
           key: 'X',
           modifiers: [KeyModifiers.Ctrl]
@@ -123,6 +124,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       new SimpleCommand('copy', refCommandSourceTarget, {
         label: 'Copy',
         description: 'Put a copy of the selection on the clipboard so you can paste it somewhere else.',
+        icon: 'copy',
         shortcut: {
           key: 'C',
           modifiers: [KeyModifiers.Ctrl]
@@ -131,6 +133,7 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       new SimpleCommand('paste', refCommandTargetTarget, {
         label: 'Paste',
         description: 'Add content on the clipboard to your document.',
+        icon: 'paste',
         shortcut: [
           {
             key: 'V',

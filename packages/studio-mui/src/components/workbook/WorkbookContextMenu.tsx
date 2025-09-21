@@ -16,15 +16,8 @@ import {
 import { useModelListener } from '@sheetxl/react';
 
 import {
-  SimpleCommandPopupButton, CommandButton, FloatReference, ExhibitDivider, themeIcon
+  SimpleCommandPopupButton, CommandButton, FloatReference, ExhibitDivider
 } from '@sheetxl/utils-mui';
-
-import {
-  CutIcon, ShowColumnIcon, HideColumnIcon, ShowRowIcon, HideRowIcon,
-  InsertHyperlinkIcon, InsertCommentIcon, InsertTableIcon
-} from '@sheetxl/utils-mui';
-
-import { ColumnsResizeAutoIcon, RowsResizeAutoIcon } from '@sheetxl/utils-mui';
 
 import { WalkingCopyCommandButton } from '../../command';
 import { PasteCommandButton } from '../../command';
@@ -162,7 +155,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={commands.getCommand('hideColumns')}
           {...commandButtonProps}
-          icon={themeIcon(<HideColumnIcon/>)}
           key={'context:' + contextOptions.length}
         />
       );
@@ -170,7 +162,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={commands.getCommand('unhideColumns')}
           {...commandButtonProps}
-          icon={themeIcon(<ShowColumnIcon/>)}
           key={'context:' + contextOptions.length}
         />
       );
@@ -186,7 +177,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={commands.getCommand('hideRows')}
           {...commandButtonProps}
-          icon={themeIcon(<HideRowIcon/>)}
           key={'context:' + contextOptions.length}
         />
       );
@@ -194,7 +184,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={commands.getCommand('unhideRows')}
           {...commandButtonProps}
-          icon={themeIcon(<ShowRowIcon/>)}
           key={'context:' + contextOptions.length}
         />
       );
@@ -212,7 +201,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={commands.getCommand('autoFitColumns')}
           {...commandButtonProps}
-          icon={themeIcon(<ColumnsResizeAutoIcon/>)}
           key={'context:' + contextOptions.length}
         />
       );
@@ -222,7 +210,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={commands.getCommand('autoFitRows')}
           {...commandButtonProps}
-          icon={themeIcon(<RowsResizeAutoIcon/>)}
           key={'context:' + contextOptions.length}
         />
       );
@@ -257,15 +244,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
           popupScope="hyperlink"
           key={'contextBefore:action' + contextBefore.length}
           quickCommand={'openHyperlink'}
-          icon={(command: ICommand) => {
-            const key = command.key();
-            switch (key) {
-              case 'openHyperlink':
-                return themeIcon(<InsertHyperlinkIcon/>);
-              default:
-                return null;
-            }
-          }}
         />
       );
     } else {
@@ -274,7 +252,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={updateHyperlinkCommand}
           {...commandButtonProps}
-          icon={themeIcon(<InsertHyperlinkIcon/>)}
           key={'contextBefore:' + contextBefore.length}
         />
       );
@@ -291,15 +268,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
           ]}
           key={'contextBefore:action' + contextBefore.length}
           quickCommand={'updateComments'}
-          icon={(command: ICommand) => {
-            const key = command.key();
-            switch (key) {
-              case 'updateComments':
-                return themeIcon(<InsertCommentIcon/>);
-              default:
-                return null;
-            }
-          }}
         />
       );
     } else {
@@ -308,7 +276,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={updateCommentsCommand}
           {...commandButtonProps}
-          icon={themeIcon(<InsertCommentIcon/>)}
           key={'contextBefore:' + contextBefore.length}
         />
       );
@@ -337,13 +304,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
           scope="context"
           commandState={activeTable}
           quickCommand={'editTable'}
-          icon={(command: ICommand) => {
-            const key = command.key();
-            switch (key) {
-              default:
-                return themeIcon(<InsertTableIcon/>);
-            }
-          }}
         />
       );
     } else {
@@ -351,7 +311,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
         <CommandButton
           command={commands.getCommand('insertTable')}
           {...commandButtonProps}
-          icon={themeIcon(<InsertTableIcon/>)}
           key={'context:' + contextOptions.length}
         />
       );
@@ -361,7 +320,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
       contextBefore.push(
         <InsertChartCommandButton
           {...commandPopupProps}
-          // icon={themeIcon(<InsertHyperlinkIcon/>)}
           key={'contextBefore:' + contextBefore.length}
         />
       );
@@ -369,7 +327,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
     contextBefore.push(
       <InsertImageCommandButton
         {...commandPopupProps}
-        // icon={themeIcon(<InsertHyperlinkIcon/>)}
         key={'contextBefore:' + contextBefore.length}
       />
     );
@@ -379,7 +336,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
     <CommandButton
       command={commands.getCommand('cut')}
       {...commandButtonProps}
-      icon={<CutIcon/>}
     />
     <WalkingCopyCommandButton
       command={commands.getCommand('copy')}
@@ -421,7 +377,6 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
     <CommandButton
       command={commands.getCommand('clearContents')}
       {...commandButtonProps}
-      icon={themeIcon(<ClearContentsIcon/>)}
     />
     */}
     {contextOptions}

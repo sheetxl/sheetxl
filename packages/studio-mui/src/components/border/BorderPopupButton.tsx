@@ -4,16 +4,15 @@ import React, {
 
 import { alpha, getOverlayAlpha } from '@mui/material/styles';
 
-import { SvgIcon } from '@mui/material';
 import { Box } from '@mui/material';
 import { TooltipProps } from '@mui/material';
 
 import { IColor, Color, IBorder, ICell } from '@sheetxl/sdk';
 
-import { useCallbackRef } from '@sheetxl/utils-react';
+import { useCallbackRef, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
-  ColorizedStrokeIcon, ExhibitDivider, ExhibitPopupPanelProps, PopupButtonType,
+  ExhibitDivider, ExhibitPopupPanelProps, PopupButtonType,
   ExhibitTooltip, ExhibitPopupIconButton, ExhibitPopupIconButtonProps,
   ExhibitIconButton, strokeShadowFilter
 } from '@sheetxl/utils-mui';
@@ -96,13 +95,15 @@ export const BorderPopupButton = memo(
     const borderTemplate: Partial<IBorder.Properties> = {};
     const edges = border ? Object.keys(border) : [];
     let hasNonNone = false; /* if all borders are none we special case to treat as clear */
-    for (let i=0; i<edges.length; i++) {
-      if (border[edges[i]]?.style) { //  && border[edges[i]].style !== IBorder.StrokeStyle.None
-        borderTemplate[edges[i]] = {
-          style: border[edges[i]].style,
-          color: border[edges[i]].color,
+    const edgesLength = edges.length;
+    for (let i=0; i<edgesLength; i++) {
+      const edge = edges[i];
+      if (border[edge]?.style) { //  && border[edge].style !== IBorder.StrokeStyle.None
+        borderTemplate[edge] = {
+          style: border[edge].style,
+          color: border[edge].color,
         }
-        if (!hasNonNone && borderTemplate[edges[i]].style !== IBorder.StrokeStyle.None) {
+        if (!hasNonNone && borderTemplate[edge].style !== IBorder.StrokeStyle.None) {
           hasNonNone = true;
         }
         // if (borderTemplate[edges[i]].style === IBorder.StrokeStyle.None) {
@@ -196,38 +197,52 @@ export const BorderPopupButton = memo(
     if (!(bottom || right)) // bottom right
       path += `M 19,21 h 2 v -2 h -2 `;
     return (
-      <div
-        style={{
-          width: '24px',
-          height: '24px',
-          position: 'relative'
-        }}
-      >
-        <SvgIcon
+      <DynamicIcon> {/* blank - for sizing */}
+        <Box
+          className="border-icon"
           sx={{
-            position: 'absolute',
-            top: '0px',
-            left: '0px',
-            '& path': {
-              opacity: '0.8',
-              transform
+            width: 'var(--icon-size, var(--icon-size-md))',
+            height: 'var(--icon-size, var(--icon-size-md))',
+            position: 'relative',
+            '& .grid > path': {
+              // '& path': {
+                opacity: '0.8',
+              //   transform
+              // }
             }
           }}
         >
-          <path
-            d={path}
-          />
-        </SvgIcon>
+          <svg
+            viewBox="0 0 24 24"
+            className="grid"
+            style={{
+              top: '0px',
+              left: '0px',
+              width: 'calc(var(--icon-size, var(--icon-size-md)) + 1px)', // +1 to account for transform
+              height: 'calc(var(--icon-size, var(--icon-size-md)) + 1px)', // +1 to account for transform
+              position: 'absolute'
+            }}
+          >
+            <path
+              className="fill"
+              d={path}
+            />
+          </svg>
         <Box
+          className='border-container'
           sx={{
-            width: '24px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            // background: 'pink',
             position: 'absolute',
-            top: '-1px',
-            left: '-1px',
+            display: 'flex',
+            justifyContent: 'stretch',
+            alignItems: 'stretch',
+            top: '0px',
+            left: '0px',
+            width: 'var(--icon-size, var(--icon-size-md))',
+            height: 'var(--icon-size, var(--icon-size-md))',
+            padding: '1px 1px',
+            // top: '-1px',
+            // left: '-1px',
             '& svg path': {
               filter: strokeShadowFilter
             }
@@ -235,21 +250,18 @@ export const BorderPopupButton = memo(
         >
           <StaticBorderRenderer
             getBorderAt={getBorderAt}
-            width={18}
-            height={18}
             darkMode={darkMode}
             style={{
-              top: '0px',
-              left: '0px',
-              width: '18px',
-              height: '18px',
-              minWidth: '18px',
-              minHeight: '18px',
-              position: 'relative'
+              top: '2px',
+              left: '2px',
+              width: 'calc(100% - 5px)',
+              height: 'calc(100% - 5px)',
+              position: 'absolute'
             }}
           />
         </Box>
-    </div>
+      </Box>
+    </DynamicIcon>
     )
   }, [activeColor, activeStyle, darkMode]);
 
@@ -263,7 +275,8 @@ export const BorderPopupButton = memo(
           color: color?.toString() ?? null
         }
       retValue = {};
-      for (let i=0; i<edges.length; i++) {
+      const edgesLength = edges.length;
+      for (let i=0; i<edgesLength; i++) {
         retValue[edges[i]] = values;
       }
     }
@@ -358,7 +371,7 @@ export const BorderPopupButton = memo(
         <ColorPopupButton
           // {...rest}
           variant={PopupButtonType.Toolbar}
-          icon={<ColorizedStrokeIcon/>}
+          icon={<DynamicIcon iconKey="stroke.colored" />}
           selectedColor={activeStyle === IBorder.StrokeStyle.None ? new Color('transparent') : activeColor}
           onPreviewColor={(color: IColor | null) => {
             setPreviewColor(color);

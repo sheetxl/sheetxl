@@ -16,11 +16,11 @@ import {
 } from '@sheetxl/utils-react';
 
 import {
-  themeIcon, defaultCreatePopupPanel, ExhibitDivider, ExhibitMenuItem, ExhibitTooltip,
+  defaultCreatePopupPanel, ExhibitDivider, ExhibitMenuItem, ExhibitTooltip,
   ExhibitPopupIconButton, ExhibitPopupIconButtonProps, ExhibitQuickButtonProps, ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
-import { CommandButton, TextSizeIncreaseIcon, TextSizeDecreaseIcon, SelectedIcon } from '@sheetxl/utils-mui';
+import { CommandButton, SelectedIcon } from '@sheetxl/utils-mui';
 
 import { IFont } from '@sheetxl/sdk';
 
@@ -133,12 +133,11 @@ export const FontSizeCommandButton = memo(
         <CommandButton
           command={commands[0]}
           commandHook={commandHookNoBefore}
-          icon={themeIcon(<TextSizeIncreaseIcon/>)}
         />
         <CommandButton
           // {...buttonProps}
           command={commands[1]}
-          icon={themeIcon(<TextSizeDecreaseIcon/>)}
+          commandHook={commandHookNoBefore}
         />
       </Box>
     );
@@ -200,6 +199,7 @@ export const FontSizeCommandButton = memo(
             'input': {
               padding: '0 0',
               textAlign: 'center',
+              height: '1rem',
               'MozAppearance': 'textfield',
               "&:hover:not(.Mui-disabled):not(.Mui-error)": { // hover
                 color: (theme: Theme) => theme.palette.text.primary,
@@ -211,8 +211,7 @@ export const FontSizeCommandButton = memo(
             'input::-webkit-inner-spin-button': {
               'WebkitAppearance': 'none',
               margin: '0'
-            },
-            minHeight: '24px' // to align with icons. what if larger?
+            }
           }}
 
           value={fontSize}

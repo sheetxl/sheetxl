@@ -5,8 +5,7 @@ import { TooltipProps } from '@mui/material';
 import { IBorder } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, useCommands, ICommand, ICommands, CommandButtonType,
-  ICommandHook
+  useCallbackRef, useCommands, ICommand, ICommands, CommandButtonType, ICommandHook
 } from '@sheetxl/utils-react';
 
 import { CommandContext } from '@sheetxl/react';

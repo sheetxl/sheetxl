@@ -10,8 +10,8 @@
  */
 
 // @ts-check
+// /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 
-/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   tutorialSidebar: [
@@ -20,8 +20,33 @@ const sidebars = {
     },
     {
       type: 'link',
+      label: 'Pricing', // The link label
+      href: '/docs/pricing'
+    },
+    {
+      type: 'link',
+      label: 'Support', // The link label
+      href: '/docs/support'
+    },
+    {
+      type: 'link',
+      label: 'GitHub', // The link label
+      href: 'https://github.com/sheetxl/sheetxl'
+    },
+    // {
+    //   type: 'html',
+    //   value: '<img src="./img/cli-logo.png" alt="Sponsor" />', // The HTML to be rendered
+    //   defaultStyle: true, // Use the default menu item styling
+    // },
+    {
+      type: 'link',
       label: 'API Reference', // The link label
       href: 'https://api.sheetxl.com', // The external URL
+    },
+    {
+      type: 'link',
+      label: 'Sign-in', // The link label
+      href: 'https://my.sheetxl.com'
     },
     {
       type: 'link',

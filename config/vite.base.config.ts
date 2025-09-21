@@ -276,7 +276,7 @@ export function createLibraryConfig(options: CreateViteConfigOptions) {
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Cache-Control', 'no-cache');
             res.end(content);
-          } catch (error) {
+          } catch (error: any) {
             console.warn('TypeScript declaration file not found:', error.message);
             res.statusCode = 404;
             res.end('TypeScript declaration file not found. Run `pnpm build:types-scripting` first.');
@@ -440,7 +440,7 @@ export function createLibraryConfig(options: CreateViteConfigOptions) {
   }
 
   const input: InputOption | undefined = rollupOptions?.input;
-  if (!isApp && !rollupOptions?.input?.['cli']) {
+  if (!isApp && !(rollupOptions?.input as any)?.['cli']) {
     overrides.build = {
       ...overrides.build,
       lib: {
@@ -521,8 +521,10 @@ export function createLibraryConfig(options: CreateViteConfigOptions) {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
         'Access-Control-Allow-Headers': '*',
-        'Cross-Origin-Opener-Policy': 'same-origin',
-        'Cross-Origin-Embedder-Policy': 'require-corp',
+        // 'Cross-Origin-Opener-Policy': 'same-origin',
+        // 'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'unsafe-none',
+        'Cross-Origin-Embedder-Policy': 'unsafe-none',
       }
     },
     server: {
@@ -532,8 +534,10 @@ export function createLibraryConfig(options: CreateViteConfigOptions) {
         // ignored: ["!**/node_modules/**"] // Ensure package changes trigger reloads
       },
       headers: {
-        "Cross-Origin-Opener-Policy": "same-origin",
-        "Cross-Origin-Embedder-Policy": "require-corp",
+        // "Cross-Origin-Opener-Policy": "same-origin",
+        // "Cross-Origin-Embedder-Policy": "require-corp",
+        'Cross-Origin-Opener-Policy': 'unsafe-none',
+        'Cross-Origin-Embedder-Policy': 'unsafe-none',
       },
       // hmr: {
       //   overlay: true // Show HMR errors in the browser

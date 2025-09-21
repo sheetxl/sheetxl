@@ -13,11 +13,7 @@ import {
 } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, FloatReference, ExhibitDivider, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  SortIncreaseIcon, SortDecreaseIcon, FilterClearIcon
+  CommandButton, FloatReference, ExhibitDivider
 } from '@sheetxl/utils-mui';
 
 // import { Filters } from './Filters';
@@ -96,19 +92,16 @@ const FilterColumnMenu = memo(forwardRef<HTMLDivElement, FilterColumnMenuProps>(
     <CommandButton
       {...commandButtonProps}
       command={commands.getCommand('sortAscending')}
-      icon={themeIcon(<SortIncreaseIcon/>)}
     />
     <CommandButton
       {...commandButtonProps}
       command={commands.getCommand('sortDescending')}
-      icon={themeIcon(<SortDecreaseIcon/>)}
     />
     <ExhibitDivider orientation="horizontal"/>
     <CommandButton
       {...commandButtonProps}
       // scope={'filter'}
       command={commands.getCommand('autoFilterClear')}
-      icon={themeIcon(<FilterClearIcon/>)}
     />
     {/* <ExhibitDivider orientation="horizontal"/>
     <Filters

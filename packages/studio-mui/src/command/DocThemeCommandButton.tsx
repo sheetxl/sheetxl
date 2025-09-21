@@ -10,7 +10,7 @@ import {
 
 import { CommandContext } from '@sheetxl/react';
 
-import { CommandTooltip, Theme2Icon, themeIcon, PopupButtonType } from '@sheetxl/utils-mui';
+import { CommandTooltip, PopupButtonType } from '@sheetxl/utils-mui';
 
 import { ThemeSelectPopupButton, ThemeSelectPopupButtonProps } from '../components/theme';
 
@@ -108,7 +108,6 @@ export const DocThemeCommandButton = memo(
       createTooltip={createTooltip}
       disabled={disabled}
       darkMode={darkMode}
-      icon={themeIcon(<Theme2Icon/>)}
       {...rest}
     />
   )

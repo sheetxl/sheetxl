@@ -8,11 +8,7 @@ import {
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitPopupPanelProps, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  TextStrikeIcon, TextSuperscriptIcon, TextSubscriptIcon
+  defaultCreatePopupPanel, ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 /**
@@ -35,24 +31,15 @@ export const TextEffectsCommandButton = memo(
   ];
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
-  const activeCommandKey = useMemo(() => {
+  const activeCommand = useMemo(() => {
     for (let i=0; i<resolvedCommands.length; i++) {
       if ((resolvedCommands[i] as Command<boolean>)?.state()) {
-        return resolvedCommands[i].key();
+        return resolvedCommands[i];
       }
     }
     // default
-    return resolvedCommands[0]?.key();
+    return resolvedCommands[0];
   }, [resolvedCommands])
-
-  // TODO - Move to CommandButtonRegistry
-  const commandIcons:Map<string, React.ReactElement> = useMemo(() => {
-    const mapIcons = new Map();
-    mapIcons.set('formatStrikeThroughToggle', themeIcon(<TextStrikeIcon/>));
-    mapIcons.set('formatSuperscriptToggle', themeIcon(<TextSuperscriptIcon/>));
-    mapIcons.set('formatSubscriptToggle', themeIcon(<TextSubscriptIcon/>));
-    return mapIcons;
-  }, []);
 
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const commandButtonProps = {
@@ -66,17 +53,14 @@ export const TextEffectsCommandButton = memo(
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('formatStrikeThroughToggle') as Command<boolean>}
-        icon={commandIcons.get('formatStrikeThroughToggle')}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('formatSuperscriptToggle') as Command<boolean>}
-        icon={commandIcons.get('formatSuperscriptToggle')}
       />
       <CommandButton
         {...commandButtonProps}
         command={commands.getCommand('formatSubscriptToggle') as Command<boolean>}
-        icon={commandIcons.get('formatSubscriptToggle')}
       />
     </>);
     return defaultCreatePopupPanel({...props, children});
@@ -85,17 +69,16 @@ export const TextEffectsCommandButton = memo(
   return (
     <CommandPopupButton
       ref={refForwarded}
-      quickCommand={activeCommandKey}
+      quickCommand={activeCommand?.key()}
       commands={propCommands}
       commandHook={propCommandHook}
       createPopupPanel={createPopupPanel}
       label="Text Effects"
       tooltip="Style your text to differentiate it."
-      icon={commandIcons.get(activeCommandKey) ?? themeIcon(<TextStrikeIcon/>)}
+      icon={activeCommand?.icon() ?? 'TextStrike'}
       {...rest}
     />
   )
-
 }));
 
 export default TextEffectsCommandButton;

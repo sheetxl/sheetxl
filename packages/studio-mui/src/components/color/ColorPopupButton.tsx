@@ -8,17 +8,17 @@ import { Box } from '@mui/material';
 
 import { IColor } from '@sheetxl/sdk';
 
-import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
+import { useCallbackRef, KeyCodes, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
   ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitPopupPanelProps,
-  ExhibitPopupIconButtonProps, PopupButtonType, ColorizedCircleIcon
+  ExhibitPopupIconButtonProps, PopupButtonType
 } from '@sheetxl/utils-mui';
 
 import ColorPanel, { ColorPanelProps } from './ColorPanel';
 
 
-const DEFAULT_ICON = <ColorizedCircleIcon/>;
+const DEFAULT_ICON = <DynamicIcon iconKey='circle.colored'/>;
 
 
 export interface ColorPopupButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "createPopupPanel"> {
@@ -116,9 +116,9 @@ export const ColorPopupButton = memo(
     // TODO - make this more generic and move to a common area.
     return (
       <Box
+        className='color-wrapper'
         sx={{
-          width: '24px',
-          height: '24px',
+          lineHeight: '0', // done expand
           color: 'inherit',
           '--sxl-color-active': `${activeColorButton?.toCSS(darkMode) ?? 'transparent'}`,
           '& .activeColor': {

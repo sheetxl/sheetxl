@@ -11,9 +11,7 @@ import { Card } from '@mui/material';
 import { CardActions } from '@mui/material';
 import { IconButton } from '@mui/material';
 
-import { Close as CloseIcon } from '@mui/icons-material';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-
+import { DynamicIcon } from '@sheetxl/utils-react';
 import { StackTrace } from '@sheetxl/utils-mui';
 
 import styles from './ToastError.module.css';
@@ -85,7 +83,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
                   })}
                   onClick={handleExpandClick}
                 >
-                <ExpandMoreIcon />
+                <DynamicIcon iconKey="ExpandMore" />
                 </IconButton>
               : null}
               <IconButton
@@ -93,7 +91,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
                 className={styles.expand}
                 onClick={handleDismiss}
               >
-                <CloseIcon fontSize="small" />
+                <DynamicIcon iconKey="Close" style={{transform: 'scale(0.8)'}} />
               </IconButton>
             </div>
           </CardActions>

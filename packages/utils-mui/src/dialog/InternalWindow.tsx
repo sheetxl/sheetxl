@@ -28,16 +28,14 @@ import { type TransitionProps } from '@mui/material/transitions';
 
 import { Paper, PaperProps } from '@mui/material';
 
-import { Close as CloseIcon } from '@mui/icons-material';
-
 import Draggable, {
   DraggableEventHandler, DraggableEvent, DraggableData
 } from 'react-draggable';
 
-import { Point, Dimensions } from '@sheetxl/utils';
+import { Point, Size } from '@sheetxl/utils';
 
 import {
-  useCallbackRef, useImperativeElement, KeyCodes, useFullscreenPortal
+  useCallbackRef, useImperativeElement, KeyCodes, useFullscreenPortal, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import { ExhibitTooltip } from '../button';
@@ -46,8 +44,8 @@ import { scrollbarTheming } from '../theme';
 export interface DraggablePaperProps extends PaperProps {
   onDragStop?: DraggableEventHandler;
   PaperComponent?: React.JSXElementConstructor<PaperProps>;
-  titleSize?: Dimensions;
-  rootSize?: Dimensions;
+  titleSize?: Size;
+  rootSize?: Size;
   handleSel?: string;
   rootSel?: string;
   defaultPosition?: Point;
@@ -483,7 +481,7 @@ export const InternalWindow = memo(
                     }}
                     onPointerUp={handleCancel}
                   >
-                    <CloseIcon/>
+                    <DynamicIcon iconKey='Close'/>
                   </IconButton>
                 </ExhibitTooltip>
               </Box>

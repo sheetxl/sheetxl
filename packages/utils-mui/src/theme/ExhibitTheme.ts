@@ -7,7 +7,8 @@ import {
   ComponentsPropsList, Interpolation
 } from '@mui/material/styles';
 
-import { ArrowDownOutlineIcon } from '../icons';
+// import { DynamicIcon } from '@sheetxl/utils-react';
+import { ArrowDownIcon } from './ThemedIcon';
 
 // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
 const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -110,6 +111,23 @@ export const createExhibitTheme = (isDark: boolean, customizations?: ExhibitThem
   //   htmlFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
   // }
 
+  const styleIcons = {
+    '--icon-primary': original.palette.primary.main,
+    '--icon-secondary': original.palette.secondary.main,
+    '--icon-secondary-light': original.palette.secondary.light,
+    '--icon-success': original.palette.success.main,
+    '--icon-success-light': original.palette.success.light,
+    '--icon-info': original.palette.info.main,
+    '--icon-warn': original.palette.warning.main,
+    '--icon-error': original.palette.error.main,
+    '--icon-error-light': original.palette.error.light,
+    '--icon-grey': (original.palette.text as any).icon ?? original.palette.action.active,
+    '--icon-shadow': isDark ? original.palette.text.primary : original.palette.divider,
+    '--icon-size': '1.25rem',
+    '@media (pointer: coarse)': {
+      '--icon-size': '1.75rem',
+    },
+  }
   const darkAlpha = 0.70;
   const lightAlpha = 0.75;
   let exhibitDefaults:ExhibitThemeOptions = {
@@ -137,7 +155,13 @@ export const createExhibitTheme = (isDark: boolean, customizations?: ExhibitThem
       },
       MuiSelect: {
         defaultProps: {
-          IconComponent: ArrowDownOutlineIcon
+          IconComponent: ArrowDownIcon,
+          MenuProps: {
+            container: () => {
+              // console.log('MuiSelect: Fullscreen:', document.fullscreenElement);
+              return document.fullscreenElement ?? undefined
+            }
+          }
         },
         styleOverrides: {
           // Name of the slot
@@ -158,7 +182,8 @@ export const createExhibitTheme = (isDark: boolean, customizations?: ExhibitThem
             // paddingBottom: '2px',
             // backgroundColor: 'pink'
             // background: 'pink',
-            border: `solid transparent 1px` // needed to aligned to select icon border
+            border: `solid transparent 1px`, // needed to aligned to select icon border
+            color: 'unset'
             // },
           }
         }
@@ -186,11 +211,13 @@ export const createExhibitTheme = (isDark: boolean, customizations?: ExhibitThem
         defaultProps: {
           // Not sure why this isn't the default behavior?
           // TODO - useFullScreen hook
-          container: document.fullscreenElement  ?? undefined
+          container: () => {
+            // console.log('MuiMenu: Fullscreen:', document.fullscreenElement);
+            return document.fullscreenElement ?? undefined
+          }
         },
         styleOverrides: {
           root: {
-            border: 'red solid 2px',
             paddingTop: '2px',
             paddingBottom: '2px',
             marginLeft: '4px',
@@ -207,6 +234,18 @@ export const createExhibitTheme = (isDark: boolean, customizations?: ExhibitThem
           }
         }
       },
+      MuiToolbar: {
+        styleOverrides: {
+          root: {
+            paddingTop: '4px',
+            paddingBottom: '4px',
+            '@media (min-width: 600px)': {
+              paddingTop: '4px',
+              paddingBottom: '4px'
+            },
+          }
+        }
+      },
       MuiDivider: {
         styleOverrides: {
           root: {
@@ -218,9 +257,28 @@ export const createExhibitTheme = (isDark: boolean, customizations?: ExhibitThem
           }
         }
       },
+      MuiInputBase: {
+        styleOverrides: {
+          root: {
+            // height: '1rem',
+            // '> input': {
+            //   height: '1rem',
+            // }
+            // backgroundColor: isDark ? alpha(original.palette.background.paper, 0.5) : original.palette.background.paper,
+          }
+        }
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            ...styleIcons,
+          }
+        }
+      },
       MuiPopper: {
         styleOverrides: {
           root: {
+            // ...styleIcons,
             '& .menu': {
               marginTop: '4px',
               marginBottom: '4px',

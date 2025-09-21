@@ -6,18 +6,11 @@ import {
   ICommands, useCommands, Command, CommandButtonType
 } from '@sheetxl/utils-react';
 
-import { FormatAlignJustify as FormatAlignJustifyIcon } from '@mui/icons-material';
-
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps,
   defaultCreatePopupPanel,
-  ExhibitPopupPanelProps, themeIcon, ExhibitDivider,
+  ExhibitPopupPanelProps, ExhibitDivider,
 } from '@sheetxl/utils-mui';
-
-import {
-  TextVerticalTopIcon, TextVerticalCenterIcon, TextVerticalBottomIcon
-} from '@sheetxl/utils-mui';
-
 
 export const VerticalAlignCommandButton = memo(
   forwardRef<HTMLElement, CommandPopupButtonProps>((props, refForwarded) => {
@@ -39,26 +32,15 @@ export const VerticalAlignCommandButton = memo(
   ];
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
-  const activeCommandKey = useMemo(() => {
+  const activeCommand = useMemo(() => {
     for (let i=0; i<resolvedCommands.length; i++) {
       if ((resolvedCommands[i] as Command<boolean>)?.state()) {
-        return resolvedCommands[i].key();
+        return resolvedCommands[i];
       }
     }
     // default
-    return resolvedCommands[0]?.key();
+    return resolvedCommands[0];
   }, [resolvedCommands])
-
-  // TODO - Move to CommandButtonRegistry
-  const commandIcons:Map<string, React.ReactElement> = useMemo(() => {
-    const mapIcons = new Map();
-    mapIcons.set('formatAlignTopToggle', themeIcon(<TextVerticalTopIcon/>));
-    mapIcons.set('formatAlignMiddleToggle', themeIcon(<TextVerticalCenterIcon/>));
-    mapIcons.set('formatAlignBottomToggle', themeIcon(<TextVerticalBottomIcon/>));
-    mapIcons.set('formatAlignJustifyVerticalToggle', themeIcon(<FormatAlignJustifyIcon/>));
-    mapIcons.set('formatAlignDistributedVerticalToggle', themeIcon(<FormatAlignJustifyIcon/>));
-    return mapIcons;
-  }, []);
 
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const commandButtonProps = {
@@ -73,33 +55,28 @@ export const VerticalAlignCommandButton = memo(
         <CommandButton
           {...commandButtonProps}
           command={(commands.getCommand('formatAlignTopToggle') as Command<boolean>)}
-          icon={commandIcons.get('formatAlignTopToggle')}
         />
         <CommandButton
           {...commandButtonProps}
           command={(commands.getCommand('formatAlignMiddleToggle') as Command<boolean>)}
-          icon={commandIcons.get('formatAlignMiddleToggle')}
         />
         <CommandButton
           {...commandButtonProps}
           command={(commands.getCommand('formatAlignBottomToggle') as Command<boolean>)}
-          icon={commandIcons.get('formatAlignBottomToggle')}
         />
         <ExhibitDivider orientation="horizontal"/>
         <CommandButton
           {...commandButtonProps}
           command={(commands.getCommand('formatAlignJustifyVerticalToggle') as Command<boolean>)}
-          icon={commandIcons.get('formatAlignJustifyVerticalToggle')}
         />
         <CommandButton
           {...commandButtonProps}
           command={(commands.getCommand('formatAlignDistributedVerticalToggle') as Command<boolean>)}
-          icon={commandIcons.get('formatAlignDistributedVerticalToggle')}
         />
       </>
     );
     return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, propCommandHook, commandIcons]);
+  }, [propDisabled, propCommandHook]);
 
   return (
     <CommandPopupButton
@@ -109,7 +86,7 @@ export const VerticalAlignCommandButton = memo(
       createPopupPanel={createPopupPanel}
       label="Vertical Alignment"
       tooltip="Configure how text is placed in the vertical direction of the cell."
-      icon={commandIcons.get(activeCommandKey) ?? themeIcon(<TextVerticalBottomIcon/>)}
+      icon={activeCommand?.icon() ?? 'TextVerticalBottom'}
       {...rest}
     />
   )

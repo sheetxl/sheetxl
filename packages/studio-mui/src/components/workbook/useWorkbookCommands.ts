@@ -16,7 +16,7 @@ import {
 } from '@sheetxl/utils-react';
 
 import {
-  useModelListener, useDocThemes, CommandContext, IScriptEditor
+  useModelListener, useDocThemes, CommandContext, IScriptEditor, useTaskPaneArea
 } from '@sheetxl/react';
 
 import { IWorkbookElement } from './IWorkbookElement';
@@ -43,10 +43,6 @@ export interface useWorkbookCommandsOptions {
 
   // TODO - review as part of standard command review. This doesn't belong here.
   onExecute?: () => void;
-  /**
-   * When the sidebar is being requested to be shown.
-   */
-  onShowSidebar?: () => void;
   /**
    * Whether dark mode is enabled.
    */
@@ -76,7 +72,6 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     target: commandTarget,
     commands: commandsParent,
     darkMode,
-    onShowSidebar: propOnSHowSidebar,
     onNewWorkbook: propOnNewWorkbook=defaultNewWorkbook
   } = props;
 
@@ -85,12 +80,29 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
   const [activeSheet, setActiveSheet] = useState<ISheet>(workbook?.getSelectedSheet());
   const [sheets, setSheets] = useState<ISheet[]>(workbook?.getSheets().getItems());
 
-  const onShowSidebar = useCallbackRef(propOnSHowSidebar, [propOnSHowSidebar]);
-
   const onNewWorkbook = useCallbackRef(propOnNewWorkbook, [propOnNewWorkbook]);
+
+  const taskPaneArea = useTaskPaneArea();
 
   const commandsArray = useMemo(() => {
     return [
+      // TODO - remove just for testing.
+      new SimpleCommand('activateTask', commandTarget, { // TODO - implement. Note - This should also be available in the status bar
+        label: 'Activate Task',
+        description: 'Activate Task Pane.',
+        shortcut: {
+          key: 'F6',
+          // modifiers: [KeyModifiers.Ctrl, KeyModifiers.Shift]
+        }
+      }),
+      new SimpleCommand('workbookStatistics', commandTarget, { // TODO - implement. Note - This should also be available in the status bar
+        label: 'Workbook Statistics',
+        description: 'Show the workbook statistics.',
+        shortcut: {
+          key: 'G',
+          modifiers: [KeyModifiers.Ctrl, KeyModifiers.Shift]
+        }
+      }),
       new SimpleCommand('workbookStatistics', commandTarget, { // TODO - implement. Note - This should also be available in the status bar
         label: 'Workbook Statistics',
         description: 'Show the workbook statistics.',
@@ -113,6 +125,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           'cellStyle' : `New Cell Style`
         },
         description: `Create a new named style can can be quickly used later.`,
+        icon: 'NewPresetStyles'
       }),
       new Command('deleteCellStyle', commandTarget, {
         label: 'Delete Cell Style',
@@ -120,6 +133,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           'cellStyle' : `Delete`
         },
         description: `Remove a named style that is no longer needed.`,
+        // icon: 'DeletePresetStyles'
       }),
       new Command('modifyCellStyle', commandTarget, {
         label: 'Modify Cell Style',
@@ -127,10 +141,12 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           'cellStyle' : `Modify`
         },
         description: `Update a style with the currently style.`,
+        // icon: 'ModifyPresetStyles'
       }),
       new SimpleCommand('find', commandTarget, {
         label: 'Find',
         description: 'Open the Find window.',
+        icon: 'Find',
         shortcut: [{
           key: 'F',
           modifiers: [KeyModifiers.Ctrl]
@@ -142,6 +158,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new SimpleCommand('findReplace', commandTarget, {
         label: 'Find & Replace',
         description: 'Open the Find & Replace window.',
+        icon: 'FindReplace',
         shortcut: [{
           key: 'H',
           modifiers: [KeyModifiers.Ctrl]
@@ -153,6 +170,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new SimpleCommand('goto', commandTarget, {
         label: 'Go To',
         description: `Open the 'Go To' window.`,
+        icon: 'Goto',
         shortcut: [{
           key: 'G',
           modifiers: [KeyModifiers.Ctrl]
@@ -208,7 +226,8 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         scopedLabels: {
           'sheet': 'Hide'
         },
-        description: 'Hide the sheet from appearing in the tabs. This keeps the data but de-clutters the tabs.'
+        description: 'Hide the sheet from appearing in the tabs. This keeps the data but de-clutters the tabs.',
+        icon: 'VisibilityOff'
       }),
       new Command<number>('deleteSheet', commandTarget, {
         label: 'Delete Sheet',
@@ -315,7 +334,8 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         scopedLabels: {
           'namedItem': 'Define Name\u2026'
         },
-        description: `Add a new named reference. Names can be used as a substitute for cell references.`
+        description: `Add a new named reference. Names can be used as a substitute for cell references.`,
+        icon: 'NamedRangeInsert'
       }),
       // TODO - selection context
       new Command<INamed>('editNamedReference', commandTarget, {
@@ -323,14 +343,16 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         scopedLabels: {
           'namedItem': 'Edit\u2026'
         },
-        description: `Add a new named reference. Names can be used as a substitute for cell references.`
+        description: `Add a new named reference. Names can be used as a substitute for cell references.`,
+        icon: 'NamedRangeEdit'
       }),
       new Command<INamed>('deleteNamedReference', commandTarget, {
         label: 'Delete Named Reference',
         scopedLabels: {
           'namedItem': 'Delete'
         },
-        description: `Remove the named reference.`
+        description: `Remove the named reference.`,
+        icon: 'NamedRangeRemove'
       }),
       // TODO - disable if name box is not visible
       new SimpleCommand('activeNameBox', commandTarget, {
@@ -364,7 +386,8 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         description: `Toggle showing the workbook using the full screen.`,
         shortcut: {
           key: 'F11'
-        }
+        },
+        icon: 'FullScreen'
       }),
       new Command<boolean>('showScriptEditor', commandTarget, {
         label: 'Scripts',
@@ -372,6 +395,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           'scripts' : `Script Editor\u2026`, // '...' // ellipsis
         },
         description: `Show the script editor.`,
+        icon: 'ScriptRun',
         shortcut: [{
         //   key: 'F8', // This is Toggle Extend Selection Mode
         //   modifiers: [KeyModifiers.Alt]
@@ -384,6 +408,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new Command<string>('executeScript', commandTarget, {
         label: 'Run Script',
         description: `Run the selected or last executed script.`,
+        icon: 'ScriptRun',
         shortcut: {
           key: 'F8'
         }
@@ -391,6 +416,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new Command<string>('executeSelectedScript', commandTarget, {
         label: 'Run Script',
         description: `Run the selected script.`,
+        icon: 'ScriptRun',
         shortcut: {
           key: 'F8'
         }
@@ -398,6 +424,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new Command<string>('saveScripts', commandTarget, {
         label: 'Save Script',
         description: `Save the current scripts.`,
+        icon: 'ScriptSave',
         // shortcut: {
         //   key: 'S',
         //   modifiers: [KeyModifiers.Ctrl]
@@ -424,6 +451,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new Command<boolean>('calculateAll', commandTarget, {
         label: 'Calculate Now',
         description: `Recalculate all formulas.`,
+        icon: 'Calculate',
         shortcut: {
           key: 'F9'
         }
@@ -443,6 +471,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new SimpleCommand('newWorkbook', commandTarget, { // CTRL+N only works in window mode - https://codereview.chromium.org/9701108
         label: 'New Workbook',
         description: 'Create a new workbook in another tab.',
+        icon: 'FileNew',
         // shortcut: {
         //   key: 'N',
         //   modifiers: [KeyModifiers.Ctrl]
@@ -482,7 +511,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     const commandToggleShow = commands.getCommand('showScriptEditor');
     commandToggleShow.updateCallback(function(_args: boolean=true) {
       if (!_editor) {
-        onShowSidebar?.();
+        taskPaneArea.activateTaskPane('scriptEditor', {});
       } else {
         _editor.close();
       }
@@ -500,7 +529,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         try {
           // TODO - throw this into core (still lazy load?) How to do as a plugin?
           if (source) {
-            hideBusy = await notifier?.showBusy?.("Saving Scripts...");
+            hideBusy = await notifier.showBusy("Saving Scripts...");
             const compiled = await scripts.createModule({ source });
             module = compiled;
           }
@@ -510,7 +539,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           hideBusy?.();
           console.warn(`Unable to compile`, error);
           // We want to pass through the error
-          notifier?.showError?.(error);
+          notifier.showError(error);
         }
         return module;
       },
@@ -681,7 +710,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       // TODO - show results (in panel on bottom) (pass the ui as a context?)
       // console.log('executeScript:', executed, compiled.declarations);
     } catch (error: any) {
-      notifier?.showError?.(error);
+      notifier.showError(error);
       return;
     }
   }, [workbook, notifier]);
@@ -701,7 +730,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         }
       }
 
-      notifier?.showInputOptions?.({
+      notifier.showInputOptions({
         initialValue: defaultStyleName(),
         title: commands.getCommand('newCellStyle')?.label('cellStyle'),
         description: `Enter a name for the new cell style.`,
@@ -764,7 +793,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     });
     commands.getCommand('deleteSheet').updateCallback(async (index: number) => {
       // We support undo.
-      // const option = await notifier?.showOptions({
+      // const option = await notifier.showOptions({
       //   title: 'Confirm',
       //   description: `This will permanently delete the sheet and all the data. Do you want to continue?`,
       //   options: ['Delete', 'Cancel'],
@@ -809,7 +838,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         window.close();
       }
       // TODO - confirm only if unsaved data
-      const option = await notifier?.showOptions({
+      const option = await notifier.showOptions({
         title: 'Confirm',
         description: `This will close the current workbook tab. Do you want to continue?`,
         options: ['Close', 'Cancel'],
@@ -835,7 +864,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     let description = 'Find & Replace';
     if (options?.replace && !options?.replaceOptions?.maxCount)
       description = 'Replace All';
-    const hideBusy = await notifier?.showBusy?.(description);
+    const hideBusy = await notifier.showBusy(description);
     try {
       const scope = options?.scope ?? 'sheet';
       let iterResults:Iterator<ICell> = null;
@@ -877,11 +906,11 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
 
       hideBusy?.();
       if (!options.replaceOptions.maxCount && count > 1) {
-        notifier?.showMessage?.(`We replaced ${count} cells.`);
+        notifier.showMessage(`We replaced ${count} cells.`);
       }
      } catch (error: any) {
       hideBusy?.();
-      notifier?.showError?.(error);
+      notifier.showError(error);
     }
     return count;
   }, [workbook, workbookElement]);
@@ -915,11 +944,11 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         try {
           await named.select();
         } catch (error: any) {
-          notifier?.showMessage?.(error.message, { type: NotifierType.Error })
+          notifier.showMessage(error.message, { type: NotifierType.Error });
         }
       }
     }
-    return notifier.showWindow?.('namedDetails', props);
+    return notifier.showWindow('namedDetails', props);
   }, [notifier, workbook, workbookElement]);
 
   useEffect(() => {
@@ -944,15 +973,39 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     }
 
     commands.getCommand('find')?.update({
-      disabled: !notifier?.showWindow,
+      disabled: !notifier.showWindow,
     }).updateCallback(() => {
       showFind();
     });
     commands.getCommand('findReplace')?.update({
-      disabled: !notifier?.showWindow,
+      disabled: !notifier.showWindow,
     }).updateCallback(() => {
       showFind(true);
     });
+
+    commands.getCommand('activateTask')?.update({
+      disabled: !notifier,
+    }).updateCallback(() => {
+      const props:InputOptionsNotifierOptions = {
+        onInputOption: async (value: string) => {
+          try {
+            taskPaneArea.activateTaskPane(value);
+          } catch (error: any) {
+            notifier.showMessage(error.message, { type: NotifierType.Error })
+          }
+        },
+        // onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
+        //   // Note - if we get the context correct this should remove
+        //   if (commands.findCommandByEvent(e) === commands.getCommand('goto')) {
+        //     e.preventDefault();
+        //   }
+        // },
+        title: commands.getCommand('activateTask')?.label(),
+        inputLabel: 'Task Name',
+        options: ['Activate']
+      }
+      notifier.showInputOptions(props);
+    })
 
     commands.getCommand('goto')?.update({
       disabled: !notifier,
@@ -962,7 +1015,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           try {
             await workbook.getRanges(value).select();
           } catch (error: any) {
-            notifier?.showMessage?.(error.message, { type: NotifierType.Error })
+            notifier.showMessage(error.message, { type: NotifierType.Error })
           }
         },
         onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -975,7 +1028,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         inputLabel: 'Location',
         options: ['Go To']
       }
-      notifier?.showInputOptions?.(props);
+      notifier.showInputOptions(props);
     });
     commands.getCommand('selectNamed')?.update({
       disabled: !notifier,
@@ -984,7 +1037,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       try{
         await named.select();
       } catch (error: any) {
-        notifier?.showError?.(error);
+        notifier.showError(error);
       }
     });
     commands.getCommand('addNamedReference')?.updateCallback(async function(_initialValues: INamed.Properties): Promise<void> {
@@ -1048,6 +1101,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     commands.getCommand('fullScreenToggle').update({
       state: isFullscreenEnabled,
       disabled: !isFullscreenAvailable,
+      icon: isFullscreenEnabled ? 'FullScreenOff' : 'FullScreen'
     }).updateCallback(() => {
       toggleFullscreen();
     });

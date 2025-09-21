@@ -1,4 +1,4 @@
-import { Dimensions } from '../types';
+import { Size } from '../types';
 
 export const DATA_URL_PNG_PREFIX: string = 'data:image/png;base64,';
 
@@ -7,7 +7,7 @@ const MESSAGE_ERROR_IMAGE = `Unable to resolve image.`;
 /**
  * Returns the natural size and ensure that the image is loadable.
  */
-const getImageNaturalDimensions = (asUrl: string): Promise<Dimensions> => {
+const getImageNaturalDimensions = (asUrl: string): Promise<Size> => {
   return new Promise(async (resolve, reject) => {
     let elemImg = null;
     try {
@@ -76,7 +76,7 @@ export const getImageDataUrl = (asUrl: string, quality: number=1): Promise<{ ele
 
 export interface IImageDetails {
   mimeType: string;
-  naturalDimensions: Dimensions;
+  naturalSize: Size;
   asUrl: string;
 
   asSVGText?: string;
@@ -90,8 +90,8 @@ export const loadImageDetails = async (arrayBuffer: ArrayBuffer, mimeType: strin
     try {
       const resolveMimeType = mimeType ?? MIME_TYPE_IMAGE;
       const asUrl = URL.createObjectURL(new Blob([arrayBuffer], { type: resolveMimeType } /* (1) */));
-      const naturalDimensions = await getImageNaturalDimensions(asUrl);
-      details = { mimeType: resolveMimeType, naturalDimensions, asUrl };
+      const naturalSize = await getImageNaturalDimensions(asUrl);
+      details = { mimeType: resolveMimeType, naturalSize, asUrl };
     } catch (error: any) {
       // console.warn('Failed to decode image buffer as image', error);
     }
@@ -100,8 +100,8 @@ export const loadImageDetails = async (arrayBuffer: ArrayBuffer, mimeType: strin
     try {
       const asSVGText = new TextDecoder().decode(arrayBuffer);
       const asUrl = URL.createObjectURL(new Blob([asSVGText], { type: MIME_TYPE_SVG }));
-      const naturalDimensions = await getImageNaturalDimensions(asUrl);
-      details = { mimeType: mimeType ?? MIME_TYPE_SVG, naturalDimensions, asUrl, asSVGText };
+      const naturalSize = await getImageNaturalDimensions(asUrl);
+      details = { mimeType: mimeType ?? MIME_TYPE_SVG, naturalSize, asUrl, asSVGText };
     } catch (error: any) {
       // console.warn('Failed to decode image buffer as svg', error);
     }

@@ -12,14 +12,12 @@ import { InputAdornment } from '@mui/material';
 import { IconButton } from '@mui/material';
 import { TableCell } from '@mui/material';
 
-import { Close as CloseIcon } from '@mui/icons-material';
-
 import {
   AutoSizer, Column, Table, TableCellProps, TableHeaderProps,
 } from 'react-virtualized';
 
 import { CommonUtils } from '@sheetxl/utils';
-import { ICommand, ICommands, KeyCodes } from '@sheetxl/utils-react';
+import { ICommand, ICommands, KeyCodes, DynamicIcon } from '@sheetxl/utils-react';
 
 import { toShortcutElements } from '@sheetxl/utils-mui';
 
@@ -376,7 +374,7 @@ export default function ShortcutKeysPanel(props) {
                   onClick={() =>  setSearchInputText('')}
                   edge="end"
                 >
-                  <CloseIcon/>
+                  <DynamicIcon iconKey='Close'/>
                 </IconButton>
               </InputAdornment>
             )

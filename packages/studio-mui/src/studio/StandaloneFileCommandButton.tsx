@@ -5,14 +5,8 @@ import { Theme } from '@mui/material/styles';
 import { CommandButtonType, useCallbackRef } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitDivider,
-  ExhibitPopupPanelProps, LabelIcon, themeIcon
-} from '@sheetxl/utils-mui';
-
-import {
-  FileNewIcon, FileOpenIcon, FileDownloadAsSheetIcon, FileDownloadAsExcelIcon,
-  FileDownloadAsCSVIcon
+  CommandButton, CommandPopupButton, CommandPopupButtonProps, defaultCreatePopupPanel,
+  ExhibitDivider, ExhibitPopupPanelProps, LabelIcon
 } from '@sheetxl/utils-mui';
 
 import { WorkbookIO, WriteFormatType } from '../io';
@@ -37,31 +31,26 @@ const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & {
       commandHook: propCommandHook,
       scope,
       disabled: propDisabled
-      // icon={themeIcon(<TextHorizontalOverflowIcon/>)}
     }
     const children = (<>
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('newWorkbook'))}
-        icon={themeIcon(<FileNewIcon/>)}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('openWorkbook'))}
-        icon={themeIcon(<FileOpenIcon/>)}
       />
       {/* TODO - create an OpenWorkbookCommandButton to support nesting like insertImageFromUrl }
       {/* <CommandButton
         {...commandButtonProps}
         command={(commands.getCommand('openWorkbookFromUrl'))}
-        icon={themeIcon(<FileOpenIcon/>)}
       /> */}
       <CommandPopupButton
         {...commandButtonProps}
         commands={commands}
         quickCommand={'saveWorkbook'}
-        icon={themeIcon(<FileDownloadAsSheetIcon/>)}
         createPopupPanel={(propsSaveAs: ExhibitPopupPanelProps) => {
           const commandButtonPropsSaveAs = {
             ...commandButtonProps,
@@ -72,23 +61,17 @@ const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & {
           const saveAsItems = [];
           WorkbookIO.getWriteFormats().forEach((formatType: WriteFormatType) => {
             if (formatType.isDefault) return;
-            let icon = null;
-            if (formatType.key === 'CSV') {
-              icon = themeIcon(<FileDownloadAsCSVIcon/>);
-            } else if (formatType.key === 'Excel') {
-              icon = themeIcon(<FileDownloadAsExcelIcon/>)
-            }
-            const command = commands.getCommand(`saveWorkbookAs${formatType.key}`);
+            const formatKey = formatType.key;
+            const command = commands.getCommand(`saveWorkbookAs${formatKey}`);
             if (!command) {
-              console.warn(`Unable to resolve command: 'saveWorkbookAs${formatType.key}'`);
+              console.warn(`Unable to resolve command: 'saveWorkbookAs${formatKey}'`);
               return;
             }
             saveAsItems.push(
               <CommandButton
                 {...commandButtonPropsSaveAs}
-                key={formatType.key}
+                key={formatKey}
                 command={command}
-                icon={icon}
               />
             );
           });
