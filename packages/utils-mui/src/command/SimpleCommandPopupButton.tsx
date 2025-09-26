@@ -116,7 +116,4 @@ export const SimpleCommandPopupButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default SimpleCommandPopupButton;

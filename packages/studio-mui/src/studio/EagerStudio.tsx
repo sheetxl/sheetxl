@@ -1,12 +1,11 @@
 import React, {
-  useEffect, useLayoutEffect, useCallback, memo,
-  forwardRef, useState, useRef, useMemo
+  useEffect, useLayoutEffect, useCallback, memo, forwardRef, useState, useRef, useMemo
 } from 'react';
 
 import clsx from 'clsx';
 
 import { mergeRefs } from 'react-merge-refs';
-import { ErrorBoundary } from 'react-error-boundary';
+
 import {
   SnackbarProvider, CloseReason, SnackbarKey
 } from 'notistack';
@@ -20,7 +19,8 @@ import { UndoManager, CommonUtils } from '@sheetxl/utils';
 import { IWorkbook, Workbook, ITransaction } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, ICommand, ICommands, CommandGroup, DefaultDynamicIconService, DynamicIcon
+  useCallbackRef, ICommand, ICommands, CommandGroup, DefaultDynamicIconService, DynamicIcon,
+  UncaughtErrorBoundary, ReactErrorBoundary
 } from '@sheetxl/utils-react';
 
 import {
@@ -41,10 +41,13 @@ import { WorkbookIO, type ReadWorkbookOptions, type WorkbookHandle } from '../io
 
 import { ToastError } from '../toast';
 
-import { StudioToolbar, StudioToolbarProps } from './StudioToolbar';
-import { StudioProps } from './StudioProps';
-import { SnackbarAndCommandsWrapper } from './SnackbarAndCommandsWrapper';
+import type { StudioProps } from './StudioProps';
+import { StudioToolbar, type StudioToolbarProps } from './StudioToolbar';
+// import { SnackbarAndCommandsWrapper } from './SnackbarAndCommandsWrapper';
+import { CommandsWrapper } from './CommandsWrapper';
+import { SnackbarWrapper } from './SnackbarWrapper';
 import { StudioTaskPaneArea } from './StudioTaskPaneArea';
+import { StudioSplitPane } from './StudioSplitPane';
 
 // import { AIPlugin } from '../ai/plugin';
 import { ScriptingPlugin } from '../scripting/plugin';
@@ -392,16 +395,25 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     }
   }, [propSx]);
 
+  // TODO - roll this into StudioSplitPane and convert to a DockingPaneManager
   const [sideBar, setSideBar] = useState<React.ReactElement>(null);
   const createTaskPaneArea = useCallback((props: TaskPaneAreaProps, ref: React.Ref<ITaskPaneAreaElement>) => {
     return <StudioTaskPaneArea
       ref={ref}
-      themeOptions={isDarkMode ? themeOptions.dark : themeOptions.light}
       model={workbook}
       commands={commandsApplication}
       {...props}
     />;
-  }, [commandsApplication, workbook, isDarkMode, themeOptions])
+  }, [commandsApplication, workbook])
+
+  const mainWrapper = useCallback((children: React.ReactElement) => {
+    return (
+      <StudioSplitPane
+        mainElement={children}
+        sidebarElement={sideBar}
+      />
+    );
+  }, [sideBar]);
 
   const refLocal = mergeRefs([refWorkbook, refForwarded]);
 
@@ -422,7 +434,7 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     }
 
     // return the loading pane or error pane
-    return (
+    let workbookElement = (
       <WorkbookElement
         key="WorkbookElement"
         sx={styles}
@@ -442,52 +454,50 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
         gridTheme={gridTheme}
         headersTheme={appTheme}
         enableDarkImages={enableDarkImages}
-        sideBarElement={sideBar}
+        mainWrapper={mainWrapper}
         className={clsx(propClassName)} //, 'sheetxl-studio')}
-        // standalone application turns of context menu
+        // standalone application turns off context menu
         onContextMenu={e=> e.preventDefault()}
         {...rest}
       />
     );
+    return workbookElement;
   }, [
     workbookResolved, titleWorkbook, undoManager, loadingPanel, renderLoadingPanel,// commandsStudio,
-    themeOptions, rest, renderToolbar, styles // because we need to pass rest
+    themeOptions, rest, renderToolbar, styles, mainWrapper // because we need to pass rest
     // propStyle
   ]);
 
   let retValue = (
-    <ErrorBoundary
-      fallbackRender={fallbackRender}
+    <SnackbarProvider
+      maxSnack={3}
+      domRoot={viewportDOM} // We move the snackbar to to the grid viewport (see domRoot). Some apps may want this to be done in a different way.
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}
+      autoHideDuration={3500} // Disable auto-hide for error notifications so users can interact with stack traces
+      onClose={(_event: React.SyntheticEvent<any> | null, _reason: CloseReason, _key: SnackbarKey) => {
+        refWorkbook.current?.focus();
+      }}
+      Components={{
+        error: ToastError
+      }}
+      iconVariant={{
+        success: (
+          <SvgIcon // The default success icon is more consistent (circle with a check but this is the default material)
+            style={{ marginRight: '8px' }}
+          >
+            <path d="M20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4C12.76,4 13.5,4.11 14.2, 4.31L15.77,2.74C14.61,2.26 13.34,2 12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0, 0 22,12M7.91,10.08L6.5,11.5L11,16L21,6L19.59,4.58L11,13.17L7.91,10.08Z"/>
+          </SvgIcon>)
+        ,
+        error: (
+          <DynamicIcon iconKey="ErrorAlert"
+            style={{ marginRight: '8px' }}
+          />
+        ),
+      }}
     >
-      <SnackbarProvider
-        maxSnack={3}
-        domRoot={viewportDOM} // We move the snackbar to to the grid viewport (see domRoot). Some apps may want this to be done in a different way.
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        autoHideDuration={3500} // Disable auto-hide for error notifications so users can interact with stack traces
-        onClose={(_event: React.SyntheticEvent<any> | null, _reason: CloseReason, _key: SnackbarKey) => {
-          refWorkbook.current?.focus();
-        }}
-        Components={{
-          error: ToastError
-        }}
-        iconVariant={{
-          success: (
-            <SvgIcon // The default success icon is more consistent (circle with a check but this is the default material)
-              style={{ marginRight: '8px' }}
-            >
-              <path d="M20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4C12.76,4 13.5,4.11 14.2, 4.31L15.77,2.74C14.61,2.26 13.34,2 12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0, 0 22,12M7.91,10.08L6.5,11.5L11,16L21,6L19.59,4.58L11,13.17L7.91,10.08Z"/>
-            </SvgIcon>)
-          ,
-          error: (
-            <DynamicIcon iconKey="ErrorAlert"
-              style={{ marginRight: '8px' }}
-            />
-          ),
-        }}
-      >
         <TaskPaneProvider
           createArea={createTaskPaneArea}
           onUpdateArea={(areaElement) => {
@@ -495,24 +505,29 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
           }}
         >
           <ModalProvider>
-            <SnackbarAndCommandsWrapper
-              workbook={workbookResolved?.workbook}
-              setWorkbook={setWorkbook}
-              importExportDisabled={importExportDisabled}
-              titlePlaceHolder={titlePlaceHolder}
-              titleWorkbook={titleWorkbook}
-              setWorkbookTitle={setWorkbookTitle}
-              refWorkbookTitle={refWorkbookTitle}
-              commands={commandsApplication}
-              undoManager={undoManager}
-              themeOptions={themeOptions}
-            >
-              {renderedWorkbook}
-            </SnackbarAndCommandsWrapper>
+            <SnackbarWrapper>
+              <UncaughtErrorBoundary>
+                <ReactErrorBoundary>
+                  <CommandsWrapper
+                    workbook={workbookResolved?.workbook}
+                    setWorkbook={setWorkbook}
+                    importExportDisabled={importExportDisabled}
+                    titlePlaceHolder={titlePlaceHolder}
+                    titleWorkbook={titleWorkbook}
+                    setWorkbookTitle={setWorkbookTitle}
+                    refWorkbookTitle={refWorkbookTitle}
+                    commands={commandsApplication}
+                    undoManager={undoManager}
+                    themeOptions={themeOptions}
+                  >
+                    {renderedWorkbook}
+                  </CommandsWrapper>
+                </ReactErrorBoundary>
+              </UncaughtErrorBoundary>
+            </SnackbarWrapper>
           </ModalProvider>
         </TaskPaneProvider>
-      </SnackbarProvider>
-    </ErrorBoundary>
+    </SnackbarProvider>
   )
   if (themeOptions) {
     retValue = (

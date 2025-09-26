@@ -16,7 +16,7 @@ export interface InsertFunctionSumCommandPopupButtonProps extends CommandButtonO
 /**
  * Menu for quick function sum
  */
-const InsertFunctionSumCommandPopupButton = memo(
+export const InsertFunctionSumCommandPopupButton = memo(
   forwardRef<HTMLElement, InsertFunctionSumCommandPopupButtonProps>((props, refForwarded) => {
   const {
     ...rest
@@ -43,6 +43,4 @@ const InsertFunctionSumCommandPopupButton = memo(
   );
 }));
 
-
 InsertFunctionSumCommandPopupButton.displayName = "InsertFunctionSumCommandPopupButton";
-export { InsertFunctionSumCommandPopupButton };

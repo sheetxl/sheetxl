@@ -7,7 +7,7 @@ import type { InternalWindowProps } from './InternalWindow';
 
 const Dialog = React.lazy(() => import(/* webpackPrefetch: true */'./OptionsDialog'));
 
-export interface OptionsDialogProps extends OptionsNotifierOptions, InternalWindowProps {
+export interface OptionsDialogProps extends Omit<OptionsNotifierOptions, 'style'>, InternalWindowProps {
 
 };
 
@@ -17,7 +17,7 @@ const useOptionsDialog = (propsDefault?: OptionsDialogProps): (options: OptionsD
     return new Promise<string>((resolve) => {
 
       const modal = showModal(Dialog, {
-        ...propsDefault,
+        ...propsDefault as any,
         ...options,
         onOption(option) {
           options?.onOption?.(option, option === options.cancelOption, option === options.defaultOption);

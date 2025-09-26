@@ -678,7 +678,4 @@ export const PresetCellStylesCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default PresetCellStylesCommandButton;

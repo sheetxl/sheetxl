@@ -76,7 +76,4 @@ export const HelpCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default HelpCommandButton;

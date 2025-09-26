@@ -75,7 +75,4 @@ export const SortFilterCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default SortFilterCommandButton;

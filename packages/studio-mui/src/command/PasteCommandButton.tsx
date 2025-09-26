@@ -107,7 +107,4 @@ export const PasteCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default PasteCommandButton;

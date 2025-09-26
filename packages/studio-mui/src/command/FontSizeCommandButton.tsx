@@ -359,7 +359,4 @@ export const FontSizeCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default FontSizeCommandButton;

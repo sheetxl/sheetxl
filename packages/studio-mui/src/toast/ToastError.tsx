@@ -11,6 +11,7 @@ import { Card } from '@mui/material';
 import { CardActions } from '@mui/material';
 import { IconButton } from '@mui/material';
 
+import { ExpectedError } from '@sheetxl/utils';
 import { DynamicIcon } from '@sheetxl/utils-react';
 import { StackTrace } from '@sheetxl/utils-mui';
 
@@ -32,6 +33,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
     const theme = useTheme();
     const [expanded, setExpanded] = useState(false);
 
+    const isUnexpectedError = error && !(error instanceof ExpectedError);
     const handleExpandClick = useCallback(() => {
       setExpanded((oldExpanded) => !oldExpanded);
     }, []);
@@ -74,7 +76,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
               style={{ flex: '1 1 auto' }}
             />
             <div className={styles.icons}>
-              {error ?
+              {isUnexpectedError ?
                 <IconButton
                   aria-label="Show more"
                   size="small"
@@ -95,7 +97,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
               </IconButton>
             </div>
           </CardActions>
-          {error ?
+          {isUnexpectedError ?
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <div
               className={styles.stackTraceContainer}

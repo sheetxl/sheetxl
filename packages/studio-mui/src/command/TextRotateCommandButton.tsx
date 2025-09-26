@@ -109,7 +109,4 @@ export const TextRotateCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default TextRotateCommandButton;

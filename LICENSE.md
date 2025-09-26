@@ -8,4 +8,4 @@ Generally, packages intended for public distribution (such as CLIs, adapters, an
 
 For more details on commercial licensing, please visit our website:
 
-https://www.sheetxl.com/licensing-pricing
+https://www.sheetxl.com/docs/guides/licensing-pricing

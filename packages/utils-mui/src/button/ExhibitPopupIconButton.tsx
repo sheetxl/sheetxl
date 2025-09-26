@@ -353,6 +353,9 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
         TouchRippleProps={{
           center: false
         }}
+        // slotProps={{
+        //   touchRipple: undefined
+        // }}
         tabIndex={-1}
         disabled={propDisabled}
         size="small"

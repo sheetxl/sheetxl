@@ -1,5 +1,4 @@
 export * from './FindReplaceWindow';
-export * from './TableDetailsWindow';
 export * from './NumberFormatDialog';
 export * from './SortDialog';
 export * from './HyperlinkDialog';

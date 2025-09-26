@@ -101,7 +101,7 @@ export const LabelIcon = (props: LabelIconProps) => {
   );
 }
 
-const CommandToolbar =
+export const CommandToolbar =
    memo(forwardRef<ICommandToolbarElement, CommandToolbarProps>((props, refForwarded) => {
   const {
     sx: sxProps,
@@ -280,4 +280,3 @@ const CommandToolbar =
 }));
 
 CommandToolbar.displayName = "CommandToolbar";
-export { CommandToolbar };

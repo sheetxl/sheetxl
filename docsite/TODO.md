@@ -26,7 +26,6 @@
 
 ## Clean up
 
-- Replace Grid2
 - Review Scripting docs
 
 ## Node Page

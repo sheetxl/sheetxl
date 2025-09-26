@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 
 import { useModal, UseModalOptions } from 'mui-modal-provider';
 
-import { ThemeModeOptions } from '../theme';
-
 import  { InternalWindowProps } from './InternalWindow';
 
 export interface LazyWindowOptions extends UseModalOptions {

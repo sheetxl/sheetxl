@@ -7,7 +7,7 @@ import { useFullscreenPortal } from '@sheetxl/utils-react';
  * to wrap MUI Tooltip and set the Popper container to support
  * fullscreen/portal scenarios. Behaves exactly like Tooltip.
  */
-const SimpleTooltip = forwardRef<any, TooltipProps>((props, ref) => {
+export const SimpleTooltip = forwardRef<HTMLElement, TooltipProps>((props, ref) => {
   const { slotProps, ...rest } = props;
 
   const { getPortalContainer } = useFullscreenPortal();
@@ -27,4 +27,3 @@ const SimpleTooltip = forwardRef<any, TooltipProps>((props, ref) => {
 });
 
 SimpleTooltip.displayName = "SimpleTooltip";
-export { SimpleTooltip };

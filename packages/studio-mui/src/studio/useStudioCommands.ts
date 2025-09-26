@@ -6,8 +6,8 @@ import { CommonUtils, UndoManager } from '@sheetxl/utils';
 import { IWorkbook } from '@sheetxl/sdk';
 
 import {
-  useUndoManager, useCallbackRef, SimpleCommand, KeyModifiers, IReactNotifier,
-  Command, ICommand, ICommandProperties, ICommands, CommandGroup
+  SimpleCommand, Command, ICommand, ICommandProperties, ICommands, CommandGroup,
+  KeyModifiers, useUndoManager, useCallbackRef, useNotifier
 } from '@sheetxl/utils-react';
 
 import {
@@ -25,11 +25,6 @@ export interface useStudioCommandsOptions {
   workbook: IWorkbook;
 
   setWorkbook: (newWorkbook: IWorkbook) => void;
-
-  /**
-   * The notifier. This is passed as a prop because of the hierarchy.
-   */
-  notifier: IReactNotifier;
 
   /**
    * Disabled the importExport options
@@ -77,7 +72,6 @@ export const useStudioCommands = (
   const {
     workbook,
     setWorkbook,
-    notifier,
     importExportDisabled,
     workbookTitle = 'export',
     setWorkbookTitle,
@@ -89,6 +83,8 @@ export const useStudioCommands = (
     commands: commandsParent,
     onExecute,
   } = props;
+
+  const notifier = useNotifier();
 
   const onModeChange = useCallbackRef(themeOptions?.onModeChange, [themeOptions?.onModeChange]);
   const onEnabledDarkGridChange = useCallbackRef(themeOptions?.onEnabledDarkGridChange, [themeOptions?.onEnabledDarkGridChange]);
@@ -249,19 +245,23 @@ export const useStudioCommands = (
             // Add to existing sheet
             const newSheetName = workbook.findValidSheetName(title);
             await workbook.doBatch(async () => {
-              const importRange = importedSheet.getUsedRange();
-              if (!importRange) {
-                // TODO - move to csv handler
-                notifier.showMessage("The file appears to be blank.");
-                return;
-              }
-              const sheetTo = workbook.getSheets().add({ name: newSheetName, autoSelect: true });
-              const rangeTo = sheetTo.getRange({
+              const topLeft = {
                 colStart: 0,
                 rowStart: 0,
                 colEnd:0,
                 rowEnd:0
-              });
+              };
+              let importRange = importedSheet.getUsedRange();
+              if (!importRange) {
+                // TODO - move to csv handler onWarn?
+                notifier.showMessage("The file appears to be blank.");
+                return;
+              }
+              //union of topleft to ensure we get leading blanks.
+              importRange = importRange.getUnion(topLeft);
+
+              const sheetTo = workbook.getSheets().add({ name: newSheetName, autoSelect: true });
+              const rangeTo = sheetTo.getRange(topLeft);
               await rangeTo.copyFrom(importRange);
             }, `Import CSV '${title}'`);
             // TODO - allow add sheet to be an unDoable action. Then we can wrap the import as a transaction that can be undone.
@@ -491,11 +491,13 @@ export const useStudioCommands = (
           onDone: () => {
             modal.hide();
           },
-          TransitionProps: {
-            onExited: () => {
-              resolve(true);
-            },
-          },
+          slotProps: {
+            transition: {
+              onExited: () => {
+                resolve(true);
+              }
+            }
+          }
         });
       });
     };

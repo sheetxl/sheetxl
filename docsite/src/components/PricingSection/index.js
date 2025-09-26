@@ -10,8 +10,7 @@ import { Card } from '@mui/material';
 import { CardActions } from '@mui/material';
 import { CardContent } from '@mui/material';
 import { CardHeader } from '@mui/material';
-//import Grid from '@mui/material';
-import { Grid2 } from '@mui/material'; // Grid version 2
+import { Grid } from '@mui/material';
 // import { StarBorder as StarIcon } from '@mui/icons-material';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 
@@ -116,8 +115,10 @@ const tiers = [
       </Typography>
     </>),
     singleLine: true,
-    description: `Companies with less than 10 employees and USD 1M annual revenue. Let's grow 🚀 together.`,
+    description: `For pre-revenue companies with fewer than 10 employees and less than USD 1M in funding or annual revenue.`,
     bullets: [
+      'Once you start charging for your product or service, a commercial license is required.',
+      "Let's grow 🚀 together."
     ],
     buttonText: 'Request',
     buttonVariant: 'outlined',
@@ -158,12 +159,12 @@ export default function PricingSection(props) {
           <br/>
           Locked in for life.
         </Typography>
-        <Grid2 container spacing={5} alignItems="stretch"
+        <Grid container spacing={5} alignItems="stretch"
         >
           {tiers.map((tier) => (
             // Enterprise card is full width at sm breakpoint
-            <Grid2
-              // item={true}
+            <Grid
+              item
               key={tier.title}
               size={{
                 xs: 12,
@@ -278,9 +279,9 @@ export default function PricingSection(props) {
                     }}
                 />
               </Card>
-            </Grid2>
+            </Grid>
           ))}
-        </Grid2>
+        </Grid>
       </Container>
     </Box>
     </MUIThemeWrapper>

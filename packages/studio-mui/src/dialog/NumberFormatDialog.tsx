@@ -188,11 +188,11 @@ export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props
               marginTop: (theme: Theme) => theme.spacing(0.5)
             }
           }}
-          InputLabelProps={{
-            shrink: true
-          }}
-          InputProps={{
-            inputProps: {
+          slotProps={{
+            inputLabel: {
+              shrink: true
+            },
+            htmlInput: {
               className: 'autoFocus',
               spellCheck: false,
               autoComplete: "off",
@@ -203,7 +203,6 @@ export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props
               }
             }
           }}
-
           value={input}
           onChange={handleOnChange}
           onKeyDown={handleKeyDown}

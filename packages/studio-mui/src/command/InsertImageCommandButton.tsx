@@ -110,7 +110,4 @@ export const InsertImageCommandButton = memo(
       {...rest}
     />
   );
-
 }));
-
-export default InsertImageCommandButton;

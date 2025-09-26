@@ -17,10 +17,10 @@ const useInputDialog = (propsDefault?: InputDialogProps): (props: InputDialogPro
 
     return new Promise<{input: string, option: string}>((resolve) => {
       const modal = showModal(Dialog, {
-        ...propsDefault,
+        ...propsDefault as any,
         defaultOption,
         cancelOption,
-        ...options,
+        // ...options,
         onOption(option: string) {
           options?.onOption?.(option, option === cancelOption, option === defaultOption);
           resolve({input: '', option});

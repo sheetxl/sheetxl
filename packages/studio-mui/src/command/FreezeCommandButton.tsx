@@ -64,7 +64,4 @@ export const FreezeCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default FreezeCommandButton;

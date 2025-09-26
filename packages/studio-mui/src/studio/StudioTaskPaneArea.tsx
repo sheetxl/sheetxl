@@ -2,7 +2,7 @@ import React, { useMemo, useRef, memo, forwardRef } from 'react';
 
 import clsx from 'clsx';
 
-import { Theme, alpha } from '@mui/material/styles';
+import { Theme, alpha, useTheme } from '@mui/material/styles';
 
 import { Box, Typography } from '@mui/material';
 import { DialogTitle } from '@mui/material';
@@ -10,8 +10,6 @@ import { IconButton } from '@mui/material';
 import { TouchRippleActions } from '@mui/material';
 import { Tabs } from '@mui/material';
 import { Tab } from '@mui/material';
-
-import { ThemeOptions } from '@mui/material/styles';
 
 import { IWorkbook } from '@sheetxl/sdk';
 
@@ -24,7 +22,6 @@ import { TaskPaneArea, TaskPaneAreaProps, TaskPaneTitleProps, ITaskPaneAreaEleme
 import { ExhibitTooltip, SimpleTooltip } from '@sheetxl/utils-mui';
 
 export interface StudioTaskPaneAreaProps extends TaskPaneAreaProps {
-  themeOptions: ThemeOptions;
   commands?: ICommands.IGroup;
   model: IWorkbook;
 }
@@ -193,14 +190,15 @@ const renderTaskPaneStrip = (props: TaskPaneStripProps, ref: React.Ref<ITaskPane
 export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioTaskPaneAreaProps>((props, ref) => {
   const {
     commands: commandsApplication,
-    themeOptions,
     model: workbook,
     ...rest
   } = props;
   const disabled = false;//!protection.isStructureAllowed();
-  const border = `solid ${(!disabled ? alpha(themeOptions.palette.divider, 0.2) : themeOptions.palette.action.disabled)} 1px`
-  const borderRadius = `${themeOptions.shape.borderRadius ?? 4}px`;
-  const marginBottom = `${(themeOptions as any).spacing?.(0.5) ?? 4}px`;
+
+  const theme = useTheme();
+  const border = `solid ${(!disabled ? alpha(theme.palette.divider, 0.2) : theme.palette.action.disabled)} 1px`
+  const borderRadius = `${theme.shape.borderRadius ?? 4}px`;
+  const marginBottom = `${(theme as any).spacing?.(0.5) ?? 4}px`;
 
   const refRipple = useRef<TouchRippleActions>(null);
   const renderTaskPanelTitle = (props: TaskPaneTitleProps, ref: React.Ref<HTMLDivElement>): React.ReactElement => {

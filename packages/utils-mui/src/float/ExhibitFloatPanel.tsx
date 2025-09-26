@@ -34,20 +34,6 @@ export interface  ExhibitFloatPanelProps extends BoxProps {
 
   label: string;
 
-  /**
-   * Popper render function or node.
-   */
-  // children?:
-  //   | React.ReactNode
-  //   | ((props: {
-  //       placement: PopperPlacementType;
-  //       TransitionProps?: {
-  //         in: boolean;
-  //         onEnter: () => {};
-  //         onExited: () => {};
-  //       };
-  //     }) => React.ReactNode);
-
   createPopupPanel?: (props: ExhibitPopupPanelProps) => React.ReactElement<any>;
 
   popperProps?: Partial<ExhibitPopperProps>;
@@ -61,34 +47,6 @@ export interface  ExhibitFloatPanelProps extends BoxProps {
   onOpening?: () => void;
 
   onOpen?: () => void;
-
-  /**
-   * The component used for the popper.
-   * @defaultValue Popper
-   */
-  //  PopperComponent?: React.JSXElementConstructor<PopperProps>;
-   /**
-    * Props applied to the [`Popper`](/api/popper/) element.
-    * @defaultValue {}
-    */
-  //  PopperProps?: Partial<PopperProps>;
-   /**
-    * The system prop that allows defining system overrides as well as additional CSS styles.
-    */
-
-   /**
-    * The component used for the transition.
-    * [Follow this guide](/components/transitions/#transitionComponent-prop) to learn more about the requirements for this component.
-    * @defaultValue Grow
-    */
-  //  TransitionComponent?: React.JSXElementConstructor<
-  //    TransitionProps & { children: React.ReactElement<any, any> }
-  //  >;
-   /**
-    * Props applied to the transition element.
-    * By default, the element is based on this [`Transition`](http://reactcommunity.org/react-transition-group/transition/) component.
-    */
-  //  TransitionProps?: TransitionProps;
 }
 
 const ExhibitFloatPanel: React.FC<ExhibitFloatPanelProps & { ref?: any }> = memo(

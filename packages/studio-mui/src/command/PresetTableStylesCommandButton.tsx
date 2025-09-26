@@ -47,6 +47,8 @@ export interface PresetTableStylesCommandButtonProps extends CommandPopupButtonP
   bodyStyle?: GridSurfaceStyle;
 
   usePreviewIcon?: boolean;
+
+  disabledQuickKey?: boolean;
 }
 
 
@@ -275,7 +277,10 @@ export const PresetTableStylesCommandButton = memo(
     onSelectTableStyleName: propOnSelectTableStyleName,
     disabled: propDisabled = false,
     bodyStyle: propBodyStyle,
+    disabledQuickKey = false,
     usePreviewIcon = false,
+    // style: propStyle,
+    //className: propClassName,
     ...rest
   } = props;
 
@@ -476,7 +481,7 @@ export const PresetTableStylesCommandButton = memo(
   return (
     <CommandPopupButton
       ref={refForwarded}
-      quickCommand={quickCommandKey}
+      quickCommand={disabledQuickKey ? undefined : quickCommandKey}
       createPopupPanel={createPopupPanel}
       commands={propCommands}
       label={command?.label()}
@@ -502,7 +507,4 @@ export const PresetTableStylesCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default PresetTableStylesCommandButton;

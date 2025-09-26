@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Card } from '@mui/material';
 import { CardContent } from '@mui/material';
 import { CardMedia } from '@mui/material';
-import { Grid2 } from '@mui/material';
+import { Grid } from '@mui/material';
 import { Typography } from '@mui/material';
 import { Container } from '@mui/material';
 import { CardActionArea } from '@mui/material';
@@ -26,11 +26,11 @@ const MEDIA_PROPS = {
 
 export default function Album({cards}) {
   return (
-    <Container sx={{ py: 8, pt: 4 }} maxWidth="md">
+    <Container sx={{ py: 8, pt: 4 }} maxWidth="xl">
       {/* End hero unit */}
-      <Grid2 container spacing={4} justifyContent="center">
+      <Grid container spacing={4} justifyContent="center">
         {cards.map((card, index) => (
-          <Grid2 item key={index} size={{ xs: 12, sm: 6, md: 4 }} >
+          <Grid item key={index} xs={12} sm={6} md={4}>
             <Card elevation={4}
               sx={{ height: '100%', flexDirection: 'column' }}
             >
@@ -82,9 +82,9 @@ export default function Album({cards}) {
                 </CardContent>
               </CardActionArea>
             </Card>
-          </Grid2>
+          </Grid>
         ))}
-      </Grid2>
+      </Grid>
     </Container>
   );
 }

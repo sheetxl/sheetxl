@@ -51,24 +51,23 @@
     "fuse.js": "^7.0.0",
     "notistack": "^3.0.1",
     "react-color": "^2.19.3",
-    "react-error-boundary": "^6.0.0",
-    "react-hook-form": "^7.54.2",
+    "react-hook-form": "^7.63.0",
     "react-merge-refs": "^3.0.2",
     "react-resizable": "^3.0.5",
     "react-transition-group": "^4.4.5",
     "react-use": "^17.6.0",
     "react-virtualized": "^9.22.6",
-    "rooks": "^9.0.1",
+    "rooks": "^9.3.0",
     "tinycolor2": "^1.6.0"
   },
   "peerDependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/material": "^6.5.0",
-    "@mui/styled-engine": "^6.5.0",
-    "@mui/system": "^6.5.0",
-    "@mui/utils": "^6.4.9",
+    "@mui/material": "^7.3.2",
+    "@mui/styled-engine": "^7.3.2",
+    "@mui/system": "^7.3.2",
+    "@mui/utils": "^7.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
@@ -76,7 +75,7 @@
     "@types/file-saver": "^2.0.5",
     "@types/react-resizable": "^3.0.8",
     "@types/react-transition-group": "^4.4.6",
-    "@types/react-virtualized": "^9.22.0"
+    "@types/react-virtualized": "^9.22.3"
   },
   "sideEffects": [
     "*.css",

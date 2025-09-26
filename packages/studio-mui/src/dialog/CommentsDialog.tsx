@@ -142,11 +142,11 @@ export const CommentsDialog: React.FC<CommentsDialogProps> = memo((props) => {
               marginTop: (theme: Theme) => theme.spacing(0.5)
             }
           }}
-          InputLabelProps={{
-            shrink: true
-          }}
-          InputProps={{
-            inputProps: {
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+            htmlInput: {
               className: 'autoFocus',
               spellCheck: false,
               autoComplete: "off",
@@ -157,7 +157,6 @@ export const CommentsDialog: React.FC<CommentsDialogProps> = memo((props) => {
               }
             }
           }}
-
           value={comment}
           onChange={handleOnCommentChange}
           // onKeyDown={handleKeyDown}

@@ -49,8 +49,7 @@ export interface ColorCommandButtonProps extends Omit<ColorPopupButtonProps, "se
   darkMode?: boolean;
 }
 
-// TODO - This should use the mui-state styled but I am not at all sure how to do this
-const ColorCommandButton = memo(
+export const ColorCommandButton = memo(
     forwardRef<HTMLElement, ColorCommandButtonProps>((props, refForwarded) => {
   const {
     command,
@@ -158,4 +157,3 @@ const ColorCommandButton = memo(
 }));
 
 ColorCommandButton.displayName = "ColorCommandButton";
-export { ColorCommandButton };
