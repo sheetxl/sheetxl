@@ -1,0 +1,16 @@
+.table-style-options-container {
+  container-type: inline-size; /* Enable container queries */
+}
+
+.table-style-options {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column by default */
+  user-select: none;
+
+  @container (width > 600px) { /* greater than rem */
+    grid-template-rows: repeat(3, auto); /* 3 rows instead of 3 columns */
+    grid-auto-flow: column; /* Fill columns first */
+    grid-auto-columns: 1fr; /* Make auto-generated columns equal width */
+    gap: 2px;
+  }
+}

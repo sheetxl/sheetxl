@@ -1,4 +1,5 @@
-import React, {memo, forwardRef, useCallback, useState, useLayoutEffect, useRef
+import React, {
+  memo, forwardRef, useCallback, useState, useMemo, useRef
 } from 'react';
 
 import { ReactUtils } from '../utils';
@@ -56,6 +57,16 @@ const DEFAULT_SCALE_LIMIT = 1000000; // 1,000,000
 const DEFAULT_SCALE_FACTOR = 100;
 const DEFAULT_PRECISION_ADJUST = 50;
 
+interface VirtualBounds {
+  offset: number;
+  totalSize: number;
+  viewportSize: number;
+
+  scaledOffset: number;
+  scaledTotalSize: number;
+  scaledViewportSize: number;
+}
+
 /**
  * The virtual scrollbar is for very large scroll area.
  * Browsers have issues with more than divs more than 6m pixels width/height (which by most account is reasonable).
@@ -94,56 +105,58 @@ const VirtualScrollbar = memo(forwardRef<HTMLDivElement, VirtualScrollbarProps>(
 
   const onMouseDown = useCallbackRef(propOnMouseDown, [propOnMouseDown]);
 
-  const calcElastic = () => {
-    return {
-      offset: propOffset,
-      totalSize: scaleLimit === 0 ? propTotalSize : Math.min(propTotalSize ?? 0, Math.max(minSize ?? 0, (propOffset ?? 0) + (propViewportSize ?? 0)) + (endGap ?? 0))
-    }
-  };
-  const [elasticProps, setElasticProps] = useState(calcElastic);
-
-  const effectiveFactor = scaleLimit !== 0 && elasticProps.totalSize > scaleLimit ? scaleFactor : 1;
-  const effectivePrecision = effectiveFactor / precisionFactor;
-  const totalSize = Math.ceil(elasticProps.totalSize / effectiveFactor);
-  const offset = Math.ceil(elasticProps.offset / effectiveFactor);
-  const viewportSize = Math.ceil(propViewportSize / effectiveFactor);
-
-  const handleMouseMove = useCallback((_e: globalThis.MouseEvent) => {
-  }, []);
 
   const [isDraggingScroll, setDraggingScroll] = useState(false);
-  const viewportInFlight = useRef(null);
-  useLayoutEffect(() => {
+  const refInFlight = useRef<VirtualBounds>(null);
+
+  const bounds: VirtualBounds = useMemo(() => {
+    const virtualTotal = scaleLimit === 0 ? propTotalSize : Math.min(propTotalSize ?? 0, Math.max(minSize ?? 0, (propOffset ?? 0) + (propViewportSize ?? 0)) + (endGap ?? 0));
+    const effectiveFactor = scaleLimit !== 0 && virtualTotal > scaleLimit ? scaleFactor : 1;
+    // const effectivePrecision = effectiveFactor / precisionFactor;
+    const totalSize = Math.ceil(virtualTotal / effectiveFactor);
+    const offset = Math.ceil(propOffset / effectiveFactor);
+    const viewportSize = Math.ceil(propViewportSize / effectiveFactor);
+    const retValue = {
+      offset, totalSize, viewportSize,
+      scaledOffset: propOffset,
+      scaledTotalSize: propTotalSize,
+      scaledViewportSize: propViewportSize
+     }
     if (!isDraggingScroll) {
-      viewportInFlight.current = {
-        propTotalSize, propViewportSize, propOffset
-      }
-      const newElastic = calcElastic();
-      setElasticProps(newElastic);
+      refInFlight.current = retValue;
+    } else {
+      refInFlight.current = null; // ?
     }
-  }, [propTotalSize, propViewportSize, propOffset, isDraggingScroll, minSize, endGap, endScrollIncrement]);
+    return retValue;
+  }, [propOffset, propTotalSize, propViewportSize, isDraggingScroll, minSize, endGap, endScrollIncrement]);
+
+  const effectiveFactor = scaleLimit !== 0 && bounds.totalSize > scaleLimit ? scaleFactor : 1;
+  const effectivePrecision = effectiveFactor / precisionFactor;
 
   const handleOnScrollOffset = useCallbackRef((offsetPhysical: number, _viewportSizePhysical: number, _totalSizePhysical: number) => {
     /**
      * Because our physical scrollbar is not as large and logical we probably lose precision
      */
-    const inFlight = viewportInFlight.current;
-    viewportInFlight.current = null;
+    const inFlight = refInFlight.current;
+    refInFlight.current = null;
     if (inFlight &&
-      inFlight.propTotalSize === propTotalSize &&
-      inFlight.propViewportSize === propViewportSize &&
-      inFlight.propOffset === propOffset
+      inFlight.scaledTotalSize === propTotalSize &&
+      inFlight.scaledViewportSize === propViewportSize &&
+      inFlight.scaledOffset === propOffset
     ) {
       return;
     }
 
+    const offset = bounds.offset;
     if (Math.abs(offsetPhysical - offset) < effectivePrecision) {
       offsetPhysical = offset;
     }
 
-    propOnScrollOffset?.(offsetPhysical * effectiveFactor, offset, viewportSize);
-  }, [propOnScrollOffset, effectiveFactor, effectivePrecision, offset, viewportSize]);
+    propOnScrollOffset?.(offsetPhysical * effectiveFactor, offset, bounds.viewportSize);
+  }, [propOnScrollOffset, effectiveFactor, effectivePrecision, bounds]);
 
+  const handleMouseMove = useCallback((_e: globalThis.MouseEvent) => {
+  }, []);
   /**
    * When user releases mouse
    */
@@ -156,9 +169,10 @@ const VirtualScrollbar = memo(forwardRef<HTMLDivElement, VirtualScrollbarProps>(
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    setDraggingScroll(true);
+
     onMouseDown?.(e);
 
-    setDraggingScroll(true);
     document.addEventListener("mousemove", handleMouseMove, {
       passive: true,
     });
@@ -170,13 +184,11 @@ const VirtualScrollbar = memo(forwardRef<HTMLDivElement, VirtualScrollbarProps>(
   return (
     <Scrollbar // Note - the default scrollbar is 5 and horizontal is 25px high. To make these the same size we should use 5px
       ref={refForwarded}
-      style={{
-        ...propStyle
-      }}
+      style={propStyle}
       {...rest}
-      offset={offset}
-      totalSize={totalSize}
-      viewportSize={viewportSize}
+      offset={bounds.offset}
+      totalSize={bounds.totalSize}
+      viewportSize={bounds.viewportSize}
       onMouseDown={handleMouseDown}
       onScrollOffset={handleOnScrollOffset}
     />

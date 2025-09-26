@@ -57,7 +57,6 @@ import { renderMovableContextMenu, renderFilterColumnMenu, renderWorkbookContext
   renderWorkbookFormulaBar, renderWorkbookLoadingPanel, renderWorkbookSheet,
   renderWorkbookStatusBar, renderWorkbookStrip
 } from './WorkbookRenderers';
-import { on } from 'events';
 
 // let currentUrl: string = '';
 // if (typeof window === "object") {
@@ -74,9 +73,10 @@ import { on } from 'events';
 
 const IGNORE_MODEL_CHANGE = { fireOnModelChange: false };
 
-const styleFlexFull = {
+const styleFlexFull: React.CSSProperties = {
   flex: `1 1 100%`,
-  display: 'flex'
+  display: 'flex',
+  boxSizing: 'border-box'
 }
 /* Adjust the extend virtual scroll area beyond default */
 const END_VIRTUAL_SCROLL_GAP = 700;
@@ -128,10 +128,9 @@ const WorkbookElement =
     loadingPanelProps: propsLoadingPanel,
 
     sheetProps: propsSheet,
-    sheetWrapper: propsSheetWrapper,
     renderSheet: propRenderSheet = renderWorkbookSheet,
 
-    sideBarElement: propSideBarElement,
+    mainWrapper: propsMainWrapper,
 
     showHorizontalScrollbar: propShowHorizontalScrollbar,
     showVerticalScrollbar: propShowVerticalScrollbar,
@@ -342,7 +341,7 @@ const WorkbookElement =
     });
   }, [propRenderStatusBar, propsStatusBar, showStatusBar, gridStyle, sheet]);
 
-  const workbookToolbar = useMemo(() => {
+  const toolbar = useMemo(() => {
     return propRenderToolbar({
       commands: commandsWorkbook,
       workbook: refLocal.current,
@@ -981,7 +980,7 @@ const WorkbookElement =
       handleFilterMenu(e, filter);
     }
 
-    const renderedSheet = propRenderSheet({
+    return propRenderSheet({
       style: styleFlexFull,
       onFocus: handleSheetFocus,
       gridStyle,
@@ -1023,17 +1022,13 @@ const WorkbookElement =
         ...propsSheet?.cellRenderProps
       }
     }, refSheet);
-    if (!propsSheetWrapper) return renderedSheet
-    return propsSheetWrapper(renderedSheet);
-  }, [propRenderSheet, propsSheetWrapper, commandsWorkbook, propsSheet, sheet, gridStyle, propOnRepeatCommandChange]);
+  }, [commandsWorkbook, propsSheet, sheet, gridStyle, propOnRepeatCommandChange]);
 
-  const mainArea = useMemo(() => {
-    const scrollPane = (
+  const mainPane = useMemo(() => {
+    let mainElement = (
       <ScrollPane
-        style={{
-          ...styleFlexFull,
-          marginRight: propSideBarElement && isFullWidth ? '0px' : '6px'
-        }}
+        ref={refMeasureMainArea}
+        style={styleFlexFull}
         viewport={viewport}
         touchElement={refSheet.current?.getGridElement()?.stage}
         onScrollViewport={(scrollPosition) => {
@@ -1047,61 +1042,18 @@ const WorkbookElement =
         {sheetElement}
       </ScrollPane>
     )
-
-    let leftPane = scrollPane;
-    if (!isFullWidth) {
-      leftPane = (<>
-        {scrollPane}
+    if (!isFullWidth && widthMainArea !== 0) {
+      mainElement = (<>
+        {mainElement}
         {workbookStrip}
       </>)
     }
-
-    let path = null;
-    let width = 4;
-    let height = 13;
-    if (isFullWidth) {
-      path = 'm 3.6261898,11.36243 c 0,0.88365 -0.71627,1.59991 -1.59991,1.59991 -0.8836498,0 -1.60004965,-0.71626 -1.60004965,-1.59991 0,-0.88365 0.71639985,-1.6000508 1.60004965,-1.6000508 0.88364,0 1.59991,0.7164008 1.59991,1.6000508 m 0,-4.881294 c 0,0.88364 -0.71627,1.60004 -1.59991,1.60004 -0.8836498,0 -1.60004965,-0.7164 -1.60004965,-1.60004 0,-0.88365 0.71639985,-1.60005 1.60004965,-1.60005 0.88364,0 1.59991,0.7164 1.59991,1.60005 m 0,-4.881226 c 0,0.88365 -0.71627,1.60005 -1.59991,1.60005 C 1.14263,3.19996 0.42623015,2.48356 0.42623015,1.59991 0.42623015,0.71626 1.14263,0 2.0262798,0 c 0.88364,0 1.59991,0.71626 1.59991,1.59991';
-    } else {
-      path = 'M 1.59991,3.62619 C 0.71626,3.62619 0,2.90992 0,2.02628 0,1.1426301 0.71626,0.42623015 1.59991,0.42623015 c 0.88365,0 1.6000508,0.71639995 1.6000508,1.60004985 0,0.88364 -0.7164008,1.59991 -1.6000508,1.59991 m 4.881294,0 c -0.88364,0 -1.60004,-0.71627 -1.60004,-1.59991 0,-0.8836499 0.7164,-1.60004985 1.60004,-1.60004985 0.88365,0 1.60005,0.71639995 1.60005,1.60004985 0,0.88364 -0.7164,1.59991 -1.60005,1.59991 m 4.881226,0 c -0.88365,0 -1.60005,-0.71627 -1.60005,-1.59991 0,-0.8836499 0.7164,-1.60004985 1.60005,-1.60004985 0.88365,0 1.59991,0.71639995 1.59991,1.60004985 0,0.88364 -0.71626,1.59991 -1.59991,1.59991';
-      width = 13;
-      height = 4;
-    }
-
-    return (
-      <SplitPane
-        fixedPane="after"
-        position="40%"
-        minAfter={isFullWidth ? '280px' : '120px'}
-        splitDirection={isFullWidth ? 'row' : 'column'}
-        style={styleFlexFull}
-        ref={refMeasureMainArea}
-        resizerProps={{
-          className: "styled-resizer",
-          // todo - move this to css
-          style: {
-            minWidth: isFullWidth ? '6px' : undefined,
-            minHeight: isFullWidth ? undefined : '6px',
-            maskImage: `url("data:image/svg+xml,%3Csvg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' version='1.1' fill='${(appTheme.palette.text as any).icon ?? appTheme.palette.action.active}' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'%3E%3Cpath d='${path}' /%3E%3C/svg%3E%0A")`,
-            maskRepeat: 'no-repeat',
-            maskPosition: isFullWidth  ? 'left center' : 'top center',
-          },
-        }}
-        elementBefore={leftPane}
-        paneBeforeProps={{
-          style: {
-            flexDirection: 'column'
-          }
-        }}
-        elementAfter={propSideBarElement}
-        paneAfterProps={{
-          style: {
-            marginLeft: isFullWidth ? '0px' : '4px',
-            marginRight: isFullWidth ? '8px' : '4px'
-          }
-        }}
-      />
-    );
-  }, [showHorizontalScrollbar, showTabs, createTabStripSharedScrollbar, showVerticalScrollbar, viewport, propSideBarElement, sheetElement, workbookStrip, appTheme, isFullWidth]);
+    if (!propsMainWrapper) return mainElement;
+    return propsMainWrapper(mainElement);
+  }, [
+    showHorizontalScrollbar, showTabs, createTabStripSharedScrollbar, showVerticalScrollbar, viewport, isFullWidth,
+    sheetElement, workbookStrip, appTheme, propsMainWrapper
+  ]);
 
   const tooltip = useMemo(() => {
     return (
@@ -1119,39 +1071,39 @@ const WorkbookElement =
           </Typography>
         }
         placement={popperPlacement}
-        TransitionProps={{
-          timeout: {
-            exit: 0, // reverse grow with arrow behaves poorly. Would be nice to just make a fade?
-          }
-        }}
-        PopperProps={{
-          popperRef,
-          sx: {
-            "& .MuiTooltip-tooltip": {
-              padding: "2px 6px",
-              "& .MuiTooltip-arrow": {
-                display: isPopperOpen ? "visible" : "none"
-              }
+        slotProps={{
+          transition: {
+            timeout: {
+              exit: 0, // reverse grow with arrow behaves poorly. Would be nice to just make a fade?
             }
           },
-          anchorEl: {
-            getBoundingClientRect: () => {
-              return new DOMRect(
-                popperAnchor.x,
-                popperAnchor.y,
-                popperAnchor.width,
-                popperAnchor.height
-              );
+          popper: {
+            popperRef,
+            sx: {
+              "& .MuiTooltip-tooltip": {
+                padding: "2px 6px",
+                "& .MuiTooltip-arrow": {
+                  display: isPopperOpen ? "visible" : "none"
+                }
+              }
             },
-          },
-          modifiers: [
-            {
-                name: "offset",
-                options: {
-                    offset: [0, 0],
-                },
+            anchorEl: {
+              getBoundingClientRect: () => {
+                return new DOMRect(
+                  popperAnchor.x,
+                  popperAnchor.y,
+                  popperAnchor.width,
+                  popperAnchor.height
+                );
+              },
             },
-          ],
+            modifiers: [{
+              name: "offset",
+              options: {
+                offset: [0, 0],
+              }
+            }]
+          }
         }}
       >
         <Box />
@@ -1277,10 +1229,10 @@ const WorkbookElement =
         className={classNameEffective}
         style={themedStyles}
       >
-        {workbookToolbar}
+        {toolbar}
         {showFormulaBar ? formulaBar : null}
         {formulaBarPadding}
-        {mainArea}
+        {mainPane}
         {statusBar}
         {tooltip}
         {contextMenuComponent}

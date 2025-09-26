@@ -156,7 +156,4 @@ export const HorizontalAlignCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default HorizontalAlignCommandButton;

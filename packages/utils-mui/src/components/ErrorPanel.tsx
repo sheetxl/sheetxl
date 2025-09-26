@@ -95,8 +95,8 @@ export const wrapErrorAsComponent = (error: any, hideStackTrace: boolean = false
  * Simple panel to show error.
  * Todo - allow for action flag
  */
-const ErrorPanel: React.FC<ErrorPanelProps & { ref?: any }> = memo(
-  forwardRef<any, ErrorPanelProps>((props, refForwarded) => {
+export const ErrorPanel =
+  memo( forwardRef<any, ErrorPanelProps>((props, refForwarded) => {
   const {
     sx: propSx,
     icon = <DynamicIcon iconKey='Error' style={{ fontSize: 48 }} />,
@@ -223,4 +223,3 @@ const ErrorPanel: React.FC<ErrorPanelProps & { ref?: any }> = memo(
 }));
 
 ErrorPanel.displayName = 'ErrorPanel';
-export { ErrorPanel };

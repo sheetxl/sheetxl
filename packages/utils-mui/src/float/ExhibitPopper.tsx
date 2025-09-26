@@ -11,6 +11,7 @@ import {
   //  VirtualElement, Options, OptionsGeneric
 } from '@popperjs/core';
 
+import { CommonUtils } from '@sheetxl/utils';
 import { useCallbackRef, useFullscreenPortal } from '@sheetxl/utils-react';
 
 // export { Instance, VirtualElement };
@@ -298,7 +299,11 @@ const ExhibitPopper: React.FC<ExhibitPopperProps & { ref?: any }> = memo(
                 placement === 'bottom-start' ? 'left top' : 'center bottom'
             }}
           >
-            {typeof children === "function" ? children({ TransitionProps, placement, ...rest}) : (children as any || {})}
+            {typeof children === "function" ? children({
+              TransitionProps,
+              placement,
+              ...rest
+            }) : (children as any || CommonUtils.EmptyArray)}
           </Grow>
           )
         }}

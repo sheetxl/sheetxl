@@ -10,7 +10,7 @@ import { Card } from '@mui/material';
 import { CardActions } from '@mui/material';
 import { CardContent } from '@mui/material';
 import { CardHeader } from '@mui/material';
-import { Grid2 as Grid } from '@mui/material'; // Grid version 2
+import { Grid } from '@mui/material';
 // import { StarBorder as StarIcon } from '@mui/icons-material';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { RadioButtonUnchecked as RadioButtonUncheckedIcon } from '@mui/icons-material';
@@ -122,6 +122,7 @@ export default function FeatureSection(props) {
           <Grid container spacing={5} columns={12}>
             {cards.map((card) => (
               <Grid
+                item
                 key={card.title}
                 size={{ xs: 12, sm: card.singleLine ? 12 : 6 }}
               >

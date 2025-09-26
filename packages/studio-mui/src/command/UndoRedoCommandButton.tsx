@@ -237,7 +237,4 @@ export const UndoRedoCommandButton = memo(
       {...rest}
     />
   );
-
 }));
-
-export default UndoRedoCommandButton;

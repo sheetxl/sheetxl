@@ -66,7 +66,4 @@ export const ClearCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default ClearCommandButton;

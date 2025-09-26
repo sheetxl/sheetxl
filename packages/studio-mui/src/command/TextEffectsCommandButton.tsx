@@ -80,5 +80,3 @@ export const TextEffectsCommandButton = memo(
     />
   )
 }));
-
-export default TextEffectsCommandButton;

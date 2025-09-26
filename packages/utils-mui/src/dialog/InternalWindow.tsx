@@ -11,6 +11,8 @@ import { useMeasure } from 'react-use';
 import { alpha } from '@mui/system';
 import { Theme, useTheme, useThemeProps } from '@mui/material/styles';
 
+import { DialogSlots } from '@mui/material';
+
 import { Box } from '@mui/material';
 import { Fade } from '@mui/material';
 // import { Collapse } from '@mui/material';
@@ -32,7 +34,7 @@ import Draggable, {
   DraggableEventHandler, DraggableEvent, DraggableData
 } from 'react-draggable';
 
-import { Point, Size } from '@sheetxl/utils';
+import { Point, Size, CommonUtils } from '@sheetxl/utils';
 
 import {
   useCallbackRef, useImperativeElement, KeyCodes, useFullscreenPortal, DynamicIcon
@@ -186,14 +188,25 @@ export interface InternalWindowProps extends Omit<DialogProps, 'open'> {
    */
   initialPosition?: RelativePoint;
 
-  TransitionComponent?: React.ComponentType<TransitionProps>;
+  /**
+   * The components used for each slot inside.
+   * @default {}
+   */
+  slots?: DialogSlots & {
+    transition?: React.ComponentType<TransitionProps>;
+    paper?: React.ComponentType<PaperProps>;
+  };
 
-  PaperComponent?: React.ComponentType<TransitionProps>;
-  // PaperComponent?: React.JSXElementConstructor<PaperProps>;
-
-  // BackdropComponent?: React.ComponentType<TransitionProps>;
-  // BackdropComponent?: React.ElementType<BackdropProps>;
-
+  /**
+   * The extra props for the slot components.
+   * You can override the existing props or add new ones.
+   * @default {}
+   */
+  slotProps?: {
+    backdrop?: React.ComponentProps<typeof Backdrop>;
+    paper?: PaperProps;
+    transition?: TransitionProps;
+  };
 };
 
 const DEFAULT_RIPPLE_DURATION = 180;
@@ -225,17 +238,14 @@ export const InternalWindow = memo(
     onShow,
     onShown,
     onHide,
+    onClose: propOnClose,
     open,
     autoFocusSel,
     children,
-    TransitionComponent = Fade as React.ComponentType<any>, //Collapse,
-    TransitionProps: propTransitionProps,
     transitionDuration = defaultTransitionDuration,
-    BackdropComponent = Backdrop,
-    BackdropProps: propBackdropProps,
-    PaperComponent = Paper  as React.ComponentType<any>,
-    PaperProps: propPaperProps,
-    onBackdropClick,
+    TransitionProps: propsTransitionPropsDeprecated, // Needed because useModal sets deprecated TransitionProps
+    slots = CommonUtils.EmptyArray,
+    slotProps = CommonUtils.EmptyArray,
     sx: propSx,
     className: propClassName,
     onMouseDown: propOnMouseDown,
@@ -243,6 +253,22 @@ export const InternalWindow = memo(
     isModal = false,
     ...rest
   } = propsThemed;
+
+  // Extract components from slots with fallbacks
+  let TransitionComponent = slots.transition ?? Fade as React.ComponentType<any>;
+  const BackdropComponent = slots.backdrop ?? Backdrop;
+  const PaperComponent = slots.paper ?? Paper as React.ComponentType<any>;
+
+  // Extract props from slotProps
+  let propTransitionProps = slotProps.transition;
+  if (propsTransitionPropsDeprecated) {
+    propTransitionProps = {
+      ...propsTransitionPropsDeprecated,
+      ...propTransitionProps
+    };
+  }
+  const propBackdropProps = slotProps.backdrop;
+  const propPaperProps = slotProps.paper;
 
   const refFocusTrap = useRef<FocusTrap>(null);
   const [initialPosition, setInitialPosition] = useState<Point>(null);
@@ -506,7 +532,8 @@ export const InternalWindow = memo(
           propBackdropProps?.onMouseDown?.(e);
         }}
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-          onBackdropClick?.(e);
+          propOnClose?.(e, 'backdropClick');
+          // onBackdropClick?.(e);
           propBackdropProps?.onClick?.(e);
         }}
         sx={{
@@ -519,23 +546,6 @@ export const InternalWindow = memo(
 
   const { getPortalContainer } = useFullscreenPortal();
   return (
-    // <Popper
-    //   open={true}
-    //   PaperComponent={DraggablePaperComponent}
-    //   aria-labelledby="draggable-dialog-title"
-    //   sx={{
-    //     ...props.sx,
-    //     "& *" : (theme: Theme) => scrollbarTheming(theme),
-    //   }}
-    //   {...props}
-    //   // onClose={(event, reason) => {
-    //   //   if (reason === 'backdropClick' || reason === 'escapeKeyDown')
-    //   //     handleCancel();
-    //   //   props?.onClose?.(event, reason);
-    //   // }}
-    //   // TransitionProps={transitionProps}
-    //   ref={refWindowLocal}
-    // >
     createPortal(
     <Box
       className="MuiModal-root"

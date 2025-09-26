@@ -13,26 +13,25 @@ export class ChainedError extends Error {
   }
 }
 
-
-
 /**
- * Special classification that that suggests the error is caused by user input
+ * Special classification that that indicated the error is caused by user input.
  */
-export class UserError extends ChainedError {
-  constructor(message: string='Partial Error', cause: Error=null) {
-    super(message, cause);
+export class ExpectedError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
   }
 }
 
 /**
  * Special classification for error that are out of bounds.
  */
-export class OutOfBoundsError extends UserError {
+export class OutOfBoundsError extends ExpectedError {
   constructor(message: string='Out of bounds', cause: Error=null) {
     super(message, cause);
     this.name = "OutOfBoundsError";
   }
 }
+
 /**
  * Special classification that suggests there was a partial error
  */

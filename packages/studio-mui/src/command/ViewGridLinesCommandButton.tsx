@@ -88,7 +88,4 @@ export const ViewGridLinesCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default ViewGridLinesCommandButton;

@@ -66,7 +66,4 @@ export const FilterCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default FilterCommandButton;

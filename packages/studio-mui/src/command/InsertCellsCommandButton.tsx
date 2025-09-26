@@ -140,7 +140,4 @@ export const InsertCellsCommandButton = memo(
       {...rest}
     />
   );
-
 }));
-
-export default InsertCellsCommandButton;

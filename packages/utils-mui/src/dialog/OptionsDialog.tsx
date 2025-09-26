@@ -32,7 +32,7 @@ const DEFAULT_OPTIONS = ['Ok', 'Cancel'];
 const DEFAULT_RIPPLE_DURATION = 180;
 
 export const OptionsDialog = memo(
-  forwardRef<HTMLElement, OptionsDialogProps>((props, refForwarded) => {
+  forwardRef<HTMLDivElement, OptionsDialogProps>((props, refForwarded) => {
   const {
     description,
     icon,
@@ -159,9 +159,11 @@ export const OptionsDialog = memo(
       autoFocusSel={autoFocusSel}
       isModal={true}
       ref={refForwarded}
-      PaperProps={{
-        // elevation: 3, //hasFocus ? 3 : 1 // TODO - make this change based on hover
-      }}
+      // slotProps={{
+      //   paper: {
+      //     elevation: 3
+      //   }
+      // }}
       {...rest}
     >
       <FormProvider {...formMethods}>

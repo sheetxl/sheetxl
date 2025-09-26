@@ -178,29 +178,31 @@ export const ThemeSelectButton: React.FC<ThemeSelectButtonProps> = (props) => {
               // onClose={() => {
               //    console.log('clone tooltip'); // useful for creating breakpoint when open to see flicker associated with disabledPortal workaround
               // }}
-              PopperProps={{
-                style: {
-                  pointerEvents: 'none'
-                },
-                disablePortal: true, // Tooltip is flickering very badly this is because we are usually on a popper already. This causes tooltips to not always show at bottom
-                popperOptions: {
-                  strategy: 'fixed',
-                  modifiers: [
-                    // {
-                    //   name: 'positionFixed',
-                    //   enabled: true,
-                    //   options: {
-                    //     enabled: true
-                    //   },
-                    // },
-                    {
-                      name: 'preventOverflow',
-                      enabled: true,
-                      options: {
-                        boundariesElement: "viewport"
+              slotProps={{
+                popper: {
+                  style: {
+                    pointerEvents: 'none'
+                  },
+                  disablePortal: true, // Tooltip is flickering very badly this is because we are usually on a popper already. This causes tooltips to not always show at bottom
+                  popperOptions: {
+                    strategy: 'fixed',
+                    modifiers: [
+                      // {
+                      //   name: 'positionFixed',
+                      //   enabled: true,
+                      //   options: {
+                      //     enabled: true
+                      //   },
+                      // },
+                      {
+                        name: 'preventOverflow',
+                        enabled: true,
+                        options: {
+                          boundariesElement: "viewport"
+                        },
                       },
-                    },
-                  ]
+                    ]
+                  }
                 }
               }}
               title={

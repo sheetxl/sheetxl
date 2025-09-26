@@ -92,7 +92,4 @@ export const TextOverflowCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default TextOverflowCommandButton;

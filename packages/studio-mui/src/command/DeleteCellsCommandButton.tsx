@@ -131,7 +131,4 @@ export const DeleteCellsCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default DeleteCellsCommandButton;

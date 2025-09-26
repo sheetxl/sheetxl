@@ -226,7 +226,4 @@ export const FontFamilyCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default FontFamilyCommandButton;

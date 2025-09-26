@@ -341,13 +341,16 @@ const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneElement> 
       ...restPropsPane
     } = paneProps;
 
-    const defaultPaneStyle = {
+    const defaultPaneStyle: React.CSSProperties & { widthResizer: string } = {
       minWidth: 0,
       minHeight: 0,
       maxWidth: '100%',
       maxHeight: '100%',
+      height: '100%',
+      widthResizer: '100%',
       display: 'flex',
       overflow: 'hidden',
+      position: 'relative',
       ...paneStyle,
     }
 
@@ -475,24 +478,16 @@ const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneElement> 
     }, [isDoubleElement, resizerClassName, restResizer, splitDirection, resizerStyle, disabled]);
 
     const sizeDim = splitDirection === 'row' ? 'Width' : 'Height';
-    const stylePaneBefore = {
-      ...defaultPaneStyle,
-      ...paneStyleBefore,
-      flex: (limits.fixedPaneOffset === 0 && dimensions?.pixels[0] !== null) ? `0 0 ${Math.round(dimensions?.pixels[0])}px` : `1 1 ${Math.round(dimensions?.percents[0] ?? 100)}%`,
-      [`min${sizeDim}`]: dimensions?.minBefore,
-      [`max${sizeDim}`]: elementAfter ? dimensions?.maxBefore : '100%'
-    }
-
-    const stylePaneAfter = {
-      ...defaultPaneStyle,
-      ...paneStyleAfter,
-      flex: (limits.fixedPaneOffset === 1 && dimensions?.pixels[1] !== null) ? `0 0 ${Math.round(dimensions?.pixels[1])}px` : `1 1 ${Math.round(dimensions?.percents[1] ?? 100)}%`,
-      [`min${sizeDim}`]: dimensions?.minAfter,
-      [`max${sizeDim}`]: elementBefore ? dimensions?.maxAfter : '100%'
-    }
-
     const paneBefore = useMemo(() => {
       if (!elementBefore) return null;
+      const stylePaneBefore = {
+        ...defaultPaneStyle,
+        ...paneStyleBefore,
+        flex: (limits.fixedPaneOffset === 0 && dimensions?.pixels[0] !== null) ? `0 0 ${Math.round(dimensions?.pixels[0])}px` : `1 1 ${Math.round(dimensions?.percents[0] ?? 100)}%`,
+        [`min${sizeDim}`]: dimensions?.minBefore,
+        [`max${sizeDim}`]: elementAfter ? dimensions?.maxBefore : '100%'
+      }
+
       return (
         <div
           key="before"
@@ -509,6 +504,14 @@ const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneElement> 
 
     const paneAfter = useMemo(() => {
       if (!elementAfter) return null;
+      const stylePaneAfter = {
+        ...defaultPaneStyle,
+        ...paneStyleAfter,
+        flex: (limits.fixedPaneOffset === 1 && dimensions?.pixels[1] !== null) ? `0 0 ${Math.round(dimensions?.pixels[1])}px` : `1 1 ${Math.round(dimensions?.percents[1] ?? 100)}%`,
+        [`min${sizeDim}`]: dimensions?.minAfter,
+        [`max${sizeDim}`]: elementBefore ? dimensions?.maxAfter : '100%',
+      }
+
       return (
         <div
           key="after"

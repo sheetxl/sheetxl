@@ -22,7 +22,8 @@ export const ChipStrip: React.FC<ChipStripProps & { ref?: any }> = memo(
     chips = Array.isArray(propChips) ? propChips : [propChips];
 
     const retValue = [];
-    for (let i=0; i<chips.length; i++) {
+    const chipsLength = chips.length;
+    for (let i=0; i<chipsLength; i++) {
       const chip = chips[i];
       let element = null;
       if (typeof chip === 'string') {

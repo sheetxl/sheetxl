@@ -78,7 +78,4 @@ export const ViewHeadingsCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default ViewHeadingsCommandButton;
