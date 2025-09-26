@@ -185,21 +185,15 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    */
   sheetProps?: SheetProps;
   /**
-   * Allows users to Wrap stage children in Top level Context
-   */
-  sheetWrapper?: (children: React.ReactNode) => React.ReactElement;
-  /**
    * Render custom ISheetElement.
    * @param props
    * @returns A React Element representing the Sheet.
    */
   renderSheet?: (props: SheetProps) => React.ReactElement;
   /**
-   * Optional sidebar element.
+   * Allows users to Wrap stage children in Top level Context
    */
-  // TODO - remove this and use sheetWrapper instead
-  sideBarElement?: React.ReactElement;
-
+  mainWrapper?: (children: React.ReactNode) => React.ReactElement;
   /**
    * Show the horizontal scrollbar
    */

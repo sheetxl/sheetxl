@@ -134,7 +134,4 @@ export const BorderCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default BorderCommandButton;

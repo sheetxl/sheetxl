@@ -883,9 +883,9 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       //   // } else {
       //   //   iterResults = selectedRanges.find(options.findText, optionsFind);
       //   // }
-        iterResults = workbook.getSelectedSheet().find(options.findText, optionsFind);
+        iterResults = workbook.getSelectedSheet().find(optionsFind);
       } else {
-        iterResults = workbook.find(options.findText, optionsFind);
+        iterResults = workbook.find(optionsFind);
       }
       if (options.replace) {
         const replaced = workbook.replace(iterResults, options.replaceText, options.replaceOptions);
@@ -955,7 +955,9 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     const showFind = (replace: boolean=false) => {
       const cell = workbook.getSelectedCell();
 
-      const findOptions = {};
+      const findOptions = {
+        text: ''
+      };
       const props: FindReplaceWindowProps = {
         onFindOrReplace,
         onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -991,7 +993,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           try {
             taskPaneArea.activateTaskPane(value);
           } catch (error: any) {
-            notifier.showMessage(error.message, { type: NotifierType.Error })
+            notifier.showError(error.message);
           }
         },
         // onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {

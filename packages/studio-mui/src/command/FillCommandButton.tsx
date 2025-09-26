@@ -62,7 +62,4 @@ export const FillCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default FillCommandButton;

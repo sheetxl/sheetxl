@@ -83,7 +83,4 @@ export const UnderlineCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default UnderlineCommandButton;

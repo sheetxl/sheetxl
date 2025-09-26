@@ -345,11 +345,31 @@ export default function ShortcutKeysPanel(props) {
         }}
       >
         <TextField
-          InputProps={{
-            sx:{
-              backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+          slotProps={{
+            input: {
+              sx: {
+                backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+              },
+              endAdornment: (
+                <InputAdornment
+                  sx={{
+                    opacity: searchInputText.length > 0 ? 1 : 0,
+                    display: searchInputText.length > 0 ? 'flex' : 'none',
+                    // transform: 'scale(0.75) translateX(16px)'
+                  }}
+                  position="end"
+                >
+                   <IconButton
+                    aria-label="clear search"
+                    onClick={() =>  setSearchInputText('')}
+                    edge="end"
+                  >
+                    <DynamicIcon iconKey='Close'/>
+                  </IconButton>
+                </InputAdornment>
+              )
             },
-            inputProps: {
+            htmlInput: {
               className: 'input',
               autoFocus: true, // not 'sticking use autoFocusSel instead'
               spellCheck: false,
@@ -359,25 +379,7 @@ export default function ShortcutKeysPanel(props) {
                 paddingTop: (theme: Theme) => theme.spacing(1),
                 paddingBottom: (theme: Theme) => theme.spacing(1)
               },
-            },
-            endAdornment: (
-              <InputAdornment
-                sx={{
-                  opacity: searchInputText.length > 0 ? 1 : 0,
-                  display: searchInputText.length > 0 ? 'flex' : 'none',
-                  // transform: 'scale(0.75) translateX(16px)'
-                }}
-                position="end"
-              >
-                 <IconButton
-                  aria-label="clear search"
-                  onClick={() =>  setSearchInputText('')}
-                  edge="end"
-                >
-                  <DynamicIcon iconKey='Close'/>
-                </IconButton>
-              </InputAdornment>
-            )
+            }
           }}
           sx={{
             flex: '1 1 40%',

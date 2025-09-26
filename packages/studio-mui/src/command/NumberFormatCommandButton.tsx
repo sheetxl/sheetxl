@@ -18,8 +18,7 @@ import {
 
 import { SelectedIcon } from '@sheetxl/utils-mui';
 
-export interface NumberFormatCommandButtonProps extends CommandPopupButtonProps {
-}
+
 
 const NumberFormatMenuItem = memo((props: any) => { // TODO - type
   const {
@@ -92,6 +91,9 @@ const NumberFormatMenuItem = memo((props: any) => { // TODO - type
     </ExhibitMenuItem>
   )
 });
+
+export interface NumberFormatCommandButtonProps extends CommandPopupButtonProps {
+}
 
 export const NumberFormatCommandButton = memo(
   forwardRef<HTMLElement, NumberFormatCommandButtonProps>((props, refForwarded) => {
@@ -304,7 +306,4 @@ export const NumberFormatCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default NumberFormatCommandButton;

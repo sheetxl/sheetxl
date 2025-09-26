@@ -32,8 +32,8 @@
     "@sheetxl/scripting": "*",
     "@sheetxl/sdk": "*",
     "@sheetxl/utils": "workspace:*",
-    "commander": "^14.0.0",
-    "configstore": "^7.0.0",
+    "commander": "^14.0.1",
+    "configstore": "^7.1.0",
     "open": "^10.2.0"
   },
   "devDependencies": {

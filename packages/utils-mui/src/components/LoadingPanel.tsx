@@ -299,8 +299,8 @@ export interface LoadingPanelProps extends BoxProps {
 
 const SHARED_ANIMATED_CIRCLE = <AnimatedCircleIcon/>;
 
-const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
-  forwardRef<any, LoadingPanelProps>((props, refForwarded) => {
+export const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
+  forwardRef<HTMLDivElement, LoadingPanelProps>((props, refForwarded) => {
   const {
     sx: propSx,
     style: propStyle,
@@ -333,7 +333,7 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
     return label;
   }, [label]);
 
-  const localRef = useRef<HTMLDivElement>(null);
+  const refLocal = useRef<HTMLDivElement>(null);
   const retValue = useMemo(() => {
     let content = (
       <Box
@@ -394,7 +394,7 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
 
     return (
       <Box
-        ref={mergeRefs([localRef, refForwarded]) as React.RefObject<HTMLDivElement>}
+        ref={mergeRefs([refLocal, refForwarded]) as React.RefObject<HTMLDivElement>}
         className="animatable"
         sx={{
           cursor: 'wait',
@@ -488,14 +488,14 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
     @see https://github.com/reactjs/react-transition-group/blob/5007303e729a74be66a21c3e2205e4916821524b/src/CSSTransition.js#L208
   */
   useIsomorphicLayoutEffect(() => {
-    if (!localRef.current || isMounted.current || isMounting.current) return;
+    if (!refLocal.current || isMounted.current || isMounting.current) return;
     isMounting.current = true;
 
-    if (localRef.current.classList.contains('animatable') && !localRef.current.classList.contains('animating')) {
-      // console.log('add listener', localRef.current?.classList);
+    if (refLocal.current.classList.contains('animatable') && !refLocal.current.classList.contains('animating')) {
+      // console.log('add listener', refLocal.current?.classList);
       let listenerCalled = false;
       const started = () => {
-        // console.log('started', localRef.current?.classList);
+        // console.log('started', refLocal.current?.classList);
         if (isMounting.current) { // double check as could have been remove during wait
           isMounted.current = true;
           isMounting.current = false;
@@ -504,25 +504,25 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
             onMount?.();
         }
       };
-      if (localRef.current)
-      localRef.current.addEventListener("transitionrun", started, { once: true, capture: true, passive: true });
-      // localRef.current.addEventListener("transitioncancel", (event) => {
-      //   console.log("Transition canceled", event, localRef.current);
+      if (refLocal.current)
+      refLocal.current.addEventListener("transitionrun", started, { once: true, capture: true, passive: true });
+      // refLocal.current.addEventListener("transitioncancel", (event) => {
+      //   console.log("Transition canceled", event, refLocal.current);
       // }, { once: true, capture: true, passive: true });
-      // localRef.current.addEventListener("transitionstarted", (event) => {
-      //   console.log("transitionstarted", event, localRef.current);
+      // refLocal.current.addEventListener("transitionstarted", (event) => {
+      //   console.log("transitionstarted", event, refLocal.current);
       // }, { once: true, capture: true, passive: true });
-      // localRef.current.addEventListener("transitionend", (event) => {
-      //   console.log("transitionend", event, localRef.current);
+      // refLocal.current.addEventListener("transitionend", (event) => {
+      //   console.log("transitionend", event, refLocal.current);
       // }, { once: true, capture: true, passive: true });
       // HACK WORKAROUND - Through observation and testing it seems that the transitionrun event is not always fired. Not sure why
-      if (isMounting.current && localRef.current) {
+      if (isMounting.current && refLocal.current) {
         // setTimeout(() => {
-          // console.log('set animating', localRef.current?.classList, localRef.current.style.transition);
+          // console.log('set animating', refLocal.current?.classList, refLocal.current.style.transition);
           // HACK WORKAROUND -
           // Through observation and testing it seems that the transitionrun event is not fired if set immediately after listener.
           // We noticed that if we explicity force the opacity to resolve then the transitionrun event is fired (but we have a timeout backup)
-          const opacity = window.getComputedStyle(localRef.current, null).opacity;
+          const opacity = window.getComputedStyle(refLocal.current, null).opacity;
           if (opacity !== '0.001') {
             // There is a 'race condition.
             // The transitionrun event is not fired if set immediately after listener.
@@ -530,13 +530,13 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
             // reset opacity. This should never occur but is so perhaps we should put back
             // console.warn('opacity is not 0.001');
           }
-          localRef.current.classList.add('animating');
+          refLocal.current.classList.add('animating');
         // }, 10);
       }
       setTimeout(() => {
-        if (!listenerCalled && isMounting.current && localRef.current) {
-          // console.log('timeout', window.getComputedStyle(localRef.current, null).opacity, window.getComputedStyle(localRef.current, null).transition);
-          localRef.current?.removeEventListener("transitionrun", started);
+        if (!listenerCalled && isMounting.current && refLocal.current) {
+          // console.log('timeout', window.getComputedStyle(refLocal.current, null).opacity, window.getComputedStyle(refLocal.current, null).transition);
+          refLocal.current?.removeEventListener("transitionrun", started);
           started();
         }
       }, 100);
@@ -546,15 +546,15 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
       onMount?.();
     }
     return () => {
-      // console.log('--- unmount1', localRef.current?.classList);
+      // console.log('--- unmount1', refLocal.current?.classList);
     }
-  }, [localRef.current]);
+  }, [refLocal.current]);
 
   useEffect(() => {
     return () => {
       if (isMounted.current) {
-        // console.log('--- unmount', localRef.current?.classList);
-        localRef.current?.classList.remove('animating');
+        // console.log('--- unmount', refLocal.current?.classList);
+        refLocal.current?.classList.remove('animating');
         isMounted.current = false;
         isMounting.current = false;
         onUnmount?.();
@@ -567,4 +567,3 @@ const LoadingPanel: React.FC<LoadingPanelProps & { ref?: any }> = memo(
 }));
 
 LoadingPanel.displayName = 'LoadingPanel';
-export { LoadingPanel };

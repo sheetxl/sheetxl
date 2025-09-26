@@ -1,0 +1,27 @@
+.range-row {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 100%;
+  width: 100%;
+  align-items: center;
+
+  @container (width > 600px) {
+    flex-direction: row;
+    gap: 12px;
+    justify-content: space-between;
+  }
+}
+
+.action-row {
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+
+  @container (width > 600px) {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-evenly;
+  }
+}

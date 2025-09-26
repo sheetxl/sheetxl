@@ -41,7 +41,4 @@ export const WalkingCopyCommandButton: React.FC<WalkingCopyCommandButtonProps> =
       {...rest}
     />
   );
-
 }));
-
-export default WalkingCopyCommandButton;

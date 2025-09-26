@@ -276,5 +276,3 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
   )
   return retValue;
 }));
-
-export default InputCommandButton;

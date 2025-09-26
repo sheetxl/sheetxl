@@ -12,8 +12,7 @@ export interface MergeCommandButtonProps extends CommandPopupButtonProps {}
 /**
  * Menu for merge options
  */
-export const MergeCommandButton = memo(
-  forwardRef<HTMLElement, MergeCommandButtonProps>((props, refForwarded) => {
+export const MergeCommandButton = memo(forwardRef<HTMLElement, MergeCommandButtonProps>((props, refForwarded) => {
   const {
     commands: propCommands,
     commandHook: propCommandHook,
@@ -67,7 +66,4 @@ export const MergeCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default MergeCommandButton;

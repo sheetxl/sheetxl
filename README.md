@@ -1,9 +1,9 @@
+# SheetXL — the api-first spreadsheet
+
 <p align="center">
   <img src="./static/img/social-light.png#gh-light-mode-only">
   <img src="./static/img/social-dark.png#gh-dark-mode-only">
 </p>
-
-# SheetXL — the api-first spreadsheet
 
 [![Discord](https://img.shields.io/discord/1141404921246257223)](https://discord.gg/NTKdwUgK9p)
 [![npm (tag)](https://img.shields.io/npm/v/@sheetxl/studio-mui/latest?color=blue)](https://www.npmjs.com/package/@sheetxl/studio-mui)

@@ -26,7 +26,7 @@ export default function MUIThemeWrapper(props) {
   }, [colorMode]);
 
   const [renderedChildren, setRenderedChildren] = React.useState(children);
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     /**
      * This is a hack. For some reason MUI/emotion reads the wrong values
      * by force a re-render we 'mask' the problem.
@@ -38,7 +38,7 @@ export default function MUIThemeWrapper(props) {
           </div>
         ))
     }
-  }, []);
+  }, [colorMode, children]);
 
   return (
     <ThemeProvider theme={defaultTheme}>

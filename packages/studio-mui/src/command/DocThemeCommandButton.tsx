@@ -112,5 +112,3 @@ export const DocThemeCommandButton = memo(
     />
   )
 }));
-
-export default DocThemeCommandButton;

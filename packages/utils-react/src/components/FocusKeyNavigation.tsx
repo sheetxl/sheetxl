@@ -33,24 +33,25 @@ export const FocusKeyNavigation: React.FC<FocusKeyNavigationProps> = memo(
     ...rest
   } = props;
 
-  const localRef = useRef<HTMLDivElement>(null);
+  const refLocal = useRef<HTMLDivElement>(null);
 
   const handleFocus  = useCallback(() => {
     if (refFocusStart) {
       refFocusStart?.current?.focus();
       return;
     }
-    const children = localRef.current.parentElement.children;
+    const children = refLocal.current.parentElement.children;
     let found = [];
     // TODO - add all children then sort. For now we just grab the first one.
-    for (let i=0; i<children.length && children[i] !== localRef.current; i++) {
-      const tabindex = children[i].getAttribute('tabindex');
+    const childrenLength = children.length;
+    for (let i=0; i<childrenLength && children[i] !== refLocal.current; i++) {
+      const child: any = children[i];
+      const tabindex = child.getAttribute('tabindex');
       if (tabindex === undefined || tabindex === null || tabindex === '-1')
         continue;
-      const disabled = children[i].getAttribute('disabled');
+      const disabled = child.getAttribute('disabled');
       if (disabled === 'true')
         continue;
-      const child: any = children[i];
       if (!child.focus)
         continue
       found.push({
@@ -69,7 +70,7 @@ export const FocusKeyNavigation: React.FC<FocusKeyNavigationProps> = memo(
   return (
     <div
       tabIndex={0}
-      ref={mergeRefs([localRef, refForwarded])}
+      ref={mergeRefs([refLocal, refForwarded])}
       onFocus={handleFocus}
       {...rest}
     >

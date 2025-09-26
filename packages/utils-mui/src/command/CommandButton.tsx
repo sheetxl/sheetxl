@@ -146,5 +146,4 @@ export const CommandButton = memo(
   )
   return retValue;
 }));
-
-export default CommandButton;
+CommandButton.displayName = "CommandButton";

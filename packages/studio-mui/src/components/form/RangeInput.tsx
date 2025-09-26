@@ -194,11 +194,14 @@ const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivElement> }
             marginTop: (theme: Theme) => theme.spacing(0.5),
           }
         }}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        InputProps={{
-          inputProps: {
+        slotProps={{
+          input: {
+            endAdornment
+          },
+          inputLabel: {
+            shrink: true,
+          },
+          htmlInput: {
             // className: 'input',
             spellCheck: false,
             autoComplete: "off",
@@ -208,12 +211,7 @@ const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivElement> }
               paddingTop: (theme: Theme) => theme.spacing(1.25),
               paddingBottom: (theme: Theme) => theme.spacing(0.75)
             }
-          },
-          sx: {
-            // paddingRight: (theme: Theme) => theme.spacing(0.5),
-            backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
-          },
-          endAdornment
+          }
         }}
         value={displayText ?? ''}
         onChange={handleOnChange}

@@ -54,7 +54,4 @@ export const CommandTooltip: React.FC<CommandTooltipProps & { ref?: any }> = mem
       </div>
     </ExhibitTooltip>
   )
-
 }));
-
-export default CommandTooltip;

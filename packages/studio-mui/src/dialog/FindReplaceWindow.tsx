@@ -52,6 +52,8 @@ type OptionSelectProps = Omit<SelectProps, 'variant' | 'onSelect'> & {
   onSelect: (value: any) => void;
 }
 
+const SmallOptionButtonStyle = { width: '1.5rem', height: '1.5rem' };
+
 const OptionSelect = memo((props: OptionSelectProps) => {
   const {
     label,
@@ -126,24 +128,34 @@ export const ScopeOptions = {
 } as const;
 export type ScopeOptions = typeof ScopeOptions[keyof typeof ScopeOptions];
 
+
+/**
+ * Used for the find/replace dialog.
+ */
 export interface FindReplaceWindowOptions {
   /**
-   * The text to find.
-   * @required
+   * Options for find.
    */
-  findText: string;
-  findOptions: ICellRange.FindOptions;
-
-  /* We have a flag to support null replaceText */
+  findOptions?: ICellRange.FindOptions;
+  /**
+   * If replacing with null then set to true.
+   */
   replace?: boolean;
-
+  /**
+   * The text to replace the found text with.
+   */
   replaceText?: string | null;
-
+  /**
+   * Options for replace.
+   */
   replaceOptions?: IWorkbook.ReplaceOptions;
 
   /**
    * If true the operation will signal to the ui container to
    * autoFocus.
+   *
+   * @remarks
+   * For replaceAll this is ignored.
    */
   autoFocus?: boolean;
 
@@ -227,12 +239,12 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
   const [hasFocus, setHasFocus] = useState<boolean>(false);
 
   const [options, setOptions] = useState<FindReplaceWindowOptions>({
-    findText: null,
     replaceText: null,
     replace: propReplace,
     replaceOptions: {
     },
     findOptions: {
+      text: null,
       matchCase: false,
       matchEntireCell: false,
       useRegex: false,
@@ -281,7 +293,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
 
   const handleKeyDown = useCallbackRef((e: React.KeyboardEvent, replace: boolean) => {
     if (e.keyCode === KeyCodes.Enter) {
-      if (!options.findText)
+      if (!options.findOptions.text)
         return;
       let forward = true;
       let replaceAll = false;
@@ -310,7 +322,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
       };
 
       // If blank we don't clear the previous
-      newValue.findText = (propFindText && propFindText.length > 0 ? propFindText : (prev.findText ?? ''));
+      newValue.findOptions.text = (propFindText && propFindText.length > 0 ? propFindText : (prev.findOptions.text ?? ''));
       setSelectAll(true); // this ok?
 
       // if propReplaceText wasn't specified then we leave the replace option allow
@@ -371,7 +383,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
 
   useEffect(() => {
     if (!selectAll || !refFindText.current) return;
-    if (options.findText !== refFindText.current.value) return; // still running effects
+    if (options.findOptions.text !== refFindText.current.value) return; // still running effects
 
     if (refFindText.current === document.activeElement || refFindText.current.contains(document.activeElement)) {
       refFindText.current?.select();
@@ -398,8 +410,10 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
         setHasFocus(false);
         setShowNoResults(false);
       }}
-      PaperProps={{
-        elevation: hasFocus ? 3 : 1 // TODO - make this change based on hover
+      slotProps={{
+        paper: {
+          elevation: hasFocus ? 3 : 1 // TODO - make this change based on hover
+        }
       }}
       {...rest}
     >
@@ -519,16 +533,91 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
         >
           <TextField
             label="Find"
-            InputLabelProps={{
-              shrink: true
-            }}
-            InputProps={{
-              sx:{
-                paddingRight: (theme: Theme) => theme.spacing(1),
-                minWidth: contentWidth > minContentWidth ? '20em' : undefined,
-                backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+            slotProps={{
+              input: {
+                sx:{
+                  paddingRight: (theme: Theme) => theme.spacing(1),
+                  minWidth: contentWidth > minContentWidth ? '20em' : undefined,
+                  backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+                },
+                endAdornment: (
+                  <InputAdornment
+                    position="end"
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        gap: '2px'
+                      }}
+                    >
+                      <ExhibitOptionButton
+                        // tabIndex={5}  // FocusTrap is not behaving as expected
+                        style={SmallOptionButtonStyle}
+                        selected={options.findOptions.matchCase}
+                        // disableFocusRipple={true}
+                        // sx={{
+                        //   transform: 'scale(0.75) translateX(16px)'
+                        // }}
+                        onBlur={() => {
+                          console.log('blur');
+                        }}
+                        onSelectToggle={(value: boolean) => {
+                          setOptions((prev: FindReplaceWindowOptions) => {
+                            const newValue = {
+                              ...prev
+                            };
+                            newValue.findOptions.matchCase = value;
+                            return newValue;
+                          });
+                        }}
+                        label="Match Case"
+                        shortcut={{ key: 'C', modifiers: [KeyModifiers.Alt] }}
+                        icon={<DynamicIcon iconKey="FindCaseSensitive" size="1rem"/>}
+                      />
+                      <ExhibitOptionButton
+                        // tabIndex={6}  // FocusTrap is not behaving as expected
+                        style={SmallOptionButtonStyle}
+                        selected={options.findOptions.matchEntireCell}
+                        onSelectToggle={(value: boolean) => {
+                          setOptions((prev: FindReplaceWindowOptions) => {
+                            const newValue = {
+                              ...prev
+                            };
+                            newValue.findOptions.matchEntireCell = value;
+                            return newValue;
+                          });
+                        }}
+                        label="Match Entire Cell"
+                        shortcut={{ key: 'E', modifiers: [KeyModifiers.Alt] }}
+                        icon={<DynamicIcon iconKey="FindWholeWord" size="1rem"/>}
+                      />
+                      <ExhibitOptionButton
+                        // tabIndex={6}  // FocusTrap is not behaving as expected
+                        style={SmallOptionButtonStyle}
+                        selected={options.findOptions.useRegex}
+                        onSelectToggle={(value: boolean) => {
+                          setOptions((prev: FindReplaceWindowOptions) => {
+                            const newValue = {
+                              ...prev
+                            };
+                            newValue.findOptions.useRegex = value;
+                            return newValue;
+                          });
+                        }}
+                        label="Use Regular Expression"
+                        shortcut={{ key: 'R', modifiers: [KeyModifiers.Alt] }}
+                        icon={<DynamicIcon iconKey="FindRegEx" size="1rem"/>}
+                      />
+                    </Box>
+                  </InputAdornment>
+                )
               },
-              inputProps: {
+              inputLabel: {
+                shrink: true,
+              },
+              htmlInput: {
                 draggable: false,
                 ref: refFindText,
                 className: 'input',
@@ -540,73 +629,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                   paddingTop: (theme: Theme) => theme.spacing(1.25),
                   paddingBottom: (theme: Theme) => theme.spacing(0.75)
                 },
-              },
-              endAdornment: (
-                <InputAdornment
-                  sx={{
-                    transform: 'scale(0.75) translateX(16px)'
-                  }}
-                  position="end"
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      gap: '1px'
-                    }}
-                  >
-                    <ExhibitOptionButton
-                      // tabIndex={5}  // FocusTrap is not behaving as expected
-                      selected={options.findOptions.matchCase}
-                      onSelectToggle={(value: boolean) => {
-                        setOptions((prev: FindReplaceWindowOptions) => {
-                          const newValue = {
-                            ...prev
-                          };
-                          newValue.findOptions.matchCase = value;
-                          return newValue;
-                        });
-                      }}
-                      label="Match Case"
-                      shortcut={{ key: 'C', modifiers: [KeyModifiers.Alt] }}
-                      icon={<DynamicIcon iconKey="FindCaseSensitive" />} // sx={{transform: 'scale(0.70)'}} />)}
-                    />
-                    <ExhibitOptionButton
-                      // tabIndex={6}  // FocusTrap is not behaving as expected
-                      selected={options.findOptions.matchEntireCell}
-                      onSelectToggle={(value: boolean) => {
-                        setOptions((prev: FindReplaceWindowOptions) => {
-                          const newValue = {
-                            ...prev
-                          };
-                          newValue.findOptions.matchEntireCell = value;
-                          return newValue;
-                        });
-                      }}
-                      label="Match Entire Cell"
-                      shortcut={{ key: 'E', modifiers: [KeyModifiers.Alt] }}
-                      icon={<DynamicIcon iconKey="FindWholeWord" />} // sx={{transform: 'scale(0.70)'}} />)}
-                    />
-                    <ExhibitOptionButton
-                      // tabIndex={6}  // FocusTrap is not behaving as expected
-                      selected={options.findOptions.useRegex}
-                      onSelectToggle={(value: boolean) => {
-                        setOptions((prev: FindReplaceWindowOptions) => {
-                          const newValue = {
-                            ...prev
-                          };
-                          newValue.findOptions.useRegex = value;
-                          return newValue;
-                        });
-                      }}
-                      label="Use Regular Expression"
-                      shortcut={{ key: 'R', modifiers: [KeyModifiers.Alt] }}
-                      icon={<DynamicIcon iconKey="FindRegEx" />} // sx={{transform: 'scale(0.70)'}} />)}
-                    />
-                  </Box>
-                </InputAdornment>
-              )
+              }
             }}
             sx={{
               flex: '1 1 100%',
@@ -622,13 +645,13 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                 }
               }
             }}
-            value={options.findText ?? ''}
+            value={options.findOptions.text ?? ''}
             onChange={(e) => {
               setOptions((prev: FindReplaceWindowOptions) => {
                 const newValue = {
                   ...prev
                 };
-                newValue.findText = e.target.value;
+                newValue.findOptions.text = e.target.value;
                 return newValue;
               });
             }}
@@ -648,7 +671,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
             label="" //label="Previous Match" - TODO - implement reverse in scanCells. - This put this back BEFORE next button)
             shortcut={{ key: 'Enter', modifiers: [KeyModifiers.Shift]}}
             icon={<DynamicIcon iconKey={options.findOptions.orientation !== IRange.Orientation.Column ? "ArrowBack" : "ArrowUpward"} />}
-            disabled={!options.findText}
+            disabled={!options.findOptions.text}
           />
           <ExhibitOptionButton
             // tabIndex={9}  // FocusTrap is not behaving as expected
@@ -660,7 +683,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
             label="Next Match"
             shortcut={{ key: 'Enter'}}
             icon={<DynamicIcon iconKey={options.findOptions.orientation !== IRange.Orientation.Column ? "ArrowForward" : "ArrowDownward"} />}
-            disabled={!options.findText}
+            disabled={!options.findOptions.text}
           />
         </Box>
         <Collapse // replace row
@@ -680,16 +703,18 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
           >
           <TextField
             label="Replace"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            InputProps={{
-              sx:{
-                paddingRight: (theme: Theme) => theme.spacing(1),
-                // minWidth: '20em',
-                backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+            slotProps={{
+              input: {
+                sx: {
+                  paddingRight: (theme: Theme) => theme.spacing(1),
+                  // minWidth: '20em',
+                  backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+                }
               },
-              inputProps: {
+              inputLabel: {
+                shrink: true,
+              },
+              htmlInput: {
                 ref: refReplaceText,
                 className: 'input',
                 spellCheck: false,
@@ -728,7 +753,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               label="Replace"
               shortcut={{ key: 'Enter'}}
               icon={<DynamicIcon iconKey="FindReplace" />}
-              disabled={!options.findText}
+              disabled={!options.findOptions.text}
             />
             <ExhibitOptionButton
               // tabIndex={11}  // FocusTrap is not behaving as expected
@@ -740,7 +765,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               label="Replace All"
               shortcut={{ key: 'Enter', modifiers: [KeyModifiers.Ctrl, KeyModifiers.Alt]}}
               icon={<DynamicIcon iconKey="FindReplaceAll" />}
-              disabled={!options.findText}
+              disabled={!options.findOptions.text}
             />
             {/* <Box // spacing
               sx={{
@@ -765,7 +790,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
             flex: '1 1 100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: (theme: Theme) => theme.spacing(0.5),
+            gap: (theme: Theme) => theme.spacing(1.5),
             marginTop: (theme: Theme) => theme.spacing(1)
           }}
         >
@@ -773,9 +798,10 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
           <Box // options
             sx={{
               display: 'flex',
-              flexDirection: contentWidth >= ((135 * 3) + (4*2) /* 3 hardcoded buttons with gaps */) ? 'row' : 'column',
+              flexDirection: contentWidth >= ((125 * 3) + (4*2) /* 3 hardcoded buttons with gaps */) ? 'row' : 'column',
               justifyContent: 'space-evenly',
               alignItems: 'center',
+              gap: (theme: Theme) => theme.spacing(1),
               rowGap: (theme: Theme) => theme.spacing(2),
             }}
             tabIndex={-1}

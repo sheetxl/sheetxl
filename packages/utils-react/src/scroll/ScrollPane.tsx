@@ -165,7 +165,7 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
       offset: viewport?.top,
       viewportSize: viewport?.height,
       totalSize: viewport?.totalHeight,
-      onScrollOffset: (offset) => {
+      onScrollOffset: (offset: number): void => {
         // TODO - we could support animation of scrollbars here too.
         // to make this work we will need to track the inflight top, left
         //scrollerRef.current?.scrollTo(scrollerRef.current?.__scrollLeft ?? 0, offset, true/*animate*/);
@@ -191,7 +191,12 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
       offset: viewport?.left,
       viewportSize: viewport?.width,
       totalSize: viewport?.totalWidth,
-      onScrollOffset: (offset) => onScrollViewport?.({ left: offset })
+      onScrollOffset: (offset: number): void => {
+        // TODO - we could support animation of scrollbars here too.
+        // to make this work we will need to track the inflight top, left
+        //scrollerRef.current?.scrollTo(scrollerRef.current?.__scrollLeft ?? 0, offset, true/*animate*/);
+        onScrollViewport?.({ left: offset })
+      }
     });
     return (
       <div

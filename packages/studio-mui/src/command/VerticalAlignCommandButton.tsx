@@ -91,5 +91,3 @@ export const VerticalAlignCommandButton = memo(
     />
   )
 }));
-
-export default VerticalAlignCommandButton;

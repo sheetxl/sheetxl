@@ -77,7 +77,4 @@ export const WorkbookViewCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default WorkbookViewCommandButton;

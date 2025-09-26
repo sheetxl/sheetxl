@@ -151,11 +151,11 @@ const NamedInput: React.FC<NamedInputProps & { ref?: React.Ref<HTMLDivElement> }
             marginTop: (theme: Theme) => theme.spacing(0.5),
           }
         }}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        InputProps={{
-          inputProps: {
+        slotProps={{
+          inputLabel: {
+            shrink: true
+          },
+          htmlInput: {
             className: 'autoFocus',
             name: formName,
             spellCheck: false,
@@ -168,7 +168,6 @@ const NamedInput: React.FC<NamedInputProps & { ref?: React.Ref<HTMLDivElement> }
             }
           }
         }}
-
         value={displayText ?? ''}
         onChange={handleOnChange}
         onKeyDownCapture={handleKeyDown}

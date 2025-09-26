@@ -61,7 +61,4 @@ export const FindCommandButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default FindCommandButton;

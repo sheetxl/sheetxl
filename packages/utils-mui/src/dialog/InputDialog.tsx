@@ -15,11 +15,11 @@ import {
 import { type OptionsDialogProps } from './useOptionsDialog';
 import { OptionsDialog } from './OptionsDialog';
 
-export interface InputDialogProps extends InputOptionsNotifierOptions, OptionsDialogProps {};
+export interface InputDialogProps extends Omit<InputOptionsNotifierOptions, 'style'>, OptionsDialogProps {};
 
 const DEFAULT_INPUT_OPTIONS = ['Input'];
 const InputDialog = memo(
-  forwardRef<HTMLElement, InputDialogProps>((props, refForwarded) => {
+  forwardRef<HTMLDivElement, InputDialogProps>((props, refForwarded) => {
   const {
     initialValue = '',
     onOption,
@@ -127,11 +127,11 @@ const InputDialog = memo(
               color: !isValid ? 'error.main' : undefined
             }
           }}
-          InputLabelProps={{
-            shrink: true
-          }}
-          InputProps={{
-            inputProps: {
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+            htmlInput: {
               placeholder: inputPlaceHolder,
               spellCheck: false,
               autoComplete: "off",

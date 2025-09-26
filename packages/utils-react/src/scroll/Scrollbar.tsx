@@ -23,7 +23,7 @@ const Scrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: Scroll
     viewportSize: propViewportSize=0,
     style: propStyle,
     className: propClassName,
-    orientation=ScrollbarOrientation.Vertical,
+    orientation = ScrollbarOrientation.Vertical,
     onScrollOffset,
     onScroll: propOnScroll,
     showCustomScrollButtons = false,
@@ -88,7 +88,11 @@ const Scrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: Scroll
 
   const refOffsetInFlight = useRef<number | null>(null);
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    refOffsetInFlight.current = propOffset;
+    const lastPropInFlight = refOffsetInFlight.current;
+    if (lastPropInFlight !== null) {
+      refOffsetInFlight.current = null;
+      return;
+    }
 
     const newScrollOffset = e.target[dimScrollStart];
     onScrollOffset(newScrollOffset, propViewportSize, propTotalSize);
@@ -102,11 +106,11 @@ const Scrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: Scroll
     // Because we get propOffset events on a render and these can and often come from our handle event
     // we track the offset when we fired our event and don't re-scroll if it's stale
     const lastPropInFlight = refOffsetInFlight.current;
-    refOffsetInFlight.current = null;
-    if (propOffset === lastPropInFlight) {
-      return;
-    }
+    if (propOffset === lastPropInFlight) return;
+    const currentScrollStart = refScrollPane.current[dimScrollStart];
+    if (currentScrollStart === propOffset) return;
 
+    refOffsetInFlight.current = propOffset;
     refScrollPane.current[dimScrollStart] = propOffset;
   }, [propOffset, dimScrollStart]);
 
@@ -138,36 +142,32 @@ const Scrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: Scroll
   }, [stopScrolling]);
 
 
-
-  const scrollOffset = propOffset;
-  // useEffect(() => {
-  //   refScrollPane.current[dimScrollStart] = scrollOffset;
-  // }, [scrollOffset, dimScrollStart])
+  // const scrollOffset = propOffset;
 
   const scrollStartButton = useMemo(() => {
     if (!showCustomScrollButtons) return null;
     const props:ScrollButtonProps = {
       orientation,
-      disabled: ((Math.floor(scrollOffset) <= 0) || (Math.floor(lengthViewport - lengthContainer) === 0)),
+      disabled: ((Math.floor(propOffset) <= 0) || (Math.floor(lengthViewport - lengthContainer) === 0)),
       onMouseUp:stopScrolling,
       onMouseLeave:stopScrolling,
-      onMouseDown:() => startScrolling(scrollOffset, true, true),
+      onMouseDown:() => startScrolling(propOffset, true, true),
     }
 
     return createScrollStartButton?.(props);
-  }, [showCustomScrollButtons, orientation, scrollOffset, scrollScrolling, lengthViewport, lengthContainer]);
+  }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
 
   const scrollEndButton = useMemo(() => {
     if (!showCustomScrollButtons) return null;
     const props:ScrollButtonProps = {
       orientation,
-      disabled: (Math.floor(lengthViewport - lengthContainer) <= Math.ceil(scrollOffset)),
+      disabled: (Math.floor(lengthViewport - lengthContainer) <= Math.ceil(propOffset)),
       onMouseUp:stopScrolling,
       onMouseLeave:stopScrolling,
-      onMouseDown:() => startScrolling(scrollOffset, true, false),
+      onMouseDown:() => startScrolling(propOffset, true, false),
     }
     return createScrollEndButton?.(props);
-  }, [showCustomScrollButtons, orientation, scrollOffset, scrollScrolling, lengthViewport, lengthContainer]);
+  }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
 
   return (
     <div
