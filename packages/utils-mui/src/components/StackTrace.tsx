@@ -4,6 +4,7 @@ import { type Theme } from '@mui/material/styles';
 
 import { Box, Typography, IconButton } from '@mui/material';
 
+import { ErrorUtils } from '@sheetxl/utils';
 import { DynamicIcon } from '@sheetxl/utils-react';
 
 export interface StackTraceProps {
@@ -78,31 +79,6 @@ const parseStack = (stackText: string): Frame[] => {
   });
 }
 
-
-/**
- * Recursively collects all errors in the cause chain, deepest first
- */
-const collectErrorChain = (error: Error): Array<{ error: Error; depth: number }> => {
-  const errors: Array<{ error: Error; depth: number }> = [];
-
-  const traverse = (currentError: Error, depth: number = 0) => {
-    if (!currentError) return;
-
-    // Add current error
-    errors.push({ error: currentError, depth });
-
-    // Recursively traverse cause chain
-    if (currentError.cause && currentError.cause instanceof Error) {
-      traverse(currentError.cause, depth + 1);
-    }
-  };
-
-  traverse(error);
-
-  // Return deepest first (reverse the array)
-  return errors.reverse();
-};
-
 const StackTrace: React.FC<StackTraceProps> = memo(({
   error,
   maxLines = Number.MAX_SAFE_INTEGER,
@@ -115,7 +91,7 @@ const StackTrace: React.FC<StackTraceProps> = memo(({
   }
 
   // Collect the entire error chain (deepest cause first), then reverse to match Chrome (root last)
-  const errorChain = collectErrorChain(error).reverse();
+  const errorChain = ErrorUtils.collectErrorChain(error).reverse();
 
   const frames: Frame[] = [];
   errorChain.forEach(({ error: e }, idx) => {

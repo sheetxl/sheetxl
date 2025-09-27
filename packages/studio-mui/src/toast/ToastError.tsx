@@ -1,4 +1,4 @@
-import { useState, forwardRef, useCallback, isValidElement } from 'react';
+import { useState, memo, forwardRef, useCallback, isValidElement } from 'react';
 
 import clsx from 'clsx';
 
@@ -11,7 +11,7 @@ import { Card } from '@mui/material';
 import { CardActions } from '@mui/material';
 import { IconButton } from '@mui/material';
 
-import { ExpectedError } from '@sheetxl/utils';
+import { ErrorUtils, ExpectedError } from '@sheetxl/utils';
 import { DynamicIcon } from '@sheetxl/utils-react';
 import { StackTrace } from '@sheetxl/utils-mui';
 
@@ -24,16 +24,21 @@ interface ToastErrorProps extends CustomContentProps {
   error?: Error;
 }
 
-const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
-  (props, ref) => {
+const ToastError = memo(forwardRef<HTMLDivElement, ToastErrorProps>((props, ref) => {
     const {
-      id, message, iconVariant, error, hideIconVariant, ...rest
+      id,
+      message,
+      iconVariant,
+      error: propError,
+      hideIconVariant,
+      ...rest
     } = props;
     const { closeSnackbar } = useSnackbar();
     const theme = useTheme();
     const [expanded, setExpanded] = useState(false);
 
-    const isUnexpectedError = error && !(error instanceof ExpectedError);
+    const rootError = ErrorUtils.collectErrorChain(propError, true)?.[0]?.error;
+    const isUnexpectedError = rootError && !(rootError instanceof ExpectedError);
     const handleExpandClick = useCallback(() => {
       setExpanded((oldExpanded) => !oldExpanded);
     }, []);
@@ -43,7 +48,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
     }, [id, closeSnackbar]);
 
     // This is a bit wonky but notistack requires a message so we have it 2x
-    let displayMessage: string | React.ReactNode = error?.message;
+    let displayMessage: string | React.ReactNode = rootError?.message;
     if (!displayMessage && isValidElement(message)) {
       displayMessage = message as React.ReactNode;
     }
@@ -55,7 +60,10 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
     }
 
     return (
-      <SnackbarContent ref={ref} className={clsx(styles.root, 'error-snackbar')}>
+      <SnackbarContent
+        ref={ref} className={clsx(styles.root, 'error-snackbar')}
+        // {...rest}
+      >
         <Card
           className={styles.card}
           style={{
@@ -98,7 +106,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
             </div>
           </CardActions>
           {isUnexpectedError ?
-          <Collapse in={expanded} timeout="auto" unmountOnExit>
+          <Collapse in={expanded} timeout="auto">
             <div
               className={styles.stackTraceContainer}
               style={{
@@ -107,7 +115,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
               }}
             >
               <StackTrace
-                error={error}
+                error={propError}
                 hideLineNumbers={true}
               />
             </div>
@@ -117,7 +125,7 @@ const ToastError = forwardRef<HTMLDivElement, ToastErrorProps>(
       </SnackbarContent>
     );
   }
-);
+));
 
 ToastError.displayName = "ToastError";
 export { ToastError };

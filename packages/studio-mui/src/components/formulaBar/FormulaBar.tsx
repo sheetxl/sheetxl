@@ -29,7 +29,7 @@ import {
 } from '../named';
 
 import {
-  FormulaBarProps, IFormulaBarElement, FormulaBarAttribute, FormulaBarAttributes
+  FormulaBarProps, IFormulaBarElement, FormulaBarAttributes
 } from './IFormulaBar';
 
 const defaultRenderNamedCollectionEditor = (props: NamedCollectionEditorProps, ref: React.Ref<INamedCollectionEditorElement>): React.ReactElement<any> => {
@@ -42,7 +42,7 @@ const MAX_LINES_EXPANDED = 15;
  * This tracks the selection of the sheet and
  * updates the a named range editor and a sheet cell editor.
  */
-const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
+const FormulaBar = memo(
   forwardRef<IFormulaBarElement, FormulaBarProps>((props, refForwarded) => {
   const {
     sx: propSx,
@@ -289,6 +289,7 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
       </Paper>
     )
   }, [disabled, stateAndCoords]);
+
   const appTheme = useTheme();
 
   const [isFormulaBarFocused, setIsFormulaBarFocused] = useState<boolean>(false);
@@ -296,6 +297,7 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
   const formulaEditor = useMemo(() => {
     return (
       <Box
+        className={"formula-bar"}
         sx={{
           display: 'flex',
           flexDirection: 'row',
@@ -314,10 +316,13 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
             position: 'relative',
             fontFamily: (theme: Theme) => theme.typography.fontFamily,
             fontSize: 11 * IFont.getDeviceScale(),
-            '& .editor-placement': {
-              top: '2px !important',
-            },
-            minHeight: "calc(100% - 2px)",
+            // '& .editor-placement': {
+            //   // top: '2px !important',
+            // },
+            //minHeight: "calc(100% - 2px)", // breaks height nesting directive
+            alignItems: 'stretch',
+            paddingTop: '2px',
+            paddingBottom: '2px',
             // minHeight: "1.2em",
             boxShadow: "none",
             borderRadius : (theme: Theme) => {
@@ -362,7 +367,8 @@ const FormulaBar: React.FC<FormulaBarProps & FormulaBarAttribute> = memo(
               flexDirection: 'row',
               flex: '1 1 100%',
               position: 'relative',
-              alignSelf: 'baseline',
+              alignItems: 'center',
+              marginTop: '-1px', // to offset bottom border
               paddingLeft: (theme: Theme) => { return theme.spacing(1) },
               paddingRight: (theme: Theme) => { return theme.spacing(1) },
             }}

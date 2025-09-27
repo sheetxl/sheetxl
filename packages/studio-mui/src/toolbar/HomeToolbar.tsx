@@ -282,14 +282,12 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
         {...commandPopupProps}
       />
       <ExhibitDivider/>
+      <InsertFunctionSumCommandPopupButton
+        {...commandPopupProps}
+      />
       <FillCommandButton
         {...commandPopupProps}
       />
-      { __DEV__ ?
-        <InsertFunctionSumCommandPopupButton
-          {...commandPopupProps}
-        />
-      : null }
       <ClearCommandButton
         {...commandPopupProps}
       />
