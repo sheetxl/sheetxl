@@ -67,3 +67,33 @@ export class NotImplementedError extends ChainedError {
     super(message, cause);
   }
 }
+
+/**
+ * Recursively collects all errors in the cause chain, deepest first
+ */
+const collectErrorChain = (error: Error, expected: boolean=false): Array<{ error: Error; depth: number }> => {
+  const errors: Array<{ error: Error; depth: number }> = [];
+
+  const traverse = (currentError: Error, depth: number = 0) => {
+    if (!currentError) return;
+
+    // Add current error
+    errors.push({ error: currentError, depth });
+
+    if (expected && (currentError instanceof ExpectedError)) return;
+    const cause = currentError.cause;
+    // Recursively traverse cause chain
+    if (!cause || !(cause instanceof Error)) return;
+    traverse(cause, depth + 1);
+  };
+
+  traverse(error);
+
+  // Return deepest first (reverse the array)
+  return errors.reverse();
+};
+
+
+export const ErrorUtils = {
+  collectErrorChain
+}

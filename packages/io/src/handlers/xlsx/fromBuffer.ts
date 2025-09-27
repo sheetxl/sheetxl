@@ -1,8 +1,10 @@
 // import type * as XLSXTypes from 'xlsx/types'; // TODO - add back
 
+import { CommonUtils, ExpectedError } from '@sheetxl/utils';
+
 import {
   Workbook, IWorkbook, Theme, ISheet, IStyleCollection, ResourceCollection, IResource, IStyle,
-  StyleCollection, IComment, OutOfBoundsError, JSONStableStringify, CommonUtils
+  StyleCollection, IComment, OutOfBoundsError, JSONStableStringify
 } from '@sheetxl/sdk';
 
 import { SaxParser } from '../../sax';
@@ -95,7 +97,7 @@ export const fromBuffer = async (
     });
 
     if (!(xlsxWB as any).Directory) {
-      throw new Error(`Unable to parse as an Excel document. Try to save as '.xlsx' and try again.`);
+      throw new ExpectedError(`Unable to parse as an Excel document. Try to save as '.xlsx' and try again.`);
     }
     // (xlsxWB as any).Directory['richtypes'] = ['/xl/richData/rdrichvaluestructureTypes.xml']; // not in use yet
     (xlsxWB as any).Directory['richstructure'] = ['/xl/richData/rdrichvaluestructure.xml'];

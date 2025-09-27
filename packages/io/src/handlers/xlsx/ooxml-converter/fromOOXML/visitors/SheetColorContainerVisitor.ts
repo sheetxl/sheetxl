@@ -296,7 +296,7 @@ export class SheetColorContainerVisitor implements Visitor {
     if (!tile) {
       this.processBorderStroke(context, elem, jsonBorder, IBorder.Edge.Horizontal);
     } else if (jsonBorder.bottom || jsonBorder.top) {
-      if (jsonBorder.right) {
+      if (jsonBorder.bottom) {
         jsonBorder.horizontal = {...jsonBorder.bottom};
       } else {
         jsonBorder.horizontal = {...jsonBorder.top};
