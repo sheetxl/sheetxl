@@ -1,118 +1,220 @@
 import React, {
-  memo, forwardRef, useState, useMemo, useRef, useCallback, useEffect
+  memo, forwardRef, useMemo, useRef, useCallback, useEffect, useState
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import clsx from 'clsx';
+import { mergeRefs } from 'react-merge-refs';
 import { useMeasure } from 'react-use';
 
-import { useCallbackRef } from '../hooks/useCallbackRef';
+import { useCallbackRef, useImperativeElement } from '../hooks';
 
 import {
-  ScrollButtonProps, defaultCreateScrollStartButton, defaultCreateScrollEndButton
+  ScrollbarOrientation, type ScrollbarProps, type IScrollbarElement, type IScrollbarAttributes
+} from './IScrollbar';
+import {
+  type ScrollButtonProps, defaultCreateScrollStartButton, defaultCreateScrollEndButton
 } from './ScrollButton';
-import { getScrollTo } from './scrollUtils';
-
-import { ScrollbarOrientation, type ScrollbarProps } from './IScrollbar';
 
 import styles from './Scrollbar.module.css';
 
-const Scrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: ScrollbarProps, refForwarded) => {
+const DEFAULT_MIN_THUMB_PX = 24; // touch target
+
+export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((props, refForwarded) => {
   const {
-    offset: propOffset=0,
-    totalSize: propTotalSize=0,
-    viewportSize: propViewportSize=0,
+    offset: propOffset = 0,
+    totalSize: propTotalSize = 0,         // total rows or total columns
+    viewportSize: propViewportSize = 0,   // visible rows or columns
     style: propStyle,
     className: propClassName,
     orientation = ScrollbarOrientation.Vertical,
-    onScrollOffset,
+    onScrollOffset: propOnScrollOffset,
     onScroll: propOnScroll,
-    showCustomScrollButtons = false,
+    showCustomScrollButtons = true,
     scrollButtonIncrement = 200,
     scrollButtonInitialRepeatDelay = 260,
     scrollButtonAdditionalRepeatDelay = 120, // we make first time slightly longer to similar a delayed start
+    minThumbSize = DEFAULT_MIN_THUMB_PX,
     createScrollStartButton = defaultCreateScrollStartButton,
     createScrollEndButton = defaultCreateScrollEndButton,
+    usePortal = false,
     ...rest
-  } = props;
+  } = props as ScrollbarProps & { usePortal?: boolean };
+
   const onScroll = useCallbackRef(propOnScroll, [propOnScroll]);
 
-  const refScrollPane = useRef<HTMLDivElement>(null);
-  const [refMeasureContainer, { width:widthContainer, height:heightContainer }] = useMeasure<HTMLDivElement>();
-  const [refMeasureViewport, { width:widthViewport, height: heightViewport }] = useMeasure<HTMLDivElement>();
+  const [thumb, setThumb] = useState({ offset: 0, length: 0 } ); // MIN_THUMB_PX
+  const refInFlight = useRef<number>(-1);
 
   const isVertical = orientation === ScrollbarOrientation.Vertical;
-  const dimStart = isVertical ? 'top' : 'left';
-  const dimScrollStart = isVertical ? 'scrollTop' : 'scrollLeft';
-  const lengthContainer = isVertical ? heightContainer : widthContainer;
-  const lengthViewport = isVertical ? heightViewport : widthViewport;
+  const [refMeasure, { width: widthMeasure, height: heightMeasure }] = useMeasure<HTMLDivElement>();
+  const trackLength = isVertical ? heightMeasure : widthMeasure;
 
-  const [scrollScrolling, setScrollScrolling] = useState<number | null>(null);
-  // const [scrollOffset, setScrollOffset] = useState<number | null>(0);
-
-  useEffect(() => {
-    if (scrollScrolling === null || !refScrollPane.current)
-      return;
-    refScrollPane.current.scrollTo({
-      behavior: 'smooth',
-      [dimStart] : scrollScrolling
-    });
-  }, [scrollScrolling, isVertical]);
-
-  const scrollStart = useCallback((jumpTo:number, isJump: boolean=false) => {
-    if (!refScrollPane.current)
-      return 0;
-    const firstChild = refScrollPane.current.querySelector('.scrollbar-viewport');
-    const refLocation = firstChild.getBoundingClientRect();
-    const children = firstChild.children;
-
-    const min = 0;
-    const newStart:number = isJump ? min : getScrollTo(jumpTo, refLocation[dimStart], children, true, Math.max(0, jumpTo - scrollButtonIncrement));
-
-    setScrollScrolling(newStart);
-    return Math.max(min, newStart);
-  }, []);
-
-  const scrollEnd = useCallback((jumpTo:number, isJump: boolean=false) => {
-    if (!refScrollPane.current)
-      return 0;
-    const firstChild = refScrollPane.current.querySelector('.scrollbar-viewport');
-    const refLocation = firstChild.getBoundingClientRect();
-    const children = firstChild.children;
-
-    const max =  Math.ceil(lengthViewport - lengthContainer);
-    const newEnd = isJump ? max : getScrollTo(jumpTo, refLocation[dimStart], children, false, Math.max(0, jumpTo + scrollButtonIncrement));
-
-    setScrollScrolling(newEnd);
-    return Math.min(max, newEnd);
-  }, [lengthViewport, lengthContainer]);
-
-  const refOffsetInFlight = useRef<number | null>(null);
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const lastPropInFlight = refOffsetInFlight.current;
-    if (lastPropInFlight !== null) {
-      refOffsetInFlight.current = null;
+  const calcThumb = useCallbackRef((
+    offset: number, viewportSize: number, totalSize: number
+  ) => {
+    if (viewportSize === 0 || totalSize === 0) {
+      setThumb({ offset: 0, length: minThumbSize });
       return;
     }
+    const totalProportional = totalSize / trackLength;
+    const newViewPort = viewportSize / totalProportional;
+    const newThumbLength = Math.min(Math.max(minThumbSize, newViewPort), trackLength);
 
-    const newScrollOffset = e.target[dimScrollStart];
-    onScrollOffset(newScrollOffset, propViewportSize, propTotalSize);
-    onScroll?.(e);
-  }, [onScrollOffset, propViewportSize, propTotalSize, propOffset]);
+    const newOffset = offset / totalProportional;
+    const newBoundOffset = Math.min(Math.max(0, newOffset), trackLength - newThumbLength);
+    // console.log('calcThumb', 'offset', offset, 'physicalOffset', newBoundOffset, 'newThumbLength', newThumbLength, 'viewportSize', viewportSize, 'totalSize', totalSize, 'trackLength', trackLength, 'totalProportional', totalProportional);
+    return { offset: newBoundOffset, length: newThumbLength };
+  }, [trackLength, minThumbSize]);
 
-  // Note - Changing this to useLayoutEffect causes issues too. Review.
+  const handlePhysicalScroll = useCallbackRef((
+    offset: number
+  ) => {
+    const proportional = propTotalSize / trackLength;
+    // console.log('handlePhysicalScroll', offset * proportional, viewportSize, totalSize);
+    const scaledOffset = Math.round(offset * proportional);
+    setThumb(calcThumb(scaledOffset, propViewportSize, propTotalSize));
+    propOnScrollOffset?.(scaledOffset, propViewportSize, propTotalSize);
+    refInFlight.current = offset;
+  }, [propOnScrollOffset, propViewportSize, propTotalSize, trackLength, thumb]);
+
+  const handleLogicalScroll = useCallbackRef((
+    offset: number
+  ) => {
+    setThumb(calcThumb(offset, propViewportSize, propTotalSize));
+    propOnScrollOffset?.(offset, propViewportSize, propTotalSize);
+    refInFlight.current = offset;
+  }, [propOnScrollOffset, propViewportSize, propTotalSize]);
+
   useEffect(() => {
-    // setScrollOffset(propOffset ?? 0);
+    if (refInFlight.current === propOffset || trackLength === 0) return;
+    refInFlight.current = -1;
+    setThumb(calcThumb(propOffset, propViewportSize, propTotalSize));
+  }, [propOffset]);
 
-    // Because we get propOffset events on a render and these can and often come from our handle event
-    // we track the offset when we fired our event and don't re-scroll if it's stale
-    const lastPropInFlight = refOffsetInFlight.current;
-    if (propOffset === lastPropInFlight) return;
-    const currentScrollStart = refScrollPane.current[dimScrollStart];
-    if (currentScrollStart === propOffset) return;
+  useEffect(() => {
+    if (trackLength === 0) return;
+    setThumb(calcThumb(propOffset, propViewportSize, propTotalSize));
+  }, [propViewportSize, propTotalSize, isVertical, trackLength]);
 
-    refOffsetInFlight.current = propOffset;
-    refScrollPane.current[dimScrollStart] = propOffset;
-  }, [propOffset, dimScrollStart]);
+  // Compute thumb size and position from props
+  const maxOffset = Math.max(0, propTotalSize - propViewportSize);
+
+  // Drag state
+  const [dragging, setDragging] = useState(false);
+  const dragStartPxRef = useRef(0);
+  const dragStartPosPxRef = useRef(0);
+
+  const refLocal = useImperativeElement<IScrollbarElement, IScrollbarAttributes>(refForwarded, () => ({
+    isScrollbar: () => true,
+    // scrollTo: (args: any) => {
+    //   // refGridHeader.current?.scrollTo(args)
+    // },
+  }), []);
+
+  const onThumbPointerDown = useCallbackRef((e: React.PointerEvent) => {
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    setDragging(true);
+    dragStartPxRef.current = isVertical ? e.clientY : e.clientX;
+    dragStartPosPxRef.current = thumb.offset;
+    // handlePhysicalScroll(thumb.offset, propViewportSize, propTotalSize);
+    e.preventDefault();
+    e.stopPropagation();
+  }, [isVertical, thumb]);
+
+  const onThumbPointerMove = useCallbackRef((e: React.PointerEvent) => {
+    if (!dragging) return;
+    const now = isVertical ? e.clientY : e.clientX;
+    const delta = now - dragStartPxRef.current;
+    const pixel = dragStartPosPxRef.current + delta;
+    handlePhysicalScroll(pixel);
+  }, [dragging, isVertical]);
+
+  const onThumbPointerUp = useCallbackRef((e: React.PointerEvent) => {
+    try { (e.currentTarget as Element).releasePointerCapture(e.pointerId); } catch {}
+    setDragging(false);
+  }, []);
+
+  const onTrackPointerDown = useCallbackRef((e: React.PointerEvent) => {
+    if (!e.currentTarget) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offset = isVertical ? e.clientY - rect.top : e.clientX - rect.left;
+    handlePhysicalScroll(offset);
+  }, [isVertical, thumb, propViewportSize, propTotalSize]);
+
+  // Keyboard (accessibility)
+  const onKeyDown = useCallbackRef((e: React.KeyboardEvent) => {
+    const line = 1;
+    const page = Math.max(1, Math.floor(propViewportSize * 0.9));
+    if (isVertical) {
+      if (e.key === 'ArrowDown') handlePhysicalScroll(Math.min(maxOffset, propOffset + line));
+      if (e.key === 'ArrowUp')   handlePhysicalScroll(Math.max(0, propOffset - line));
+      if (e.key === 'PageDown')  handlePhysicalScroll(Math.min(maxOffset, propOffset + page));
+      if (e.key === 'PageUp')    handlePhysicalScroll(Math.max(0, propOffset - page));
+      if (e.key === 'Home')      handlePhysicalScroll(0);
+      if (e.key === 'End')       handlePhysicalScroll(maxOffset);
+    } else {
+      if (e.key === 'ArrowRight') handlePhysicalScroll(Math.min(maxOffset, propOffset + line));
+      if (e.key === 'ArrowLeft')  handlePhysicalScroll(Math.max(0, propOffset - line));
+      if (e.key === 'PageDown')   handlePhysicalScroll(Math.min(maxOffset, propOffset + page));
+      if (e.key === 'PageUp')     handlePhysicalScroll(Math.max(0, propOffset - page));
+      if (e.key === 'Home')       handlePhysicalScroll(0);
+      if (e.key === 'End')        handlePhysicalScroll(maxOffset);
+    }
+  }, [isVertical, propViewportSize, propTotalSize, propOffset, maxOffset]);
+
+  // Thumb element (Portal optional for mobile z-index)
+  const thumbEl = (
+    <div
+      className={clsx(styles['vsb-thumb'])}
+      role="slider"
+      aria-label={isVertical ? 'Rows' : 'Columns'}
+      aria-orientation={isVertical ? 'vertical' : 'horizontal'}
+      aria-valuemin={0}
+      aria-valuemax={maxOffset}
+      aria-valuenow={propOffset}
+      tabIndex={0}
+      style={{
+        position: usePortal ? 'fixed' : 'relative',
+        [isVertical ? 'height' : 'width']: `${thumb.length}px`,
+        [isVertical ? 'width' : 'height']: '100%',
+        transform: isVertical ? `translateY(${thumb.offset}px)` : `translateX(${thumb.offset}px)`,
+      } as React.CSSProperties }
+      onPointerDown={onThumbPointerDown}
+      onPointerMove={onThumbPointerMove}
+      onPointerUp={onThumbPointerUp}
+    />
+  );
+
+  const [scrollScrolling, setScrollScrolling] = useState<number | null>(null);
+
+  const scrollStart = useCallbackRef(() => {
+    let offsetTo: number;
+    if (typeof scrollButtonIncrement === 'function') {
+      offsetTo = scrollButtonIncrement(propOffset, propViewportSize, propTotalSize);
+    } else {
+      offsetTo = propOffset - scrollButtonIncrement;
+    }
+    const newOffset = Math.max(0, offsetTo);
+
+    handleLogicalScroll(newOffset);
+    setScrollScrolling(newOffset);
+    return newOffset;
+  }, [scrollButtonIncrement, propOffset, propViewportSize, propTotalSize]);
+
+  const scrollEnd = useCallbackRef(() => {
+    let offsetTo: number;
+    if (typeof scrollButtonIncrement === 'function') {
+      offsetTo = scrollButtonIncrement(propOffset, propViewportSize, propTotalSize);
+    } else {
+      offsetTo = propOffset + scrollButtonIncrement;
+    }
+
+    const newOffset = Math.min(maxOffset, offsetTo);
+    handleLogicalScroll(newOffset);
+    setScrollScrolling(newOffset);
+    return newOffset;
+  }, [scrollButtonIncrement, propOffset, maxOffset, propViewportSize, propTotalSize]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollingToRef = useRef<number | null>(null);
@@ -124,10 +226,10 @@ const Scrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: Scroll
     scrollingToRef.current = null;
   }, []);
 
-  const startScrolling = useCallback((start:number, isFirst:boolean, scrollToStart:boolean, delay:number=scrollButtonInitialRepeatDelay) => {
+  const startScrolling = useCallback((start: number, isFirst: boolean, scrollToStart: boolean, delay: number = scrollButtonInitialRepeatDelay) => {
     scrollingToRef.current = start;
     timerRef.current = setTimeout(() => {
-      const newScroll = scrollToStart ? scrollStart(scrollingToRef.current || start) : scrollEnd(scrollingToRef.current || start);
+      const newScroll = scrollToStart ? scrollStart() : scrollEnd();
       if (newScroll === scrollingToRef.current) {
         stopScrolling();
         return;
@@ -141,89 +243,63 @@ const Scrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: Scroll
     return () => stopScrolling(); // when unmounted, stop counter
   }, [stopScrolling]);
 
-
-  // const scrollOffset = propOffset;
-
   const scrollStartButton = useMemo(() => {
     if (!showCustomScrollButtons) return null;
     const props:ScrollButtonProps = {
       orientation,
-      disabled: ((Math.floor(propOffset) <= 0) || (Math.floor(lengthViewport - lengthContainer) === 0)),
+      disabled: propOffset <= 0,
       onMouseUp:stopScrolling,
       onMouseLeave:stopScrolling,
       onMouseDown:() => startScrolling(propOffset, true, true),
     }
 
     return createScrollStartButton?.(props);
-  }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
+  }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling]);
 
   const scrollEndButton = useMemo(() => {
     if (!showCustomScrollButtons) return null;
     const props:ScrollButtonProps = {
       orientation,
-      disabled: (Math.floor(lengthViewport - lengthContainer) <= Math.ceil(propOffset)),
+      disabled: propOffset >= maxOffset,
       onMouseUp:stopScrolling,
       onMouseLeave:stopScrolling,
       onMouseDown:() => startScrolling(propOffset, true, false),
     }
     return createScrollEndButton?.(props);
-  }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
+  }, [showCustomScrollButtons, orientation, propOffset, maxOffset, scrollScrolling]);
 
+
+  const directionClassName = isVertical ? 'vertical' : 'horizontal';
   return (
     <div
-      ref={refForwarded}
-      style={{
-        display: 'flex',
-        flex: '1',
-        flexDirection: isVertical ? 'column' : 'row',
-        padding: '0',
-        ...propStyle
-      }}
-      className={clsx(styles['sheetxl-scrollbar'], propClassName)}
+      ref={mergeRefs([refLocal, refForwarded])}
+      className={
+        clsx(propClassName,
+          styles['scrollbar'],
+          directionClassName,
+          {
+          'dragging': dragging
+        })}
+      style={propStyle}
       {...rest}
     >
       {scrollStartButton}
       <div
-        className='pseudo-scrollbar'
-        style={{
-          flex: '1 1 100%',
-          display:'flex',
-          boxSizing: 'content-box',
-          flexDirection: isVertical ? 'column' : 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        ref={refMeasureContainer}
+        ref={refMeasure}
+        role="scrollbar"
+        aria-orientation={directionClassName}
+        aria-valuemin={0}
+        aria-valuemax={maxOffset}
+        aria-valuenow={propOffset}
+        tabIndex={0}
+        className={clsx(styles['vsb-track'], 'track', directionClassName)}
+        onPointerDown={onTrackPointerDown}
+        onKeyDown={onKeyDown}
       >
-        <div
-          tabIndex={-1}
-          style={{
-            flex:'1 1 100%',
-            overflowY: isVertical ? 'scroll' : 'hidden',
-            overflowX: isVertical ? 'hidden' : 'scroll',
-            // width: isVertical ? '100%' : undefined,
-            // height: isVertical ? undefined : '100%',
-            position: 'relative',
-            willChange: 'transform'
-          }}
-          onScroll={handleScroll}
-          ref={refScrollPane}
-        >
-          <div
-            ref={refMeasureViewport}
-            style={{
-              position: 'absolute',
-              height: isVertical ? (propTotalSize - propViewportSize + (heightContainer ?? 0)) : 1,
-              width: isVertical ? 1 : (propTotalSize - propViewportSize + (widthContainer ?? 0)),
-            }}
-            className='scrollbar-viewport'
-          />
-        </div>
+        {!usePortal ? thumbEl : null}
       </div>
+      {usePortal ? createPortal(thumbEl, document.body) : null}
       {scrollEndButton}
     </div>
   );
 }));
-
-Scrollbar.displayName = 'Scrollbar';
-export { Scrollbar };

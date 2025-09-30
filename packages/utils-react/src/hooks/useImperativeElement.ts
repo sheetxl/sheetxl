@@ -42,5 +42,3 @@ export function useImperativeElement<R extends T, A=any, T=HTMLElement & A>(
 
   return refLocal;
 }
-
-export default useImperativeElement;

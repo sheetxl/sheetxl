@@ -33,5 +33,3 @@ const useReactId = React[/*#__PURE__*/'useId'.toString()];
  */
 
 export const useId = useReactId != null ? useReactId : useMockId;
-
-export default useId;

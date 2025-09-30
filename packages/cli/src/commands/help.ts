@@ -1,6 +1,8 @@
 import chalk from 'chalk'; // Import chalk
 
-export const help = () => {
+import { Modules } from './Types';
+
+export default async (args?: any[], modules?: Modules): Promise<void> => {
   console.log(
 `🧠 SheetXL REPL Help:
 

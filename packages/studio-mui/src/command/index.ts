@@ -14,8 +14,9 @@ export * from './NumberFormatCommandButton';
 export * from './ClearCommandButton';
 export * from './FillCommandButton';
 
-export * from './InsertCellsCommandButton';
-export * from './DeleteCellsCommandButton';
+export * from './CellsInsertCommandButton';
+export * from './CellsDeleteCommandButton';
+export * from './CellsFormatCommandButton';
 
 export * from './ViewGridLinesCommandButton';
 

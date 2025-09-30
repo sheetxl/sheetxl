@@ -43,7 +43,7 @@ export interface UndoContext {
 /**
  * Undo manager hook
  */
-const useUndoManager = ({
+export const useUndoManager = ({
   manager,
   commands: commandsParent,
   disabled: propDisabled,
@@ -147,6 +147,3 @@ const useUndoManager = ({
     redo: handleRedoProgrammatic,
   };
 };
-
-export { useUndoManager };
-export default useUndoManager;

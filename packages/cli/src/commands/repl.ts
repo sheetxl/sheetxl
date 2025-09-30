@@ -13,7 +13,7 @@ import * as IO from '@sheetxl/io';
 import { WorkbookIO, type ReadWorkbookOptions, type WriteWorkbookOptions } from '@sheetxl/io';
 import type { IWorkbook } from '@sheetxl/sdk';
 
-import { help } from './help.ts';
+import help from './help.ts';
 
 const timeToString = (time: number): string => {
   time = time * 0.35;
