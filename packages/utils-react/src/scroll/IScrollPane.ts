@@ -10,9 +10,6 @@ export interface ScrollPaneAttributes {
 
 export interface IScrollPaneElement extends HTMLDivElement, ScrollPaneAttributes {};
 
-export interface ScrollbarRefProps extends ScrollbarProps {
-  ref?: React.Ref<HTMLDivElement>;
-}
 
 export interface ScrollPaneProps extends React.HTMLAttributes<HTMLDivElement> {
   viewport: ScrollableViewport;
@@ -24,8 +21,8 @@ export interface ScrollPaneProps extends React.HTMLAttributes<HTMLDivElement> {
   showVerticalScrollbar?: boolean;
 
   createScrollCorner?: (size: Size) => React.ReactNode;
-  createHorizontalScrollbar?: (props: ScrollbarRefProps) => React.ReactNode;
-  createVerticalScrollbar?: (props: ScrollbarRefProps) => React.ReactNode;
+  createHorizontalScrollbar?: (props: ScrollbarProps, ref?: React.Ref<HTMLDivElement>) => React.ReactNode;
+  createVerticalScrollbar?: (props: ScrollbarProps, ref?: React.Ref<HTMLDivElement>) => React.ReactNode;
   /**
    * By default the ScrollPane will listen for events on all of the children of the ScrollPane but this
    * allows for a custom element to be specified. Useful when the ScrollPane has some elements

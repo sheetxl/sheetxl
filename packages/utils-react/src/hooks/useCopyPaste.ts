@@ -81,7 +81,7 @@ export const useGlobalClipboard = singletonHook<ClipboardHandler>(_EmptyClipboar
 /**
  * Copy paste hook.
  */
-const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
+export const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
   const {
     source,
     target,
@@ -473,6 +473,3 @@ const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
     clipboard
   };
 };
-
-export { useCopyPaste };
-export default useCopyPaste;

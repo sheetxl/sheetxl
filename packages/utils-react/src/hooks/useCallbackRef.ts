@@ -24,5 +24,3 @@ export const useCallbackRef = <T extends (...args: any[]) => any>(callback: T, d
    return undefined;
   return stableCB as T;
 }
-
-export default useCallbackRef;

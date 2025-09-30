@@ -7,4 +7,4 @@ export * from './ScrollPane';
 export * from './ScrollButton';
 export * from './VirtualScrollbar';
 
-export * as ScrollUtils from './scrollUtils';
+export * as ScrollUtils from './Utils';

@@ -34,5 +34,4 @@ export const useEditMode = () => {
   }, [globalMode]);
 
   return handler;
-
 }

@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import useCallbackRef from './useCallbackRef';
-
+import { useCallbackRef } from './useCallbackRef';
 
 /**
  * The pointer modifiers are used because pointer events and keyboard events
@@ -56,7 +55,7 @@ export type PointerDownListener = (event: React.PointerEvent<Element>) => void;
  * Returns PointerDownListener that should be added to the
  * source component's onPointerDown event handler.
 */
-function useSynchronizedPointerHandler(options: PointerHandlerOptions): PointerDownListener {
+export function useSynchronizedPointerHandler(options: PointerHandlerOptions): PointerDownListener {
   if (!options)
     throw new Error('must have a PointerHandlerOptions');
   const {
@@ -210,6 +209,3 @@ function useSynchronizedPointerHandler(options: PointerHandlerOptions): PointerD
 
   return listenerPointerDown;
 }
-
-export { useSynchronizedPointerHandler };
-export default useSynchronizedPointerHandler;

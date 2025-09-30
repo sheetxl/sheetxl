@@ -335,7 +335,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           'namedItem': 'Define Name\u2026'
         },
         description: `Add a new named reference. Names can be used as a substitute for cell references.`,
-        icon: 'NamedRangeInsert'
+        icon: 'InsertNamedRange'
       }),
       // TODO - selection context
       new Command<INamed>('editNamedReference', commandTarget, {
@@ -352,7 +352,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
           'namedItem': 'Delete'
         },
         description: `Remove the named reference.`,
-        icon: 'NamedRangeRemove'
+        icon: 'DeleteNamedRange'
       }),
       // TODO - disable if name box is not visible
       new SimpleCommand('activeNameBox', commandTarget, {

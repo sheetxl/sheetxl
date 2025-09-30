@@ -21,8 +21,8 @@ import {
   MergeCommandButton, HorizontalAlignCommandButton, VerticalAlignCommandButton, TextOverflowCommandButton,
   TextRotateCommandButton, NumberFormatCommandButton, ClearCommandButton, FindCommandButton,
   PresetCellStylesCommandButton, FillCommandButton, PresetTableStylesCommandButton,
-  InsertCellsCommandButton, DeleteCellsCommandButton, SortFilterCommandButton, UndoRedoCommandButton,
-  InsertFunctionSumCommandPopupButton
+  CellsInsertCommandButton, CellsDeleteCommandButton, CellsFormatCommandButton,
+  SortFilterCommandButton, UndoRedoCommandButton, InsertFunctionSumCommandPopupButton
  } from '../command';
 
  import { OverflowPalette } from './OverflowPalette';
@@ -275,10 +275,13 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
         {...commandPopupProps}
       />
       <ExhibitDivider/>
-      <InsertCellsCommandButton
+      <CellsInsertCommandButton
         {...commandPopupProps}
       />
-      <DeleteCellsCommandButton
+      <CellsDeleteCommandButton
+        {...commandPopupProps}
+      />
+      <CellsFormatCommandButton
         {...commandPopupProps}
       />
       <ExhibitDivider/>

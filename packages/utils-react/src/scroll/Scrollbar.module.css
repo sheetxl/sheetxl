@@ -1,14 +1,111 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
-  Note - this isn't working but was meant to enabled default scroll buttons to play nicely with rounded corners
- */
-.sheetxl-scrollbar {
-  /* & ::-webkit-scrollbar {
-    background: gre;
-  } */
+/* Global defaults (theme can override) */
+:root {
+  --scrollbar-track-color: rgba(0,0,0,0.06);
+  --scrollbar-thumb-color: rgba(0,0,0,0.35);
+  --scrollbar-button-color: var(--scrollbar-thumb-color);
+  --scrollbar-active-color: rgba(0,0,0,0.55);
+  --scrollbar-corner-color: transparent;
+  --scrollbar-border-color: transparent;
+  --scrollbar-size: 13px;
+  --scrollbar-width: var(--scrollbar-size);
+  --scrollbar-height: var(--scrollbar-size);
+  --scrollbar-border-radius: 9999px;
+  --scrollbar-border-width: 2px;
+  --scrollbar-min-thumb-size: 24px;
+}
+
+.scrollbar {
+  /* Inherit scrollbar theming variables from parent */
   & ::-webkit-scrollbar-button {
     background: transparent;
   }
+  display: flex;
+  overflow: hidden;
+  border-radius: var(--scrollbar-border-radius);
+  align-items: center;
+  border: var(--scrollbar-border-width) solid transparent;
+  .vsb-track {
+    /* Use CSS custom properties with fallbacks */
+    background: var(--scrollbar-track-color);
+    border-radius: var(--scrollbar-border-radius);
+    position: relative;
+    flex: 1 1 100%;
+    border: var(--scrollbar-border-width) solid transparent;
+    touch-action: none;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
 
+  .vsb-thumb {
+    /* Use CSS custom properties with fallbacks */
+    background: var(--scrollbar-thumb-color);
+    border-radius: var(--scrollbar-border-radius);
+    transition: background 120ms;
+    touch-action: none;
+  }
+
+  .vsb-thumb:hover {
+    background: var(--scrollbar-active-color);
+  }
+
+  &:global(.vertical) {
+    flex-direction: column;
+    min-width: var(--scrollbar-width, 0px);
+    .vsb-thumb {
+      min-height: var(--scrollbar-min-thumb-size);
+    }
+    .vsb-track {
+      width: 100%;
+    }
+  }
+
+  &:global(.horizontal) {
+    flex-direction: row;
+    min-height: var(--scrollbar-height, 0px);
+    .vsb-thumb {
+      min-width: var(--scrollbar-min-thumb-size);
+    }
+    .vsb-track {
+      height: 100%;
+    }
+  }
+
+  &:global(.dragging) {
+    .vsb-thumb {
+      background: var(--scrollbar-active-color);
+    }
+  }
+}
+
+.scrollbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 0px;
+
+  /* Default state for SVG children */
+  & > * {
+    fill: var(--scrollbar-button-color);
+    transition: fill 120ms ease;
+  }
+
+  /* Hover state - only when button is not disabled */
+  &:hover:not([disabled]) > * {
+    fill: var(--scrollbar-active-color);
+  }
+
+  /* Disabled state */
+  &[disabled] > * {
+    fill: var(--scrollbar-button-color);
+    opacity: 0.5;
+  }
+
+  &:global(.vertical) {
+    width: var(--scrollbar-width);
+  }
+  &:global(.horizontal) {
+    height: var(--scrollbar-height);
+  }
 }

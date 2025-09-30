@@ -13,7 +13,7 @@ export interface RepeatClickOptions {
  * @remarks
  * Fires the original mouse down event so preventDefault should be ignored or treated accordingly.
  */
-function useMouseDownAndHoldListener(onPointerDown: (event: React.PointerEvent<Element>) => boolean | void, options?: RepeatClickOptions): (event: React.PointerEvent<Element>) => void {
+export function useMouseDownAndHoldListener(onPointerDown: (event: React.PointerEvent<Element>) => boolean | void, options?: RepeatClickOptions): (event: React.PointerEvent<Element>) => void {
   return useSynchronizedPointerHandler({
     onPointerDown,
     onPointerMoveOrWait: (_event: globalThis.PointerEvent, modifiers: PointerModifiers, originalEvent: React.PointerEvent<Element>) => {
@@ -22,6 +22,3 @@ function useMouseDownAndHoldListener(onPointerDown: (event: React.PointerEvent<E
     ...options
   });
 }
-
-export { useMouseDownAndHoldListener };
-export default useMouseDownAndHoldListener;

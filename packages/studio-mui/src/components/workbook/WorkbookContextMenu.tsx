@@ -21,14 +21,11 @@ import {
 
 import { WalkingCopyCommandButton } from '../../command';
 import { PasteCommandButton } from '../../command';
-import { InsertCellsCommandButton } from '../../command';
-import { DeleteCellsCommandButton } from '../../command';
-
+import { CellsInsertCommandButton } from '../../command';
+import { CellsDeleteCommandButton } from '../../command';
 import { ClearCommandButton } from '../../command';
-
 import { SortFilterCommandButton } from '../../command';
 // import { FilterCommandButton } from '../../command';
-
 import { InsertImageCommandButton } from '../../command';
 // import { PresetTableStylesCommandButton } from '../../command';
 
@@ -204,12 +201,26 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
           key={'context:' + contextOptions.length}
         />
       );
+      contextOptions.push(
+        <CommandButton
+          {...commandButtonProps}
+          command={commands.getCommand('resizeColumns')}
+          key={'context:' + contextOptions.length}
+        />
+      );
     }
     if (isColumnAll) {
       contextOptions.push(
         <CommandButton
           command={commands.getCommand('autoFitRows')}
           {...commandButtonProps}
+          key={'context:' + contextOptions.length}
+        />
+      );
+      contextOptions.push(
+        <CommandButton
+          {...commandButtonProps}
+          command={commands.getCommand('resizeRows')}
           key={'context:' + contextOptions.length}
         />
       );
@@ -355,13 +366,13 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
       {...commandPopupProps}
     />
     <ExhibitDivider orientation="horizontal"/>
-    <InsertCellsCommandButton
+    <CellsInsertCommandButton
       commands={commands}
       {...commandPopupProps}
       // scope="insertCells"
       disableSheet={true}
     />
-    <DeleteCellsCommandButton
+    <CellsDeleteCommandButton
       commands={commands}
       {...commandPopupProps}
       // scope="deleteCells"

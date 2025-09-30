@@ -23,7 +23,16 @@ export function detectIt(): {
   return detectItImport;
 }
 
-export function boundPixel(pixel: number, _increase: boolean=false, _absOffset: number=0): number {
+function deviceAligned(cssPoint: number): number {
+  const dpr = window.devicePixelRatio || 1;
+  // snap to nearest half-device-pixel center
+  return Math.round(cssPoint * dpr) / dpr + (0.5 / dpr);
+}
+
+export function boundPixel(cssPoint: number, _increase: boolean=false, _absOffset: number=0): number {
+  // const dpr = window.devicePixelRatio || 1;
+  // // snap to nearest half-device-pixel center
+  // return Math.floor(cssPoint * dpr) / dpr + (0.5 / dpr);
   // pixel = Math.round(pixel);
   // absOffset = 0;
 
@@ -42,7 +51,8 @@ export function boundPixel(pixel: number, _increase: boolean=false, _absOffset: 
   // if (scaledValue % 2 !== 0) {
   //   pixel += 1 / devicePixelRatio;
   // }
-  return pixel;
+  return cssPoint;
+
   // const aligned = Math.round(Math.round(absPixel * devicePixelRatio) / devicePixelRatio);
   // if (aligned % 2 !== 0) {
   //   pixel += increase ? 1 : -1;
