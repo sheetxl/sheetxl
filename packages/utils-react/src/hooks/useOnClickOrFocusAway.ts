@@ -1,7 +1,7 @@
 import React, {
   useEffect,
 } from 'react';
-import useCallbackRef from './useCallbackRef';
+import { useCallbackRef } from './useCallbackRef';
 
 export interface ClickOrFocusAwayOptions {
   mouseEvents?: boolean;
@@ -11,7 +11,7 @@ export interface ClickOrFocusAwayOptions {
 export type ClickOrFocusAwayListener = (event: globalThis.MouseEvent | globalThis.KeyboardEvent) => void;
 
 // Hook
-function useOnClickOrFocusAway(ref: React.RefObject<any>, listenerArg: ClickOrFocusAwayListener, options?: ClickOrFocusAwayOptions) {
+export function useOnClickOrFocusAway(ref: React.RefObject<any>, listenerArg: ClickOrFocusAwayListener, options?: ClickOrFocusAwayOptions) {
   const listener = useCallbackRef(listenerArg, [listenerArg]);
   useEffect(() => {
     const handler:ClickOrFocusAwayListener = (event: globalThis.MouseEvent | globalThis.KeyboardEvent) => {
@@ -38,6 +38,3 @@ function useOnClickOrFocusAway(ref: React.RefObject<any>, listenerArg: ClickOrFo
     };
   }, [ref]);
 }
-
-export { useOnClickOrFocusAway };
-export default useOnClickOrFocusAway;

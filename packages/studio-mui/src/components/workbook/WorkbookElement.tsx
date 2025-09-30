@@ -392,7 +392,11 @@ const WorkbookElement =
   }, [propRenderTabs, propsTabs, appTheme, workbook, gridTheme, isFullWidth, commandsWorkbook, showTabs]);
 
   const createTabStripSharedScrollbar = useCallback((props: ScrollbarProps) => {
-    const isFireFox = CommonUtils.getOS() === CommonUtils.OSType.Firefox;
+    const {
+      style: propsStyle,
+      ...rest
+    } = props;
+
     let horizontalArea = null;
     let horizontalScrollbar = null;
     let horizontalTabs = null;
@@ -403,22 +407,19 @@ const WorkbookElement =
           style={{
             display: 'flex',
             flex: '1 1 100%',
-            // height: '100%',
             borderTop: `solid ${borderColor} ${borderWidth}px`,
-            maxWidth: '100%'
+            flexDirection: 'column',
+            justifyContent: 'center'
           }}>
           <SheetScrollbar
+            {...rest}
             style={{
-              alignItems: 'center',
-              borderTop: `${isFireFox ? 6 : 3}px solid transparent`,
-              borderBottom: `${isFullWidth ? 6 : 3}px solid transparent`,
-              borderLeft: `${isFireFox ? 3 : 0}px solid transparent`,
-              borderRight: `${isFireFox ? 3 : 0}px solid transparent`,
+              paddingLeft: '4px',
+              paddingRight: '4px',
+              ...propsStyle
             }}
-            {...props}
             endGap={END_VIRTUAL_SCROLL_GAP}
             sheet={sheet}
-            showCustomScrollButtons={!isFireFox}
             onShowTooltip={(props) => {
               showTooltip({
                 x: props.anchor.x,
@@ -705,20 +706,20 @@ const WorkbookElement =
   }, []);
 
   const createSizedVerticalScrollbarCallback = useCallbackRef((props: SheetScrollbarProps) => {
-    const isFireFox = CommonUtils.getOS() === CommonUtils.OSType.Firefox;
+    const {
+      style: propsStyle,
+      ...rest
+    } = props;
     return (
       <SheetScrollbar
         style={{
-          borderLeft: `3px solid transparent`,
-          borderRight: '0px solid transparent',
-          borderTop: `${isFireFox ? 3 : 0}px solid transparent`,
-          borderBottom: `${isFireFox ? 3 : 0}px solid transparent`,
-          width: isFireFox ? '13px' : undefined
+          ...propsStyle,
+          paddingTop: '4px',
+          paddingBottom: '4px'
         }}
-        {...props}
+        {...rest}
         sheet={sheet}
         endGap={END_VIRTUAL_SCROLL_GAP}
-        showCustomScrollButtons={!isFireFox}
         onShowTooltip={(props) => {
           showTooltip(props.anchor, props.display, ToolTipPlacement.Left);
         }}

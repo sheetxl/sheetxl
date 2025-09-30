@@ -14,8 +14,8 @@ export type ScrollbarOrientation = typeof ScrollbarOrientation[keyof typeof Scro
 
 export interface ScrollbarProps extends React.HTMLAttributes<HTMLElement> {
   offset: number;
-  totalSize: number;
   viewportSize : number;
+  totalSize: number;
   orientation : ScrollbarOrientation;
   onScrollOffset: (offset: number, viewportSize: number, totalSize: number) => void;
 
@@ -31,11 +31,29 @@ export interface ScrollbarProps extends React.HTMLAttributes<HTMLElement> {
    */
   showCustomScrollButtons?: boolean;
 
-  // TODO - have scroll button increment be configurable
-  scrollButtonIncrement?: number;// | (viewport) => number;
+  /**
+   * The minimum size of the thumb in pixels.
+   *
+   * @defaultValue 24
+   */
+  minThumbSize?: number;
+
+  /**
+   * The amount to increment the scroll position when the scroll button is clicked.
+   * This can be a fixed number or a function that takes the current offset, viewport size,
+   * and total size and returns the increment amount.
+   */
+  scrollButtonIncrement?: number | ((offset: number, viewport: number, totalSize: number) => number);
   scrollButtonInitialRepeatDelay?: number;
   scrollButtonAdditionalRepeatDelay?: number;
 
-  createScrollStartButton?: (props: ScrollButtonProps) => React.ReactElement;
-  createScrollEndButton?: (props: ScrollButtonProps) => React.ReactElement;
+  createScrollStartButton?: (props: ScrollButtonProps, ref?: React.Ref<HTMLElement>) => React.ReactElement;
+  createScrollEndButton?: (props: ScrollButtonProps, ref?: React.Ref<HTMLElement>) => React.ReactElement;
 }
+
+export interface IScrollbarAttributes extends HTMLDivElement {
+  isScrollbar: () => true;
+  //scrollTo: (args: any) =>;
+}
+
+export interface IScrollbarElement extends IScrollbarAttributes, HTMLDivElement {};

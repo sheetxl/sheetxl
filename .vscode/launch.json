@@ -1,6 +1,7 @@
 {
   "version": "0.2.0",
   "configurations": [
+
     {
       "type": "chrome",
       "request": "launch",
@@ -60,7 +61,9 @@
       "request": "launch",
       "name": "Debug CLI (TypeScript)",
       "runtimeExecutable": "tsx",
-      "args": ["src/cli.ts", "extract", "assets/simple"],
+      "args": ["src/cli.ts"], // as repl
+      // "args": ["src/cli.ts", "license"], // as repl
+      // "args": ["src/cli.ts", "extract", "assets/simple"],
       "cwd": "${workspaceFolder}/packages/cli",
       "env": {
         "NODE_ENV": "development",

@@ -8,7 +8,6 @@ import { useMeasure } from 'react-use';
 import { Scroller } from '../scroller';
 
 import { ScrollbarOrientation } from './IScrollbar';
-import { Scrollbar } from './Scrollbar';
 import { useCallbackRef } from '../hooks/useCallbackRef';
 
 import { detectIt } from '../utils/ReactUtils';
@@ -16,12 +15,10 @@ import { detectIt } from '../utils/ReactUtils';
 import { useImperativeElement } from '../hooks/useImperativeElement';
 
 import {
-  IScrollPaneElement, ScrollPaneAttributes, ScrollPaneProps, ScrollbarRefProps
+  IScrollPaneElement, ScrollPaneAttributes, ScrollPaneProps
 } from './IScrollPane';
 
-export const defaultCreateScrollbar = (props: ScrollbarRefProps) => {
-  return (<Scrollbar {...props} />);
-}
+import { defaultCreateScrollbar } from './Utils';
 
 export const defaultCreateScrollCorner = ({ width, height }) => {
   return (
@@ -51,8 +48,8 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
     children,
     viewport,
     onScrollViewport: propOnScrollViewport,
-    showHorizontalScrollbar=true,
-    showVerticalScrollbar=true,
+    showHorizontalScrollbar: propShowHorizontalScrollbar = true,
+    showVerticalScrollbar: propShowVerticalScrollbar = true,
     createScrollCorner = defaultCreateScrollCorner,
     createHorizontalScrollbar = defaultCreateScrollbar,
     createVerticalScrollbar = defaultCreateScrollbar,
@@ -63,6 +60,8 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
   } = props;
   // invariant(!(viewport), "viewport must be specified");
 
+  const showHorizontalScrollbar = propShowHorizontalScrollbar && createHorizontalScrollbar;
+  const showVerticalScrollbar = propShowVerticalScrollbar && createVerticalScrollbar;
   const onScrollViewport = useCallbackRef(propOnScrollViewport, [propOnScrollViewport]);
 
   const refLocal = useImperativeElement<IScrollPaneElement, ScrollPaneAttributes>(refForward, () => {
@@ -160,6 +159,7 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
   const [refMeasureHorz, { height: horzHeight }] = useMeasure<HTMLDivElement>();
 
   const verticalScroll = useMemo(() => {
+    if (!showVerticalScrollbar) return null;
     const scrollbar = createVerticalScrollbar({
       orientation: ScrollbarOrientation.Vertical,
       offset: viewport?.top,
@@ -186,6 +186,7 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
   }, [createVerticalScrollbar, viewport?.top, viewport?.height, viewport?.totalHeight]);
 
   const horizontalScroll = useMemo(() => {
+    if (!showHorizontalScrollbar) return null;
     const scrollbar = createHorizontalScrollbar({
       orientation:ScrollbarOrientation.Horizontal,
       offset: viewport?.left,

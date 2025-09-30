@@ -35,10 +35,20 @@ async function main(): Promise<any> {
       thisCommand: Command,
       actionCommand: Command,
     ) => {
-      const licenseCommands = ['activate', 'deactivate', 'license'];
-      if (!licenseCommands.includes(actionCommand.name())) {
+      const licenseCommands = ['activate', 'deactivate', 'license', 'sheetxl'];
+      const actionName = actionCommand.name();
+      if (!licenseCommands.includes(actionName)) {
         // ensure license details are printing before any other items.
         await SDK.LicenseManager.getDetails();
+      }
+      if (actionName === 'sheetxl') {
+        if (!SDK.LicenseManager.wasPrinted()) {
+          const details = await SDK.LicenseManager.getDetails();
+          if (!quiet && (!details.isEval() || details.hasExceptions())) {
+            await SDK.LicenseManager.printBanner();
+            SDK.Notifier.log('');
+          }
+        }
       }
     })
 
@@ -51,7 +61,7 @@ async function main(): Promise<any> {
   program
     .version(pkg?.version ?? '1.0.0')
     .description(pkg?.description ?? '')
-    .showHelpAfterError('Suppress output with --quiet')
+    .showHelpAfterError(false) //(add --help for additional information)')
     .addOption(new Option('--quiet', 'To be quiet.'))
     .hook('preAction', () => {
       quiet = program.opts().quiet;
@@ -61,6 +71,29 @@ async function main(): Promise<any> {
       const module = await import('./commands/repl.ts');
       await module.default([], modules);
     });
+
+  // Handle unknown commands
+  program.on('command:*', function (operands) {
+    console.error(chalk.red(`Unknown command: ${operands[0]}`));
+    console.error(chalk.dim('Run "sheetxl --help" to see available commands.'));
+    process.exit(1);
+  });
+
+  // Custom error handling for better messages
+  program.configureOutput({
+    writeErr: (str) => {
+      // Customize error messages
+      if (str.includes('too many arguments')) {
+        const match = str.match(/Expected (\d+) arguments but got (\d+)/);
+        if (match) {
+          console.error(chalk.red('Invalid command or arguments.'));
+          console.error(chalk.dim('Run "sheetxl --help" to see available commands.'));
+          return;
+        }
+      }
+      process.stderr.write(chalk.red(str));
+    }
+  });
 
   program
     .command('activate')
@@ -99,6 +132,15 @@ async function main(): Promise<any> {
       await module.default(args, modules);
     });
 
+  // this is repl help
+  // program
+  //   .command('help')
+  //   .description('Show help information.')
+  //   .action(async (...args: any[]) => {
+  //     const module = await import('./commands/help.ts');
+  //     await module.default(args, modules);
+  //   });
+
   /**
    * Command register
    *
@@ -112,13 +154,6 @@ async function main(): Promise<any> {
       await module.default(args, modules);
     });
 
-  if (!SDK.LicenseManager.wasPrinted()) {
-    const details = await SDK.LicenseManager.getDetails();
-    if (!quiet && (!details.isEval() || details.hasExceptions())) {
-      await SDK.LicenseManager.printBanner();
-      SDK.Notifier.log('');
-    }
-  }
   await program.parseAsync(process.argv);
 }
 

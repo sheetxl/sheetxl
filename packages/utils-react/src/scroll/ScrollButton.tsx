@@ -1,18 +1,32 @@
 import React from 'react';
 
+import clsx from 'clsx';
+
 import { ScrollbarOrientation } from './IScrollbar';
 
-export interface ScrollButtonProps {
+import styles from './Scrollbar.module.css';
+
+export interface ScrollButtonProps { // extend React.HTMLAttributes<HTMLElement> {
   style?: React.CSSProperties;
   orientation?: ScrollbarOrientation;
-  disabled: boolean;
+  disabled?: boolean;
+
   onMouseUp: (e: React.MouseEvent<HTMLElement>) => void;
   onMouseLeave: (e: React.MouseEvent<HTMLElement>) => void;
   onMouseDown: (e: React.MouseEvent<HTMLElement>) => void;
   onClick?: (e: React.MouseEvent<HTMLElement>) => void;
+
+  // TODO - add svg props
 }
 
-const defaultPadding = 3;
+// TODO - make dynamic icons with viewport of 0 0 9 9
+const vertPath = `M 5.4951012,0.62494002 7.1746358,3.4734472 8.8557603,6.3226744 c 0.13425,0.2277477 0.18228,0.4945506 0.1356,0.7535218 -0.04665,0.2589712 -0.18504,0.4935661 -0.3908099,0.6625402 C 8.3948254,7.9076371 8.1348905,8.0001761 7.8664506,7.9999997 H 1.1503225 c -0.30278993,0 -0.59312985,-0.117841 -0.80720983,-0.3275159 -0.2140799,-0.2097042 -0.3343649,-0.4941244 -0.3343649,-0.7907107 -4.5e-4,-0.1955399 0.05205,-0.3876855 0.152205,-0.55688 L 1.8390472,3.4734031 3.5178618,0.62488125 C 3.7217717,0.27898385 4.0986166,0.0658413 4.5064365,0.0658413 c 0.4078199,0 0.7846648,0.21314255 0.9885747,0.55903995 z`;
+const horzPath = `M 0.6632643,3.5136438 3.5117715,1.8341092 6.3609987,0.15298466 c 0.2277477,-0.13425 0.4945506,-0.18228 0.7535218,-0.1356 0.2589712,0.04665 0.4935661,0.18504 0.6625402,0.3908099 0.1689007,0.205725 0.2614397,0.4656599 0.2612633,0.73409984 v 6.7161281 c 0,0.3027899 -0.117841,0.5931298 -0.3275159,0.8072098 -0.2097042,0.2140799 -0.4941244,0.3343649 -0.7907107,0.3343649 -0.1955399,4.5e-4 -0.3876855,-0.05205 -0.55688,-0.152205 L 3.5117274,7.1696978 0.6632056,5.4908832 C 0.31730817,5.2869733 0.10416562,4.9101284 0.10416562,4.5023085 c 0,-0.4078199 0.21314255,-0.7846648 0.55903998,-0.9885747 z`;
+const edgePath = `M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2`;
+
+const endStyle: React.CSSProperties = {
+  transform: 'rotate(180deg)'
+}
 
 /**
  * Relies on external styling. Follows the styling of scrollbars pattern. @see  https://css-tricks.com/custom-scrollbars-in-webkit/
@@ -20,108 +34,65 @@ const defaultPadding = 3;
  */
 export const defaultCreateScrollStartButton = (props: ScrollButtonProps): React.ReactElement => {
   const {
-    style,
+    style: propStyle,
     orientation=ScrollbarOrientation.Vertical,
+    disabled: propDisabled,
     ...rest
   } = props;
 
   const isVertical = orientation === ScrollbarOrientation.Vertical;
-  const path = isVertical ?
-    `m 3.7274761,0.68060577 1.11969,1.93863003 1.12075,1.93912 c 0.0895,0.155 0.12152,0.33658 0.0904,0.51283 -0.0311,0.17625 -0.12336,0.33591 -0.26054,0.45091 -0.13715,0.11495 -0.31044,0.17793 -0.4894,0.17781 H 0.83095614 c -0.20186,0 -0.39542,-0.0802 -0.53814,-0.2229 -0.14272,-0.14272 -0.22291,-0.33629 -0.22291,-0.53814 -3e-4,-0.13308 0.0347,-0.26385 0.10147,-0.379 l 1.11872996,-1.94066 1.11921,-1.93864003 c 0.13594,-0.23541 0.38717,-0.38047 0.65905,-0.38047 0.27188,0 0.52311,0.14506 0.65905,0.38047 z`
-  :
-    `m 0.75051,2.3424298 1.93863,-1.11969 1.93912,-1.12075 c 0.155,-0.0895 0.33658,-0.12152 0.51283,-0.0904 0.17625,0.0311 0.33591,0.12336 0.45091,0.26054 0.11495,0.13715 0.17793,0.31044 0.17781,0.4894 v 4.47742 c 0,0.20186 -0.0802,0.39542 -0.2229,0.53814 -0.14272,0.14272 -0.33629,0.22291 -0.53814,0.22291 -0.13308,3e-4 -0.26385,-0.0347 -0.379,-0.10147 L 2.68911,4.7797998 0.75047,3.6605898 C 0.51506,3.5246498 0.37,3.2734198 0.37,3.0015398 c 0,-0.27188 0.14506,-0.52311 0.38047,-0.65905 z`
+  const path = isVertical ? vertPath : horzPath;
 
   return (
-    <div
-      style={{
-        paddingBottom: '0px',
-        paddingRight: '0px',
-        paddingLeft: isVertical ? '0px' : `${defaultPadding}px`,
-        paddingTop: !isVertical ? '0px' : `${defaultPadding}px`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...style
-      }}
+    <button
+      style={propStyle}
+      className={clsx(styles['scrollbar-button'], orientation, 'scroll-button')}
+      disabled={propDisabled}
       {...rest}
     >
-      <button
-        style={{
-          padding: '0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: 'none'
-      }}
-        className={`scrollbar-button ${isVertical ? 'vertical' : 'horizontal'} single-button start`}
+      <svg
+        width="9"
+        height="9"
+        viewBox="0 0 9 9"
       >
-        <svg width="9" height="9" viewBox="0 0 6 6"
-          style={{
-            opacity: 'inherit'
-          }}
-        >
-          <path
-            d={path}
-          />
-        </svg>
-      </button>
-    </div>
+        <path d={path} />
+      </svg>
+    </button>
   )
 }
 
 /**
- * Relies on external styling. Follows the styling of scrollbars pattern. @see  https://css-tricks.com/custom-scrollbars-in-webkit/
+ * Relies on external styling. Follows the styling of scrollbars pattern.
+ * @see  https://css-tricks.com/custom-scrollbars-in-webkit/
  * class of scrollbar-button, vertical or horizontal, end
  */
 export const defaultCreateScrollEndButton = (props: ScrollButtonProps): React.ReactElement => {
   const {
-    style,
+    style: propStyle,
     orientation=ScrollbarOrientation.Vertical,
+    disabled: propDisabled,
     ...rest
   } = props;
 
   const isVertical = orientation === ScrollbarOrientation.Vertical;
-
-  const path = isVertical ?
-  `M 2.412334,5.319396 1.292644,3.3807659 0.17189405,1.4416459 c -0.0895,-0.155 -0.12152,-0.33658 -0.0904,-0.51282998 0.0311,-0.17625 0.12336,-0.33591 0.26054,-0.45091 0.13715,-0.11495 0.31044,-0.17793 0.4894,-0.17781 H 5.308854 c 0.20186,0 0.39542,0.0802 0.53814,0.2229 0.14272,0.14272 0.22291,0.33629 0.22291,0.53813998 3e-4,0.13308 -0.0347,0.26385 -0.10147,0.379 l -1.11873,1.94066 -1.11921,1.9386401 c -0.13594,0.23541 -0.38717,0.38047 -0.65905,0.38047 -0.27188,0 -0.52311,-0.14506 -0.65905,-0.38047 z`
-:
-  `m 5.3893002,3.6575719 -1.9386301,1.11969 -1.93912,1.12075 c -0.155,0.0895 -0.33658,0.12152 -0.51282997,0.0904 -0.17625,-0.0311 -0.33591,-0.12336 -0.45091,-0.26054 -0.11495,-0.13715 -0.17793,-0.31044 -0.17781,-0.4894 V 0.76105195 c 0,-0.20186 0.0802,-0.39542 0.2229,-0.53814 C 0.73562013,0.08019195 0.92919013,1.9467784e-6 1.1310401,1.9467784e-6 1.2641201,-2.9805322e-4 1.3948901,0.03470195 1.5100401,0.10147195 l 1.94066,1.11872995 1.9386401,1.11921 c 0.23541,0.13594 0.38047,0.38717 0.38047,0.65905 0,0.27188 -0.14506,0.52311 -0.38047,0.65905 z`
+  const path = isVertical ? vertPath : horzPath;
 
   return (
-  <div
-    style={{
-      paddingLeft: '0px',
-      paddingTop: '0px',
-      paddingRight: isVertical ? '0px' : `${defaultPadding}px`,
-      paddingBottom: !isVertical ? '0px' : `${defaultPadding}px`,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      ...style
-    }}
-    {...rest}
-  >
     <button
-      style={{
-        padding: '0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: 'none'
-      }}
-      className={`scrollbar-button ${isVertical ? 'vertical' : 'horizontal'} single-button end`}
+      style={propStyle}
+      className={clsx(styles['scrollbar-button'], orientation, 'scroll-button')}
+      disabled={propDisabled}
+      {...rest}
     >
-      <svg width="9" height="9" viewBox="0 0 6 6"
-        style={{
-          opacity: 'inherit'
-        }}
+      <svg
+        width="9"
+        height="9"
+        viewBox="0 0 9 9"
+        style={endStyle}
       >
-        <path
-          d={path}
-        />
+        <path d={path} />
       </svg>
     </button>
-  </div>
   )
 }
 
@@ -139,7 +110,6 @@ export const defaultCreateScrollEdgeButton = (props: ScrollButtonProps): React.R
   return (
     <div
       style={{
-
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'end',
@@ -159,7 +129,7 @@ export const defaultCreateScrollEdgeButton = (props: ScrollButtonProps): React.R
             transition: 'opacity 240ms ease 0s',
             opacity:props.disabled ? 0 : 1
           }}
-          d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+          d={edgePath}
           // fill={`${props.disabled ? 'grey' : 'inherit'}`}
         />
       </svg>
