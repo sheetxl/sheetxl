@@ -6,9 +6,7 @@ import clsx from 'clsx';
 
 import { mergeRefs } from 'react-merge-refs';
 
-import {
-  SnackbarProvider, CloseReason, SnackbarKey
-} from 'notistack';
+import { SnackbarProvider, SnackbarKey, CloseReason } from 'notistack';
 
 import { Theme, ThemeProvider } from '@mui/material/styles';
 
@@ -43,16 +41,18 @@ import { ToastError } from '../toast';
 
 import type { StudioProps } from './StudioProps';
 import { StudioToolbar, type StudioToolbarProps } from './StudioToolbar';
-// import { SnackbarAndCommandsWrapper } from './SnackbarAndCommandsWrapper';
 import { CommandsWrapper } from './CommandsWrapper';
 import { SnackbarWrapper } from './SnackbarWrapper';
 import { StudioTaskPaneArea } from './StudioTaskPaneArea';
 import { StudioSplitPane } from './StudioSplitPane';
 
+// TODO - should components have a composite plugin?
+import { TablePlugin } from '../components';
+import { ScriptingPlugin } from '../scripting';
 // import { AIPlugin } from '../ai/plugin';
-import { ScriptingPlugin } from '../scripting/plugin';
 
 // AIPlugin();
+TablePlugin(); // Components plugin
 ScriptingPlugin();
 
 /**
