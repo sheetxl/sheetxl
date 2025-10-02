@@ -69,6 +69,7 @@ interface ColumnData {
   dataKey: string;
   label: string;
   numeric?: boolean;
+  icon?: string;
   width?: number;
   widthLess?: number;
 }
@@ -101,7 +102,9 @@ class MuiVirtualizedTable extends React.PureComponent<MuiVirtualizedTableProps> 
   };
 
   cellRenderer = ({
-    cellData, dataKey,
+    cellData,
+    rowData,
+    dataKey,
     columnIndex,
     width
   }: TableCellProps & { width: number }) => {
@@ -124,8 +127,24 @@ class MuiVirtualizedTable extends React.PureComponent<MuiVirtualizedTableProps> 
         fontSize: '.75rem',
         display: 'block',
         paddingTop: '4px',
+        paddingRight: '8px',
         whiteSpace: 'pre-line'
       }
+    }
+    if (dataKey === 'label') {
+      let icon = rowData.icon;
+      if (!icon || typeof icon === 'string') {
+        icon = <DynamicIcon iconKey={icon} />;
+      }
+      // else if (React.isValidElement(icon)) {
+      //   icon
+      // }
+      dataRender = (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {icon}
+          {cellData}
+        </div>
+      );
     }
     return (
       <TableCell
@@ -149,6 +168,7 @@ class MuiVirtualizedTable extends React.PureComponent<MuiVirtualizedTableProps> 
   headerRenderer = ({
     label,
     columnIndex,
+    dataKey,
     width
   }: TableHeaderProps & { columnIndex: number, width: number }) => {
     const { headerHeight, columns } = this.props;
@@ -162,11 +182,12 @@ class MuiVirtualizedTable extends React.PureComponent<MuiVirtualizedTableProps> 
         sx={{
           width,
           height: headerHeight,
+          paddingLeft: dataKey === 'label' ? 'calc(16px + 8px + var(--icon-size, 1rem))' : undefined,
           backgroundColor: (theme: Theme) => theme.palette.grey[300],
         }}
         align={column.numeric || false ? 'right' : 'left'}
       >
-        <span>{column.label}</span>
+        <div>{column.label}</div>
       </TableCell>
     );
   };
@@ -257,15 +278,18 @@ export default function ShortcutKeysPanel(props) {
       return str.replace(/\n\n/g, '\n');
     }
 
-    for (let i=0;i<commandArray.length; i++) {
+    const commandArrayLength = commandArray.length;
+    for (let i=0;i<commandArrayLength; i++) {
       const record = commandArray[i];
       const command = record.command;
       const shortcut = command.shortcut();
       if (Array.isArray(shortcut)) {
         const shortcuts = shortcut as any[];
-        for (let j=0; j<shortcuts.length; j++) {
+        const shortcutsLength = shortcuts.length;
+        for (let j=0; j<shortcutsLength; j++) {
           retValue.push({
             label: command.label(),
+            icon: command.icon(),
             description: replaceDoubleNewLines(command.description()),
             shortcut: shortcuts[j]
           });
@@ -273,6 +297,7 @@ export default function ShortcutKeysPanel(props) {
       } else {
         retValue.push({
           label: command.label(),
+          icon: command.icon(),
           description: replaceDoubleNewLines(command.description()),
           shortcut: command.shortcut()
         });
@@ -448,20 +473,20 @@ export default function ShortcutKeysPanel(props) {
           rowGetter={rowGetter}
           columns={[
             {
-              width: 180,
+              width: 214,
               label: 'Command',
               dataKey: 'label',
             },
             {
-              width: 260,
+              width: 226,
               label: 'Key Binding',
               dataKey: 'shortcut',
             },
             {
-              width: 240,
+              // width: 240,
               label: 'Description',
               dataKey: 'description',
-              widthLess: 180 + 260
+              widthLess: 214 + 226 + 13 /* scrollbar width */
             },
           ]}
         />
