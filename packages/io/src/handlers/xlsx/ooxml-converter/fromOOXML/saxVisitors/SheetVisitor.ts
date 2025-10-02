@@ -877,11 +877,10 @@ export const createSheetSaxVisitor = (
       context.copyTo('max', (value) => parseInt(value) - 1);
 
       context.copyTo('sz', CopyMutators.Float, "width");
-      context.copyTo('cs', CopyMutators.Boolean, "customWidth");
+      context.copyTo('csz', CopyMutators.Boolean, "customWidth");
       context.copyTo('h', CopyMutators.Boolean, "hidden");
       context.copyTo('l', CopyMutators.Integer, "outlineLevel");
 
-      // TODO - move style somewhere else.
       context.copyTo('s', CopyMutators.Integer, "style");
 
       // context.copyTo('b', CopyMutators.Boolean, "bestFit");
@@ -1044,6 +1043,13 @@ export const createSheetDataSaxVisitor = (
   // row oriented
   let lastStyle:ITypes.RangeCoordValue<number> = null;
 
+  /*
+   * we have a special case where we need to track unstyled cells if we have header styles
+   * our current approach is to just add if there are any styled columns but check per row.
+   */
+  let scannedCols:boolean = false;
+  let hasColumnStyles:boolean = false;
+  let currentRowStyle:string = null;
   // messy way to track progress but we don't have a count of rows up front.
   let count: number = 0;
   const progressInterval: number = 8192 * 24;
@@ -1155,6 +1161,15 @@ export const createSheetDataSaxVisitor = (
           }
         }
         let s:any = tag.attributes['s'] as string;
+        /** if no style but we are in a style header we record as 0 (normal) */
+        if (s === undefined) {
+          if (currentRowStyle !== null || hasColumnStyles) {
+            s = '0';
+          }
+        }
+        // if (s === currentRowStyle) { // optimization.
+        //   s = undefined;
+        // }
         if (s !== undefined) {
           s = parseInt(s);
           if (lastStyle && lastStyle.value === s && lastStyle.colEnd + 1 === currentCol) {
@@ -1241,10 +1256,10 @@ export const createSheetDataSaxVisitor = (
         lCollapsed = aCollapsed;
       }
 
-      // spans
-      // ph
-      // thickBot
-      // thickTop
+      // ph - phonetic? Why
+      // spans - optimization, not used
+      // thickBot - optimization, not used
+      // thickTop - optimization, not used
 
       if (styledRowMask !== 0) {
         if (lastStyleRowIndex + 1 === currentRow && !isRowDifferent) {
@@ -1253,14 +1268,15 @@ export const createSheetDataSaxVisitor = (
           // we always set every value to ensure that the values are monomorphic.
           const csz:boolean = aCustomHeight !== undefined && (aCustomHeight === '1' || aCustomHeight === 'true');
           const cs:boolean = aCustomFormat !== undefined && (aCustomFormat === '1' || aCustomFormat === 'true')
+          currentRowStyle = cs && aS !== undefined ? aS : null;
           lastStyledRow = {
             min: currentRow,
             max: currentRow,
             sz: !csz || (aHt === undefined) ? -1 : parseFloat(aHt), // we want this to be monomorphic
             csz,
             h: aHidden !== undefined && (aHidden === '1' || aHidden === 'true'),
-            s: !csz || (aS === undefined) || (aS === '0') ? 0 : parseInt(aS),
-            cs,
+            s: currentRowStyle === null ? undefined : (currentRowStyle === '0' ? 0 : parseInt(currentRowStyle)),
+            // cs, // we don't use cs
             l: (aOutlineLevel === undefined) || (aOutlineLevel === '0') ? 0 : parseInt(aOutlineLevel),
             cl: aCollapsed !== undefined && (aCollapsed === '1' || aCollapsed === 'true')
           };
@@ -1271,6 +1287,17 @@ export const createSheetDataSaxVisitor = (
       lastStyleRowIndex = currentRow;
       isRowDifferent = false;
       return;
+    }
+    if (!scannedCols && local === 'sheetData') { // OOXML guarantees cols before sheetData
+      scannedCols = true;
+      const cols = sheet.cols;
+      const colsLength = cols ? cols.length : 0;
+      for (let i=0; !hasColumnStyles && i<colsLength; i++) {
+        const col = cols[i];
+        if (col.s) { // defined and !== 0.
+          hasColumnStyles = true;
+        }
+      }
     }
     delegate?.onOpenTag(tag);
   }

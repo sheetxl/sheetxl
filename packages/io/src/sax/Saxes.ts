@@ -88,9 +88,9 @@ const NL = 0xA;
 const CR = 0xD;
 const SPACE = 0x20;
 const BANG = 0x21;
-const DQUOTE = 0x22;
+const D_QUOTE = 0x22;
 const AMP = 0x26;
-const SQUOTE = 0x27;
+const S_QUOTE = 0x27;
 const MINUS = 0x2D;
 const FORWARD_SLASH = 0x2F;
 const SEMICOLON = 0x3B;
@@ -103,9 +103,9 @@ const CLOSE_BRACKET = 0x5D;
 const NEL = 0x85;
 const LS = 0x2028; // Line Separator
 
-const isQuote = (c: number): boolean => c === DQUOTE || c === SQUOTE;
+const isQuote = (c: number): boolean => c === D_QUOTE || c === S_QUOTE;
 
-const QUOTES = [DQUOTE, SQUOTE];
+const QUOTES = [D_QUOTE, S_QUOTE];
 
 const DOCTYPE_TERMINATOR = [...QUOTES, OPEN_BRACKET, GREATER];
 const DTD_TERMINATOR = [...QUOTES, LESS, CLOSE_BRACKET];
@@ -187,7 +187,7 @@ export const EVENTS = [
 
 
 const EVENT_NAME_TO_HANDLER_NAME: Record<EventName, string> = {
-  xmldecl: "xmldeclHandler",
+  xmldecl: "xmlDeclHandler",
   text: "textHandler",
   processinginstruction: "piHandler",
   doctype: "doctypeHandler",
@@ -589,11 +589,11 @@ export class SaxesParser<O extends SaxesOptions = {}> {
   i: number = 0;
 
   //
-  // We use prevI to allow "ungetting" the previously read code point. Note
-  // however, that it is not safe to unget everything and anything. In
-  // particular ungetting EOL characters will screw positioning up.
+  // We use prevI to allow "unGetting" the previously read code point. Note
+  // however, that it is not safe to unGet everything and anything. In
+  // particular unGetting EOL characters will screw positioning up.
   //
-  // Practically, you must not unget a code which has any side effect beyond
+  // Practically, you must not unGet a code which has any side effect beyond
   // updating ``this.i`` and ``this.prevI``. Only EOL codes have such side
   // effects.
   //
@@ -618,7 +618,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
   _closed!: boolean;
   currentXMLVersion!: string;
   stateTable: ((this: SaxesParser<O>) => void)[];
-  xmldeclHandler?: XMLDeclHandler;
+  xmlDeclHandler?: XMLDeclHandler;
   textHandler?: TextHandler;
   piHandler?: PIHandler;
   doctypeHandler?: DoctypeHandler;
@@ -932,7 +932,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
   // but not in this case.
   write(chunk: string | object | null): this {
     if (this.closed) {
-      return this.fail("cannot write after close; assign an onready handler.");
+      return this.fail("cannot write after close.");
     }
 
     let end = false;
@@ -1170,7 +1170,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
     return c === NL_LIKE ? NL : c;
   }
 
-  unget(): void {
+  unGet(): void {
     this.i = this.prevI;
     this.column--;
   }
@@ -1334,7 +1334,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
       case EOC:
         break;
       default:
-        this.unget();
+        this.unGet();
         this.state = S_TEXT;
         this.xmlDeclPossible = false;
     }
@@ -1538,7 +1538,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
     // either a /, ?, !, or text is coming next.
     if (isNameStartChar(c)) {
       this.state = S_OPEN_TAG;
-      this.unget();
+      this.unGet();
       this.xmlDeclPossible = false;
     }
     else {
@@ -1938,7 +1938,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
 
     if (!isS(c)) {
       this.fail("whitespace required.");
-      this.unget();
+      this.unGet();
     }
 
     this.state = S_XML_DECL_NAME_START;
@@ -1954,7 +1954,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
                this.xmlDeclExpects.includes("version")) {
         this.fail("XML declaration must contain a version.");
       }
-      this.xmldeclHandler?.(this.xmlDecl);
+      this.xmlDeclHandler?.(this.xmlDecl);
       this.name = "";
       this.piTarget = this.text = "";
       this.state = S_TEXT;
@@ -2022,7 +2022,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
       return;
     }
     if (isNameStartChar(c)) {
-      this.unget();
+      this.unGet();
       this.state = S_ATTRIB_NAME;
     }
     else if (c === GREATER) {
@@ -2073,7 +2073,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
           this.openTag();
         }
         else if (isNameStartChar(c)) {
-          this.unget();
+          this.unGet();
           this.state = S_ATTRIB_NAME;
         }
         else {
@@ -2092,7 +2092,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
     else if (!isS(c)) {
       this.fail("unquoted attribute value.");
       this.state = S_ATTRIB_VALUE_UNQUOTED;
-      this.unget();
+      this.unGet();
     }
   }
 
@@ -2146,7 +2146,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
     }
     else if (isNameStartChar(c)) {
       this.fail("no whitespace between attributes.");
-      this.unget();
+      this.unGet();
       this.state = S_ATTRIB_NAME;
     }
     else {
@@ -2362,7 +2362,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
   }
 
   pushAttribNS(name: string, value: string): void {
-    const { prefix, local } = this.qname(name);
+    const { prefix, local } = this.qName(name);
     const attr = { name, prefix, local, value };
     this.attribList.push(attr);
     this.attributeHandler?.(attr as AttributeEventForOptions<O>);
@@ -2446,13 +2446,13 @@ export class SaxesParser<O extends SaxesOptions = {}> {
   }
 
   /**
-   * Parse a qname into its prefix and local name parts.
+   * Parse a qName into its prefix and local name parts.
    *
    * @param name The name to parse
    *
    * @returns
    */
-  qname(name: string): { prefix: string; local: string } {
+  qName(name: string): { prefix: string; local: string } {
     // This is faster than using name.split(":").
     const colon = name.indexOf(":");
     if (colon === -1) {
@@ -2474,7 +2474,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
 
     {
       // add namespace info to tag
-      const { prefix, local } = this.qname(tag.name);
+      const { prefix, local } = this.qName(tag.name);
       tag.prefix = prefix;
       tag.local = local;
       const uri = tag.uri = this.resolve(prefix) ?? "";
@@ -2501,11 +2501,11 @@ export class SaxesParser<O extends SaxesOptions = {}> {
     //   http://www.w3.org/TR/REC-xml-names/#defaulting
     for (const attr of attribList as SaxesAttributeNSIncomplete[]) {
       const { name, prefix, local } = attr;
-      let uri;
-      let eqname;
+      let uri:string;
+      let eqName:string;
       if (prefix === "") {
         uri = name === "xmlns" ? XMLNS_NAMESPACE : "";
-        eqname = name;
+        eqName = name;
       }
       else {
         uri = this.resolve(prefix);
@@ -2515,13 +2515,13 @@ export class SaxesParser<O extends SaxesOptions = {}> {
           this.fail(`unbound namespace prefix: ${JSON.stringify(prefix)}.`);
           uri = prefix;
         }
-        eqname = `{${uri}}${local}`;
+        eqName = `{${uri}}${local}`;
       }
 
-      if (seen.has(eqname)) {
-        this.fail(`duplicate attribute: ${eqname}.`);
+      if (seen.has(eqName)) {
+        this.fail(`duplicate attribute: ${eqName}.`);
       }
-      seen.add(eqname);
+      seen.add(eqName);
 
       attr.uri = uri;
       attributes[name] = attr;
@@ -2545,7 +2545,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
 
   /**
    * Handle a complete open tag. This parser code calls this once it has seen
-   * the whole tag. This method checks for well-formeness and then emits
+   * the whole tag. This method checks for well-formedness and then emits
    * ``onopentag``.
    */
   openTag(): void {
@@ -2565,7 +2565,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
 
   /**
    * Handle a complete self-closing tag. This parser code calls this once it has
-   * seen the whole tag. This method checks for well-formeness and then emits
+   * seen the whole tag. This method checks for well-formedness and then emits
    * ``onopentag`` and ``onclosetag``.
    */
   openSelfClosingTag(): void {
@@ -2589,7 +2589,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
 
   /**
    * Handle a complete close tag. This parser code calls this once it has seen
-   * the whole tag. This method checks for well-formeness and then emits
+   * the whole tag. This method checks for well-formedness and then emits
    * ``onclosetag``.
    */
   closeTag(): void {
@@ -2601,7 +2601,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
     this.name = "";
 
     if (name === "") {
-      this.fail("weird empty close tag.");
+      this.fail(`weird empty close tag.`);
       this.text += "</>";
       return;
     }
@@ -2615,7 +2615,7 @@ export class SaxesParser<O extends SaxesOptions = {}> {
       if (tag.name === name) {
         break;
       }
-      this.fail("unexpected close tag.");
+      this.fail(`unexpected close tag: ${name}.`);
     }
 
     if (l === 0) {

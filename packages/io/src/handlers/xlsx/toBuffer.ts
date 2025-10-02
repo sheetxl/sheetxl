@@ -87,7 +87,6 @@ export const toBuffer: WorkbookToHandler = async (wbModel: IWorkbook, _options?:
         mergeSX.push(XLSX.utils.decode_range(sheetJSON.merges[m]));
       }
     }
-    // Move to ExcelJS
     if (sheetJSON.cols?.length > 0) {
       const colsSX = [];
       wsx['!cols'] = colsSX;
@@ -98,9 +97,10 @@ export const toBuffer: WorkbookToHandler = async (wbModel: IWorkbook, _options?:
 
       // We need to move to ExcelJS as this api is not streaming, no styles, and no runs
       // write_ws_xml_cols
-      for (let c=0; c<cols.length; c++) {
+      const colsLength = cols.length;
+      for (let c=0; c<colsLength; c++) {
         const col = cols[c];
-        // SheetJS doesn't support writing runs.
+        // TODO - move to our own solution SheetJS doesn't support writing runs.
         const from = colsSX.length;
         for (let j=from; j<=col.min-1; j++) {
           colsSX.push(colSXDefault);

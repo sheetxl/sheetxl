@@ -170,7 +170,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       new SimpleCommand('goto', commandTarget, {
         label: 'Go To',
         description: `Open the 'Go To' window.`,
-        icon: 'Goto',
+        icon: 'GoTo',
         shortcut: [{
           key: 'G',
           modifiers: [KeyModifiers.Ctrl]

@@ -35,13 +35,13 @@ async function main(): Promise<any> {
       thisCommand: Command,
       actionCommand: Command,
     ) => {
-      const licenseCommands = ['activate', 'deactivate', 'license', 'sheetxl'];
+      const licenseCommands = ['activate', 'deactivate', 'license'];
       const actionName = actionCommand.name();
       if (!licenseCommands.includes(actionName)) {
         // ensure license details are printing before any other items.
         await SDK.LicenseManager.getDetails();
       }
-      if (actionName === 'sheetxl') {
+      if (actionName === 'sheetxl' || actionName === 'repl') {
         if (!SDK.LicenseManager.wasPrinted()) {
           const details = await SDK.LicenseManager.getDetails();
           if (!quiet && (!details.isEval() || details.hasExceptions())) {

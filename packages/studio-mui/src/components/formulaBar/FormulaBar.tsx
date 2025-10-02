@@ -368,7 +368,7 @@ const FormulaBar = memo(
               flex: '1 1 100%',
               position: 'relative',
               alignItems: 'center',
-              marginTop: '-1px', // to offset bottom border
+              marginTop: '0px', // to offset bottom border
               paddingLeft: (theme: Theme) => { return theme.spacing(1) },
               paddingRight: (theme: Theme) => { return theme.spacing(1) },
             }}
