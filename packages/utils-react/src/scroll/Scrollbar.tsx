@@ -7,7 +7,9 @@ import clsx from 'clsx';
 import { mergeRefs } from 'react-merge-refs';
 import { useMeasure } from 'react-use';
 
+import { ReactUtils } from '../utils';
 import { useCallbackRef, useImperativeElement } from '../hooks';
+
 
 import {
   ScrollbarOrientation, type ScrollbarProps, type IScrollbarElement, type IScrollbarAttributes
@@ -15,6 +17,7 @@ import {
 import {
   type ScrollButtonProps, defaultCreateScrollStartButton, defaultCreateScrollEndButton
 } from './ScrollButton';
+import { TouchThumbHandle } from './TouchThumbHandle';
 
 import styles from './Scrollbar.module.css';
 
@@ -35,15 +38,18 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     scrollButtonInitialRepeatDelay = 260,
     scrollButtonAdditionalRepeatDelay = 120, // we make first time slightly longer to similar a delayed start
     minThumbSize = DEFAULT_MIN_THUMB_PX,
+    maxThumbSize,
     createScrollStartButton = defaultCreateScrollStartButton,
     createScrollEndButton = defaultCreateScrollEndButton,
     usePortal = false,
     ...rest
   } = props as ScrollbarProps & { usePortal?: boolean };
 
+  const isTouch = false;//ReactUtils.detectIt().primaryInput === 'touch';
+
   const onScroll = useCallbackRef(propOnScroll, [propOnScroll]);
 
-  const [thumb, setThumb] = useState({ offset: 0, length: 0 } ); // MIN_THUMB_PX
+  const [thumb, setThumb] = useState({ offset: 0, length: 0 }); // MIN_THUMB_PX
   const refInFlight = useRef<number>(-1);
 
   const isVertical = orientation === ScrollbarOrientation.Vertical;
@@ -59,13 +65,13 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     }
     const totalProportional = totalSize / trackLength;
     const newViewPort = viewportSize / totalProportional;
-    const newThumbLength = Math.min(Math.max(minThumbSize, newViewPort), trackLength);
+    const newThumbLength = Math.min(Math.max(minThumbSize, newViewPort), Math.min(trackLength, maxThumbSize ?? Number.MAX_SAFE_INTEGER));
 
     const newOffset = offset / totalProportional;
     const newBoundOffset = Math.min(Math.max(0, newOffset), trackLength - newThumbLength);
     // console.log('calcThumb', 'offset', offset, 'physicalOffset', newBoundOffset, 'newThumbLength', newThumbLength, 'viewportSize', viewportSize, 'totalSize', totalSize, 'trackLength', trackLength, 'totalProportional', totalProportional);
     return { offset: newBoundOffset, length: newThumbLength };
-  }, [trackLength, minThumbSize]);
+  }, [trackLength, minThumbSize, maxThumbSize]);
 
   const handlePhysicalScroll = useCallbackRef((
     offset: number
@@ -163,28 +169,47 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     }
   }, [isVertical, propViewportSize, propTotalSize, propOffset, maxOffset]);
 
+  const refThumbEl = useRef<HTMLDivElement>(null);
   // Thumb element (Portal optional for mobile z-index)
-  const thumbEl = (
-    <div
-      className={clsx(styles['vsb-thumb'])}
-      role="slider"
-      aria-label={isVertical ? 'Rows' : 'Columns'}
-      aria-orientation={isVertical ? 'vertical' : 'horizontal'}
-      aria-valuemin={0}
-      aria-valuemax={maxOffset}
-      aria-valuenow={propOffset}
-      tabIndex={0}
-      style={{
-        position: usePortal ? 'fixed' : 'relative',
-        [isVertical ? 'height' : 'width']: `${thumb.length}px`,
-        [isVertical ? 'width' : 'height']: '100%',
-        transform: isVertical ? `translateY(${thumb.offset}px)` : `translateX(${thumb.offset}px)`,
-      } as React.CSSProperties }
-      onPointerDown={onThumbPointerDown}
-      onPointerMove={onThumbPointerMove}
-      onPointerUp={onThumbPointerUp}
-    />
-  );
+  const thumbEl = useMemo(() => {
+    const thumbInline = (
+      <div
+        className={clsx(styles['vsb-thumb'])}
+        ref={refThumbEl}
+        role="slider"
+        aria-label={isVertical ? 'Rows' : 'Columns'}
+        aria-orientation={isVertical ? 'vertical' : 'horizontal'}
+        aria-valuemin={0}
+        aria-valuemax={maxOffset}
+        aria-valuenow={propOffset}
+        tabIndex={0}
+        style={{
+          position: usePortal ? 'fixed' : 'relative',
+          [isVertical ? 'height' : 'width']: `${thumb.length}px`,
+          [isVertical ? 'width' : 'height']: '100%',
+          transform: isVertical ? `translateY(${thumb.offset}px)` : `translateX(${thumb.offset}px)`,
+          [isVertical ? 'minHeight' : 'minWidth']: `${minThumbSize}px`,
+        } as React.CSSProperties }
+        onPointerDown={onThumbPointerDown}
+        onPointerMove={onThumbPointerMove}
+        onPointerUp={onThumbPointerUp}
+      />
+    );
+    if (!isTouch) return thumbInline;
+
+    return (<>
+      {thumbInline}
+      <TouchThumbHandle
+        offset={thumb.offset}
+        orientation={isVertical ? ScrollbarOrientation.Vertical : ScrollbarOrientation.Horizontal}
+        // length={thumb.length}
+        onPointerDown={onThumbPointerDown}
+        onPointerMove={onThumbPointerMove}
+        onPointerUp={onThumbPointerUp}
+      />
+    </>
+    )
+  }, [thumb, minThumbSize, maxOffset, propOffset, isVertical, isTouch]);
 
   const [scrollScrolling, setScrollScrolling] = useState<number | null>(null);
 

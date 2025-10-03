@@ -103,7 +103,6 @@ export const PasteCommandButton = memo(
       label="Paste"
       tooltip="Add content to the clipboard to your document."
       quickCommand={'paste'}
-      icon={'paste'}
       {...rest}
     />
   )
