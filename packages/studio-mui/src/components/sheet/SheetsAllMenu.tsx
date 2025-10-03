@@ -150,6 +150,8 @@ const SheetsAllMenu = memo(forwardRef<HTMLDivElement, SheetsAllMenuProps>((props
               return `${isSelected ? theme.palette.primary.main : 'transparent'} solid 2px`;
             },
             paddingLeft: '4px',
+            paddingTop: '4px',
+            paddingBottom: '4px',
             fontWeight: (isSelected ? '700' : '400'), // Copied from sheetTab. Also review
             // backgroundColor: (theme: Theme) => {
             //   return null; // TODO - read thumb color

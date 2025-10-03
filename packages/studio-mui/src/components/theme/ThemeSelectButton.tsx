@@ -224,5 +224,3 @@ export const ThemeSelectButton: React.FC<ThemeSelectButtonProps> = (props) => {
     </ExhibitIconButton>
   );
 };
-
-export default ThemeSelectButton;

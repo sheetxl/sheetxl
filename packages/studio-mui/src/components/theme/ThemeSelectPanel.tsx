@@ -136,5 +136,3 @@ export const ThemeSelectPanel: React.FC<ThemeSelectPanelProps> = memo(
     </Box>
   );
 }));
-
-export default ThemeSelectPanel;

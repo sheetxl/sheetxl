@@ -154,5 +154,3 @@ export const ColorButton: React.FC<ColorButtonProps> = memo((props:ColorButtonPr
     </SimpleTooltip>
   );
 });
-
-export default ColorButton;

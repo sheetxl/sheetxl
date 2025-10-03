@@ -5,7 +5,7 @@ import { DialogContent } from '@mui/material';
 import { ICommands, KeyCodes } from '@sheetxl/utils-react';
 
 import { InternalWindow, InternalWindowProps } from '@sheetxl/utils-mui';
-import ShortcutKeysPanel from './ShortcutKeysPanel';
+import { ShortcutKeysPanel } from './ShortcutKeysPanel';
 
 export interface ShortcutKeysDialogProps extends InternalWindowProps {
   commands: ICommands.IGroup;

@@ -15,8 +15,7 @@ import {
   ExhibitPopupIconButtonProps, PopupButtonType
 } from '@sheetxl/utils-mui';
 
-import ColorPanel, { ColorPanelProps } from './ColorPanel';
-
+import { ColorPanel, type ColorPanelProps } from './ColorPanel';
 
 const DEFAULT_ICON = <DynamicIcon iconKey='circle.colored'/>;
 
@@ -185,5 +184,3 @@ export const ColorPopupButton = memo(
     <ExhibitPopupMenuItem ref={refForwarded} {...propsButton}/>
   );
 }));
-
-export default ColorPopupButton;

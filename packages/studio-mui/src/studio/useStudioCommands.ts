@@ -513,5 +513,3 @@ export const useStudioCommands = (
 
   return commands;
 }
-
-export default useStudioCommands;

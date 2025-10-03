@@ -5,11 +5,11 @@ import { IThemeCollection, ITheme } from '@sheetxl/sdk';
 import { KeyCodes, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
-  ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitPopupPanelProps,
-  ExhibitPopupIconButtonProps, PopupButtonType
+  ExhibitPopupIconButton, ExhibitPopupMenuItem, type ExhibitPopupPanelProps,
+  type ExhibitPopupIconButtonProps, PopupButtonType
 } from '@sheetxl/utils-mui';
 
-import ThemeSelectPanel, { ThemeSelectPanelProps } from './ThemeSelectPanel';
+import { ThemeSelectPanel, type ThemeSelectPanelProps } from './ThemeSelectPanel';
 
 export interface ThemeSelectPopupButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "createPopupPanel"> {
   themes: IThemeCollection;
@@ -83,5 +83,3 @@ export const ThemeSelectPopupButton: React.FC<ThemeSelectPopupButtonProps & { re
     <ExhibitPopupMenuItem ref={refForwarded} {...propsButton}/>
   );
 }));
-
-export default ThemeSelectPopupButton;

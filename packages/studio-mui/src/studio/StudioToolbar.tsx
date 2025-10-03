@@ -31,7 +31,7 @@ export interface StudioToolbarProps extends WorkbookToolbarsProps {
   showAppearanceMenu?: boolean;
 }
 
-const DEFAULT_LOGO = (
+export const DEFAULT_LOGO = (
   <ExhibitTooltip
     label={"SheetXL"}
     description={"Visit me at sheetxl.com."}
@@ -61,7 +61,7 @@ const DEFAULT_LOGO = (
 /**
  * Wrap the workbooks toolbar with application level items. File Menu, Title, App settings menu, and App Logo
  */
-const StudioToolbar: React.FC<StudioToolbarProps> = memo(
+export const StudioToolbar = memo(
   forwardRef<any, StudioToolbarProps>((props, refForwarded) => {
   const {
     commands,
@@ -198,5 +198,3 @@ const StudioToolbar: React.FC<StudioToolbarProps> = memo(
 }));
 
 StudioToolbar.displayName = "StudioToolbar";
-export { StudioToolbar };
-export default StudioToolbar;
