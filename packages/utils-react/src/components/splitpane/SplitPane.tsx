@@ -246,7 +246,7 @@ const calcDimensions = (
  * Because this component measures the elements (both panes and the resizer) it is important
  * that none of these have margins or paddings. If these are required then use a nested element.
  */
-const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneElement> }> =
+export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneElement> }> =
    memo(forwardRef<ISplitPaneElement, SplitPaneProps>((props, refForward) => {
     const {
       elementBefore,
@@ -547,6 +547,4 @@ const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneElement> 
     );
   }
 ));
-
-export default SplitPane;
-export { SplitPane };
+SplitPane.displayName = 'SplitPane';

@@ -214,10 +214,8 @@ export const InsertScriptCommandButton: React.FC<InsertScriptCommandButtonProps 
       label="Insert Script"
       tooltip="Inserts a script from a set of templates."
       createPopupPanel={createPopupPanel}
-      icon="ScriptNew"
+      icon="ScriptInsert"
       {...rest}
     />
   )
 }));
-
-export default InsertScriptCommandButton;

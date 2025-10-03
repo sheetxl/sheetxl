@@ -63,7 +63,7 @@ interface OperationHandler {
 /**
  * A stack of undo/redo actions.
  */
-export default class UndoManager {
+export class UndoManager {
 
   private _listeners: Set<IUndoManagerListener>; //WeakSet;
   private _maxStack: number;
@@ -283,7 +283,4 @@ export default class UndoManager {
       listener.onStackChange?.();
     });
   }
-
 }
-
-export { UndoManager };

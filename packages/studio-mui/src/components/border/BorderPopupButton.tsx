@@ -20,7 +20,7 @@ import {
 import { StaticBorderRenderer } from '@sheetxl/react';
 
 import { ColorPopupButton } from '../color';
-import BorderStylePopupButton from './BorderStylePopupButton';
+import { BorderStylePopupButton } from './BorderStylePopupButton';
 
 export interface BorderPopupButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "createPopupPanel"> {
   selectedBorder: Partial<IBorder.Properties>;
@@ -458,7 +458,4 @@ export const BorderPopupButton = memo(
       {...rest}
     />
   )
-
 }));
-
-export default BorderPopupButton;

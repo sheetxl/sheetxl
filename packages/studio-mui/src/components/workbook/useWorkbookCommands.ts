@@ -1122,8 +1122,6 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
   return commands;
 }
 
-export default useWorkbookCommands;
-
 export const defaultNewWorkbook = () => {
   window.open(window.origin.toString(), "sheetxl-" + CommonUtils.uuidV4(), "popup=true");
 }

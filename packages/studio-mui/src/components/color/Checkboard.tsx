@@ -16,7 +16,7 @@ export interface CheckboardProps extends React.HTMLAttributes<HTMLElement> {
 
 const _EmptyRenderers = {};
 
-const Checkboard: React.FC<CheckboardProps> = memo((props:CheckboardProps) => {
+export const Checkboard: React.FC<CheckboardProps> = memo((props:CheckboardProps) => {
   const {
     className,
     style: propStyle = ReactUtils.EmptyCssProperties,
@@ -47,6 +47,3 @@ const Checkboard: React.FC<CheckboardProps> = memo((props:CheckboardProps) => {
 
   return isValidElement(children) ? React.cloneElement(children, { ...childrenTyped.props }):<div style={style} {...rest}/>;
 });
-
-export default Checkboard;
-export { Checkboard }

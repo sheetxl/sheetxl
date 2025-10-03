@@ -10,7 +10,7 @@ import { IColor } from '@sheetxl/sdk';
 import { ReactUtils } from '@sheetxl/utils-react';
 
 import { SwatchProps } from './Swatch';
-import ColorButton from './ColorButton';
+import { ColorButton } from './ColorButton';
 
 export interface ColorButtonListProps extends React.HTMLAttributes<HTMLElement> {
   title?: string;
@@ -28,7 +28,7 @@ export interface ColorButtonListProps extends React.HTMLAttributes<HTMLElement> 
   darkMode?: boolean;
 }
 
-const ColorButtonList: React.FC<ColorButtonListProps> = memo((props: ColorButtonListProps) => {
+export const ColorButtonList: React.FC<ColorButtonListProps> = memo((props: ColorButtonListProps) => {
   const {
     title,
     schemeColorLookup,
@@ -153,5 +153,3 @@ const ColorButtonList: React.FC<ColorButtonListProps> = memo((props: ColorButton
     </Box>
   )
 });
-
-export default ColorButtonList;

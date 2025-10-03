@@ -217,5 +217,3 @@ export const InsertChartCommandButton = memo(
   )
 
 }));
-
-export default InsertChartCommandButton;

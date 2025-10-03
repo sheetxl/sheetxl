@@ -19,8 +19,8 @@ import { useCallbackRef, DynamicIcon } from '@sheetxl/utils-react';
 import { LoadingPanel } from '@sheetxl/utils-mui';
 
 import { ColorPanelType, AutoColorPosition } from './Types';
-import ColorButton from './ColorButton';
-import ColorButtonList from './ColorButtonList';
+import { ColorButton } from './ColorButton';
+import { ColorButtonList } from './ColorButtonList';
 
 import { addPreset } from './_Utils';
 
@@ -616,5 +616,3 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
     </Box>
   )
 }));
-
-export default ColorPanel;
