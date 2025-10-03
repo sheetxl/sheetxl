@@ -51,7 +51,4 @@ export const RunScriptCommandButton: React.FC<RunScriptCommandButtonProps & { re
       {...rest}
     />
   )
-
 }));
-
-export default RunScriptCommandButton;

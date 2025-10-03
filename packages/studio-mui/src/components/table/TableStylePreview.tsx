@@ -239,5 +239,3 @@ export const TableStylePreview = memo(forwardRef((props: TableStylePreviewProps,
     </Box>
   );
 }));
-
-export default TableStylePreview;

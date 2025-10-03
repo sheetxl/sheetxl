@@ -249,7 +249,7 @@ class MuiVirtualizedTable extends React.PureComponent<MuiVirtualizedTableProps> 
 
 const VirtualizedTable = styled(MuiVirtualizedTable)(styles);
 
-export default function ShortcutKeysPanel(props) {
+export function ShortcutKeysPanel(props) {
   const {
     commands,
     ...rest

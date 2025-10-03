@@ -527,5 +527,3 @@ export const useFloatStack = (props?: FloatStackOptions): FloatStack => {
     reference: floatReference
   };
 }
-
-export default useFloatStack;

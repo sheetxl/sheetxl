@@ -25,7 +25,7 @@ export interface SelectedIconProps extends React.HTMLAttributes<HTMLElement> {
   outlined?: boolean;
 }
 
-const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>((props: SelectedIconProps, refForwarded) => {
+export const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>((props: SelectedIconProps, refForwarded) => {
   const {
     children : propChildren,
     selected = true,
@@ -70,6 +70,3 @@ const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>((props: 
     </Box>
   );
 }));
-
-export { SelectedIcon };
-export default SelectedIcon;

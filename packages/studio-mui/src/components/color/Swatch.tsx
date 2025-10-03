@@ -4,7 +4,7 @@ import { KeyCodes, ReactUtils } from '@sheetxl/utils-react';
 
 import { IColor } from '@sheetxl/sdk';
 
-import Checkboard from './Checkboard';
+import { Checkboard } from './Checkboard';
 
 export interface SwatchProps extends React.HTMLAttributes<HTMLElement> {
   selectedColor: IColor;

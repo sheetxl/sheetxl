@@ -13,7 +13,7 @@ import { Saturation } from './Saturation';
 
 import { ReactUtils } from '@sheetxl/utils-react';
 
-import Checkboard from './Checkboard';
+import { Checkboard } from './Checkboard';
 
 /**
  * A set of ColorSpace from tinycolor

@@ -194,5 +194,3 @@ export const TableStyleCanvasPreview: React.FC<TableStyleCanvasPreviewProps & { 
     />
   );
 }));
-
-export default TableStyleCanvasPreview;

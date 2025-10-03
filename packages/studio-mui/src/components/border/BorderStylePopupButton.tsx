@@ -17,7 +17,7 @@ import {
 
 import { SvgIcon, SvgIconProps } from '@mui/material';
 
-export interface BorderStyleButtonProps extends ExhibitPopupButtonProps {
+export interface BorderStylePopupButtonProps extends ExhibitPopupButtonProps {
   selectedStyle: IBorder.StrokeStyle;
 
   onSelectStyle?: (style: IBorder.StrokeStyle | null) => void;
@@ -110,8 +110,8 @@ export const StyledStrokeIcon = (props: StyledStrokeIconProps): React.ReactEleme
   );
 }
 
-export const BorderStyleButton = memo(
-  forwardRef<HTMLElement, BorderStyleButtonProps>((props, _refForwarded) => {
+export const BorderStylePopupButton = memo(
+  forwardRef<HTMLElement, BorderStylePopupButtonProps>((props, _refForwarded) => {
   const {
     variant,
     showLabels = false,
@@ -302,5 +302,3 @@ export const BorderStyleButton = memo(
   );
 
 }));
-
-export default BorderStyleButton;

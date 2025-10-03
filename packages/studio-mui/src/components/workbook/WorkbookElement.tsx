@@ -42,7 +42,7 @@ import { createGridStyleFromMUITheme } from '../../theme';
 import { renderWorkbookToolbars } from '../../toolbar';
 import { type IFormulaBarElement } from '../formulaBar';
 
-import useWorkbookCommands from './useWorkbookCommands';
+import { useWorkbookCommands } from './useWorkbookCommands';
 
 import type {
   IWorkbookElement, WorkbookElementProps, WorkbookAttributes, WorkbookLoadEvent
