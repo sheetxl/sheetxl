@@ -71,7 +71,7 @@ export const SortFilterCommandButton = memo(
       label="Sort" // Sort & Filter
       tooltip={(<><span>Organize your data so it's easier to analyze.</span><br/><span>You can sort the selected data from smallest to largest or largest to smallest.</span></>)} // You can sort the selected data from smallest to largest, largest to smallest, or filter our specific values
       createPopupPanel={createPopupPanel}
-      icon={'SortIncrease'}
+      icon={'SortFilter'}
       {...rest}
     />
   )

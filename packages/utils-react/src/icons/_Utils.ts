@@ -130,14 +130,15 @@ function decodeSvgDataUrl(input: string): string | null {
       // Base64 → UTF-8 string (browser or Node)
       if (typeof atob !== "undefined") {
         const bin = atob(payload);
+        const binLength = bin.length;
         if (typeof TextDecoder !== "undefined") {
-          const bytes = new Uint8Array(bin.length);
-          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          const bytes = new Uint8Array(binLength);
+          for (let i=0; i<binLength; i++) bytes[i] = bin.charCodeAt(i);
           return new TextDecoder("utf-8").decode(bytes);
         }
         // Fallback UTF-8 decode
         let esc = "";
-        for (let i = 0; i < bin.length; i++) {
+        for (let i=0; i<binLength; i++) {
           const h = bin.charCodeAt(i).toString(16).padStart(2, "0");
           esc += `%${h}`;
         }

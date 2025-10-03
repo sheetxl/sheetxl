@@ -99,13 +99,13 @@
 .Icon :global(.grey)               { --layer-color: var(--sxl-app-color-grey,               #cccccc); }
 .Icon :global(.shadow)             { --layer-color: var(--sxl-app-color-shadow,             #cccccc); }
 
-/* Paint (skip themed styling for .fixed) */
-.Icon :global(.fill:not(.fixed)) {
+/* Paint (skip themed styling for .fixed and elements with existing fill/stroke attributes) */
+.Icon :global(.fill:not(.fixed):not([fill])) {
   fill: var(--layer-color);
   opacity: var(--layer-opacity);
   stroke: none;
 }
-.Icon :global(.line:not(.fixed)) {
+.Icon :global(.line:not(.fixed):not([stroke])) {
   fill: none;
   stroke: var(--layer-color, var(--icon-line-color));
   stroke-width: var(--icon-stroke-em);
