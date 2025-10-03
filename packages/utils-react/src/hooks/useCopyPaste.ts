@@ -133,7 +133,7 @@ export const useCopyPaste = (props: CopyPasteProps): CopyPasteResults => {
       new SimpleCommand('paste', refCommandTargetTarget, {
         label: 'Paste',
         description: 'Add content on the clipboard to your document.',
-        icon: 'paste',
+        icon: 'paste.yellow',
         shortcut: [
           {
             key: 'V',

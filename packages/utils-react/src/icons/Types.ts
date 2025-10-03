@@ -7,7 +7,7 @@ export type IconPath = {
   className?: string
   fill?: string;          // default "currentColor"
   stroke?: string;        // default "currentColor" (if your set is stroke-based)
-  opacity?: number;
+  opacity?: number | string;
   fillRule?: "nonzero" | "evenodd";
   clipRule?: "nonzero" | "evenodd";
 };

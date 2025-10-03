@@ -77,7 +77,7 @@ importers:
         version: 8.45.0(eslint@9.36.0(jiti@1.21.7))(typescript@5.9.3)
       '@vitejs/plugin-react':
         specifier: ^5.0.3
-        version: 5.0.4(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 5.0.4(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@vitest/ui':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4)
@@ -170,19 +170,19 @@ importers:
         version: 8.45.0(eslint@9.36.0(jiti@1.21.7))(typescript@5.9.3)
       vite:
         specifier: ^7.1.7
-        version: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+        version: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vite-plugin-css-injected-by-js:
         specifier: ^3.5.2
-        version: 3.5.2(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 3.5.2(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       vite-plugin-dts:
         specifier: ^4.5.4
-        version: 4.5.4(@types/node@24.6.2)(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.5.4(@types/node@24.6.2)(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       vite-plugin-svgr:
         specifier: ^4.3.0
-        version: 4.5.0(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.5.0(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       vite-tsconfig-paths:
         specifier: ^5.1.4
-        version: 5.1.4(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 5.1.4(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: ^3.0.5
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.6.2)(@vitest/ui@3.2.4)(jiti@1.21.7)(jsdom@27.0.0(postcss@8.5.6))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
@@ -218,10 +218,10 @@ importers:
         version: 3.1.1(@types/react@19.2.0)(react@19.2.0)
       '@mui/icons-material':
         specifier: ^7.3.2
-        version: 7.3.3(@mui/material@7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
+        version: 7.3.4(@mui/material@7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/material':
         specifier: ^7.3.2
-        version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/styled-engine':
         specifier: ^7.3.2
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(react@19.2.0)
@@ -230,10 +230,10 @@ importers:
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: '*'
-        version: 0.7.10(dee9e65e967252fd5c11ea1c2136d28a)
+        version: 0.7.11(d27eea1be6fc9a4b2c59dc0614219c50)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -282,7 +282,7 @@ importers:
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/material':
         specifier: ^7.3.2
-        version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/system':
         specifier: ^7.3.2
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
@@ -291,16 +291,16 @@ importers:
         version: 7.3.3(@types/react@19.2.0)(react@19.2.0)
       '@sheetxl/grid-react':
         specifier: '*'
-        version: 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@sheetxl/io':
         specifier: workspace:*
         version: link:../../packages/io
       '@sheetxl/react':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: workspace:*
         version: link:../../packages/studio-mui
@@ -328,19 +328,19 @@ importers:
     devDependencies:
       '@chromatic-com/storybook':
         specifier: 4.1.1
-        version: 4.1.1(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
+        version: 4.1.1(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
       '@storybook/addon-a11y':
         specifier: 9.1.8
-        version: 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
+        version: 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
       '@storybook/addon-docs':
         specifier: 9.1.8
-        version: 9.1.8(@types/react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
+        version: 9.1.8(@types/react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
       '@storybook/addon-vitest':
         specifier: 9.1.8
-        version: 9.1.8(@vitest/runner@3.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vitest@3.2.4)
+        version: 9.1.8(@vitest/runner@3.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vitest@3.2.4)
       '@storybook/react-vite':
         specifier: 9.1.8
-        version: 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rollup@4.52.2)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rollup@4.52.2)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       esbuild:
         specifier: ^0.25.10
         version: 0.25.10
@@ -352,13 +352,13 @@ importers:
         version: 0.4.23(eslint@9.36.0(jiti@1.21.7))
       eslint-plugin-storybook:
         specifier: 9.1.8
-        version: 9.1.8(eslint@9.36.0(jiti@1.21.7))(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)
+        version: 9.1.8(eslint@9.36.0(jiti@1.21.7))(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)
       globals:
         specifier: ^16.4.0
         version: 16.4.0
       storybook:
         specifier: 9.1.8
-        version: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
   examples/studio-mui:
     dependencies:
@@ -373,7 +373,7 @@ importers:
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/material':
         specifier: ^7.3.2
-        version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/system':
         specifier: ^7.3.2
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
@@ -382,7 +382,7 @@ importers:
         version: 7.3.3(@types/react@19.2.0)(react@19.2.0)
       '@sheetxl/grid-react':
         specifier: '*'
-        version: 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@sheetxl/io':
         specifier: workspace:*
         version: link:../../packages/io
@@ -391,13 +391,13 @@ importers:
         version: link:../../packages/primitives
       '@sheetxl/react':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@sheetxl/scripting':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: workspace:*
         version: link:../../packages/studio-mui
@@ -440,7 +440,7 @@ importers:
         version: 16.4.0
       vite:
         specifier: ^7.1.3
-        version: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+        version: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/cli:
     dependencies:
@@ -455,10 +455,10 @@ importers:
         version: link:../primitives
       '@sheetxl/scripting':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/utils':
         specifier: workspace:*
         version: link:../utils
@@ -508,7 +508,7 @@ importers:
     dependencies:
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/utils':
         specifier: workspace:*
         version: link:../utils
@@ -553,7 +553,7 @@ importers:
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/material':
         specifier: ^7.3.2
-        version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/styled-engine':
         specifier: ^7.3.2
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(react@19.2.0)
@@ -565,16 +565,16 @@ importers:
         version: 7.3.3(@types/react@19.2.0)(react@19.2.0)
       '@sheetxl/grid-react':
         specifier: '*'
-        version: 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@sheetxl/io':
         specifier: workspace:*
         version: link:../io
       '@sheetxl/react':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/utils':
         specifier: workspace:*
         version: link:../utils
@@ -659,7 +659,7 @@ importers:
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/material':
         specifier: ^7.3.2
-        version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/styled-engine':
         specifier: ^7.3.2
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(react@19.2.0)
@@ -671,7 +671,7 @@ importers:
         version: 7.3.3(@types/react@19.2.0)(react@19.2.0)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
+        version: 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: workspace:*
         version: link:../studio-mui
@@ -703,7 +703,7 @@ importers:
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/material':
         specifier: ^7.3.2
-        version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/styled-engine':
         specifier: ^7.3.2
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(react@19.2.0)
@@ -2392,22 +2392,22 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@mui/core-downloads-tracker@7.3.3':
-    resolution: {integrity: sha512-iQzXRJpur0lMt0oV65rvPYopRlcrVy9wwNMPvjmbAe0nOrY2BF4gMBO+5lZc8MxFoUtPRNsEEQmndkGqdqjTEA==}
+  '@mui/core-downloads-tracker@7.3.4':
+    resolution: {integrity: sha512-BIktMapG3r4iXwIhYNpvk97ZfYWTreBBQTWjQKbNbzI64+ULHfYavQEX2w99aSWHS58DvXESWIgbD9adKcUOBw==}
 
-  '@mui/icons-material@7.3.3':
-    resolution: {integrity: sha512-c/eD59CubuTDPmExgsO9LP9yvDquD9QFZY3eT9l/UJiayJgRe3Cr9JantDmQT26Gc0lozIVGMpJtMTjzDsCYpg==}
+  '@mui/icons-material@7.3.4':
+    resolution: {integrity: sha512-9n6Xcq7molXWYb680N2Qx+FRW8oT6j/LXF5PZFH3ph9X/Rct0B/BlLAsFI7iL9ySI6LVLuQIVtrLiPT82R7OZw==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      '@mui/material': ^7.3.3
+      '@mui/material': ^7.3.4
       '@types/react': ^17.0.0 || ^18.0.0 || ^19.0.0
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
       '@types/react':
         optional: true
 
-  '@mui/material@7.3.3':
-    resolution: {integrity: sha512-MM+pqCPvVgnbzB2DLZkqfvHKzFTJMHcxCvuDhAJvHfJeqODScIn9SuG6GVuyhxAvnnhx+3DcUiwiR83tVET1cw==}
+  '@mui/material@7.3.4':
+    resolution: {integrity: sha512-gEQL9pbJZZHT7lYJBKQCS723v1MGys2IFc94COXbUIyCTWa+qC77a7hUax4Yjd5ggEm35dk4AyYABpKKWC4MLw==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       '@emotion/react': ^11.5.0
@@ -2801,39 +2801,39 @@ packages:
     peerDependencies:
       semantic-release: '>=20.1.0'
 
-  '@sheetxl/grid-react@0.7.10':
-    resolution: {integrity: sha512-Mcy95v2lB6NAheGBsbTEY6Pk7r65fhxI2H29mLWCzRIeH4VP48csX/GJqdOBH9x4w4mOhpqO9V2w6KCaFgGp1g==}
+  '@sheetxl/grid-react@0.7.11':
+    resolution: {integrity: sha512-eG099/siu2+uQWyodZcAZQgss+pTynREXlE8FxrK9tcfxGowptBXervn5pAgNGq2l7bbO7DogRGD9weOMQ7LEg==}
     peerDependencies:
       react: ^19.1.0
       react-dom: ^19.1.0
 
-  '@sheetxl/io@0.7.10':
-    resolution: {integrity: sha512-iLWMqTwvR7vFSX3eXV9Ve+06mr7I8CHAxeu89GJ/6ESuYMdU0QSMQUtr5yIHxTqgAodwGpoCKJeuML6GmvwtOg==}
+  '@sheetxl/io@0.7.11':
+    resolution: {integrity: sha512-F33haQo8WTm2Ku59CRE2MfSum9Esy9JagkLOU3reawrSoFV8SZRVeVr9CRKEJLeHk2qmhj0c11El+T/vChXBsQ==}
     engines: {node: '>=20 <21 || >=22'}
 
-  '@sheetxl/primitives@0.7.10':
-    resolution: {integrity: sha512-0HQdjAddvWPvdtg2sWKBg1GA3nqVQug9bFoEMURTInL7onIk1xcigYb2Z18jnytibUlU//ysAL+nbOa13Uu2Yw==}
+  '@sheetxl/primitives@0.7.11':
+    resolution: {integrity: sha512-H2XuNzAdv1VkVVCC/zmQCoJwKTK+HWwiGjQuPK6aIM/HiIIOYpTpBYi6xYNWofDhMJJ5LhbEklCY/5eobzMEEg==}
     engines: {node: '>=22'}
 
-  '@sheetxl/react@0.7.10':
-    resolution: {integrity: sha512-ff9OhsmwzWcrkmx96XvNApBf81HKemls3QwHDP6j9OIynevz1JRiSYfUdvlMqzRMsifftDg+rbDK9+oKIC6CGA==}
+  '@sheetxl/react@0.7.11':
+    resolution: {integrity: sha512-sqMz2qJpOBqwP2uKMBIaYc3d8fy+XoiOiPF5LGJ+0wX/O3HlRi9GdjQ4QUxfMuVONH2sgoU1ur2PbQZ7jvMbqw==}
     peerDependencies:
       react: ^19.1.0
       react-dom: ^19.1.0
 
-  '@sheetxl/scripting@0.7.10':
-    resolution: {integrity: sha512-6RQPcrSaQ/MQvOvvgff8BLwV9lnoj64NuE8XDTgpBn5cjGD1gBI3o5uGy/HkdPuesEZ4XnSNQCYEnJqqjpJdFQ==}
+  '@sheetxl/scripting@0.7.11':
+    resolution: {integrity: sha512-RBGUjRXmifp4Slq58L9vximdPq9IxIvGW1VImJO6VtrCMLb2F1Pw1zCxFzSpdisKECYn2DAoHkhwvEtAdwVshw==}
     engines: {node: '>=20 <21 || >=22'}
     peerDependencies:
       esbuild-wasm: ^0.25.7
       typescript: ^5.9.0
 
-  '@sheetxl/sdk@0.7.10':
-    resolution: {integrity: sha512-x1wV6Kc5GEShY2qDRhrXWLiT6kcnN67G/OIsc0k5lx3eYQndkz0XvaRG7eLASCYvZov7WTCjzZDSCVJvPkQngg==}
+  '@sheetxl/sdk@0.7.11':
+    resolution: {integrity: sha512-bvaIZg7smkn7ZhTm2BkDBchSQrm/y3aUcJbqGQwKtGRVqV+etFWuQbQbvHI+d0iYtlnuIHSu+0Ht7pMg/QF2pg==}
     engines: {node: '>=20 <21 || >=22'}
 
-  '@sheetxl/studio-mui@0.7.10':
-    resolution: {integrity: sha512-NsEt1b1EBkiqAI43j2no27o0Ay12eSbwmrZ4/927BqKaEdaiTGT/oBYBpWB6VgrE/6P2gFY0SGI3/qhgZk3K6A==}
+  '@sheetxl/studio-mui@0.7.11':
+    resolution: {integrity: sha512-416Preh56X/9Si2nWVE5JUjRswzsH5oHVwgIFKgC4a4O2OrdnIkEJWBQLeCJtcQo37MMp45YV1WM7RXZBq2qEA==}
     peerDependencies:
       '@emotion/cache': ^11.14.0
       '@emotion/react': ^11.14.0
@@ -2845,8 +2845,8 @@ packages:
       react: ^19.1.0
       react-dom: ^19.1.0
 
-  '@sheetxl/utils-mui@0.7.10':
-    resolution: {integrity: sha512-J0xkD2HMqdOgA7/92YR2FUYVgnXvmLmneTk9ueijVD4Sv6iQukZms7Ggrfl7Wk+SxeH3Vatyn+W8UJtjZvi3Gw==}
+  '@sheetxl/utils-mui@0.7.11':
+    resolution: {integrity: sha512-hZ/1P6sLQLCIPC5QIjpBsUDUq52E3p8cSkSsmEYu3Ak9y6U0BNf7tQ3FCsITkczL0YI+5hVeHWMsRqOQgHMZnQ==}
     peerDependencies:
       '@emotion/cache': ^11.14.0
       '@emotion/react': ^11.14.0
@@ -2858,14 +2858,14 @@ packages:
       react: ^19.1.0
       react-dom: ^19.1.0
 
-  '@sheetxl/utils-react@0.7.10':
-    resolution: {integrity: sha512-x/sjy76yTe4vMxoj8Cr8vdw9XnpBJX+qZYGjHwOzOroZKEr1XhjsWShplDvvXftjzNG5cFuCXWvN4Gki9W/8Lg==}
+  '@sheetxl/utils-react@0.7.11':
+    resolution: {integrity: sha512-T8jrbedgf6OMaESCCNJ4hMnAI6hQd1vLhuN6b9jBkyAaD/+Nl6w6OYGJIrQpV050lWaSp/lRvF4hxdL9vZN1rQ==}
     peerDependencies:
       react: ^19.1.0
       react-dom: ^19.1.0
 
-  '@sheetxl/utils@0.7.10':
-    resolution: {integrity: sha512-JtCPG9P3d7HWzDru6LAqOY+DGtiElF7al9X/uvFrcBlDdyrF5m1CwfQ7Q5X9sxd2oc7hb55ACgowtfvjgfHAUw==}
+  '@sheetxl/utils@0.7.11':
+    resolution: {integrity: sha512-6paaO8p/DC86T7bGkKZU4XLWCVqC+nN2Q00YXc5twA2zdEGVOhpgKFq4ntZpb2n+TcYrofoLKxV2J6j7VJi5kg==}
     engines: {node: '>=20 <21 || >=22'}
 
   '@shikijs/engine-oniguruma@3.13.0':
@@ -3999,8 +3999,8 @@ packages:
   caniuse-api@3.0.0:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
 
-  caniuse-lite@1.0.30001746:
-    resolution: {integrity: sha512-eA7Ys/DGw+pnkWWSE/id29f2IcPHVoE8wxtvE5JdvD2V28VTDPy1yEeo11Guz0sJ4ZeGRcm3uaTcAqK1LXaphA==}
+  caniuse-lite@1.0.30001747:
+    resolution: {integrity: sha512-mzFa2DGIhuc5490Nd/G31xN1pnBnYMadtkyTjefPI7wzypqgCEpeWu9bJr0OnDsyKrW75zA9ZAt7pbQFmwLsQg==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -4742,8 +4742,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.229:
-    resolution: {integrity: sha512-cwhDcZKGcT/rEthLRJ9eBlMDkh1sorgsuk+6dpsehV0g9CABsIqBxU4rLRjG+d/U6pYU1s37A4lSKrVc5lSQYg==}
+  electron-to-chromium@1.5.230:
+    resolution: {integrity: sha512-A6A6Fd3+gMdaed9wX83CvHYJb4UuapPD5X5SLq72VZJzxHSY0/LUweGXRWmQlh2ln7KV7iw7jnwXK7dlPoOnHQ==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -5394,8 +5394,8 @@ packages:
   globrex@0.1.2:
     resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
 
-  goober@2.1.17:
-    resolution: {integrity: sha512-h6zqv1eUgE/k5edP/uEtWbaS4iFjfhGxTlKAxcl92xdcLGoj/SLoHOql1mehYseTniQXcYUWBg97gjWh7UAX5Q==}
+  goober@2.1.18:
+    resolution: {integrity: sha512-2vFqsaDVIT9Gz7N6kAL++pLpp41l3PfDuusHcjnGLfR6+huZkl6ziX+zgVC3ZxpqWhzH6pyDdGrCeDhMIvwaxw==}
     peerDependencies:
       csstype: ^3.0.10
 
@@ -9206,8 +9206,8 @@ packages:
       vite:
         optional: true
 
-  vite@7.1.8:
-    resolution: {integrity: sha512-oBXvfSHEOL8jF+R9Am7h59Up07kVVGH1NrFGFoEG6bPDZP3tGpQhvkBpy5x7U6+E6wZCu9OihsWgJqDbQIm8LQ==}
+  vite@7.1.9:
+    resolution: {integrity: sha512-4nVGliEpxmhCL8DslSAUdxlB6+SMrhB0a1v5ijlh1xB1nEPuy1mxaHxysVucLHuWryAxLWg6a5ei+U4TLn/rFg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -10495,13 +10495,13 @@ snapshots:
 
   '@chevrotain/utils@11.0.3': {}
 
-  '@chromatic-com/storybook@4.1.1(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
+  '@chromatic-com/storybook@4.1.1(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
     dependencies:
       '@neoconfetti/react': 1.0.0
       chromatic: 12.2.0
       filesize: 10.1.6
       jsonfile: 6.2.0
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       strip-ansi: 7.1.2
     transitivePeerDependencies:
       - '@chromatic-com/cypress'
@@ -11930,12 +11930,12 @@ snapshots:
       '@types/yargs': 17.0.33
       chalk: 4.1.2
 
-  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.1(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.1(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       glob: 10.4.5
       magic-string: 0.30.19
       react-docgen-typescript: 2.4.0(typescript@5.9.3)
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     optionalDependencies:
       typescript: 5.9.3
 
@@ -12047,20 +12047,20 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@mui/core-downloads-tracker@7.3.3': {}
+  '@mui/core-downloads-tracker@7.3.4': {}
 
-  '@mui/icons-material@7.3.3(@mui/material@7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)':
+  '@mui/icons-material@7.3.4(@mui/material@7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)':
     dependencies:
       '@babel/runtime': 7.28.4
-      '@mui/material': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mui/material': 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react: 19.2.0
     optionalDependencies:
       '@types/react': 19.2.0
 
-  '@mui/material@7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@mui/material@7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@babel/runtime': 7.28.4
-      '@mui/core-downloads-tracker': 7.3.3
+      '@mui/core-downloads-tracker': 7.3.4
       '@mui/system': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/types': 7.4.7(@types/react@19.2.0)
       '@mui/utils': 7.3.3(@types/react@19.2.0)(react@19.2.0)
@@ -12483,10 +12483,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@sheetxl/grid-react@0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@sheetxl/grid-react@0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@sheetxl/utils': 0.7.10
-      '@sheetxl/utils-react': 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/utils': 0.7.11
+      '@sheetxl/utils-react': 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
@@ -12494,10 +12494,10 @@ snapshots:
       react-use: 17.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       tiny-invariant: 1.3.3
 
-  '@sheetxl/io@0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)':
+  '@sheetxl/io@0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)':
     dependencies:
-      '@sheetxl/sdk': 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.10
+      '@sheetxl/sdk': 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.11
       '@xmldom/xmldom': 0.9.8
       papaparse: 5.5.3
       path-browserify: 1.0.1
@@ -12508,19 +12508,19 @@ snapshots:
       - esbuild-wasm
       - typescript
 
-  '@sheetxl/primitives@0.7.10': {}
+  '@sheetxl/primitives@0.7.11': {}
 
-  '@sheetxl/react@0.7.10(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
+  '@sheetxl/react@0.7.11(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
     dependencies:
       '@dnd-kit/core': 6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@dnd-kit/modifiers': 9.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@dnd-kit/sortable': 10.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@dnd-kit/utilities': 3.2.2(react@19.2.0)
       '@monaco-editor/react': 4.7.0(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@sheetxl/grid-react': 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@sheetxl/sdk': 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.10
-      '@sheetxl/utils-react': 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/grid-react': 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/sdk': 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.11
+      '@sheetxl/utils-react': 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       monaco-editor-auto-typings: 0.4.6(monaco-editor@0.53.0)
       react: 19.2.0
@@ -12534,19 +12534,19 @@ snapshots:
       - monaco-editor
       - typescript
 
-  '@sheetxl/scripting@0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)':
+  '@sheetxl/scripting@0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)':
     dependencies:
-      '@sheetxl/primitives': 0.7.10
-      '@sheetxl/utils': 0.7.10
+      '@sheetxl/primitives': 0.7.11
+      '@sheetxl/utils': 0.7.11
       esbuild-wasm: 0.25.10
       path-browserify: 1.0.1
       typescript: 5.9.3
 
-  '@sheetxl/sdk@0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)':
+  '@sheetxl/sdk@0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)':
     dependencies:
-      '@sheetxl/primitives': 0.7.10
-      '@sheetxl/scripting': 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.10
+      '@sheetxl/primitives': 0.7.11
+      '@sheetxl/scripting': 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.11
       bahttext: 2.3.3
       bessel: 1.0.2
       chalk: 5.6.2
@@ -12563,22 +12563,22 @@ snapshots:
       - esbuild-wasm
       - typescript
 
-  '@sheetxl/studio-mui@0.7.10(dee9e65e967252fd5c11ea1c2136d28a)':
+  '@sheetxl/studio-mui@0.7.11(d27eea1be6fc9a4b2c59dc0614219c50)':
     dependencies:
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@19.2.0)(react@19.2.0)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
-      '@mui/material': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mui/material': 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/styled-engine': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(react@19.2.0)
       '@mui/system': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/utils': 7.3.3(@types/react@19.2.0)(react@19.2.0)
-      '@sheetxl/grid-react': 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@sheetxl/io': 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
-      '@sheetxl/react': 0.7.10(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
-      '@sheetxl/sdk': 0.7.10(esbuild-wasm@0.25.10)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.10
-      '@sheetxl/utils-mui': 0.7.10(fec3aeafa9f159bcc598535efac261a3)
-      '@sheetxl/utils-react': 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/grid-react': 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/io': 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
+      '@sheetxl/react': 0.7.11(esbuild-wasm@0.25.10)(monaco-editor@0.53.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      '@sheetxl/sdk': 0.7.11(esbuild-wasm@0.25.10)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.11
+      '@sheetxl/utils-mui': 0.7.11(7b26adef21fc95ea126decc46bcaae73)
+      '@sheetxl/utils-react': 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       csstype: 3.1.3
       file-saver: 2.0.5
@@ -12602,18 +12602,18 @@ snapshots:
       - prop-types
       - typescript
 
-  '@sheetxl/utils-mui@0.7.10(fec3aeafa9f159bcc598535efac261a3)':
+  '@sheetxl/utils-mui@0.7.11(7b26adef21fc95ea126decc46bcaae73)':
     dependencies:
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@19.2.0)(react@19.2.0)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
-      '@mui/material': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mui/material': 7.3.4(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mui/styled-engine': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(react@19.2.0)
       '@mui/system': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0))(@types/react@19.2.0)(react@19.2.0)
       '@mui/utils': 7.3.3(@types/react@19.2.0)(react@19.2.0)
       '@popperjs/core': 2.11.8
-      '@sheetxl/utils': 0.7.10
-      '@sheetxl/utils-react': 0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/utils': 0.7.11
+      '@sheetxl/utils-react': 0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       detect-it: 4.0.1
       focus-trap-react: 10.3.1(prop-types@15.8.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -12629,9 +12629,9 @@ snapshots:
       - '@types/react'
       - prop-types
 
-  '@sheetxl/utils-react@0.7.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@sheetxl/utils-react@0.7.11(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@sheetxl/utils': 0.7.10
+      '@sheetxl/utils': 0.7.11
       clsx: 2.1.1
       detect-it: 4.0.1
       react: 19.2.0
@@ -12640,7 +12640,7 @@ snapshots:
       react-use: 17.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       tiny-invariant: 1.3.3
 
-  '@sheetxl/utils@0.7.10': {}
+  '@sheetxl/utils@0.7.11': {}
 
   '@shikijs/engine-oniguruma@3.13.0':
     dependencies:
@@ -12694,31 +12694,31 @@ snapshots:
       micromark-util-character: 1.2.0
       micromark-util-symbol: 1.1.0
 
-  '@storybook/addon-a11y@9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
+  '@storybook/addon-a11y@9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
     dependencies:
       '@storybook/global': 5.0.0
       axe-core: 4.10.3
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
-  '@storybook/addon-docs@9.1.8(@types/react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
+  '@storybook/addon-docs@9.1.8(@types/react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
     dependencies:
       '@mdx-js/react': 3.1.1(@types/react@19.2.0)(react@19.2.0)
-      '@storybook/csf-plugin': 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
+      '@storybook/csf-plugin': 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
       '@storybook/icons': 1.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@storybook/react-dom-shim': 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
+      '@storybook/react-dom-shim': 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       ts-dedent: 2.2.0
     transitivePeerDependencies:
       - '@types/react'
 
-  '@storybook/addon-vitest@9.1.8(@vitest/runner@3.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vitest@3.2.4)':
+  '@storybook/addon-vitest@9.1.8(@vitest/runner@3.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vitest@3.2.4)':
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 1.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       prompts: 2.4.2
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       ts-dedent: 2.2.0
     optionalDependencies:
       '@vitest/runner': 3.2.4
@@ -12727,16 +12727,16 @@ snapshots:
       - react
       - react-dom
 
-  '@storybook/builder-vite@9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@storybook/builder-vite@9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
-      '@storybook/csf-plugin': 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@storybook/csf-plugin': 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       ts-dedent: 2.2.0
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  '@storybook/csf-plugin@9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
+  '@storybook/csf-plugin@9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
     dependencies:
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       unplugin: 1.16.1
 
   '@storybook/global@5.0.0': {}
@@ -12746,39 +12746,39 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@storybook/react-dom-shim@9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
+  '@storybook/react-dom-shim@9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
     dependencies:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 
-  '@storybook/react-vite@9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rollup@4.52.2)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@storybook/react-vite@9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rollup@4.52.2)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
-      '@joshwooding/vite-plugin-react-docgen-typescript': 0.6.1(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@joshwooding/vite-plugin-react-docgen-typescript': 0.6.1(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@rollup/pluginutils': 5.3.0(rollup@4.52.2)
-      '@storybook/builder-vite': 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      '@storybook/react': 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)
+      '@storybook/builder-vite': 9.1.8(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@storybook/react': 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)
       find-up: 7.0.0
       magic-string: 0.30.19
       react: 19.2.0
       react-docgen: 8.0.1
       react-dom: 19.2.0(react@19.2.0)
       resolve: 1.22.10
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       tsconfig-paths: 4.2.0
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - rollup
       - supports-color
       - typescript
 
-  '@storybook/react@9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)':
+  '@storybook/react@9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)':
     dependencies:
       '@storybook/global': 5.0.0
-      '@storybook/react-dom-shim': 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
+      '@storybook/react-dom-shim': 9.1.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
     optionalDependencies:
       typescript: 5.9.3
 
@@ -13285,7 +13285,7 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vitejs/plugin-react@5.0.4(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@vitejs/plugin-react@5.0.4(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -13293,7 +13293,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.38
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -13305,13 +13305,13 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@vitest/mocker@3.2.4(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
     optionalDependencies:
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -13769,7 +13769,7 @@ snapshots:
   autoprefixer@10.4.21(postcss@8.5.6):
     dependencies:
       browserslist: 4.26.3
-      caniuse-lite: 1.0.30001746
+      caniuse-lite: 1.0.30001747
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
@@ -13929,8 +13929,8 @@ snapshots:
   browserslist@4.26.3:
     dependencies:
       baseline-browser-mapping: 2.8.10
-      caniuse-lite: 1.0.30001746
-      electron-to-chromium: 1.5.229
+      caniuse-lite: 1.0.30001747
+      electron-to-chromium: 1.5.230
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.26.3)
 
@@ -13989,11 +13989,11 @@ snapshots:
   caniuse-api@3.0.0:
     dependencies:
       browserslist: 4.26.3
-      caniuse-lite: 1.0.30001746
+      caniuse-lite: 1.0.30001747
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
 
-  caniuse-lite@1.0.30001746: {}
+  caniuse-lite@1.0.30001747: {}
 
   ccount@2.0.1: {}
 
@@ -14750,7 +14750,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.229: {}
+  electron-to-chromium@1.5.230: {}
 
   emoji-regex@8.0.0: {}
 
@@ -14993,11 +14993,11 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-storybook@9.1.8(eslint@9.36.0(jiti@1.21.7))(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3):
+  eslint-plugin-storybook@9.1.8(eslint@9.36.0(jiti@1.21.7))(storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3):
     dependencies:
       '@typescript-eslint/utils': 8.45.0(eslint@9.36.0(jiti@1.21.7))(typescript@5.9.3)
       eslint: 9.36.0(jiti@1.21.7)
-      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      storybook: 9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -15606,7 +15606,7 @@ snapshots:
 
   globrex@0.1.2: {}
 
-  goober@2.1.17(csstype@3.1.3):
+  goober@2.1.18(csstype@3.1.3):
     dependencies:
       csstype: 3.1.3
 
@@ -17379,7 +17379,7 @@ snapshots:
   notistack@3.0.2(csstype@3.1.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       clsx: 1.2.1
-      goober: 2.1.17(csstype@3.1.3)
+      goober: 2.1.18(csstype@3.1.3)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
     transitivePeerDependencies:
@@ -19337,13 +19337,13 @@ snapshots:
       es-errors: 1.3.0
       internal-slot: 1.1.0
 
-  storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+  storybook@9.1.8(@testing-library/dom@10.4.1)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       '@storybook/global': 5.0.0
       '@testing-library/jest-dom': 6.9.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@vitest/spy': 3.2.4
       better-opn: 3.0.2
       esbuild: 0.25.10
@@ -20016,7 +20016,7 @@ snapshots:
       debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -20031,11 +20031,11 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-css-injected-by-js@3.5.2(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+  vite-plugin-css-injected-by-js@3.5.2(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  vite-plugin-dts@4.5.4(@types/node@24.6.2)(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+  vite-plugin-dts@4.5.4(@types/node@24.6.2)(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       '@microsoft/api-extractor': 7.52.15(@types/node@24.6.2)
       '@rollup/pluginutils': 5.3.0(rollup@4.52.2)
@@ -20048,35 +20048,35 @@ snapshots:
       magic-string: 0.30.19
       typescript: 5.9.3
     optionalDependencies:
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - '@types/node'
       - rollup
       - supports-color
 
-  vite-plugin-svgr@4.5.0(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+  vite-plugin-svgr@4.5.0(rollup@4.52.2)(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.2)
       '@svgr/core': 8.1.0(typescript@5.9.3)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(typescript@5.9.3))
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - rollup
       - supports-color
       - typescript
 
-  vite-tsconfig-paths@5.1.4(typescript@5.9.3)(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+  vite-tsconfig-paths@5.1.4(typescript@5.9.3)(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       debug: 4.4.3
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.3)
     optionalDependencies:
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+  vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
@@ -20096,7 +20096,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -20114,7 +20114,7 @@ snapshots:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 7.1.8(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vite-node: 3.2.4(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:

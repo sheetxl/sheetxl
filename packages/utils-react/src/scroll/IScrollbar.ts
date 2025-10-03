@@ -39,6 +39,12 @@ export interface ScrollbarProps extends React.HTMLAttributes<HTMLElement> {
   minThumbSize?: number;
 
   /**
+   * The maximum size of the thumb in pixels.
+   *
+   * @defaultValue undefined (no maximum size)
+   */
+  maxThumbSize?: number;
+  /**
    * The amount to increment the scroll position when the scroll button is clicked.
    * This can be a fixed number or a function that takes the current offset, viewport size,
    * and total size and returns the increment amount.
