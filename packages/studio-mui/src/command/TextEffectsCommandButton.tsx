@@ -32,9 +32,11 @@ export const TextEffectsCommandButton = memo(
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
   const activeCommand = useMemo(() => {
-    for (let i=0; i<resolvedCommands.length; i++) {
-      if ((resolvedCommands[i] as Command<boolean>)?.state()) {
-        return resolvedCommands[i];
+    const resolvedCommandsLength = resolvedCommands.length;
+    for (let i=0; i<resolvedCommandsLength; i++) {
+      const command = resolvedCommands[i];
+      if ((command as Command<boolean>)?.state()) {
+        return command;
       }
     }
     // default

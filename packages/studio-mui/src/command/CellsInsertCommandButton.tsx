@@ -39,18 +39,24 @@ export const CellsInsertCommandButton = memo(
     'insertCellsShiftDown',
     'insertCellsShiftRight',
     'insertRows',
-    'insertColumns'
+    'insertColumns',
+    'addSheet'
   ];
+  if (!disableSheet) {
+    commandKeys.push('addSheet');
+  }
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
   const { singleCommand, allDisabled } = useMemo(() => {
     let singleCommand = null;
     let count = 0;
-    for (let i=0; i<resolvedCommands.length; i++) {
-      if (resolvedCommands[i] && !resolvedCommands[i]?.disabled()) {
+    const resolvedCommandsLength = resolvedCommands.length;
+    for (let i=0; i<resolvedCommandsLength; i++) {
+      const command = resolvedCommands[i];
+      if (command && !command.disabled()) {
         // if first enabled command set otherwise null
         if (preferSingleMenu && variant === CommandButtonType.Menuitem)
-          singleCommand = count === 0 ? resolvedCommands[i] : null;
+          singleCommand = count === 0 ? command : null;
         count++;
       }
     }

@@ -218,7 +218,6 @@ export const TableDetailsPanel =
               minHeight: '10px',
               flex: '1 1 100%',
               display: 'flex',
-              border:'red solid 2px',
               flexDirection: 'column',
               containerType: 'inline-size', // Enable container queries
               gap: (theme: Theme) => theme.spacing(0.5),

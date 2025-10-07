@@ -32,15 +32,23 @@ export const VerticalAlignCommandButton = memo(
   ];
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
-  const activeCommand = useMemo(() => {
-    for (let i=0; i<resolvedCommands.length; i++) {
-      if ((resolvedCommands[i] as Command<boolean>)?.state()) {
-        return resolvedCommands[i];
+  const { activeCommand, allDisabled } = useMemo(() => {
+    const resolvedCommandsLength = resolvedCommands.length;
+    let count = 0;
+    let activeCommand:Command<any>;
+    for (let i=0; i<resolvedCommandsLength; i++) {
+      const command = (resolvedCommands[i] as Command<boolean>);
+      if (command && !command.disabled()) {
+        if (!activeCommand && command?.state()) {
+          activeCommand = command;
+        }
+        count++;
       }
     }
     // default
-    return resolvedCommands[0];
-  }, [resolvedCommands])
+    activeCommand = activeCommand ?? resolvedCommands[0] as Command<any>;
+    return { activeCommand, allDisabled: count === 0 };
+  }, [resolvedCommands]);
 
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const commandButtonProps = {
@@ -84,6 +92,7 @@ export const VerticalAlignCommandButton = memo(
       commands={propCommands}
       commandHook={propCommandHook}
       createPopupPanel={createPopupPanel}
+      disabled={propDisabled || allDisabled}
       label="Vertical Alignment"
       tooltip="Configure how text is placed in the vertical direction of the cell."
       icon={activeCommand?.icon() ?? 'TextVerticalBottom'}
