@@ -22,7 +22,7 @@ import { LoadingPanel } from '@sheetxl/utils-mui';
 
 import { ScriptEditorToolbar } from '../toolbar/ScriptEditorToolbar';
 
-import { ITaskPaneFrame, IScriptEditor, IScriptEditorElement, ScriptEditorProps } from '@sheetxl/react';
+import { IFrame, IScriptEditor, IScriptEditorElement, ScriptEditorProps } from '@sheetxl/react';
 
 import { ScriptEditor } from '@sheetxl/react';
 
@@ -50,7 +50,7 @@ export interface ScriptWorkspaceProps extends React.HTMLAttributes<HTMLElement> 
    * @remarks
    * If a promise is returned, the task pane will show a loading pane.
    */
-  frame?: ITaskPaneFrame;
+  frame?: IFrame;
   /**
    * Allows for component to be autoFocused.
    * @remarks

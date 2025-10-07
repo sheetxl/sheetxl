@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect, memo, forwardRef } from 'react
 
 import { IColor, IScript } from '@sheetxl/sdk';
 
-import { useCommands, Command, DynamicIcon } from '@sheetxl/utils-react';
+import { useCommands, Command } from '@sheetxl/utils-react';
 
 import {
   CommandContext, type CommandButtonProps, IScriptEditor, DefaultTaskPaneRegistry, useTaskPaneArea
@@ -10,7 +10,7 @@ import {
 
 import {
   CommandButton, ExhibitDivider,
-  CommandToolbar, type CommandToolbarButtonProps, type CommandToolbarProps, ICommandToolbarElement,
+  CommandToolbar, type CommandToolbarButtonProps, type CommandToolbarProps, type ICommandToolbarElement
 } from '@sheetxl/utils-mui';
 
 import { AutoColorPosition } from '../components';
@@ -128,7 +128,6 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <ColorCommandButton
         {...commandPopupProps}
         command={(commands.getCommand('formatFontColor') as Command<IColor, CommandContext.Color>)}
-        icon={<DynamicIcon iconKey="text.colored" />}
         isSplit={true}
         panelProps={{
           disableAlpha: true, // Excel doesn't allow alpha
@@ -142,7 +141,6 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <ColorCommandButton
         {...commandPopupProps}
         command={(commands.getCommand('formatFillColor') as Command<IColor, CommandContext.Color>)}
-        icon={<DynamicIcon iconKey="fill.colored" />}
         isSplit={true}
         panelProps={{
           disableAlpha: true,
@@ -264,6 +262,11 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
       <NumberFormatCommandButton
         {...commandPopupProps}
       />
+      <ExhibitDivider/>
+      {/* <ConditionalCellStylesCommandButton
+        command={(commands.getCommand('conditionalCellStyle'))}
+        {...commandPopupProps}
+      /> */}
       {/* cell style is swapped with table style in excel online */}
       <PresetCellStylesCommandButton
         command={(commands.getCommand('formatCellStyle'))}

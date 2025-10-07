@@ -16,25 +16,18 @@ import { ICell, NumberFormat } from '@sheetxl/sdk';
 
 import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
 
-import { OptionsDialog, OptionsDialogProps } from '@sheetxl/utils-mui';
+import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
 
-
-export interface NumberFormatDialogProps extends OptionsDialogProps {
-  initialValue?: string;
-
-  context: () => ICell;
-
-  onInputOption?: (input?: string, option?: string) => void;
-};
+export interface NumberFormatDialogProps extends InputDialogProps {};
 
 const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
-export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props) => {
+export const NumberFormatDialog = memo<NumberFormatDialogProps>((props: NumberFormatDialogProps) => {
   const {
     initialValue,
     context,
     onOption,
     onValidateOption,
-    onInputOption,
+    onInput,
     onDone,
     options = DEFAULT_INPUT_OPTIONS,
     defaultOption = options?.[0],
@@ -52,10 +45,13 @@ export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props
   }, []);
 
   const handleInput = useCallbackRef(async (option: string) => {
-    onInputOption?.(input, option);
-    onOption?.(option, option === cancelOption, option === defaultOption);
+    const isCancel = option === cancelOption;
+    if (!isCancel) {
+      onInput?.(input, option);
+    }
+    onOption?.(option, isCancel, option === defaultOption);
     onDone?.();
-  }, [input, onInputOption, onDone, onOption, cancelOption, defaultOption]);
+  }, [input, onInput, onDone, onOption, cancelOption, defaultOption]);
 
   const handleKeyDown = useCallbackRef(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.keyCode === KeyCodes.Enter) {
@@ -96,7 +92,7 @@ export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props
         </MenuItem>
       );
     }
-    const options =  Object.keys(formats).map((key) => {
+    const options = Object.keys(formats).map((key) => {
       return createOption(formats[key].formatType);
     });
     options.push(createOption(NumberFormat.Type.Custom));
@@ -112,7 +108,8 @@ export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props
   }, []);
 
   const previewCell = useMemo(() => {
-    const contextValue:ICell = context();
+    const contextValue:ICell = context?.();
+    if (!contextValue) return null;
     const retValue = contextValue.createTemporaryCell({
       value: contextValue.getValue() ?? 12345,
       style: {
@@ -177,7 +174,7 @@ export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props
         >
         <TextField
           label="Code"
-          onFocus={(e) => {
+          onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
             if (!firstFocus) {
               e.target?.select();
             }
@@ -229,7 +226,7 @@ export const NumberFormatDialog: React.FC<NumberFormatDialogProps> = memo((props
               border: (theme: Theme) => `1px solid ${theme.palette.grey[400]}`,
             }}
           >
-            {previewCell.getNumberFormat().displayText || '(empty)'}
+            {previewCell?.getNumberFormat().displayText || '(empty)'}
           </Typography>
         </Box>
       </Box>

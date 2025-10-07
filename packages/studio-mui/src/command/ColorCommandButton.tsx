@@ -61,7 +61,7 @@ export const ColorCommandButton = memo(
     panelProps: propPanelProps,
     isSplit = false,
     darkMode: propDarkMode,
-    icon,
+    icon: propIcon,
     ...rest
   } = props;
 
@@ -141,7 +141,7 @@ export const ColorCommandButton = memo(
     <ColorPopupButton
       ref={refForwarded}
       panelProps={panelProps}
-      icon={icon as any}
+      icon={propIcon ?? command?.icon(context) as any }
       quickColor={quickColor}
       selectedColor={command?.state()}
       onSelectColor={handleOnSelectColor}

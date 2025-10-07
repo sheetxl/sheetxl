@@ -16,12 +16,12 @@
     "preview": "docusaurus serve --port 3200"
   },
   "dependencies": {
-    "@docusaurus/core": "3.8.1",
-    "@docusaurus/plugin-google-gtag": "3.8.1",
-    "@docusaurus/preset-classic": "3.8.1",
-    "@docusaurus/remark-plugin-npm2yarn": "3.8.1",
-    "@docusaurus/theme-common": "3.8.1",
-    "@docusaurus/theme-live-codeblock": "3.8.1",
+    "@docusaurus/core": "3.9.1",
+    "@docusaurus/plugin-google-gtag": "3.9.1",
+    "@docusaurus/preset-classic": "3.9.1",
+    "@docusaurus/remark-plugin-npm2yarn": "3.9.1",
+    "@docusaurus/theme-common": "3.9.1",
+    "@docusaurus/theme-live-codeblock": "3.9.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mdx-js/react": "^3.1.0",
@@ -37,12 +37,12 @@
     "lunr": "^2.3.9",
     "prism-react-renderer": "^2.3.0",
     "raw-loader": "^4.0.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "react-github-btn": "^1.4.0"
   },
   "devDependencies": {
-    "@docusaurus/types": "3.8.1",
+    "@docusaurus/types": "3.9.1",
     "path-browserify": "^1.0.1"
   },
   "browserslist": {

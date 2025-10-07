@@ -10,18 +10,13 @@ import { useCallbackRef } from '@sheetxl/utils-react';
 
 import { CommandContext } from '@sheetxl/react';
 
-import { OptionsDialog, OptionsDialogProps } from '@sheetxl/utils-mui';
+import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
 
 import { RangeInput, NamedInput } from '../components/form';
 
 
-export interface NamedReferenceDialogProps extends OptionsDialogProps {
-  value?: INamed;
+export interface NamedReferenceDialogProps extends InputDialogProps<INamed, CommandContext.NamedReference> {};
 
-  onUpdate?: (named: INamed, isNew: boolean) => void;
-
-  context: CommandContext.NamedReference;
-};
 
 const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
 
@@ -33,14 +28,14 @@ const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
  * Add scope dropdown that has 'Workbook' and a list of sheetNames.
  * Add comment editor ()
  */
-export const NamedReferenceDialog: React.FC<NamedReferenceDialogProps> = memo((props) => {
+export const NamedReferenceDialog = memo<NamedReferenceDialogProps>((props: NamedReferenceDialogProps) => {
   const {
-    value = null,
+    initialValue = null,
     context,
     onOption,
     onValidateOption,
     onDone,
-    onUpdate,
+    onInput,
     options = DEFAULT_INPUT_OPTIONS,
     defaultOption = options?.[0],
     cancelOption = 'Cancel',
@@ -51,20 +46,20 @@ export const NamedReferenceDialog: React.FC<NamedReferenceDialogProps> = memo((p
   // const [scope] = useState<string>("");
 
   const defaultName = useMemo(() => {
-    return context?.getNames().findValidName('Range1');
+    return context?.().getNames().findValidName('Range1');
   }, []);
 
   const isNew = useMemo(() => {
-    if (!value) return true;
+    if (!initialValue) return true;
   }, []);
 
   const [name, setName] = useState({
-    displayText: value?.getName() ?? defaultName,
+    displayText: initialValue?.getName() ?? defaultName,
     errorText: null
   });
 
   const [ranges, setRanges] = useState({
-    displayValue: value?.getRanges() ?? context?.selection() ?? null,
+    displayValue: initialValue?.getRanges() ?? context?.().selection() ?? null,
     errorText: null
   });
 
@@ -74,36 +69,36 @@ export const NamedReferenceDialog: React.FC<NamedReferenceDialogProps> = memo((p
     if (name.errorText) return false;
     if (ranges.errorText) return false;
     return true;
-  }, [context]);
+  }, []);
 
   const handleOnOption = useCallbackRef((option: string, isCancel: boolean, isDefault: boolean) => {
     if (!isCancel) {
       let rangeUpsert = null
       if (isNew) {
-        rangeUpsert = context?.getNames().addReference(name?.displayText, ranges?.displayValue, false);
+        rangeUpsert = context?.().getNames().addReference(name?.displayText, ranges?.displayValue, false);
       } else {
-        if (value.getType() === 'reference') {
-          value.doBatch(() => {
-            value.setName(name?.displayText);
-            (value as INamed.IReference).setReference(ranges?.displayValue);
+        if (initialValue.getType() === 'reference') {
+          initialValue.doBatch(() => {
+            initialValue.setName(name?.displayText);
+            (initialValue as INamed.IReference).setReference(ranges?.displayValue);
           }, `Edit Named '${name?.displayText}'`);
         }
-        rangeUpsert = value;
+        rangeUpsert = initialValue;
       }
       if (rangeUpsert) {
         rangeUpsert.select(); // should the dialog do this or the controller?
-        onUpdate(rangeUpsert, isNew);
+        onInput(rangeUpsert);
       }
     }
 
     onOption?.(option, isCancel, isDefault);
     onDone?.();
-  }, [context, name, ranges, onDone, onOption, defaultOption, cancelOption, onUpdate]);
+  }, [context, name, ranges, onDone, onOption, defaultOption, cancelOption, onInput]);
 
   const handleOnNameChange = useCallbackRef((displayText: string) => {
     let errorText = null;
     try {
-      context?.getNames().validateName(displayText);
+      context?.().getNames().validateName(displayText);
     } catch (e) {
       errorText = e.message;
     }
@@ -114,9 +109,9 @@ export const NamedReferenceDialog: React.FC<NamedReferenceDialogProps> = memo((p
   }, []);
 
   const handleOnNameValidate = useCallbackRef((name: string) => {
-    if (value && value.getName().toLowerCase() === name.toLowerCase()) return;
-    context?.getNames().validateName(name);
-  }, [context, value]);
+    if (initialValue && initialValue.getName().toLowerCase() === name.toLowerCase()) return;
+    context?.().getNames().validateName(name);
+  }, [context, initialValue]);
 
 
   const handleOnRangeChange = useCallback((ranges: ICellRanges) => {
@@ -177,7 +172,7 @@ export const NamedReferenceDialog: React.FC<NamedReferenceDialogProps> = memo((p
           formName={'range'}
           value={ranges.displayValue}
           onChangeInput={handleOnRangeChange}
-          resolvedAddress={context.getNames().getRanges.bind(context.getNames())}
+          resolvedAddress={context ? context().getNames().getRanges.bind(context().getNames()) : undefined}
           // disabled={workbookStructure.isProtected()}
           onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
             if (!firstFocus) {

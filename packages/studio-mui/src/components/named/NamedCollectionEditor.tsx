@@ -342,7 +342,7 @@ const NamedCollectionEditor =
             // }
           }}
           value={rangeText}
-          onFocus={(e:React.FocusEvent<HTMLInputElement>) => {
+          onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
             // setTimeout(() => {
             e.target?.select();
             // }, 0);

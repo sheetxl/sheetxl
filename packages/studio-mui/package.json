@@ -51,7 +51,7 @@
     "fuse.js": "^7.0.0",
     "notistack": "^3.0.1",
     "react-color": "^2.19.3",
-    "react-hook-form": "^7.63.0",
+    "react-hook-form": "^7.64.0",
     "react-merge-refs": "^3.0.2",
     "react-resizable": "^3.0.5",
     "react-transition-group": "^4.4.5",
@@ -64,15 +64,17 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/material": "^7.3.2",
-    "@mui/styled-engine": "^7.3.2",
-    "@mui/system": "^7.3.2",
-    "@mui/utils": "^7.3.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "@mui/material": "^7.0.0",
+    "@mui/styled-engine": "^7.0.0",
+    "@mui/system": "^7.0.0",
+    "@mui/utils": "^7.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "@types/react-resizable": "^3.0.8",
     "@types/react-transition-group": "^4.4.6",
     "@types/react-virtualized": "^9.22.3"

@@ -11,7 +11,7 @@ import {
 
 import {
   SimpleCommand, Command, KeyModifiers, ICommands, CommandGroup, useEditMode,
-  NotifierType, useCallbackRef, InputOptionsNotifierOptions, ICommand,
+  NotifierType, useCallbackRef, ShowInputOptions, ICommand,
   useNotifier, IReactNotifier
 } from '@sheetxl/utils-react';
 
@@ -20,10 +20,6 @@ import {
 } from '@sheetxl/react';
 
 import { IWorkbookElement } from './IWorkbookElement';
-
-import {
-  FindReplaceWindowProps, FindReplaceWindowOptions, NamedReferenceDialogProps
-} from '../../dialog';
 
 export interface useWorkbookCommandsOptions {
   /**
@@ -715,7 +711,6 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     }
   }, [workbook, notifier]);
 
-  // const showInputDialog = useInputDialog();
   useEffect(() => {
     commands.getCommand('newCellStyle').updateCallback((_currentNamed: IStyle.INamed) => {
       const defaultStyleName = (): string => {
@@ -730,7 +725,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         }
       }
 
-      notifier.showInputOptions({
+      notifier.showInput({
         initialValue: defaultStyleName(),
         title: commands.getCommand('newCellStyle')?.label('cellStyle'),
         description: `Enter a name for the new cell style.`,
@@ -742,7 +737,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         },
         options: ['Ok', 'Cancel'],
         defaultOption: 'Ok',
-        onValidateInputOption: async (input: string, _option: string): Promise<{
+        onValidateInput: async (input: string, _option: string): Promise<{
           valid: boolean,
           message?: string
         }> => {
@@ -857,10 +852,10 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     commands.getCommand('executeSelectedScript').updateCallback(executeScript);
   }, [workbook, notifier]);
 
-  const onFindOrReplace = useCallbackRef(async (options: FindReplaceWindowOptions): Promise<number> => {
+  const onFindOrReplace = useCallbackRef(async (options: CommandContext.FindReplaceOptions): Promise<number> => {
     let count:number = 0;
     let gotoCell:ICell = null;
-1
+
     let description = 'Find & Replace';
     if (options?.replace && !options?.replaceOptions?.maxCount)
       description = 'Replace All';
@@ -906,6 +901,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
 
       hideBusy?.();
       if (!options.replaceOptions.maxCount && count > 1) {
+        // TODO - create a way to have these messages show up on top. (or don't use a toast for this)
         notifier.showMessage(`We replaced ${count} cells.`);
       }
      } catch (error: any) {
@@ -916,31 +912,33 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
   }, [workbook, workbookElement]);
 
   const onNamedReferenceDialog = useCallbackRef((named: INamed): Promise<HTMLElement> => {
-    const props:NamedReferenceDialogProps = {
-      value: named,
-      context: {
-        selection: (): ICellRanges => {
-          const selected = workbook.getSelectedRanges();
+    const context: CommandContext.NamedReference = {
+      selection: (): ICellRanges => {
+        const selected = workbook.getSelectedRanges();
 
-          // TODO - I wish I could do this
-          // selected.map((range: ICellRange) => {
-          //   return range.getFixed(true)
-          // })
-          const fixed = [];
-          for (let i=0; i<selected.getCount(); i++) {
-            // TODO - we could make a fixed, unfixed util
-            // TODO - what is the correct way to do this?
-            const range:ICellRange = selected.at(i) as any;
-            const rangeFixed:IRange.FixableCoords = range.getFixed(true).getCoords();
-            fixed.push(rangeFixed);
-          }
-          return workbook.getRanges(fixed);
-        },
-        getNames: (): INamedCollection => {
-          return workbook.getNames();
+        // TODO - I wish I could do this
+        // selected.map((range: ICellRange) => {
+        //   return range.getFixed(true)
+        // })
+        const selectedCount = selected.getCount();
+        const fixed = new Array(selectedCount);
+        for (let i=0; i<selectedCount; i++) {
+          // TODO - we could make a fixed, unfixed util
+          // TODO - what is the correct way to do this?
+          const range:ICellRange = selected.at(i) as any;
+          const rangeFixed:IRange.FixableCoords = range.getFixed(true).getCoords();
+          fixed[i] = rangeFixed;
         }
+        return workbook.getRanges(fixed);
       },
-      onUpdate: async (named: INamed) => {
+      getNames: (): INamedCollection => {
+        return workbook.getNames();
+      }
+    };
+    const options: ShowInputOptions<INamed> = {
+      initialValue: named,
+      context: () => context,
+      onInput: async (named: INamed) => {
         try {
           await named.select();
         } catch (error: any) {
@@ -948,18 +946,25 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         }
       }
     }
-    return notifier.showWindow('namedDetails', props);
+    return notifier.showWindow('namedDetails', options);
   }, [notifier, workbook, workbookElement]);
 
   useEffect(() => {
     const showFind = (replace: boolean=false) => {
       const cell = workbook.getSelectedCell();
-
-      const findOptions = {
-        text: ''
+      const initialValue:CommandContext.FindReplaceOptions = {
+        findOptions: {
+          text: cell.toTextUnformatted(true/*useFormula*/)
+        },
+        replace
       };
-      const props: FindReplaceWindowProps = {
-        onFindOrReplace,
+
+      const options:ShowInputOptions<CommandContext.FindReplaceOptions, any> = {
+        initialValue,
+        context: () => {
+          // TODO - this is a bit of a hack. Type this.
+          return onFindOrReplace//command.context() as () => ICell,
+        },
         onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
           // Note - when we get the context correct this should be removed
           if ((commands.findCommandByEvent(e) === commands.getCommand('find')) ||
@@ -967,11 +972,10 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
             e.preventDefault();
           }
         },
-        findOptions,
-        findText: cell.toTextUnformatted(true/*useFormula*/),
+        autoFocus: true,
+        disableAutoDestroy: true
       }
-      props.replace = replace;
-      notifier.showWindow?.('find', props, { disableAutoDestroy: true });
+      notifier.showWindow('find', options);
     }
 
     commands.getCommand('find')?.update({
@@ -988,8 +992,8 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     commands.getCommand('activateTask')?.update({
       disabled: !notifier,
     }).updateCallback(() => {
-      const props:InputOptionsNotifierOptions = {
-        onInputOption: async (value: string) => {
+      const props:ShowInputOptions = {
+        onInput: async (value: string) => {
           try {
             taskPaneArea.activateTaskPane(value);
           } catch (error: any) {
@@ -1006,31 +1010,31 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         inputLabel: 'Task Name',
         options: ['Activate']
       }
-      notifier.showInputOptions(props);
+      notifier.showInput(props);
     })
 
     commands.getCommand('goto')?.update({
       disabled: !notifier,
     }).updateCallback(() => {
-      const props:InputOptionsNotifierOptions = {
-        onInputOption: async (value: string) => {
+      const props:ShowInputOptions = {
+        onInput: async (value: string) => {
           try {
             await workbook.getRanges(value).select();
           } catch (error: any) {
             notifier.showMessage(error.message, { type: NotifierType.Error })
           }
         },
-        onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
-          // Note - if we get the context correct this should remove
-          if (commands.findCommandByEvent(e) === commands.getCommand('goto')) {
-            e.preventDefault();
-          }
-        },
+        // onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
+        //   // Note - if we get the context correct this should remove
+        //   if (commands.findCommandByEvent(e) === commands.getCommand('goto')) {
+        //     e.preventDefault();
+        //   }
+        // },
         title: commands.getCommand('goto')?.label(),
         inputLabel: 'Location',
         options: ['Go To']
       }
-      notifier.showInputOptions(props);
+      notifier.showInput(props);
     });
     commands.getCommand('selectNamed')?.update({
       disabled: !notifier,

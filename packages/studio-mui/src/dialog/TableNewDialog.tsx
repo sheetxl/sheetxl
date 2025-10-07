@@ -11,20 +11,11 @@ import { useCallbackRef } from '@sheetxl/utils-react';
 
 import { CommandContext } from '@sheetxl/react';
 
-import { OptionsDialog, OptionsDialogProps } from '@sheetxl/utils-mui';
+import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
 
 import { RangeInput } from '../components';
 
-export interface TableNewOptions {
-  ranges: ICellRanges;
-  hasHeader?: boolean;
-}
-
-export interface TableNewDialogProps extends OptionsDialogProps {
-  tableOptions: TableNewOptions;
-
-  context: CommandContext.Table;
-};
+export interface TableNewDialogProps extends InputDialogProps<CommandContext.NewTable, CommandContext.Table> {};
 
 const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
 
@@ -34,10 +25,9 @@ const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
  * TODO - default has header
  * TODO - spacing is poor
  */
-export const TableNewDialog: React.FC<TableNewDialogProps> = memo((props) => {
+export const TableNewDialog = memo<TableNewDialogProps>((props: TableNewDialogProps) => {
   const {
-    tableOptions: initialTableOptions,
-    context,
+    onInput,
     onOption,
     onValidateOption,
     onDone,
@@ -45,26 +35,35 @@ export const TableNewDialog: React.FC<TableNewDialogProps> = memo((props) => {
     defaultOption = options?.[0],
     cancelOption = 'Cancel',
     sx: propSx,
+    initialValue,
+    context,
     ...rest
   } = props;
 
+
+  // const context = initialTableOptions?.context;
+
   const [firstFocus, setFirstFocus] = useState<boolean>(false);
-  const [hasHeader, setHasHeader] = useState<boolean>(() => initialTableOptions?.hasHeader ?? false);
-  const [ranges, setRanges] = useState<ICellRanges>(() => initialTableOptions?.ranges ?? null);
+  const [hasHeader, setHasHeader] = useState<boolean>(() => initialValue?.hasHeader ?? false);
+  const [ranges, setRanges] = useState<ICellRanges>(() => initialValue?.ranges ?? null);
 
   const handleDone = useCallbackRef((option) => {
-    const tableOptions:TableNewOptions = {
-      ...initialTableOptions,
+    const tableOptions:CommandContext.NewTable = {
+      ...initialValue,
       hasHeader,
       ranges
     }
 
-    onOption?.(option, option === cancelOption, option === defaultOption);
+    const isCancel = option === cancelOption;
+    if (!isCancel) {
+      onInput?.(tableOptions);
+    }
+    onOption?.(option, isCancel, option === defaultOption);
     onDone?.({
       option,
       tableOptions
     });
-  }, [onDone, onOption, defaultOption, cancelOption, hasHeader, ranges, initialTableOptions]);
+  }, [onDone, onOption, defaultOption, cancelOption, hasHeader, ranges, initialValue]);
 
   const handleValidation = useCallback(async (_input?: string, _option?: string): Promise<boolean> => {
     // TODO - Border Color (and perhaps tooltip on invalid)
@@ -110,7 +109,7 @@ export const TableNewDialog: React.FC<TableNewDialogProps> = memo((props) => {
           value={ranges}
           onChangeInput={(value: ICellRanges) => setRanges(value)}
           // TODO - valid resize
-          resolvedAddress={context.getNames().getRanges.bind(context.getNames())}
+          resolvedAddress={context ? context().getNames().getRanges.bind(context().getNames()) : undefined}
           // onKeyDown={handleKeyDown}
           // disabled={table?.isProtected() ?? true}
           onFocus={(e: React.FocusEvent<HTMLInputElement>) => {

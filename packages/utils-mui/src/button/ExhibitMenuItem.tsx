@@ -124,12 +124,12 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
         'Mui-focusVisible': hasFocus,
         'Mui-hovered': isHovered,
       }, propClassName)}
-      onFocus={(event: React.FocusEvent<HTMLLIElement>) => {
-        propOnFocus?.(event);
+      onFocus={(e: React.FocusEvent<HTMLLIElement>) => {
+        propOnFocus?.(e);
         setFocus(true);
       }}
-      onBlur={(event: React.FocusEvent<HTMLLIElement>) => {
-        propOnBlur?.(event);
+      onBlur={(e: React.FocusEvent<HTMLLIElement>) => {
+        propOnBlur?.(e);
         setFocus(false);
       }}
       sx={{

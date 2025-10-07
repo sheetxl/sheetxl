@@ -4,14 +4,13 @@ import { useCallbackRef } from '@sheetxl/utils-react';
 
 import {
   CommandButton, CommandToolbar, ExhibitDivider,
-  CommandToolbarButtonProps, CommandToolbarProps,
-  ICommandToolbarElement
+  type CommandToolbarButtonProps, type CommandToolbarProps, type ICommandToolbarElement
 } from '@sheetxl/utils-mui';
 
 import { OverflowPalette } from './OverflowPalette';
 
-import { InsertImageCommandButton } from '../command/InsertImageCommandButton';
-import { InsertChartCommandButton } from '../chart/command/InsertChartCommandButton';
+import { InsertImageCommandButton } from '../command';
+import { InsertChartCommandButton } from '../chart/command';
 
 const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
   const {
@@ -63,7 +62,6 @@ const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolba
       {/* textbox / smartArt / header & footer */}
       {/* symbols (math + unicode) */}
     </OverflowPalette>);
-
 
     // shapes
     // map
