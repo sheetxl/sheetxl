@@ -30,14 +30,22 @@ export const TextOverflowCommandButton = memo(
   ];
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
-  const activeCommand = useMemo(() => {
-    for (let i=0; i<resolvedCommands.length; i++) {
-      if ((resolvedCommands[i] as Command<boolean>)?.state()) {
-        return resolvedCommands[i];
+  const { activeCommand, allDisabled } = useMemo(() => {
+    const resolvedCommandsLength = resolvedCommands.length;
+    let count = 0;
+    let activeCommand:Command<any>;
+    for (let i=0; i<resolvedCommandsLength; i++) {
+      const command = (resolvedCommands[i] as Command<boolean>);
+      if (command && !command.disabled()) {
+        if (!activeCommand && command?.state()) {
+          activeCommand = command;
+        }
+        count++;
       }
     }
     // default
-    return resolvedCommands[0];
+    activeCommand = activeCommand ?? resolvedCommands[0] as Command<any>;
+    return { activeCommand, allDisabled: count === 0 };
   }, [resolvedCommands]);
 
 
@@ -82,6 +90,7 @@ export const TextOverflowCommandButton = memo(
       ref={refForwarded}
       commands={propCommands}
       commandHook={propCommandHook}
+      disabled={propDisabled || allDisabled}
       scope={scope}
       label="Text Overflow"
       tooltip="Configure how text behaves when it doesn't fit within a cell."
