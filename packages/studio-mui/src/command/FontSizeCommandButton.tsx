@@ -22,9 +22,7 @@ import {
 
 import { CommandButton, SelectedIcon } from '@sheetxl/utils-mui';
 
-import { IFont } from '@sheetxl/sdk';
-
-import { FontUtils } from '@sheetxl/react';
+import { IFont, FontUtils } from '@sheetxl/sdk';
 
 
 export interface FontSizeCommandButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" | "createPopupPanel"> {

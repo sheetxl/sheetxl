@@ -31,7 +31,8 @@ export const UnderlineCommandButton = memo(
   const resolvedCommands = useCommands(propCommands, commandKeys);
 
   const activeCommand = useMemo(() => {
-    for (let i=0; i<resolvedCommands.length; i++) {
+    const resolvedCommandsLength = resolvedCommands.length;
+    for (let i=0; i<resolvedCommandsLength; i++) {
       if ((resolvedCommands[i] as Command<boolean>)?.state()) {
         return resolvedCommands[i];
       }

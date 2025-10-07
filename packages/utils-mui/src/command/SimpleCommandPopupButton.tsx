@@ -1,4 +1,4 @@
-import React, { memo, forwardRef, useCallback } from 'react';
+import React, { memo, forwardRef, useMemo, useCallback } from 'react';
 
 import {
   CommandButtonType, type CommandButtonProps, ICommands, ICommand, useCommands
@@ -56,6 +56,18 @@ export const SimpleCommandPopupButton = memo(
   } = props;
 
   const resolved = useCommands(commands, popupCommandKeys ? [quickCommandKey, ...popupCommandKeys] : [quickCommandKey]);
+  const { allDisabled } = useMemo(() => {
+    let count = 0;
+    const resolvedCommandsLength = resolved.length;
+    for (let i=0; i<resolvedCommandsLength; i++) {
+      const command = resolved[i];
+      if (command && !command.disabled()) {
+        // if first enabled command set otherwise null
+        count++;
+      }
+    }
+    return { allDisabled: count === 0 };
+  }, [resolved]);
 
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const commandButtonProps = {
@@ -63,11 +75,12 @@ export const SimpleCommandPopupButton = memo(
       // parentFloat: props.floatReference,
       commandHook: propCommandHook,
       commandState: propCommandState,
-      scope: popupScope,
+      scope: popupScope ?? scope,
       disabled: propDisabled
     }
     const children = [];
-    for (let i=0;i<popupCommandKeys?.length; i++) {
+    const popupCommandKeysLength = popupCommandKeys ? popupCommandKeys.length : 0;
+    for (let i=0;i<popupCommandKeysLength; i++) {
       const commandKey = popupCommandKeys[i];
       if (commandKey === null || commandKey === "-") {
         children.push(
@@ -107,7 +120,7 @@ export const SimpleCommandPopupButton = memo(
     <CommandPopupButton
       ref={refForwarded}
       commands={commands}
-      disabled={propDisabled}
+      disabled={propDisabled || allDisabled}
       commandHook={propCommandHook}
       commandState={propCommandState}
       scope={scope}
