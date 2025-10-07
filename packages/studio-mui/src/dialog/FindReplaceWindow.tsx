@@ -18,31 +18,32 @@ import { MenuItem } from '@mui/material';
 import { FormControl } from '@mui/material';
 import { Select, SelectChangeEvent, type SelectProps } from '@mui/material';
 
-import { IRange, ICell, ICellRange, IWorkbook } from '@sheetxl/sdk';
+import { IRange, ICell } from '@sheetxl/sdk';
+
+import { CommandContext } from '@sheetxl/react';
 
 import {
   useCallbackRef, KeyCodes, KeyModifiers, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import {
-  ExhibitDivider, ExhibitOptionButton
+  ExhibitDivider, ExhibitOptionButton,
+  InternalWindow, InputDialogProps, IInternalWindowElement
 } from '@sheetxl/utils-mui';
 
-import {
-  InternalWindow, InternalWindowProps, IInternalWindowElement
-} from '@sheetxl/utils-mui';
+// export interface FindReplaceWindowProps extends InternalWindowProps {
+//   findText?: string;
+//   findOptions?: ICellRange.FindOptions;
 
-export interface FindReplaceWindowProps extends InternalWindowProps {
-findText?: string;
-  findOptions?: ICellRange.FindOptions;
+//   replace?: boolean;
 
-  replace?: boolean;
+//   replaceText?: string;
+//   replaceOptions?: IWorkbook.ReplaceOptions;
 
-  replaceText?: string;
-  replaceOptions?: IWorkbook.ReplaceOptions;
+//   onFindOrReplace?: (options: CommandContext.FindReplaceOptions) => Promise<number>;
+// }
 
-  onFindOrReplace?: (options: FindReplaceWindowOptions) => Promise<number>;
-}
+export interface FindReplaceWindowProps extends InputDialogProps<CommandContext.FindReplaceOptions> {};
 
 
 type OptionSelectProps = Omit<SelectProps, 'variant' | 'onSelect'> & {
@@ -116,54 +117,6 @@ const OptionSelect = memo((props: OptionSelectProps) => {
   );
 });
 
-export const ScopeOptions = {
-  /**
-   * Search the entire workbook
-   */
-  Workbook: 'workbook',
-  /**
-   * Search the current sheet or range
-   */
-  Sheet: 'sheet'
-} as const;
-export type ScopeOptions = typeof ScopeOptions[keyof typeof ScopeOptions];
-
-
-/**
- * Used for the find/replace dialog.
- */
-export interface FindReplaceWindowOptions {
-  /**
-   * Options for find.
-   */
-  findOptions?: ICellRange.FindOptions;
-  /**
-   * If replacing with null then set to true.
-   */
-  replace?: boolean;
-  /**
-   * The text to replace the found text with.
-   */
-  replaceText?: string | null;
-  /**
-   * Options for replace.
-   */
-  replaceOptions?: IWorkbook.ReplaceOptions;
-
-  /**
-   * If true the operation will signal to the ui container to
-   * autoFocus.
-   *
-   * @remarks
-   * For replaceAll this is ignored.
-   */
-  autoFocus?: boolean;
-
-  /**
-   * Default value 'Sheet'
-   */
-  scope?: ScopeOptions
-}
 
 const collapseTime = {
   enter: 140,
@@ -204,16 +157,22 @@ const keyForValue = (value: any, obj: Record<string, any>): string => {
  */
 export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: FindReplaceWindowProps) => {
   const {
-    replace: propReplace=false,
-    findText: propFindText,
-    replaceText: propReplaceText,
-    findOptions: propFindOptions,
-    replaceOptions: propReplaceOptions,
+    initialValue,
+    context,
+    onInput,
     title: propTitle,
     onHide: propOnHide,
-    onFindOrReplace,
+    autoFocus,
     ...rest
   } = props;
+
+  const propReplace: boolean = initialValue?.replace ?? false;
+  const propFindOptions = initialValue?.findOptions;
+  const propFindText: string | null = propFindOptions.text ?? null;
+  const propReplaceOptions = initialValue?.replaceOptions;
+  const propReplaceText: string | null = initialValue?.replaceText ?? null;
+
+  const onFindOrReplace = context?.();
 
   const refFindText = useRef<HTMLInputElement>(null);
   const refReplaceText = useRef<HTMLInputElement>(null);
@@ -238,11 +197,10 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
   const [isShowNoResults, setShowNoResults] = useState<boolean>(false);
   const [hasFocus, setHasFocus] = useState<boolean>(false);
 
-  const [options, setOptions] = useState<FindReplaceWindowOptions>({
+  const [options, setOptions] = useState<CommandContext.FindReplaceOptions>({
     replaceText: null,
     replace: propReplace,
-    replaceOptions: {
-    },
+    replaceOptions: null,
     findOptions: {
       text: null,
       matchCase: false,
@@ -254,14 +212,15 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
       orientation: IRange.Orientation.Row,
       fields: [ICell.Content.Formulas]
     },
-    scope: ScopeOptions.Sheet
+    scope: CommandContext.FindScopeOptions.Sheet
   });
+
 
   const doFindReplace = useCallbackRef(async (forward?: boolean, replace?: boolean, replaceAll?: boolean, autoFocus?: boolean) => {
     if (!onFindOrReplace)
       return;
 
-    const state:FindReplaceWindowOptions = {
+    const state:CommandContext.FindReplaceOptions = {
       ...options
     }
     state.replaceOptions = {
@@ -316,7 +275,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
   const refWindow = useRef<IInternalWindowElement>(null);
 
   useLayoutEffect(() => {
-    setOptions((prev: FindReplaceWindowOptions) => {
+    setOptions((prev: CommandContext.FindReplaceOptions) => {
       const newValue = {
         ...prev
       };
@@ -326,8 +285,8 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
       setSelectAll(true); // this ok?
 
       // if propReplaceText wasn't specified then we leave the replace option allow
-      if (propReplaceText !== undefined) {
-        newValue.replaceText = propReplaceText;
+      if (propReplaceText !== null) {
+        newValue.replaceText = propReplaceText ?? '';
       }
       if (propFindOptions) {
         newValue.findOptions = {
@@ -354,7 +313,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
       if (!options.findOptions.fields?.[0])
         options.findOptions.fields = [ICell.Content.Formulas];
 
-      const didSetReplace = (propReplaceOptions || propReplaceText !== undefined) ? true : false;
+      const didSetReplace = (propReplace || propReplaceOptions || propReplaceText !== null) ? true : false;
       // only if replace, don't set back to find only. Comment out if we want to revert to just find on Ctrl + F.
       if (didSetReplace)
         setShowReplace(didSetReplace);
@@ -366,14 +325,14 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
       refWindow.current?.focus();
     }
     // if additional options are not default
-  }, [propFindText, propReplaceText, propFindOptions, propReplaceOptions]);
+  }, [initialValue, propReplace, propFindText, propReplaceText, propFindOptions, propReplaceOptions]);
 
   useEffect(() => {
     if (!isShowReplace) {
       setSelectAll(true);
     } else if (options.findOptions.fields[0] === ICell.Content.Values) {
       // console.log('setting to formula');
-      // setOptions((prev: FindReplaceWindowOptions) => {
+      // setOptions((prev: FindReplaceOptions) => {
       //   const newValue = { ...prev };
       //   newValue.replaceOptions.findOptions.fields[0] = ICell.Content.Formulas;
       //   return newValue;
@@ -437,7 +396,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               refFindText.current?.focus();
             // }
           } else if (e.key === 'c' && e.altKey) {
-            setOptions((prev: FindReplaceWindowOptions) => {
+            setOptions((prev: CommandContext.FindReplaceOptions) => {
               const newValue = {
                 ...prev
               };
@@ -445,7 +404,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               return newValue;
             });
           } else if (e.key === 'e' && e.altKey) {
-            setOptions((prev: FindReplaceWindowOptions) => {
+            setOptions((prev: CommandContext.FindReplaceOptions) => {
               const newValue = {
                 ...prev
               };
@@ -453,7 +412,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               return newValue;
             });
           } else if (e.key === 'r' && e.altKey) {
-            setOptions((prev: FindReplaceWindowOptions) => {
+            setOptions((prev: CommandContext.FindReplaceOptions) => {
               const newValue = {
                 ...prev
               };
@@ -561,10 +520,10 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                         //   transform: 'scale(0.75) translateX(16px)'
                         // }}
                         onBlur={() => {
-                          console.log('blur');
+                          // console.log('blur');
                         }}
                         onSelectToggle={(value: boolean) => {
-                          setOptions((prev: FindReplaceWindowOptions) => {
+                          setOptions((prev: CommandContext.FindReplaceOptions) => {
                             const newValue = {
                               ...prev
                             };
@@ -581,7 +540,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                         style={SmallOptionButtonStyle}
                         selected={options.findOptions.matchEntireCell}
                         onSelectToggle={(value: boolean) => {
-                          setOptions((prev: FindReplaceWindowOptions) => {
+                          setOptions((prev: CommandContext.FindReplaceOptions) => {
                             const newValue = {
                               ...prev
                             };
@@ -598,7 +557,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
                         style={SmallOptionButtonStyle}
                         selected={options.findOptions.useRegex}
                         onSelectToggle={(value: boolean) => {
-                          setOptions((prev: FindReplaceWindowOptions) => {
+                          setOptions((prev: CommandContext.FindReplaceOptions) => {
                             const newValue = {
                               ...prev
                             };
@@ -647,7 +606,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
             }}
             value={options.findOptions.text ?? ''}
             onChange={(e) => {
-              setOptions((prev: FindReplaceWindowOptions) => {
+              setOptions((prev: CommandContext.FindReplaceOptions) => {
                 const newValue = {
                   ...prev
                 };
@@ -732,7 +691,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
             }}
             value={options.replaceText ?? ''}
             onChange={(e) => {
-              setOptions((prev: FindReplaceWindowOptions) => {
+              setOptions((prev: CommandContext.FindReplaceOptions) => {
                 const newValue = {
                   ...prev
                 };
@@ -810,9 +769,9 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               // tabIndex={12}  // FocusTrap is not behaving as expected
               label="Within"
               value={options.scope}
-              options={ScopeOptions}
-              onSelect={(value: ScopeOptions) => {
-                setOptions((prev: FindReplaceWindowOptions) => {
+              options={CommandContext.FindScopeOptions}
+              onSelect={(value: CommandContext.FindScopeOptions) => {
+                setOptions((prev: CommandContext.FindReplaceOptions) => {
                   const newValue = {
                     ...prev
                   };
@@ -827,7 +786,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               value={options.findOptions.orientation !== IRange.Orientation.Column}
               options={rowScanOptions}
               onSelect={(value: boolean) => {
-                setOptions((prev: FindReplaceWindowOptions) => {
+                setOptions((prev: CommandContext.FindReplaceOptions) => {
                   const newValue = {
                     ...prev
                   };
@@ -842,7 +801,7 @@ export const FindReplaceWindow: React.FC<FindReplaceWindowProps> = memo((props: 
               value={(isShowReplace && options.findOptions.fields?.[0] === ICell.Content.Values) ? ICell.Content.Formulas : options.findOptions.fields?.[0]}
               options={isShowReplace ? fieldOptionsReplace : fieldOptionsAll}
               onSelect={(value: ICell.Content) => {
-                setOptions((prev: FindReplaceWindowOptions) => {
+                setOptions((prev: CommandContext.FindReplaceOptions) => {
                   const newValue = {
                     ...prev
                   };

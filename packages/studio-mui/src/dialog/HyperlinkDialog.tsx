@@ -11,16 +11,10 @@ import { ICell, IHyperlink } from '@sheetxl/sdk';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
-import { OptionsDialog, OptionsDialogProps } from '@sheetxl/utils-mui';
+import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
 
-export interface HyperlinkDialogProps extends OptionsDialogProps {
-  initialHyperlink?: string | IHyperlink;
-  initialDisplay?: string;
+export interface HyperlinkDialogProps extends InputDialogProps<IHyperlink.Modifiers | string, ICell> {};
 
-  onUpdateHyperlink?: (hyperlink: IHyperlink.Update, display: string) => void;
-
-  context: () => ICell;
-};
 
 const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
 
@@ -41,10 +35,9 @@ const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
  */
 export const HyperlinkDialog: React.FC<HyperlinkDialogProps> = memo((props) => {
   const {
-    initialHyperlink = null,
-    initialDisplay = null,
-    onUpdateHyperlink,
+    initialValue = null,
     context,
+    onInput,
     onOption,
     onValidateOption,
     onDone,
@@ -56,17 +49,17 @@ export const HyperlinkDialog: React.FC<HyperlinkDialogProps> = memo((props) => {
   } = props;
 
   const isInsert = useMemo(() => {
-    return (initialHyperlink ?? context?.()?.getHyperlink()) !== null;
+    return (initialValue ?? context?.()?.getHyperlink()) !== null;
   }, []);
 
   const hyperlink:IHyperlink.Modifiers = useMemo(() => {
     let initialHyperlinkResolve = null;
     let initialHyperlinkString = null;
-    if (initialHyperlink) {
-      if (typeof initialHyperlink === 'string') {
-        initialHyperlinkString = initialHyperlink;
+    if (initialValue) {
+      if (typeof initialValue === 'string') {
+        initialHyperlinkString = initialValue;
       } else {
-        initialHyperlinkResolve = initialHyperlink;
+        initialHyperlinkResolve = initialValue;
       }
     }
     const iHyperlink:IHyperlink = initialHyperlinkResolve ?? context?.()?.getHyperlink();
@@ -75,12 +68,12 @@ export const HyperlinkDialog: React.FC<HyperlinkDialogProps> = memo((props) => {
       textToDisplay: iHyperlink?.getDisplayText() ?? ''
     }
     return retValue;
-  }, [initialHyperlink, context]);
+  }, [initialValue, context]);
 
   const [address, setAddress] = useState<string>(hyperlink.address);
-  const [display, setDisplay] = useState<string>(() => {
+  const [displayText, setDisplayText] = useState<string>(() => {
     // if no address we treat the display as an input value;
-    const initialValue = context?.().toTextUnformatted() ?? initialDisplay;
+    const initialValue = context?.().toTextUnformatted() ?? hyperlink.displayText;
     // If the displayValue is the same as the address then we don't want to show it as it was the default.
     if (initialValue === hyperlink.address)
       return '';
@@ -92,7 +85,7 @@ export const HyperlinkDialog: React.FC<HyperlinkDialogProps> = memo((props) => {
   const [firstFocus, setFirstFocus] = useState<boolean>(false);
 
   const handleOnDisplayChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setDisplay(e.target.value);
+    setDisplayText(e.target.value);
   }, []);
 
   const handleValidation = useCallback(async (_input?: string, _option?: string): Promise<boolean> => {
@@ -105,11 +98,16 @@ export const HyperlinkDialog: React.FC<HyperlinkDialogProps> = memo((props) => {
     const hyperlink = address === '' ? null : {
       address
     }
-    if (option !== cancelOption)
-      onUpdateHyperlink?.(hyperlink, display);
-    onOption?.(option, option === cancelOption, option === defaultOption);
+    const isCancel = option === cancelOption;
+    if (!isCancel) {
+      onInput?.({
+        address: hyperlink?.address ?? null,
+        displayText: displayText ?? null
+      });
+    }
+    onOption?.(option, isCancel, option === defaultOption);
     onDone?.();
-  }, [address, display, onUpdateHyperlink, onDone, onOption, defaultOption, cancelOption]);
+  }, [address, displayText, context, onInput, onDone, onOption, defaultOption, cancelOption]);
 
   // const handleKeyDown = useCallbackRef(async (e: React.KeyboardEvent<HTMLInputElement>) => {
   //   if (e.keyCode === KeyCodes.Enter) {
@@ -169,7 +167,7 @@ export const HyperlinkDialog: React.FC<HyperlinkDialogProps> = memo((props) => {
         <TextField
           label="Address"
           placeholder={'Enter a url or cell reference.'}
-          onFocus={(e) => {
+          onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
             if (!firstFocus) {
               e.target?.select();
             }
@@ -238,7 +236,7 @@ export const HyperlinkDialog: React.FC<HyperlinkDialogProps> = memo((props) => {
               }
             }
           }}
-          value={display}
+          value={displayText}
           onChange={handleOnDisplayChange}
           // onKeyDown={handleKeyDown}
           onContextMenu={(e) => { e.stopPropagation(); }}

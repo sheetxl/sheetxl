@@ -10,16 +10,9 @@ import { IComment, ICell } from '@sheetxl/sdk';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
-import { OptionsDialog, OptionsDialogProps } from '@sheetxl/utils-mui';
+import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
 
-export interface CommentsDialogProps extends OptionsDialogProps {
-  initialComments?: IComment.Properties;
-
-  onUpdateComments?: (comment: IComment.Properties) => void;
-
-  // TODO - replace this with an IComments object
-  context: () => ICell;
-};
+export interface CommentsDialogProps extends InputDialogProps<IComment.Properties> {};
 
 const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
 
@@ -28,10 +21,10 @@ const DEFAULT_INPUT_OPTIONS = ['Ok', 'Cancel'];
  */
 // TODO - this doesn't update if comments are changed via the api
 // TODO - comments should be in a panel an dialog should just wrap.
-export const CommentsDialog: React.FC<CommentsDialogProps> = memo((props) => {
+export const CommentsDialog = memo<CommentsDialogProps>((props: CommentsDialogProps) => {
   const {
-    initialComments: propsInitialComments = null,
-    onUpdateComments,
+    initialValue: propsInitialComments = null,
+    onInput,
     context,
     onOption,
     onValidateOption,
@@ -69,17 +62,19 @@ export const CommentsDialog: React.FC<CommentsDialogProps> = memo((props) => {
   const handleComments = useCallbackRef(async (option: string) => {
     const asArray = comment === '' ? [] : comment.split('\n');
 
-    if (option !== cancelOption) {
-      const runs = [];
-      for (let i = 0; i < asArray.length; i++) {
-        runs.push({ text: asArray[i] });
+    const isCancel = option === cancelOption;
+    if (!isCancel) {
+      const asArrayLength = asArray.length;
+      const runs = new Array(asArrayLength);
+      for (let i=0; i<asArrayLength; i++) {
+        runs[i] = { text: asArray[i] };
       }
       const comments = { content: { runs } };
-      onUpdateComments?.(comments);
+      onInput?.(comments);
     }
-    onOption?.(option, option === cancelOption, option === defaultOption);
+    onOption?.(option, isCancel, option === defaultOption);
     onDone?.();
-  }, [comment, onUpdateComments, onDone, onOption, defaultOption, cancelOption]);
+  }, [comment, onInput, onDone, onOption, defaultOption, cancelOption]);
 
   const handleOnCommentChange = useCallbackRef((e: React.ChangeEvent<HTMLInputElement>) => {
     setComment(e.target.value);
@@ -131,7 +126,7 @@ export const CommentsDialog: React.FC<CommentsDialogProps> = memo((props) => {
         <TextField
           label="Comments"
           placeholder={'Enter a comment.'}
-          onFocus={(e) => {
+          onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
             if (!firstFocus) {
               e.target?.select();
             }

@@ -33,7 +33,7 @@ export interface EnqueueNotifierOptions extends NotifierOptions {
 /**
  * Configuration for an options dialog.
  */
-export interface OptionsNotifierOptions extends React.HTMLAttributes<HTMLDivElement> {
+export interface ShowOptionsOptions<T=any, C=any> extends ShowWindowOptions<T, C> {
   /**
    * The options as a list of strings
    */
@@ -52,7 +52,7 @@ export interface OptionsNotifierOptions extends React.HTMLAttributes<HTMLDivElem
    * @remarks
    * Not yet implemented
    */
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | string;
   /**
    * Allows for the option will be the default selected option and the enter key trigger.
    * @defaultValue The first option
@@ -85,6 +85,52 @@ export interface OptionsNotifierOptions extends React.HTMLAttributes<HTMLDivElem
   onValidateOption?: (option?: string) => boolean | Promise<boolean>;
 };
 
+
+export interface FocusWindowOptions extends FocusOptions {
+  /**
+   * Allows for a specific component to be selected.
+   *
+   * @remarks
+   * If a string is provided this will be used as a querySelector to find the initial focusable component.
+   */
+  selection?: string;
+}
+
+export interface ShowWindowOptions<T=any, C=any> {
+  /**
+   * A value the window can use to display.
+   */
+  initialValue?: T;
+
+  context?: () => C;
+
+  /**
+   * Query selector for the element to focus on show.
+   */
+  autoFocus?: boolean | string | FocusWindowOptions;
+
+  /**
+   * Allow for tracking of key down events.
+   *
+   * @param e
+   * @returns
+   */
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  /**
+   * If true show a backdrop.
+   *
+   * @remarks
+   * Our movable menu achieves modality without a background by listens to global clicks (and focus)
+   * @defaultValue false
+   */
+  isModal?: boolean;
+
+  /**
+   * If true the window will not be automatically destroyed when closed.
+   */
+  disableAutoDestroy?: boolean
+}
+
 export interface InputValidationResults {
   valid: boolean;
   message?: string;
@@ -93,9 +139,7 @@ export interface InputResults {
   input: string;
   option: string;
 }
-export interface InputOptionsNotifierOptions extends OptionsNotifierOptions {
-
-  initialValue?: string;
+export interface ShowInputOptions<T=string, C=any> extends ShowOptionsOptions<T, C> {
 
   /**
    * Css style for input
@@ -107,11 +151,8 @@ export interface InputOptionsNotifierOptions extends OptionsNotifierOptions {
   inputType?: 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url';
 
   inputPlaceHolder?: string;
-  // Accommodate arbitrary additional props coming from the `inputProps` prop
-//   [arbitrary: string]: any;
-// }
 
-  onInputOption?: (input?: string, option?: string) => void;
+  onInput?: (input?: T, option?: string) => void | Promise<void>;
 
   /**
    * Call when an option is selected. If false is returned, the the
@@ -120,10 +161,10 @@ export interface InputOptionsNotifierOptions extends OptionsNotifierOptions {
    * @remarks
    * Optional the textProps can be updated via the textFieldProps argument
    */
-  onValidateInputOption?: (input?: string, option?: string) => InputValidationResults | Promise<InputValidationResults>;
+  onValidateInput?: (input?: T, option?: string) => InputValidationResults | Promise<InputValidationResults>;
 }
 
-export interface BusyNotifierOptions {
+export interface ShowBusyOptions {
   // TODO - when this is supported we will need to allow for multiple on cancels
   // onCancel?: () => void;
 
@@ -139,38 +180,36 @@ export interface IReactNotifier extends INotifier {
    */
   showMessage: (message: string | React.ReactNode, options?: EnqueueNotifierOptions) => void;
   /**
-   * Useful when performing a long running operation and you want to inform the user.
-   *
-   * A return type of a handler will be returned to allow for hideBusy.
-   * If multiple calls are made the consumer should continue to indicated blocked
-   * until all calls have been hideBusy.
-   */
-  showBusy: (message: string | React.ReactNode, options?: BusyNotifierOptions) => (Promise<() => void>) | (() => void);
-  /**
-   * Show a dialog for a given type.
-   *
-   * @param type
-   * @param props
-   * @param options
-   */
-  // TODO - type this
-  showWindow: (type: string, props?: any, options?: { disableAutoDestroy?: boolean }) => Promise<HTMLElement>;
-  /**
    * Should return error object exception.
    *
    * @param error
    */
   showError: (error: Error | string) => void;
   /**
+   * Useful when performing a long running operation and you want to inform the user.
+   *
+   * A return type of a handler will be returned to allow for hideBusy.
+   * If multiple calls are made the consumer should continue to indicated blocked
+   * until all calls have been hideBusy.
+   */
+  showBusy: (message: string | React.ReactNode, options?: ShowBusyOptions) => (Promise<() => void>) | (() => void);
+  /**
+   * Show a dialog for a given type.
+   *
+   * @param type
+   * @param options
+   */
+  showWindow: (type: string, options?: ShowWindowOptions) => Promise<HTMLElement>;
+  /**
    * Provide a user with a list of options to choose from.
    * @param options
    */
-  showOptions: (options: OptionsNotifierOptions) => Promise<string>;
+  showOptions: (options: ShowOptionsOptions) => Promise<string>;
   /**
    * Provider a user with a way to enter a text input.
    * @param options
    */
-  showInputOptions: (options: InputOptionsNotifierOptions) => Promise<InputResults>;
+  showInput: (options: ShowInputOptions) => Promise<InputResults>;
 
   // TODO - add an onProgress handler
   // TODO - add an onBackgroundOperation handler
@@ -205,7 +244,7 @@ export class DefaultReactNotifier extends DefaultNotifier implements IReactNotif
   }
 
   /** @inheritdoc IReactNotifier.showBusy */
-  showBusy(message: string | React.ReactNode, options?: BusyNotifierOptions): (Promise<() => void>) | (() => void) {
+  showBusy(message: string | React.ReactNode, options?: ShowBusyOptions): (Promise<() => void>) | (() => void) {
     const delegate = this.getDelegate();
     if (delegate?.showBusy) {
       return delegate.showBusy(message, options);
@@ -214,10 +253,10 @@ export class DefaultReactNotifier extends DefaultNotifier implements IReactNotif
   }
 
   /** @inheritdoc IReactNotifier.showWindow */
-  showWindow(type: string, props?: any, options?: { disableAutoDestroy?: boolean }): Promise<HTMLElement> {
+  showWindow(type: string, options?: ShowWindowOptions): Promise<HTMLElement> {
     const delegate = this.getDelegate();
     if (delegate?.showWindow) {
-      return delegate.showWindow(type, props, options);
+      return delegate.showWindow(type, options);
     }
     // return Promise.resolve(document.createElement('div'));
   }
@@ -233,7 +272,7 @@ export class DefaultReactNotifier extends DefaultNotifier implements IReactNotif
   }
 
   /** @inheritdoc IReactNotifier.showOptions */
-  showOptions(options: OptionsNotifierOptions): Promise<string> {
+  showOptions(options: ShowOptionsOptions): Promise<string> {
     const delegate = this.getDelegate();
     if (delegate?.showOptions) {
       return delegate.showOptions(options);
@@ -241,11 +280,11 @@ export class DefaultReactNotifier extends DefaultNotifier implements IReactNotif
     return Promise.resolve('');
   }
 
-  /** @inheritdoc IReactNotifier.showInputOptions */
-  showInputOptions(options: InputOptionsNotifierOptions): Promise<InputResults> {
+  /** @inheritdoc IReactNotifier.showInput */
+  showInput(options: ShowInputOptions): Promise<InputResults> {
     const delegate = this.getDelegate();
-    if (delegate?.showInputOptions) {
-      return delegate.showInputOptions(options);
+    if (delegate?.showInput) {
+      return delegate.showInput(options);
     }
     return Promise.resolve({ input: '', option: '' });
   }

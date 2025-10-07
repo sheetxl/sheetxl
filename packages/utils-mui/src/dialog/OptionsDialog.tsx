@@ -31,8 +31,7 @@ import { OptionsDialogProps } from './useOptionsDialog';
 const DEFAULT_OPTIONS = ['Ok', 'Cancel'];
 const DEFAULT_RIPPLE_DURATION = 180;
 
-export const OptionsDialog = memo(
-  forwardRef<HTMLDivElement, OptionsDialogProps>((props, refForwarded) => {
+export const OptionsDialog = memo(forwardRef<HTMLDivElement, OptionsDialogProps>((props, refForwarded) => {
   const {
     description,
     icon,
@@ -45,6 +44,7 @@ export const OptionsDialog = memo(
     autoFocusSel = `.defaultOption`,
     defaultOption = options[0],
     cancelOption = 'Cancel',
+    autoFocus: propAutoFocus,
     children,
     ...rest
   } = props;

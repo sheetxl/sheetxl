@@ -1,48 +1,53 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 
 import { Box } from '@mui/material';
 import { Checkbox } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 
-import { IRange, ICell, ICellRange, ISort, Sort } from '@sheetxl/sdk';
+import { IRange, ISort, Sort } from '@sheetxl/sdk';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
-import { OptionsDialog, InternalWindowProps } from '@sheetxl/utils-mui';
+import { CommandContext } from '@sheetxl/react';
 
-export interface SortDialogProps extends InternalWindowProps {
-  range: ICellRange;
-  options?: ISort.RangeOptions;
-  cell?: ICell.Address;
-};
+import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
 
-export const SortDialog: React.FC<SortDialogProps> = ({
-  range,
-  options: sortOptions,
-  cell: cellAddress,
-  onDone: propOnDone,
-  ...props
-}) => {
+export interface SortDialogProps extends InputDialogProps<ISort.RangeOptions, CommandContext.SelectedRange> {};
+
+
+export const SortDialog = memo<SortDialogProps>((props: SortDialogProps) => {
+  const {
+    initialValue: sortOptions,
+    context,
+    onInput,
+    onDone: propOnDone,
+    ...rest
+  } = props;
+
+
+  const range = context?.().range;
+  const cellAddress = context?.().cell.toString();;
 
   const [options, setOptions] = useState<ISort.RangeOptions>(sortOptions ?? Sort.DefaultRangeOptions);
 
-  const handleDone = useCallbackRef((option) => {
+  const handleDone = useCallbackRef((option: string) => {
     let updatedSortOptions = null;
     if (option === 'Sort') {
       updatedSortOptions = {
         ...sortOptions,
-        options,
+        ...options,
       }
     }
+    onInput?.(updatedSortOptions);
     propOnDone?.(updatedSortOptions);
-  }, [options, propOnDone, sortOptions]);
+  }, [options, propOnDone, onInput, sortOptions]);
 
   return (
     <OptionsDialog
       title={'Sort'}
       options={['Sort', 'Cancel']}
       onDone={handleDone}
-      {...props}
+      {...rest}
     >
       <Box
         sx={{
@@ -134,6 +139,6 @@ export const SortDialog: React.FC<SortDialogProps> = ({
       </Box>
     </OptionsDialog>
   );
-}
+});
 
 export default SortDialog;

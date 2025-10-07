@@ -287,7 +287,7 @@ export const useStudioCommands = (
         // icon: 'FileOpen',
       }, async function(url: string) {
         if (!url) {
-          const results = await notifier.showInputOptions({
+          const results = await notifier.showInput({
             title: 'Open Workbook from the Web',
             description: `Enter the web address for the workbook to open.`,
             inputLabel: 'Address',

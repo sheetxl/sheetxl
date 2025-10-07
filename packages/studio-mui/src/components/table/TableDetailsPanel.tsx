@@ -38,7 +38,7 @@ export interface TableDetailsPanelProps extends React.HTMLAttributes<HTMLDivElem
   context?: CommandContext.Table;
 
   // Add back if we want to hardcode to TaskPanes vs dialogs (or we create an appropriate interface)
-  // frame?: ITaskPaneFrame;
+  // frame?: IFrame;
 }
 
 /**
@@ -218,12 +218,56 @@ export const TableDetailsPanel =
               minHeight: '10px',
               flex: '1 1 100%',
               display: 'flex',
+              border:'red solid 2px',
               flexDirection: 'column',
               containerType: 'inline-size', // Enable container queries
               gap: (theme: Theme) => theme.spacing(0.5),
               marginTop: (theme: Theme) => theme.spacing(1)
             }}
           >
+            <ExhibitDivider
+              orientation='horizontal'
+              sx={{
+                marginTop: (theme: Theme) => theme.spacing(1.5),
+                marginBottom: (theme: Theme) => theme.spacing(0.75)
+              }}
+            />
+            <Box
+              sx={{
+                display: 'flex',
+                flex: '1 1 100%',
+                alignItems: 'center',
+                justifyContent: 'start',
+                flexDirection: 'column',
+                marginTop: (theme: Theme) => theme.spacing(1),
+                marginBottom: (theme: Theme) => theme.spacing(1)
+              }}
+            >
+              <div
+                style={{ display: 'flex', alignItems: 'start', gap: '2px' }}
+              >
+                <TableStylePreview
+                  table={table}
+                  styles={context.styles()}
+                  bodyStyle={context.bodyStyle()}
+                  cellHeight={30}
+                  isLive={true}
+                />
+                {/*
+                  TODO - we need the float parent to allow the menu to close
+                */}
+                <PresetTableStylesCommandButton
+                  command={(commands.getCommand('formatTableStyle'))}
+                  commands={commands}
+                  disabledQuickKey={true}
+                  // style={{
+                  //   borderTopLeftRadius: '0px',
+                  //   borderBottomLeftRadius: '0px',
+                  // }}
+                  // {...commandPopupProps}
+                />
+              </div>
+            </Box>
             <ExhibitDivider
               orientation='horizontal'
               sx={{
@@ -261,55 +305,7 @@ export const TableDetailsPanel =
                   notifier.showError(error);
                 }
               }}
-
-              // sx={{
-              // I wanted it to layout 3x2 like excel but it was not responsive and I didn't like the way it looked.
-              //   maxHeight: contentWidth > minContentWidth ? undefined : '90px'
-              // }}
             />
-            <ExhibitDivider
-              orientation='horizontal'
-              sx={{
-                marginTop: (theme: Theme) => theme.spacing(1.5),
-                marginBottom: (theme: Theme) => theme.spacing(0.75)
-              }}
-            />
-            <Box
-              sx={{
-                display: 'flex',
-                flex: '1 1 100%',
-                alignItems: 'center',
-                justifyContent: 'start',
-                flexDirection: 'column',
-                marginTop: (theme: Theme) => theme.spacing(2),
-                marginBottom: (theme: Theme) => theme.spacing(1)
-              }}
-            >
-              <div
-                style={{ display: 'flex', alignItems: 'start', gap: '2px' }}
-              >
-                <TableStylePreview
-                  table={table}
-                  styles={context.styles()}
-                  bodyStyle={context.bodyStyle()}
-                  cellHeight={30}
-                  isLive={true}
-                />
-                {/*
-                  TODO - we need the float parent to allow the menu to close
-                */}
-                <PresetTableStylesCommandButton
-                  command={(commands.getCommand('formatTableStyle'))}
-                  commands={commands}
-                  disabledQuickKey={true}
-                  // style={{
-                  //   borderTopLeftRadius: '0px',
-                  //   borderBottomLeftRadius: '0px',
-                  // }}
-                  // {...commandPopupProps}
-                />
-              </div>
-            </Box>
             <ExhibitDivider
               orientation='horizontal'
             />
