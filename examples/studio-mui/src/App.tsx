@@ -10,6 +10,8 @@ import { ThemeOptions } from '@mui/material/styles';
 
 import { IWorkbook, LicenseManager } from '@sheetxl/sdk';
 
+import { PersistenceStateProvider, LocalStorageStore } from '@sheetxl/utils-react';
+
 import { ThemeMode, ThemeModeOptions } from '@sheetxl/utils-mui';
 
 import {
@@ -212,36 +214,43 @@ function App() {
   });
 
   return (
-    <Studio
-      className="App"
-      autoFocus
-      square={true}
-      style={{
-        position: 'absolute'
-      }}
-      // ref={(instance) => {
-      //   console.log('Workbook Element ref called', instance);
-      // }}
-      workbook={workbook}
-      onWorkbookChange={(wb: IWorkbook) => {
-        setWorkbookResolved(wb);
-      }}
-      title={workbookTitle}
-      // renderLoadingPanel={() => (
-      //   <div>Loading workbook...</div>
-      // )}
-      onTitleChange={(title: string) => {
-        if (isAppStandalone) {
-          document.title = title;
-        } else {
-          const divider = '-';
-          const index = document.title.lastIndexOf(divider);
-          const appTitle = index === -1 ? document.title : document.title.substring(index + divider.length);
-          document.title = title ? `${title} ${divider} ${appTitle}` : appTitle;
-        }
-      }}
-      themeOptions={themeOptions}
-    />
+    <PersistenceStateProvider
+      store={typeof window !== "undefined" ? new LocalStorageStore() : undefined}
+      namespace="studio-mui"
+      debounceMs={150}
+      crossTabSync={true}
+    >
+      <Studio
+        className="App"
+        autoFocus
+        square={true}
+        style={{
+          position: 'absolute'
+        }}
+        // ref={(instance) => {
+        //   console.log('Workbook Element ref called', instance);
+        // }}
+        workbook={workbook}
+        onWorkbookChange={(wb: IWorkbook) => {
+          setWorkbookResolved(wb);
+        }}
+        title={workbookTitle}
+        // renderLoadingPanel={() => (
+        //   <div>Loading workbook...</div>
+        // )}
+        onTitleChange={(title: string) => {
+          if (isAppStandalone) {
+            document.title = title;
+          } else {
+            const divider = '-';
+            const index = document.title.lastIndexOf(divider);
+            const appTitle = index === -1 ? document.title : document.title.substring(index + divider.length);
+            document.title = title ? `${title} ${divider} ${appTitle}` : appTitle;
+          }
+        }}
+        themeOptions={themeOptions}
+      />
+    </PersistenceStateProvider>
   );
 }
 

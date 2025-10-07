@@ -2,14 +2,12 @@ import React from 'react';
 
 import { useModal } from 'mui-modal-provider';
 
-import type { OptionsNotifierOptions } from '@sheetxl/utils-react';
+import type { ShowOptionsOptions } from '@sheetxl/utils-react';
 import type { InternalWindowProps } from './InternalWindow';
 
 const Dialog = React.lazy(() => import(/* webpackPrefetch: true */'./OptionsDialog'));
 
-export interface OptionsDialogProps extends Omit<OptionsNotifierOptions, 'style'>, InternalWindowProps {
-
-};
+export interface OptionsDialogProps<T=any, C=any> extends ShowOptionsOptions<T,C>, Omit<InternalWindowProps<T, C>, 'style' | 'onInput' | 'autoFocus' | 'onKeyDown'> {};
 
 const useOptionsDialog = (propsDefault?: OptionsDialogProps): (options: OptionsDialogProps) => Promise<string> => {
   const { showModal } = useModal();

@@ -6,16 +6,16 @@ import React, {
 import { mergeRefs } from 'react-merge-refs';
 import { useMeasure } from 'react-use';
 
-import { SxProps } from '@mui/system';
+import { type SxProps } from '@mui/system';
 import { Theme } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import { type TooltipProps } from '@mui/material';
 
 import { useImperativeElement, useCallbackRef, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
-  ExhibitTooltip, ExhibitPopupIconButton, ExhibitPopupPanelProps,
+  ExhibitTooltip, ExhibitPopupIconButton, type ExhibitPopupPanelProps,
   defaultCreatePopupPanel, useFloatStack, FloatReference
 } from '@sheetxl/utils-mui';
 

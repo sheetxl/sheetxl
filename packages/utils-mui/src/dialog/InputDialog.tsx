@@ -9,23 +9,22 @@ import { FormControl } from '@mui/material';
 import { TextField } from '@mui/material';
 
 import {
-  InputOptionsNotifierOptions, useCallbackRef, KeyCodes
+  ShowInputOptions, useCallbackRef, KeyCodes
 } from '@sheetxl/utils-react';
 
 import { type OptionsDialogProps } from './useOptionsDialog';
 import { OptionsDialog } from './OptionsDialog';
 
-export interface InputDialogProps extends Omit<InputOptionsNotifierOptions, 'style'>, OptionsDialogProps {};
+export interface InputDialogProps<T=any, C=any> extends ShowInputOptions<T,C>, Omit<OptionsDialogProps<T,C>, 'initialValue' | 'style' | 'onInput' | 'autoFocus' | 'onKeyDown'> {};
 
 const DEFAULT_INPUT_OPTIONS = ['Input'];
-const InputDialog = memo(
-  forwardRef<HTMLDivElement, InputDialogProps>((props, refForwarded) => {
+const InputDialog = memo(forwardRef<HTMLDivElement, InputDialogProps>((props, refForwarded) => {
   const {
     initialValue = '',
     onOption,
     onValidateOption,
-    onInputOption,
-    onValidateInputOption,
+    onInput,
+    onValidateInput,
     onDone,
     inputProps: propInputProps,
     inputLabel,
@@ -45,20 +44,20 @@ const InputDialog = memo(
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const handleValidation = useCallbackRef(async (input?: string, option?: string): Promise<boolean> => {
-    if (!onValidateInputOption) return true;
-    const results = await onValidateInputOption?.(input, option);
+    if (!onValidateInput) return true;
+    const results = await onValidateInput?.(input, option);
     setHelperText(results?.message ?? '');
     const valid = results?.valid ?? true;
     setIsValid(valid);
     return valid;
-  }, [onValidateInputOption]);
+  }, [onValidateInput]);
 
   const handleInput = useCallbackRef(async (option: string) => {
-    onInputOption?.(input, option);
+    onInput?.(input, option);
     // console.warn(new Error('onInput'));
     // onOption?.(option, option === cancelOption, option === defaultOption);
     // onDone?.();
-  }, [input, onInputOption, onDone, onOption, cancelOption, defaultOption]);
+  }, [input, onInput, onDone, onOption, cancelOption, defaultOption]);
 
   const handleKeyDown = useCallbackRef(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.keyCode === KeyCodes.Enter) {
@@ -111,7 +110,7 @@ const InputDialog = memo(
           size="small"
         >
         <TextField
-          onFocus={(e) => {
+          onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
             if (!firstFocus) {
               e.target?.select();
             }

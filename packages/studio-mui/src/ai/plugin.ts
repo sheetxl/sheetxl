@@ -58,7 +58,7 @@ export const AIPlugin = () => {
         // }],
         description: `Open AI Assistant.`
       }, (args?: unknown, command?: ICommand<unknown, unknown>): void | boolean | Promise<boolean> | Promise<void> => {
-        taskPaneArea.activateTaskPane('ai', { focus: true });
+        taskPaneArea.activateTaskPane('ai', { autoFocus: true });
       });
     },
     renderTaskPane: AITaskPane

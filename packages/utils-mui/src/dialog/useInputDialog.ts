@@ -8,11 +8,11 @@ const Dialog = React.lazy(() => import('./InputDialog'));
 
 const useInputDialog = (propsDefault?: InputDialogProps): (props: InputDialogProps) => Promise<{input: string, option: string}> => {
   const { showModal } = useModal();
-  const showWindow = (props: InputDialogProps): Promise<{input: string, option: string}> => {
+  const showInput = (props: InputDialogProps): Promise<{input: string, option: string}> => {
     const {
       defaultOption = props.options?.[0],
       cancelOption = 'Cancel',
-      ...options
+      ...inputOptions
     }  = props;
 
     return new Promise<{input: string, option: string}>((resolve) => {
@@ -20,23 +20,23 @@ const useInputDialog = (propsDefault?: InputDialogProps): (props: InputDialogPro
         ...propsDefault as any,
         defaultOption,
         cancelOption,
-        // ...options,
+        ...inputOptions,
         onOption(option: string) {
-          options?.onOption?.(option, option === cancelOption, option === defaultOption);
+          inputOptions?.onOption?.(option, option === cancelOption, option === defaultOption);
           resolve({input: '', option});
         },
-        onInputOption(input: string, option: string) {
-          options?.onInputOption?.(input, option);
+        onInput(input: string, option: string) {
+          inputOptions?.onInput?.(input, option);
           resolve({input, option});
         },
         onDone: () => {
-          options?.onDone?.();
+          inputOptions?.onDone?.();
           modal.hide();
         }
       });
     });
   };
-  return showWindow;
+  return showInput;
 }
 
 export default useInputDialog;

@@ -1,30 +1,35 @@
 import React, { useState } from 'react';
 
-import { useModal, UseModalOptions } from 'mui-modal-provider';
+import { useModal } from 'mui-modal-provider';
 
-import  { InternalWindowProps } from './InternalWindow';
+import type { ShowWindowOptions } from '@sheetxl/utils-react';
 
-export interface LazyWindowOptions extends UseModalOptions {
-  disableAutoDestroy?: boolean;
-}
+import type { InternalWindowProps } from './InternalWindow';
 
 /**
  * Creates a single instance given the type and import function
+ *
  * @remarks
  * This relays on the onHide prop working
  */
-// TODO - fix typing, component that extends a dialog
-function useLazyWindow<P extends InternalWindowProps>(propsDefault?: LazyWindowOptions): (type: string, importFunc: () => Promise<{ default: any }>, props?: P, options?: LazyWindowOptions) => Promise<HTMLElement> {
+function useLazyWindow<P extends InternalWindowProps>(propsDefault?: P): (type: string, importFunc: () => Promise<{ default: any }>, options: ShowWindowOptions, props?: P) => Promise<HTMLElement> {
   const [openDialogs, setOpenDialogs] = useState<Map<string, { id: string, element: HTMLElement}>>(() => new Map());
   // TODO - use?Modal.tsx is destroying on close even with flag set. The onExit handler doesn't check. This seems to be a bug.
   // https://github.com/Quernest/mui-modal-provider/issues/78
   // TODO - no reliable called to determine that modal has been removed (via hide)
   const { showModal, updateModal, destroyModal, hideModal } = useModal({ disableAutoDestroy: true });
 
-  const showWindow = (type: string, importFunc: () => Promise<{ default: any }>, props?: P, options?: LazyWindowOptions): Promise<HTMLElement> => {
+  const showWindow = (type: string, importFunc: () => Promise<{ default: any }>, options: ShowWindowOptions, props?: P): Promise<HTMLElement> => {
     return new Promise<HTMLElement>((resolveModal, error): void => {
+      let disableAutoDestroy = false;
+      if (options?.disableAutoDestroy !== undefined) {
+        disableAutoDestroy = options.disableAutoDestroy;
+        options = { ...options };
+        delete options.disableAutoDestroy;
+      }
       const injectedProps = {
         ...propsDefault,
+        ...options,
         ...props,
         onHide: () => {
           const dialog = openDialogs.get(type);
@@ -43,7 +48,7 @@ function useLazyWindow<P extends InternalWindowProps>(propsDefault?: LazyWindowO
             return prev;
           });
           props?.onDone?.(reason);
-          if (dialog && dialog.id && !options?.disableAutoDestroy) {
+          if (dialog && dialog.id && !disableAutoDestroy) {
             destroyModal(dialog.id);
           }
         },
@@ -65,17 +70,20 @@ function useLazyWindow<P extends InternalWindowProps>(propsDefault?: LazyWindowO
       if (existingModal) {
         updateModal(existingModal.id, injectedProps);
         resolveModal(existingModal.element);
+        if (injectedProps.autoFocus) {
+          existingModal.element?.focus();
+        }
         return;
       }
       if (!importFunc) {
-        error('invalid function')
+        error(`Invalid function for window '${type}'`);
         return; // throw an error
       }
 
       const dialog:any = React.lazy(importFunc);
 
       const modal = showModal(dialog, injectedProps, {
-        destroyOnClose: !options?.disableAutoDestroy
+        destroyOnClose: !disableAutoDestroy
       });
       setOpenDialogs((prev) => {
         prev.set(type, {

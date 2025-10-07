@@ -160,13 +160,13 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
         'Mui-selected': selected,
         'Mui-disabled': disabledProp,
       }, propClassName)}
-      onFocus={(event: React.FocusEvent<HTMLButtonElement>) => {
+      onFocus={(e: React.FocusEvent<HTMLButtonElement>) => {
         setFocus(true);
-        propOnFocus?.(event);
+        propOnFocus?.(e);
       }}
-      onBlur={(event: React.FocusEvent<HTMLButtonElement>) => {
+      onBlur={(e: React.FocusEvent<HTMLButtonElement>) => {
         setFocus(false);
-        propOnBlur?.(event);
+        propOnBlur?.(e);
       }}
       size="small"
       // component={compElement}

@@ -6,8 +6,8 @@ import { useCallbackRef, Command } from '@sheetxl/utils-react';
 
 import { CommandContext } from '@sheetxl/react';
 import {
-  CommandButton, ExhibitDivider, CommandToolbar, CommandToolbarButtonProps,
-  CommandToolbarProps
+  CommandButton, ExhibitDivider, CommandToolbar,
+  type CommandToolbarButtonProps, type CommandToolbarProps
 } from '@sheetxl/utils-mui';
 
 import {

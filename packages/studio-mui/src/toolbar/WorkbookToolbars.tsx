@@ -1,16 +1,16 @@
 import React, { useCallback, useState, useMemo, memo, forwardRef } from 'react';
 
-import { SxProps } from '@mui/system';
+import { type SxProps } from '@mui/system';
 import { Theme, alpha, getOverlayAlpha } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
-import { Paper, PaperProps } from '@mui/material';
+import { Paper, type PaperProps } from '@mui/material';
 import { Tabs } from '@mui/material';
-import { Tab, TabProps } from '@mui/material';
+import { Tab, type TabProps } from '@mui/material';
 import { MenuItem } from '@mui/material';
 import { FormControl } from '@mui/material';
-import { Select, SelectChangeEvent, SelectProps } from '@mui/material';
-import { ToolbarProps } from '@mui/material';
+import { Select, SelectChangeEvent, type SelectProps } from '@mui/material';
+import { type ToolbarProps } from '@mui/material';
 
 import { ICommands } from '@sheetxl/utils-react';
 

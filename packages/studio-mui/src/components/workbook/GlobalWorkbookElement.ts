@@ -1,6 +1,6 @@
 import { CommonUtils } from '@sheetxl/utils';
 
-import { LicenseManager, type IWorkbook, type ISheet, type ICellRange } from '@sheetxl/sdk';
+import { LicenseManager, type IWorkbook, type ISheet, type ICellRange, type ICellRanges } from '@sheetxl/sdk';
 import { type IWorkbookElement } from './IWorkbookElement';
 
 
@@ -56,6 +56,7 @@ export const setGlobalIWorkbookElement = async (workbookElement: IWorkbookElemen
         getSelectedWorkbook: (): IWorkbook => activeIWorkbookElement?.getWorkbook(),
         getSelectedSheet: (): ISheet => activeIWorkbookElement?.getWorkbook().getSelectedSheet(),
         getSelectedRange: (): ICellRange => activeIWorkbookElement?.getWorkbook().getSelectedRange(),
+        getSelectedRanges: (): ICellRanges => activeIWorkbookElement?.getWorkbook().getSelectedRanges(),
         getRange: (address: ICellRange.Address): ICellRange => activeIWorkbookElement?.getWorkbook().getRange(address),
         getSelectedWorkbookElement: (): IWorkbookElement => activeIWorkbookElement,
         getLicenseManager: () => LicenseManager,

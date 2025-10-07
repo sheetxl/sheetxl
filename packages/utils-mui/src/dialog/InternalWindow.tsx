@@ -4,6 +4,7 @@ import React, {
 import { createPortal } from 'react-dom';
 
 import clsx from 'clsx';
+
 import { mergeRefs } from 'react-merge-refs';
 import FocusTrap from 'focus-trap-react';
 import { useMeasure } from 'react-use';
@@ -37,7 +38,7 @@ import Draggable, {
 import { Point, Size, CommonUtils } from '@sheetxl/utils';
 
 import {
-  useCallbackRef, useImperativeElement, KeyCodes, useFullscreenPortal, DynamicIcon
+  useCallbackRef, useImperativeElement, KeyCodes, useFullscreenPortal, DynamicIcon, ShowWindowOptions
 } from '@sheetxl/utils-react';
 
 import { ExhibitTooltip } from '../button';
@@ -153,7 +154,8 @@ export interface RelativePoint {
   x?: number | string;
   y?: number | string;
 }
-export interface InternalWindowProps extends Omit<DialogProps, 'open'> {
+
+export interface InternalWindowProps<T=any, R=any> extends Omit<DialogProps, 'open'> {
   // redefine open to be optional since showModal managed this.
   open?: ModalProps['open'];
 
@@ -168,21 +170,30 @@ export interface InternalWindowProps extends Omit<DialogProps, 'open'> {
    * @remarks
    * It would be better to honor autoFocus attribute but React is 'hiding' it
    */
+  // TODO - remove
   autoFocusSel?: string;
 
+
+  // TODO - REMOVE
+  // modal
   onCancel?: () => void;
+  // TODO - REMOVE
+  // modal
   onDone?: (results?: any) => void;
+
   onShow?: () => void;
   onShown?: (internalWindow: IInternalWindowElement) => void;
   onHide?: () => void;
 
   /**
    * If true show a backdrop.
+   *
    * @remarks
-   * Our movable menu achieve modality without a background by listens to global clicks (and focus)
+   * Our movable menu achieves modality without a background by listens to global clicks (and focus)
    * @defaultValue false
    */
   isModal?: boolean;
+
   /**
    * A default position for the window. The default is center at %50, %50.
    */
@@ -215,6 +226,7 @@ const DEFAULT_POSITION = { x: '50', y: '50' };
 export interface InternalWindowAttributes {
   focus: (options?: FocusOptions) => void;
 }
+
 /**
  * Type returned via ref property
  */

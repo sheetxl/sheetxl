@@ -1,9 +1,9 @@
 export * from './types';
 
-export * from './scroll';
-export * from './components';
-
-export * from './icons';
-export * from './utils';
-export * from './hooks';
 export * from './command';
+export * from './components';
+export * from './hooks';
+export * from './icons';
+export * from './persistence';
+export * from './scroll';
+export * from './utils';

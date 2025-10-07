@@ -9,12 +9,13 @@ import { IconButton } from '@mui/material';
 import { PartialError } from '@sheetxl/utils';
 
 import {
-  IReactNotifier, type EnqueueNotifierOptions, type BusyNotifierOptions,
-  NotifierType, NotifierProvider, DefaultReactNotifier, DynamicIcon
+  IReactNotifier, type EnqueueNotifierOptions, type ShowBusyOptions,
+  NotifierType, NotifierProvider, DefaultReactNotifier, DynamicIcon,
+  type ShowWindowOptions
 } from '@sheetxl/utils-react';
 
 import {
-  AnimatedTraversingEllipsisIcon, LoadingPanel, useLazyWindow, LazyWindowOptions,
+  AnimatedTraversingEllipsisIcon, LoadingPanel, useLazyWindow,
   useOptionsDialog, useInputDialog, IInternalWindowElement
 } from '@sheetxl/utils-mui';
 
@@ -62,7 +63,7 @@ const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
   const defaultOptions = {}
   const showLazyWindow = useLazyWindow(defaultOptions);
   const showOptions = useOptionsDialog(defaultOptions);
-  const showInputOptions = useInputDialog(defaultOptions);
+  const showInput = useInputDialog(defaultOptions);
 
   /* TODO - move to permissions */
   const onceMessageKeys = useRef<Set<string>>(new Set());
@@ -104,7 +105,7 @@ const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
     };
     const overrides = {
       showMessage,
-      showBusy: (message: string | React.ReactNode, _options?: BusyNotifierOptions): Promise<() => void> => {
+      showBusy: (message: string | React.ReactNode, _options?: ShowBusyOptions): Promise<() => void> => {
         let resolverBlock = null;
         const promise = new Promise<() => void>((resolve) => {
           resolverBlock = resolve;
@@ -121,14 +122,15 @@ const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
         });
         return promise;
       },
-      showWindow: (type: string, props?: any, options?: LazyWindowOptions): Promise<IInternalWindowElement> => {
-        const propsMapped = {
-          ...props,
-          onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
+      showWindow: (type: string, options?: ShowWindowOptions): Promise<IInternalWindowElement> => {
+        const optionsOriginal = options
+        options = {
+          ...options,
+          onKeyDown: (e: React.KeyboardEvent<any>): void => {
             // TODO - need a useCommands or useKeyboard Context
             // commandsParent?.dispatchToFocusedCommand(e);
             if (e.isDefaultPrevented() || e.isPropagationStopped()) return;
-            props?.onKeyDown?.(e);
+            optionsOriginal?.onKeyDown?.(e);
           }
         }
         // TODO - move this to a dialog registry, rationalize with taskPane
@@ -140,11 +142,12 @@ const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
           'find': () => import('../dialog/FindReplaceWindow'),
           'tableNew': () => import('../dialog/TableNewDialog'),
           'namedDetails': () => import('../dialog/NamedReferenceDialog'),
+          'resizeHeader': () => import('../dialog/ResizeHeaderDialog')
         }
-        return showLazyWindow(type, mappings[type], propsMapped, options);
+        return showLazyWindow(type, mappings[type], options);
       },
       showOptions,
-      showInputOptions,
+      showInput,
       showError: (error: any): void => {
         // TODO - support logging?
         let type: NotifierType = NotifierType.Error;
