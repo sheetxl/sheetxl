@@ -1,4 +1,7 @@
 import React, { useRef, useEffect, useCallback } from 'react';
+
+import { ReactUtils } from '../utils';
+
 import { useCallbackRef } from './useCallbackRef';
 
 /**
@@ -12,21 +15,21 @@ export interface PointerModifiers {
   altKey: boolean;
   metaKey: boolean;
 }
-export interface PointerHandlerOptions {
+export interface PointerHandlerOptions<T extends Element = Element> {
   /**
    * If returns false then other events will not be fired
    */
-  onPointerDown: (event: React.PointerEvent<Element>, modifiers: PointerModifiers) => boolean | void;
+  onPointerDown: (event: React.PointerEvent<T>, modifiers: PointerModifiers) => boolean | void;
   /**
    * If the Pointer has moved or it the Pointer was held for a period of timerContinuous.
    */
-  onPointerMoveOrWait?: (event: globalThis.PointerEvent, modifiers: PointerModifiers, originalEvent: React.PointerEvent<Element>) => void;
+  onPointerMoveOrWait?: (event: React.PointerEvent<T>, modifiers: PointerModifiers, originalEvent: React.PointerEvent<T>) => void;
   /**
    * Called when Pointer is released. This is different than the regular
    * Pointer up in that it will be called even if the Pointer is released
    * when outside the component.
    */
-  onPointerUp?: (event: globalThis.PointerEvent, modifiers: PointerModifiers, originalEvent: React.PointerEvent<Element>) => void;
+  onPointerUp?: (event: React.PointerEvent<T>, modifiers: PointerModifiers, originalEvent: React.PointerEvent<T>) => void;
 
   timerInitial?: number;
   timerContinuous?: number;
@@ -79,7 +82,7 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
   const timerInitial = options?.timerInitial ?? 230;
   const timerContinuous = options?.timerContinuous ?? timerInitial / 2;
 
-  const originalEvent = useRef<React.PointerEvent<Element> | null>(null);
+  const originalEvent = useRef<React.PointerEvent | null>(null);
   const lastPointerEvent = useRef<globalThis.PointerEvent>(null);
   const lastKeyboardModifiers = useRef<PointerModifiers>(null);
 
@@ -95,7 +98,13 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
     timerRef.current = setTimeout(() => {
       window.requestAnimationFrame(() => {
         if (refIsPressed.current === false) return;
-        onPointerMoveOrWait?.(lastPointerEvent.current, lastKeyboardModifiers.current, originalEvent.current);
+        const nativeEvent = lastPointerEvent.current;
+        const original = originalEvent.current;
+        const syntheticEvent = ReactUtils.createSyntheticEvent<Element, PointerEvent, React.PointerEvent<Element>>(
+          nativeEvent,
+          original.currentTarget
+        );
+        onPointerMoveOrWait?.(syntheticEvent, lastKeyboardModifiers.current, original);
       });
       startTimer(timerContinuous); // we make first time slightly longer to similar a delayed start
     }, delay ?? timerInitial);
@@ -129,7 +138,13 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
     window.requestAnimationFrame(() => {
       if (refIsPressed.current === false) return;
       refIsPressed.current = false;
-      onPointerUp?.(e, lastKeyboardModifiers.current, originalEvent.current);
+      const nativeEvent = e;
+      const original = originalEvent.current;
+      const syntheticEvent = ReactUtils.createSyntheticEvent<Element, PointerEvent, React.PointerEvent<Element>>(
+        nativeEvent,
+        original.currentTarget
+      );
+      onPointerUp?.(syntheticEvent, lastKeyboardModifiers.current, original);
       lastKeyboardModifiers.current = null;
     });
   }, []);
@@ -146,7 +161,13 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
     // Note - We use raf to avoid calling to many times and throwing react deep mutation errors
     window.requestAnimationFrame(() => {
       if (refIsPressed.current === false) return;
-      onPointerMoveOrWait?.(lastPointerEvent.current, lastKeyboardModifiers.current, originalEvent.current);
+      const nativeEvent = lastPointerEvent.current;
+      const original = originalEvent.current;
+      const syntheticEvent = ReactUtils.createSyntheticEvent<Element, PointerEvent, React.PointerEvent<Element>>(
+        nativeEvent,
+        original.currentTarget
+      );
+      onPointerMoveOrWait?.(syntheticEvent, lastKeyboardModifiers.current, original);
     });
   }, [timerContinuous]);
 

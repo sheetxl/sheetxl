@@ -6,7 +6,14 @@
   --scrollbar-active-color: rgba(0,0,0,0.55);
   --scrollbar-corner-color: transparent;
   --scrollbar-border-color: transparent;
-  --scrollbar-size: 13px;
+    /* Override scrollbar size for touch devices - applies to element and all children */
+  :global(.has-touch-thumb),
+  :global(.has-touch-thumb) * {
+    --scrollbar-size: 4px;
+    --scrollbar-border-width: 0px;
+    --scrollbar-width: var(--scrollbar-size);
+    --scrollbar-height: var(--scrollbar-size);
+  }
   --scrollbar-width: var(--scrollbar-size);
   --scrollbar-height: var(--scrollbar-size);
   --scrollbar-border-radius: 9999px;
@@ -24,7 +31,7 @@
   border-radius: var(--scrollbar-border-radius);
   align-items: center;
   border: var(--scrollbar-border-width) solid transparent;
-  .vsb-track {
+  .track {
     /* Use CSS custom properties with fallbacks */
     background: var(--scrollbar-track-color);
     border-radius: var(--scrollbar-border-radius);
@@ -36,7 +43,7 @@
     overflow: hidden;
   }
 
-  .vsb-thumb {
+  .thumb {
     /* Use CSS custom properties with fallbacks */
     background: var(--scrollbar-thumb-color);
     border-radius: var(--scrollbar-border-radius);
@@ -44,17 +51,17 @@
     touch-action: none;
   }
 
-  .vsb-thumb:hover {
+  .thumb:hover {
     background: var(--scrollbar-active-color);
   }
 
   &:global(.vertical) {
     flex-direction: column;
     min-width: var(--scrollbar-width, 0px);
-    .vsb-thumb {
+    .thumb {
       min-height: var(--scrollbar-min-thumb-size);
     }
-    .vsb-track {
+    .track {
       width: 100%;
     }
   }
@@ -62,50 +69,67 @@
   &:global(.horizontal) {
     flex-direction: row;
     min-height: var(--scrollbar-height, 0px);
-    .vsb-thumb {
+    .thumb {
       min-width: var(--scrollbar-min-thumb-size);
     }
-    .vsb-track {
+    .track {
       height: 100%;
     }
   }
 
   &:global(.dragging) {
-    .vsb-thumb {
+    .thumb {
       background: var(--scrollbar-active-color);
+    }
+  }
+
+  .scrollbar-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    padding: 0px;
+
+    /* Default state for SVG children */
+    & > * {
+      fill: var(--scrollbar-button-color);
+      transition: fill 120ms ease;
+    }
+
+    /* Hover state - only when button is not disabled */
+    &:hover:not([disabled]) > * {
+      fill: var(--scrollbar-active-color);
+    }
+
+    /* Disabled state */
+    &[disabled] > * {
+      fill: var(--scrollbar-button-color);
+      opacity: 0.5;
+    }
+
+    &:global(.vertical) {
+      width: var(--scrollbar-width);
+    }
+    &:global(.horizontal) {
+      height: var(--scrollbar-height);
     }
   }
 }
 
-.scrollbar-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  padding: 0px;
-
-  /* Default state for SVG children */
-  & > * {
-    fill: var(--scrollbar-button-color);
-    transition: fill 120ms ease;
-  }
-
-  /* Hover state - only when button is not disabled */
-  &:hover:not([disabled]) > * {
-    fill: var(--scrollbar-active-color);
-  }
-
-  /* Disabled state */
-  &[disabled] > * {
-    fill: var(--scrollbar-button-color);
-    opacity: 0.5;
-  }
-
-  &:global(.vertical) {
-    width: var(--scrollbar-width);
-  }
-  &:global(.horizontal) {
-    height: var(--scrollbar-height);
+/** global because used in a portal */
+.touch-thumb {
+  position: absolute;
+  border-radius: 9999px;
+  cursor: grab;
+  pointer-events: all;
+  transition-property: opacity;
+  border-radius: 9999px;
+  will-change: opacity;
+  opacity: 0.7; /* ideally only the background */
+  &:global(:hover),
+  &:global(.dragging) {
+    opacity: 1;
   }
 }
+

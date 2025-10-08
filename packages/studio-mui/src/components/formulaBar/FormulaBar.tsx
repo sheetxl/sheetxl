@@ -469,8 +469,10 @@ const FormulaBar = memo(
           style: {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='6' height='13' viewBox='0 0 6 13' version='1.1' fill='${(appTheme.palette.text as any).icon ?? appTheme.palette.action.active}' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'%3E%3Cpath d='m 4.5961932,11.36243 c 0,0.88365 -0.71627,1.59991 -1.59991,1.59991 -0.88365,0 -1.60005,-0.71626 -1.60005,-1.59991 0,-0.88365 0.7164,-1.6000508 1.60005,-1.6000508 0.88364,0 1.59991,0.7164008 1.59991,1.6000508 m 0,-4.881294 c 0,0.88364 -0.71627,1.60004 -1.59991,1.60004 -0.88365,0 -1.60005,-0.7164 -1.60005,-1.60004 0,-0.88365 0.7164,-1.60005 1.60005,-1.60005 0.88364,0 1.59991,0.7164 1.59991,1.60005 m 0,-4.881226 c 0,0.88365 -0.71627,1.60005 -1.59991,1.60005 -0.88365,0 -1.60005,-0.7164 -1.60005,-1.60005 0,-0.88365 0.7164,-1.59991 1.60005,-1.59991 0.88364,0 1.59991,0.71626 1.59991,1.59991' /%3E%3C/svg%3E%0A")`,
             backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center 6.5px',
-            minWidth: '18px'
+            // A bit convoluted. This is the height of the icon - the viewBox height + padding
+            backgroundPosition: `center calc(((var(--icon-size, 24) - 13px + 5px) / 2))`,
+            minWidth: '18px',//var(--icon-size, 20px)'
+            marginRight: '1px'
           }
         }}
         elementBefore={rangeEditor}

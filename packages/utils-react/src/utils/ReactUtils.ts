@@ -84,20 +84,54 @@ export const toPrettyKeyCode = (key: string) => {
 }
 
 
-export const createSyntheticEvent = <T extends Element, E extends Event>(event: E): React.SyntheticEvent<T, E> => {
+/**
+ * Creates a React synthetic event from a native DOM event.
+ *
+ * @remarks
+ * This helper creates a synthetic event wrapper that mimics React's SyntheticEvent behavior,
+ * including proper type inference for specific event types (PointerEvent, MouseEvent, etc.).
+ *
+ * @template T - The element type (extends Element)
+ * @template E - The native event type (extends Event)
+ *
+ * @param event - The native DOM event to wrap
+ * @param currentTarget - Optional override for currentTarget (useful for portals/delegated events)
+ *
+ * @returns A React synthetic event with all standard properties and methods
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * const syntheticEvent = createSyntheticEvent<HTMLDivElement, PointerEvent>(nativePointerEvent);
+ *
+ * // With custom currentTarget (for portals)
+ * const syntheticEvent = createSyntheticEvent<HTMLDivElement, PointerEvent>(
+ *   nativePointerEvent,
+ *   portalElement
+ * );
+ * ```
+ */
+export const createSyntheticEvent = <T extends Element, E extends Event, R extends React.SyntheticEvent<T, E>>(
+  event: E,
+  currentTarget?: EventTarget & T
+): R => {
   let isDefaultPrevented = false;
   let isPropagationStopped = false;
+
   const preventDefault = () => {
     isDefaultPrevented = true;
     event.preventDefault();
-  }
+  };
+
   const stopPropagation = () => {
     isPropagationStopped = true;
     event.stopPropagation();
-  }
-  return {
+  };
+
+  // Create base synthetic event
+  const syntheticEvent: React.SyntheticEvent<T, E> = {
     nativeEvent: event,
-    currentTarget: event.currentTarget as EventTarget & T,
+    currentTarget: (currentTarget || event.currentTarget) as EventTarget & T,
     target: event.target as EventTarget & T,
     bubbles: event.bubbles,
     cancelable: event.cancelable,
@@ -112,4 +146,14 @@ export const createSyntheticEvent = <T extends Element, E extends Event>(event: 
     timeStamp: event.timeStamp,
     type: event.type,
   };
-}
+
+  // Copy all enumerable properties from the native event to support specific event types
+  // This automatically includes MouseEvent, PointerEvent, KeyboardEvent properties, etc.
+  for (const key in event) {
+    if (!(key in syntheticEvent) && typeof event[key] !== 'function') {
+      (syntheticEvent as any)[key] = event[key];
+    }
+  }
+
+  return syntheticEvent as R;
+};
