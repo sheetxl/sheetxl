@@ -103,7 +103,7 @@ export const  start = (
     let shouldContinue = true;
     try {
       shouldContinue = (!verifyCallback || verifyCallback(id)) ?? true;
-    } catch (error) {
+    } catch (error: any) {
       // Handle verify function errors gracefully
       shouldContinue = false;
     }
@@ -137,7 +137,7 @@ export const  start = (
     let stepResult = false;
     try {
       stepResult = stepCallback(value, now, render);
-    } catch (error) {
+    } catch (error: any) {
       // Handle step function errors gracefully
       stepResult = false;
     }

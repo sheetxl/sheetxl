@@ -1,6 +1,6 @@
 import { type PublishContext, type GlobalConfig } from 'semantic-release';
 
-export async function publish(_config: GlobalConfig, context: PublishContext) {
+export async function publish(_config: GlobalConfig, context: PublishContext): Promise<void> {
   const { logger, nextRelease } = context;
 
   const version = nextRelease.version;
@@ -14,7 +14,7 @@ export async function publish(_config: GlobalConfig, context: PublishContext) {
   try {
     execSync('pnpm release:public-repo', { stdio: 'inherit' });
     logger.log('✅ Public repo sync complete');
-  } catch (error) {
+  } catch (error: any) {
     logger.error('❌ Public repo sync failed:', error.message);
     // Don't fail the release if public sync fails
   }

@@ -65,7 +65,7 @@ Whether you're ready to build, need help, or just want to see more examples, her
 ---
 `
 
-const readmeTransform = (contents: Buffer, _filename: string) => {
+const readmeTransform = (contents: Buffer, _filename: string): string => {
   return contents.toString() + README_TAIL;
 }
 
@@ -77,7 +77,7 @@ function packageNameToPascalCase(packageName: string): string {
     .join('');
 }
 
-function updateDependencyVersion(dependencies: Record<string, string>, version: string) {
+function updateDependencyVersion(dependencies: Record<string, string>, version: string): void {
   if (!dependencies) return;
   Object.keys(dependencies).forEach(function(key) {
     if (key.startsWith('@sheetxl/')) {
@@ -88,7 +88,7 @@ function updateDependencyVersion(dependencies: Record<string, string>, version: 
 
 const ASSET_EXTS = new Set([".css", ".scss"]);//, ".sass", ".less", ".styl", ".pcss"]);
 
-const basePkgName = (id: string) => {
+const basePkgName = (id: string): string => {
   // Remove query
   let clean = id.replace(/\?.*$/, "");
 

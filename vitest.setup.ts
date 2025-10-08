@@ -6,7 +6,7 @@
 
 //     IFont.setSharedMeasurer(SimpleFontMeasurer);
 //     console.log('🔤 Simple font measurer configured successfully (no canvas dependency)');
-//   } catch (error) {
+//   } catch (error: any) {
 //     console.warn('⚠️  Could not configure font measurer:', error.message);
 //     // Don't fail the setup if font configuration fails
 //   }

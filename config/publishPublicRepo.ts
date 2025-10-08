@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // replace the workspace protocol with latest for any private packages
-function updatePrivateDependencies(dependencies: Record<string, string>, privatePackages: string[]) {
+function updatePrivateDependencies(dependencies: Record<string, string>, privatePackages: string[]): void {
   if (!dependencies) return;
   Object.keys(dependencies).forEach(function(key) {
     if (key.startsWith('@sheetxl/')) {
@@ -26,7 +26,7 @@ function updatePrivateDependencies(dependencies: Record<string, string>, private
 }
 
 // remove private package references from tsconfig paths
-function updateTsconfigPaths(tsconfig, privatePackages: string[]) {
+function updateTsconfigPaths(tsconfig: any, privatePackages: string[]): void {
   if (!tsconfig.compilerOptions?.paths) return;
 
   Object.keys(tsconfig.compilerOptions.paths).forEach(function(key) {
@@ -41,7 +41,7 @@ function updateTsconfigPaths(tsconfig, privatePackages: string[]) {
 
   // Also remove from include array if it references private packages
   if (tsconfig.include && Array.isArray(tsconfig.include)) {
-    tsconfig.include = tsconfig.include.filter(includePath => {
+    tsconfig.include = tsconfig.include.filter((includePath: any) => {
       const isPrivatePackage = privatePackages.some(pkg => includePath.includes(`../${pkg}/`));
       if (isPrivatePackage) {
         console.log(`    Removing private include path: ${includePath}`);
@@ -52,12 +52,12 @@ function updateTsconfigPaths(tsconfig, privatePackages: string[]) {
 }
 
 // remove private package references from tsconfig paths
-function updateTsconfigBuildPaths(tsconfig, privatePackages: string[]) {
+function updateTsconfigBuildPaths(tsconfig: any, privatePackages: string[]): void {
   if (!tsconfig.references) return;
 
   // Also remove from references array if it references private packages
   if (tsconfig.references && Array.isArray(tsconfig.references)) {
-    tsconfig.references = tsconfig.references.filter(ref => {
+    tsconfig.references = tsconfig.references.filter((ref: any) => {
       const isPrivatePackage = privatePackages.some(pkg => ref.path.includes(`/${pkg}`));
       console.log(`    Checking private references...`, ref.path);
       if (isPrivatePackage) {
@@ -149,7 +149,7 @@ async function run(): Promise<1 | 0> {
       currentVersion = releaseData.tagName.replace(/^v/, ''); // Remove 'v' prefix if present
       privateReleaseNotes = releaseData.body || `Release v${currentVersion}`;
       console.log(`   Found release version: ${currentVersion}`);
-    } catch (error) {
+    } catch (error: any) {
       console.warn('error', error);
       console.log('   ⚠️  No release found error, using latest git tag for testing...');
       try {
@@ -190,7 +190,7 @@ async function run(): Promise<1 | 0> {
     // let isEmptyRepo = false;
     // try {
     //   await exec(`git show-ref --verify refs/heads/main`, { cwd: pathPublic });
-    // } catch (error) {
+    // } catch (error: any) {
     //   console.log('   📝 Public repo appears to be empty, will create initial commit');
     //   isEmptyRepo = true;
     // }
@@ -254,7 +254,7 @@ async function run(): Promise<1 | 0> {
           const tsconfigContent = parseJsonc(rawContent);
           updateTsconfigPaths(tsconfigContent, privatePackages);
           fs.writeJsonSync(fullPath, tsconfigContent, { spaces: 2 });
-        } catch (error) {
+        } catch (error: any) {
           console.log(`    ⚠️  Error parsing ${tsconfigPath}: ${error.message}`);
           console.log(`    📄 Skipping this file...`);
         }
@@ -279,7 +279,7 @@ async function run(): Promise<1 | 0> {
 
           // Write back as clean JSON (without comments)
           fs.writeJsonSync(fullPath, tsconfigContent, { spaces: 2 });
-        } catch (error) {
+        } catch (error: any) {
           console.log(`    ⚠️  Error parsing ${tsconfigBuildPath}: ${error.message}`);
           console.log(`    📄 Skipping this file...`);
         }
@@ -316,7 +316,7 @@ async function run(): Promise<1 | 0> {
         console.log('🚀 Pushing changes...');
         await exec(`git push -u origin main`, { cwd: pathPublic });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(`   ⚠️  Error checking git status: ${error.message}`);
       // Try to commit anyway in case of git status issues
       const commitMessage = `sync update from private repo v${currentVersion}`;
@@ -344,7 +344,7 @@ async function run(): Promise<1 | 0> {
         await exec(`git tag v${currentVersion}`, { cwd: pathPublic });
         await exec(`git push origin v${currentVersion}`, { cwd: pathPublic });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(`   ⚠️  Error checking tags, creating new tag: ${error.message}`);
       await exec(`git tag v${currentVersion}`, { cwd: pathPublic });
       await exec(`git push origin v${currentVersion}`, { cwd: pathPublic });
@@ -356,7 +356,7 @@ async function run(): Promise<1 | 0> {
       // Check if release already exists
       const { stdout: existingReleases } = await exec('gh release list --json tagName', { cwd: pathPublic });
       const releases = JSON.parse(existingReleases);
-      const releaseExists = releases.some(release => release.tagName === `v${currentVersion}`);
+      const releaseExists = releases.some((release: any) => release.tagName === `v${currentVersion}`);
 
       if (releaseExists) {
         console.log(`   ⚠️  Release v${currentVersion} already exists in public repo`);
@@ -366,7 +366,7 @@ async function run(): Promise<1 | 0> {
         console.log(`   ⬆️ Creating new release v${currentVersion}`);
         await execa(`gh`, ['release', 'create', `v${currentVersion}`, '--title', `Release v${currentVersion}`, '--notes', privateReleaseNotes], { cwd: pathPublic });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(`   ⚠️  Error creating release: ${error.message}`);
       console.log(`   💡 Make sure GitHub CLI is installed and authenticated`);
     }
@@ -376,7 +376,7 @@ async function run(): Promise<1 | 0> {
     console.log(`   Removed ${privatePackages.length} private packages`);
 
     return 0;
-  } catch (error) {
+  } catch (error: any) {
     console.log();
     console.error(`  ${error.message}`);
     console.log();
@@ -384,6 +384,6 @@ async function run(): Promise<1 | 0> {
   }
 }
 
-run().then(code => {
+run().then((code: number) => {
   process.exit(code);
 });

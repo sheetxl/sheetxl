@@ -41,7 +41,7 @@ export default async (args: any[], modules?: Modules): Promise<void> => {
 
   try {
     buffer = fs.readFileSync(asPath, { flag: 'r' });
-  } catch (error) {
+  } catch (error: any) {
     Notifier.error('Unable to read file:', { details: asPath });
     process.exit(1);
   }

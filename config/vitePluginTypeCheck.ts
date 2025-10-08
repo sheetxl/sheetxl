@@ -16,7 +16,7 @@ export function typeCheck(tsconfigRelPath: string='tsconfig.build.json'): Plugin
   };
 }
 
-function runTypeCheck(tsconfigPath: string) {
+function runTypeCheck(tsconfigPath: string): void {
   const fullConfigPath = ts.findConfigFile(tsconfigPath, ts.sys.fileExists, 'tsconfig.build.json');
   if (!fullConfigPath) throw new Error('Could not find a valid tsconfig.json.');
 
