@@ -75,7 +75,7 @@ export async function FILTERXML(xml: string, xpath: string): Promise<string> {
       {}
     );
     return result;
-  } catch (error) {
+  } catch (error: any) {
     throw FormulaError.BuiltIn.Value;
   }
 }

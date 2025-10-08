@@ -1,5 +1,5 @@
 // Import font setup for tests
-async function setupShared() {
+async function setupShared(): Promise<void> {
   try {
     const { LicenseManager } = await import('../packages/sdk/src/license');
     // LicenseManager.setLicenseKey(`visit https://my.sheetxl.com to generate a license key.`);
@@ -8,7 +8,7 @@ async function setupShared() {
 
     const { TransactionStore } = await import('../packages/sdk/src/transaction');
     TransactionStore.setDefaultSync(true);
-  } catch (error) {
+  } catch (error: any) {
     console.warn('⚠️ Could not setup:', error.message);
   }
 }

@@ -22,10 +22,33 @@ const plugins:ReadonlyArray<PluginSpec> = [
         commitsSort: ['scope', 'subject'],
         groupBy: 'type',
         commitGroupsSort: 'title',
-        transform: (commit, context) => {
-          // Return a new object without commit hashes
+        transform: (commit: any, context: any) => {
+          // Clean subject: Remove PR references from commit messages
+          let cleanedSubject = commit.subject || '';
+          if (cleanedSubject) {
+            // Remove "Merge pull request #XX from..." patterns
+            cleanedSubject = cleanedSubject.replace(/Merge pull request #\d+ from [^\s]+/gi, '');
+            // Remove standalone PR references like (#123) or #123
+            cleanedSubject = cleanedSubject.replace(/\(#\d+\)/g, '');
+            cleanedSubject = cleanedSubject.replace(/#\d+/g, '');
+            // Clean up extra whitespace
+            cleanedSubject = cleanedSubject.trim();
+          }
+
+          // Clean body: Remove PR references if body exists
+          let cleanedBody = commit.body || '';
+          if (cleanedBody) {
+            cleanedBody = cleanedBody.replace(/Merge pull request #\d+ from [^\s]+/gi, '');
+            cleanedBody = cleanedBody.replace(/\(#\d+\)/g, '');
+            cleanedBody = cleanedBody.replace(/#\d+/g, '');
+            cleanedBody = cleanedBody.trim();
+          }
+
+          // Return a new immutable object with cleaned messages and no commit hashes
           return {
             ...commit,
+            subject: cleanedSubject,
+            body: cleanedBody,
             hash: '',
             shortHash: ''
           };
