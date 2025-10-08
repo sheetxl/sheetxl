@@ -1,5 +1,6 @@
 import type React from 'react';
 
+import type { TouchThumbHandleProps } from './TouchThumbHandle';
 import type { ScrollButtonProps } from './ScrollButton';
 
 /*
@@ -55,6 +56,10 @@ export interface ScrollbarProps extends React.HTMLAttributes<HTMLElement> {
 
   createScrollStartButton?: (props: ScrollButtonProps, ref?: React.Ref<HTMLElement>) => React.ReactElement;
   createScrollEndButton?: (props: ScrollButtonProps, ref?: React.Ref<HTMLElement>) => React.ReactElement;
+
+  touchThumbProps?: Partial<TouchThumbHandleProps>;
+
+  thumbProps?: React.HTMLAttributes<HTMLElement>;
 }
 
 export interface IScrollbarAttributes extends HTMLDivElement {
