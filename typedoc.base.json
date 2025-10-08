@@ -22,7 +22,6 @@
   "excludeReferences": true,
   "excludeExternals": true,
   "exclude": ["./apisite/README.md"],
-  "excludeNotDocumented": true, // doesn't work. stilling giving bogus warnings.
-  "excludeNotDocumentedKinds": ["Property", "Interface", "TypeAlias"]
+  "excludeNotDocumented": false, // doesn't work. stilling giving bogus warnings.
   // "excludeNotDocumentedKinds": ["Property", "Interface", "TypeAlias"]
 }

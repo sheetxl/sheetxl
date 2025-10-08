@@ -126,7 +126,7 @@ export const isNumeric = (value: any): boolean  => {
 }
 
 /**
- * Describes the parts of movable point number.
+ * Describes the parts of floating point number.
  */
 export interface SplitNumber {
   /**

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './App.css';
 
 import { useMediaQuery } from '@mui/material';
@@ -213,6 +213,16 @@ function App() {
     }
   });
 
+  // // must memo as updates will reload
+  // const workbookOptions = useMemo(() => {
+  //   return {
+  //     readonly: true,
+  //     source: {
+  //       input: 'https://www.sheetxl.com/docs/examples/financial-calculators.xlsx',
+  //     }
+  //   }
+  // }, []);
+
   return (
     <PersistenceStateProvider
       store={typeof window !== "undefined" ? new LocalStorageStore() : undefined}
@@ -231,6 +241,7 @@ function App() {
         //   console.log('Workbook Element ref called', instance);
         // }}
         workbook={workbook}
+        // workbook={workbookOptions}
         onWorkbookChange={(wb: IWorkbook) => {
           setWorkbookResolved(wb);
         }}

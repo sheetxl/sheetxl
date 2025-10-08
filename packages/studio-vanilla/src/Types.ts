@@ -6,7 +6,7 @@ export type ReactDOMRoot = import('react-dom/client').Root;
 /**
  * Reference to StudioMUI module.
  *
- * [@sheetxl/studio-mui](../modules/_sheetxl_studio-mui.html)
+ * @link [@sheetxl/studio-mui](../modules/_sheetxl_studio-mui.html)
  */
 export type StudioMUIModule = typeof import('@sheetxl/studio-mui');
 
