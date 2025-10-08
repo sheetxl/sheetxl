@@ -1,5 +1,5 @@
 
-async function setupFonts() {
+async function setupFonts(): Promise<void> {
   try {
     // we don't alias because we don't want canvas in the test environment.
     const { IFont } = await import('../packages/sdk/src/font/index.js');
@@ -10,7 +10,7 @@ async function setupFonts() {
     // const { FontKitFontMeasurer } = await import('../packages/sdk/src/font/FontKitFontMeasurer.js');
     // IFont.setSharedMeasurer(FontKitFontMeasurer);
     // console.log('🔤 Font measurer configured successfully');
-  } catch (error) {
+  } catch (error: any) {
     console.warn('⚠️  Could not configure font measurer:', error.message);
   }
 }

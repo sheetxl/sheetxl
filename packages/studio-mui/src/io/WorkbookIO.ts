@@ -128,7 +128,7 @@ export class _WorkbookIO {
     const hideBusyOpening = await notifier?.showBusy?.(`Opening${options.name ? ` ${options.name}` : ''}...`);
     try {
       ioModule = await import(/* webpackChunkName: "io" */'@sheetxl/io');
-    } catch (error) {
+    } catch (error: any) {
       throw error;
     }
     try {

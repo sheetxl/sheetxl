@@ -33,7 +33,7 @@ export async function WEBSERVICE(url: string): Promise<string> {
 
     // Get the raw text from the response
     return await response.text();
-  } catch (error) {
+  } catch (error: any) {
     // Handle errors like Excel would - return a #VALUE! error
     throw FormulaError.BuiltIn.Value;
   }

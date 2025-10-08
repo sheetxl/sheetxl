@@ -196,7 +196,7 @@ function App() {
         // Use the custom title from URL params, or fall back to a title derived from the URL
         setWorkbookTitle(searchParams.get('title') ?? result.title ?? 'Untitled');
         setWorkbook(result.workbook);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to read workbook:', error);
         // Handle error - maybe set error state or show notification
         setWorkbook(null);

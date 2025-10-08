@@ -71,7 +71,7 @@ function runCompressionTest(testName: string, originalData: Uint8Array) {
       // }
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Result: ${testName} FAILED with error during processing:`, error);
     // Log intermediate states if helpful
     console.log("Original size:", originalData.length);

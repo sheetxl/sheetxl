@@ -1,11 +1,11 @@
 
-async function setupSimpleFonts() {
+async function setupSimpleFonts(): Promise<void> {
   try {
     // we don't alias because we don't want canvas in the test environment.
     const { IFont } = await import('../packages/sdk/src/font/index.js');
     const { getInstance: getSimpleMeasurer } = await import('../packages/sdk/src/font/SimpleFontMeasurer.js');
     IFont.setSharedMeasurer(getSimpleMeasurer());
-  } catch (error) {
+  } catch (error: any) {
     console.warn('⚠️ Could not configure font measurer:', error.message);
   }
 }
@@ -54,7 +54,7 @@ async function setupCanvasFonts() {
     const { CanvasFontMeasurer } = await import('../packages/sdk/src/font/CanvasFontMeasurer.js');
 
     IFont.setSharedMeasurer(CanvasFontMeasurer);
-  } catch (error) {
+  } catch (error: any) {
     console.warn('⚠️ Could not configure font measurer:', error.message);
   }
 }

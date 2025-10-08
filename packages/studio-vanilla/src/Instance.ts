@@ -98,7 +98,7 @@ export const doAttach = async <T=any, P=any>(
     });
 
     return controller as Promise<T & Attached<P>>;
-  } catch (error) {
+  } catch (error: any) {
     // Hide loading panel and show error panel
     hidePanel(selector);
     showErrorPanel(selector, {
@@ -127,7 +127,7 @@ export const doInitialize = async (runtime: ResolvedDependencies, options: strin
     if (options?.selector) {
       hidePanel(options?.selector);
     }
-  } catch (error) {
+  } catch (error: any) {
     if (options?.selector) {
       hidePanel(options.selector);
       showErrorPanel(options.selector, {
