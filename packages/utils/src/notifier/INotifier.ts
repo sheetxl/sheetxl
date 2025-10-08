@@ -33,27 +33,33 @@ export interface INotifier {
 
   /**
    * Useful when informing the user of something but are not expecting a response.
+   *
+   * @param message The log message to display.
+   * @param options Options for the log notification.
    */
   log(message: string, options?: NotifierOptions): void;
 
   /**
    * Should return error object exception.
    *
-   * @param error
+   * @param error The error message or object to display.
+   * @param options Options for the error notification.
    */
   error(error: string | Error, options?: NotifierOptions): void;
 
   /**
    * Should return error object exception.
    *
-   * @param error
+   * @param message The warning message to display.
+   * @param options Options for the warning notification.
    */
   warn(message: string, options?: NotifierOptions): void;
 
   /**
    * For debug logging.
    *
-   * @param message
+   * @param message The debug message to display.
+   * @param options Options for the debug notification.
    */
   debug(message: string, options?: NotifierOptions): void;
 }

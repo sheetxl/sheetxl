@@ -2,6 +2,9 @@ import { IWorkbook } from '@sheetxl/sdk';
 
 import { WriteWorkbookOptions } from '../../types';
 
+/**
+ * Options for exporting to JSON file format.
+ */
 export interface WriteJSONOptions extends WriteWorkbookOptions {
   /**
    * If set to a number then JSON will add white space to make the JSON more human readable.

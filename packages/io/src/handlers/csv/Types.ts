@@ -54,6 +54,12 @@ export interface WriteCSVOptions extends WriteWorkbookOptions {
   papaParseConfig?: UnparseConfig;
 }
 
+/**
+ * Options for importing from CSV file format.
+ *
+ * @remarks
+ * The default options mimic Excel 2024.
+ */
 export interface ReadCSVOptions extends ReadWorkbookOptions {
   /**
    * Options specific for setting values.

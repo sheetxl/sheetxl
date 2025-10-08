@@ -182,7 +182,7 @@ export interface IReactNotifier extends INotifier {
   /**
    * Should return error object exception.
    *
-   * @param error
+   * @param error The error to show
    */
   showError: (error: Error | string) => void;
   /**
