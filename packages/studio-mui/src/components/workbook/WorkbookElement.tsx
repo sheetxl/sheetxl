@@ -418,6 +418,12 @@ const WorkbookElement =
               paddingRight: '4px',
               ...propsStyle
             }}
+            /* HACK - required because thumbs are in portals */
+            touchThumbProps={{
+              backgroundColor: gridTheme.palette.background.paper,
+              borderColor: gridTheme.palette.primary.main,
+              fillColor: 'grey',
+            }}
             endGap={END_VIRTUAL_SCROLL_GAP}
             sheet={sheet}
             onShowTooltip={(props) => {
@@ -705,19 +711,25 @@ const WorkbookElement =
     setFocusedComponent('formulaBar')
   }, []);
 
-  const createSizedVerticalScrollbarCallback = useCallbackRef((props: SheetScrollbarProps) => {
+  const createSizedVerticalScrollbarCallback = useCallback((props: SheetScrollbarProps) => {
     const {
       style: propsStyle,
       ...rest
     } = props;
     return (
       <SheetScrollbar
+        {...rest}
         style={{
           ...propsStyle,
           paddingTop: '4px',
           paddingBottom: '4px'
         }}
-        {...rest}
+        /* HACK - required because thumbs are in portals */
+        touchThumbProps={{
+          backgroundColor: gridTheme.palette.background.paper,
+          borderColor: gridTheme.palette.primary.main,
+          fillColor: 'grey',
+        }}
         sheet={sheet}
         endGap={END_VIRTUAL_SCROLL_GAP}
         onShowTooltip={(props) => {
@@ -726,7 +738,7 @@ const WorkbookElement =
         onCloseTooltip={() => closeTooltip()}
       />
     )
-  }, [sheet]);
+  }, [sheet, gridTheme]);
 
 
   useEffect(() => {
@@ -1053,7 +1065,7 @@ const WorkbookElement =
     return propsMainWrapper(mainElement);
   }, [
     showHorizontalScrollbar, showTabs, createTabStripSharedScrollbar, showVerticalScrollbar, viewport, isFullWidth,
-    sheetElement, workbookStrip, appTheme, propsMainWrapper
+    sheetElement, workbookStrip, appTheme, propsMainWrapper, gridTheme
   ]);
 
   const tooltip = useMemo(() => {

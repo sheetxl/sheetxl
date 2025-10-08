@@ -16,7 +16,7 @@ export interface RepeatClickOptions {
 export function useMouseDownAndHoldListener(onPointerDown: (event: React.PointerEvent<Element>) => boolean | void, options?: RepeatClickOptions): (event: React.PointerEvent<Element>) => void {
   return useSynchronizedPointerHandler({
     onPointerDown,
-    onPointerMoveOrWait: (_event: globalThis.PointerEvent, modifiers: PointerModifiers, originalEvent: React.PointerEvent<Element>) => {
+    onPointerMoveOrWait: (_event: React.PointerEvent, modifiers: PointerModifiers, originalEvent: React.PointerEvent<Element>) => {
       onPointerDown?.(originalEvent);
     },
     ...options

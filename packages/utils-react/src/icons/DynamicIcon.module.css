@@ -1,9 +1,9 @@
 /* Global defaults (theme can override) */
 :root {
-  --icon-size-sm: 0.875rem; /* 14px if root = 16px */
-  --icon-size-md: 1rem;     /* 16px (default) */
-  --icon-size-lg: 1.25rem;  /* 20px */
-  --icon-size-xl: 1.5rem;   /* 24px */
+  --icon-size-sm: calc(var(--icon-size, 1rem), * 0.875); /* 14px if root = 16px */
+  --icon-size-md: var(--icon-size, 1rem);     /* 16px (default) */
+  --icon-size-lg: calc(var(--icon-size, 1rem) * 1.25);  /* 20px */
+  --icon-size-xl: calc(var(--icon-size, 1rem) * 1.5);   /* 24px */
 }
 
 /* Local root (scoped) */
@@ -87,7 +87,7 @@
 }
 
 /* Semantics (pull from globals with fallbacks) */
-.Icon :global(.primary)            { --layer-color: var(--sxl-app-color-primary, var(--icon-primary,            #595b5e)); }
+.Icon :global(.primary)            { --layer-color: var(--sxl-app-color-primary, var(--icon-primary,  #595b5e)); }
 .Icon :global(.secondary)          { --layer-color: var(--sxl-app-color-secondary,          #9c27b0); }
 .Icon :global(.secondary.light)    { --layer-color: var(--sxl-app-color-secondary-light,    #a060ac); }
 .Icon :global(.success)            { --layer-color: var(--sxl-app-color-success,            #22c55e); }

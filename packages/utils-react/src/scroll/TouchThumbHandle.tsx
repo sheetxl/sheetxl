@@ -6,13 +6,21 @@ import { mergeRefs } from 'react-merge-refs';
 
 import type { Bounds } from '@sheetxl/utils';
 
-import { ScrollbarOrientation } from '../scroll';
-
-import { useCallbackRef, useAnimatedMeasure } from '../hooks';
+import {
+  useCallbackRef, useAnimatedMeasure,
+  type PointerModifiers, type PointerHandlerOptions, useSynchronizedPointerHandler
+} from '../hooks';
 import { ReactUtils, useFullscreenPortal } from '../utils';
 
+import { ScrollbarOrientation } from './IScrollbar';
 
-export interface TouchThumbHandleProps extends React.HTMLAttributes<HTMLDivElement> {
+import styles from './Scrollbar.module.css';
+
+export interface TouchThumbHandleProps extends React.HTMLAttributes<HTMLElement> {
+  /**
+   * The orientation of the scrollbar.
+   */
+  orientation: ScrollbarOrientation;
   /**
    * Possible anchors are. If 'l', 't', 'r', or 'b', then it will center along view the view.
    *
@@ -23,13 +31,11 @@ export interface TouchThumbHandleProps extends React.HTMLAttributes<HTMLDivEleme
 
   size?: number;
 
+  borderColor?: string;
+  backgroundColor?: string;
   borderWidth?: number;
-  borderStroke?: string;
+  fillColor?: string;
 
-  background?: string;
-
-  // onTouchSelectStart?: (anchor: string) => void;
-  // onTouchSelectEnd?: (anchor: string) => void;
   /**
    * Indicate that a touch handling is being used
    */
@@ -50,8 +56,6 @@ export interface TouchThumbHandleProps extends React.HTMLAttributes<HTMLDivEleme
   key?: string;
 
   offset?: number;
-
-  orientation : ScrollbarOrientation;
 }
 
 export interface TouchThumbHandleAttributes {
@@ -72,13 +76,16 @@ const supportsTouchEvents = ReactUtils.detectIt().supportsTouchEvents;
 // const isTouchPrimary = ReactUtils.detectIt().primaryInput === 'touch';
 
 /**
- * TODO - Setup touch detection
- * supportsTouchEvents = ReactUtils.detectIt().supportsTouchEvents;
+ * Tooltip
+ * TODO -
  *
- * // 1. isTouchPrimary
- * // 2. supportsTouchEvents
- * //   2a. show - if hybrid and touchEvent (on component provided as options)
- * //   2b. hide - if hybrid and mouseEvent (on component provided as options)
+ * ! Thumb end needs to end at end of scrollbar or viewport (additionally when at bottom right they overlap.)
+ * (A simple solution would be to just make the scrollbar areas have end larger end padding.)
+ * (A nicer solution would be a 'touch sensor that is a single circle with an 'd-pad' indicate like games with movement)
+ * Hide opposite thumb - currentTouchAnchor
+ * Scrollbar colors - vars are not working from portal
+ * Gripper icon - move to IconPack
+ * Have a way to show during scroll and/or for a time after scrolling.
  */
 
 /**
@@ -88,14 +95,13 @@ export const TouchThumbHandle = memo(
   forwardRef<TouchThumbHandleElement, TouchThumbHandleProps>((props, refForwarded) => {
     const {
       // anchor,
-      borderStroke = "rgb(33, 115, 70)", //"#1a73e8", excel green,
-      background = 'white',
-      borderWidth = 1.5,
+      borderColor = 'var(--sxl-app-color-primary, rgb(33, 115, 70))',
+      backgroundColor = 'var(--sxl-app-color-background, white)',
+      fillColor = 'var(--sxl-app-color-grey, grey)',
+      borderWidth = 3,
       size = 22,
       style: propStyle,
       className: propClassName,
-      // onTouchSelectStart: propOnTouchSelectStart,
-      // onTouchSelectEnd: propOnTouchSelectEnd,
 
       onPointerDown: propOnPointerDown,
       onPointerMove: propPointerMove,
@@ -106,7 +112,6 @@ export const TouchThumbHandle = memo(
       currentTouchAnchor,
       elementParent,
       elementRoot,
-      // refThumbEl,
       key,
       ...rest
     } = props;
@@ -121,44 +126,32 @@ export const TouchThumbHandle = memo(
 
     const isVertical = orientation === ScrollbarOrientation.Vertical;
 
-    // const pointerHandler:PointerHandlerOptions = useMemo(() => {
+    const [dragging, setDragging] = useState(false);
 
-    //   return {
-    //     processTouch: true,
-    //     consumeTouch: true,
-    //     onPointerDown,//: (event: React.PointerEvent<Element>, modifiers: PointerModifiers) => {
-
-    //       // const coords = directionalCoords(view.getCellCoordsFromClient(event.clientX, event.clientY));
-    //       // onTouchSelectStart?.(anchor);
-    //       // return selectionTouchPointerHandler.onSelectionPointerDown(
-    //       //   event,
-    //       //   modifiers,
-    //       //   view,
-    //       //   coords,
-    //       //   coordsPivot,
-    //       //   false/*scrollToAnchor*/,
-    //       //   true/*extendSelection*/);
-    //     // },
-    //     onPointerMoveOrWait: (event: globalThis.PointerEvent, modifiers: PointerModifiers, originalEvent: React.PointerEvent<Element>) => {
-    //       // const coords = directionalCoords(view.getCellCoordsFromClient(event.clientX, event.clientY));
-    //       // return selectionTouchPointerHandler.onSelectionPointerMoveOrWait(
-    //       //   event,
-    //       //   modifiers,
-    //       //   originalEvent,
-    //       //   view,
-    //       //   coords,
-    //       //   selectingPivots.current?.coordsPivot,
-    //       //   true/*scrollToAnchor*/,
-    //       //   true/*resetCellAnchor*/
-    //       // );
-    //     },
-    //     onPointerUp: (event: globalThis.PointerEvent, modifiers: PointerModifiers, originalEvent: React.PointerEvent<Element>) => {
-    //       // onTouchSelectEnd?.(anchor);
-    //       // return selectionTouchPointerHandler.onPointerUp(event, modifiers, originalEvent);
-    //     }
-    //   }
-    // }, []);
-    // const handlePointerDown = useSynchronizedPointerHandler(pointerHandler);
+    const pointerHandler:PointerHandlerOptions = useMemo(() => {
+      return {
+        processTouch: true,
+        consumeTouch: true,
+        onPointerDown: (e: React.PointerEvent<HTMLElement>, modifiers: PointerModifiers) => {
+          // (e.currentTarget as Element).setPointerCapture(e.pointerId);
+          setDragging(true);
+          onPointerDown?.(e);
+          e.preventDefault();
+          e.stopPropagation();
+        },
+        onPointerMoveOrWait: (e: React.PointerEvent<HTMLElement>, modifiers: PointerModifiers, originalEvent: React.PointerEvent<HTMLElement>) => {
+          onPointerMove?.(e);
+        },
+        onPointerUp: (e: React.PointerEvent<HTMLElement>, modifiers: PointerModifiers, originalEvent: React.PointerEvent<HTMLElement>) => {
+          // try { (e.currentTarget as Element).releasePointerCapture(e.pointerId); } catch {}
+          setDragging(false);
+          onPointerUp?.(originalEvent);
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    }, []);
+    const handlePointerDown = useSynchronizedPointerHandler(pointerHandler);
 
     const bounds: Bounds = useMemo(() => {
       const paddingOffset = (size / 2) + (borderWidth / 2) + 6;
@@ -201,39 +194,41 @@ export const TouchThumbHandle = memo(
 
       setPortal(createPortal(
         <div
-          className={clsx(`touch-thumb-handle`, propClassName)}
+          className={
+            clsx(`touch-thumb`,
+            styles['touch-thumb'],
+            propClassName,
+            styles,
+            {
+            'dragging': dragging
+          })}
           ref={refForwarded}
           style={{
-            position: "absolute",
             left: absoluteScrollLeft + (anchorRect?.x ?? 0) - ((size + borderWidth) / 2),
             top: absoluteScrollTop + (anchorRect?.y ?? 0) - ((size + borderWidth) / 2),
-            width: isVertical ? size : size / 2,
-            height: isVertical ? size / 2 : size,
+            width: isVertical ? size : size * 1.8,
+            height: isVertical ? size * 1.8 : size,
             borderWidth: `${borderWidth}px`,
+            boxShadow: dragging ? `${backgroundColor} 0px 0px 0px 1.5px` : undefined,
             borderStyle: 'solid',
-            borderColor: borderStroke,
-            borderRadius: '4px',
-            background: background,
-            // boxShadow: `0 0 0 1.5px ${background}`,
-            cursor: "grab",
-            pointerEvents: "all",
-            opacity: currentTouchAnchor ? 0 : 1, //  && currentTouchAnchor !== anchor, we don't do this because excel doesn't and if pivoting around anchor then the touch is in the incorrect spot
+            borderColor: borderColor,
+            backgroundColor: backgroundColor,
+            opacity: currentTouchAnchor ? 0 : undefined, //  && currentTouchAnchor !== anchor, we don't do this because excel doesn't and if pivoting around anchor then the touch is in the incorrect spot
             transitionDuration: '160ms',
             // transitionTimingFunction: 'linear',
             // transitionDelay: "0",
-            transitionProperty: 'opacity',
-            // willChange: 'opacity',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='6.4' height='12' viewBox='0 0 9.6 16' version='1.1' fill='${fillColor}' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'%3E%3Cpath d='M 9.60008,14.40009 C 9.60008,15.28374 8.88368,16 8.00003,16 7.11639,16 6.40012,15.28374 6.40012,14.40009 c 0,-0.88365 0.71627,-1.60005 1.59991,-1.60005 0.88365,0 1.60005,0.7164 1.60005,1.60005 m 0,-6.40012 c 0,0.88364 -0.7164,1.60004 -1.60005,1.60004 -0.88364,0 -1.59991,-0.7164 -1.59991,-1.60004 0,-0.88365 0.71627,-1.60005 1.59991,-1.60005 0.88365,0 1.60005,0.7164 1.60005,1.60005 m 0,-6.40006 c 0,0.88365 -0.7164,1.60005 -1.60005,1.60005 -0.88364,0 -1.59991,-0.7164 -1.59991,-1.60005 C 6.40012,0.71626 7.11639,0 8.00003,0 8.88368,0 9.60008,0.71626 9.60008,1.59991 M 3.19996,14.40009 C 3.19996,15.28374 2.48369,16 1.60005,16 0.7164,16 0,15.28374 0,14.40009 c 0,-0.88365 0.7164,-1.60005 1.60005,-1.60005 0.88364,0 1.59991,0.7164 1.59991,1.60005 m 0,-6.40012 c 0,0.88364 -0.71627,1.60004 -1.59991,1.60004 C 0.7164,9.60001 0,8.88361 0,7.99997 0,7.11632 0.7164,6.39992 1.60005,6.39992 c 0.88364,0 1.59991,0.7164 1.59991,1.60005 m 0,-6.40006 c 0,0.88365 -0.71627,1.60005 -1.59991,1.60005 C 0.7164,3.19996 0,2.48356 0,1.59991 0,0.71626 0.7164,0 1.60005,0 2.48369,0 3.19996,0.71626 3.19996,1.59991' /%3E%3C/svg%3E%0A")`,
+            // backgroundImage: `url("data:image/svg+xml,%3Csvg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' version='1.1' fill='${fillColor}' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'%3E%3Cpath d='${path}' /%3E%3C/svg%3E%0A")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center center',
             ...propStyle
           }}
           tabIndex={-1}
-          // onPointerDown={handlePointerDown}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
+          onPointerDown={handlePointerDown}
           {...rest}
         />
       , elementRoot ?? getPortalContainer(), key));
-    }, [topAnchor, leftAnchor, bounds?.x, bounds?.y, bounds?.width, bounds?.height, propClassName, currentTouchAnchor, background, size, borderWidth, borderStroke, elementParent, isFullscreen, key]);
+    }, [topAnchor, dragging, borderColor, backgroundColor, fillColor, leftAnchor, bounds?.x, bounds?.y, bounds?.width, bounds?.height, propClassName, currentTouchAnchor, backgroundColor, size, borderWidth, borderColor, elementParent, isFullscreen, key]);
 
     if (!bounds) return null;
 
