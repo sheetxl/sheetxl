@@ -134,7 +134,7 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     } else {
       setWorkbook(propWorkbook);
     }
-  }, [propWorkbook]);
+  }, [propWorkbook]); // propCreateWorkbookOptions, defaultThemes
 
 
   useLayoutEffect(() => {

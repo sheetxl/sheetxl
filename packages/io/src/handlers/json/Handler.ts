@@ -97,6 +97,13 @@ export const toBufferJSON: WorkbookToHandler = async (
   return asArray;
 }
 
+/**
+ * Import for reading from a JSON array buffer into an IWorkbook.
+ *
+ * @param array The array buffer containing the JSON data.
+ * @param options Options for reading the workbook.
+ * @returns A promise that resolves to an IWorkbook instance.
+ */
 export const fromBufferJSON: WorkbookFromHandler = async (
   array: ArrayBufferLike,
   options: ReadWorkbookOptions

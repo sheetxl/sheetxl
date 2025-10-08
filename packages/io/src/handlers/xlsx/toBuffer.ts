@@ -8,6 +8,13 @@ import { WorkbookToHandler } from '../../registry';
 
 import type { WriteXLSXOptions } from './Types';
 
+/**
+ * Converts a workbook model to an XLSX buffer.
+ *
+ * @param wbModel The workbook instance to export.
+ * @param _options Optional options for saving the workbook.
+ * @returns A promise that resolves to an array buffer representing the XLSX file.
+ */
 export const toBuffer: WorkbookToHandler = async (wbModel: IWorkbook, _options?: WriteXLSXOptions): Promise<ArrayBufferLike> => {
   const XLSX = await import(/* webpackChunkName: "xlsx", webpackPrefetch: true */ 'xlsx');
   const wbJSON:IWorkbook.JSON = await wbModel.toJSON(true/*ignoreData*/);

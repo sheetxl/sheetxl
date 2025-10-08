@@ -92,11 +92,23 @@ export interface WriteFormatType extends FormatType {
   handler: WorkbookToHandler;
 };
 
+/**
+ * Options for reading and creating a workbook from various sources.
+ */
 export interface ReadWorkbookOptions {
   /**
    * The io source for reading. Can be a direct value, Promise, or function.
    */
   source: IOSource | Promise<IOSource> | (() => IOSource | Promise<IOSource>);
+
+  /**
+   * Indicate the the workbook should be read-only.
+   *
+   * @remarks
+   * This is a shortcut to createWorkbookOptions.readonly = true
+   * If it is set in the createWorkbookOptions it will override this value.
+   */
+  readonly?: boolean;
 
   /**
    * Provide options to the workbook constructor.
@@ -133,6 +145,9 @@ export interface ReadWorkbookOptions {
   typedCreateWorkbookOptions?: Record<string, IWorkbook.ConstructorOptions>;
 };
 
+/**
+ * Options for writing and exporting a workbook to various destinations.
+ */
 export interface WriteWorkbookOptions {
   /**
    * The destination for writing the workbook.

@@ -1,6 +1,8 @@
-import React, { memo, forwardRef, useCallback } from 'react';
+import React, { memo, useMemo, forwardRef, useCallback } from 'react';
 
-import { ICommands, type CommandButtonOptions, CommandButtonType } from '@sheetxl/utils-react';
+import {
+  ICommands, type CommandButtonOptions, CommandButtonType, useCommands
+} from '@sheetxl/utils-react';
 
 import { FloatReference } from '@sheetxl/utils-mui';
 
@@ -18,15 +20,42 @@ export interface CellsFormatCommandButtonProps extends CommandButtonOptions {
 /**
  * Menu for cell formatting
  */
+// TODO - make simple but it needs to supported nested menus.
 export const CellsFormatCommandButton = memo(
   forwardRef<HTMLElement, CellsFormatCommandButtonProps>((props, refForwarded) => {
   const {
     commands: propCommands,
     commandHook: propCommandHook,
     scope,
-    // disabled: propDisabled = false,
+    disabled: propDisabled = false,
     ...rest
   } = props;
+
+  const commandKeys:string[] = [
+    'resizeRows',
+    'autoFitRows',
+    'resizeColumns',
+    'autoFitColumns',
+    'hideColumns',
+    'hideRows',
+    'unhideColumns',
+    'unhideRows'
+  ];
+
+  const resolvedCommands = useCommands(propCommands, commandKeys);
+  const { allDisabled } = useMemo(() => {
+    let count = 0;
+    const resolvedCommandsLength = resolvedCommands.length;
+    for (let i=0; i<resolvedCommandsLength; i++) {
+      const command = resolvedCommands[i];
+      if (command && !command.disabled()) {
+        // if first enabled command set otherwise null
+        count++;
+      }
+    }
+    return { allDisabled: count === 0 };
+  }, [resolvedCommands]);
+
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const commandButtonProps = {
       variant: CommandButtonType.Menuitem,
@@ -89,6 +118,7 @@ export const CellsFormatCommandButton = memo(
       commandHook={propCommandHook}
       scope={scope}
       createPopupPanel={createPopupPanel}
+      disabled={propDisabled || allDisabled}
       icon={'CellsFormat'}
       label="Format Cells"
       tooltip="Change row and column sizes or visibility."

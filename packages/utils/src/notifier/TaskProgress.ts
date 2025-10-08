@@ -15,7 +15,6 @@ export interface TaskProgress {
    * May be called periodically to update the progress.
    *
    * @param amount The amount of progress made.
-   * @param total If total is not provided then the amount will be shown
    */
   onProgress?(amount: number): void;
   /**

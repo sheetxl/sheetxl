@@ -222,6 +222,15 @@ export class DefaultWorkbookIO {
       type = TextUtils.getFileNameExtension(name);
     }
 
+    // convenience for readonly
+    if (options.readonly !== undefined) {
+      options = { ...options };
+      options.createWorkbookOptions = {
+        readonly: true,
+        ...(options.createWorkbookOptions || {}),
+      }
+      delete options.readonly; // not needed but.
+    }
     // if function resolve
     if (typeof source === 'function') {
       source = source();
