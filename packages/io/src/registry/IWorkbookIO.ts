@@ -14,6 +14,7 @@ import { type IWorkbook } from '@sheetxl/sdk';
  * ### **Source Type** (Where/How data is stored)
  * The physical location or container of the workbook data:
  * - **File**: Local file system files (`File` objects)
+ * - **Blob**: Binary data blobs (from canvas, clipboard, etc.)
  * - **URL/Fetch**: Remote resources fetched via HTTP/HTTPS
  * - **ArrayBuffer**: Raw binary data in memory
  * - **Base64**: Base64-encoded strings
@@ -87,6 +88,7 @@ export interface IWorkbookIO {
    * | String starting with `/`, `./`, `../` | Relative/absolute path | `"./data/workbook.csv"` |
    * | Other strings | Treated as URL/path | `"workbook.xlsx"` |
    * | `File` object | Browser File API | `<input type="file">` result |
+   * | `Blob` object | Binary data blob | Canvas, clipboard, etc. |
    * | `ArrayBuffer` or TypedArray | Binary buffer | Raw bytes in memory |
    * | `ReadableStream` | Streaming data | Converted to buffer first |
    * | `Promise<T>` | Async source | Resolved, then re-detected |

@@ -3,6 +3,8 @@ sidebar_position: 50
 title: Listening for Changes
 ---
 
+## Using SDK
+
 To listen for data range changes use [addListener](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html#addlistener).
 
 ```typescript
@@ -15,4 +17,34 @@ const removeListener:RemoveListener = workbook.getRange('Sheet1!A1:E5000').addLi
   console.log(`We received an event from ${event.getSource().toString()}`);
 });
 // call removeListener() to remove the listener when finished
+```
+
+## Using React
+
+2 hooks are available for React to listen for changes these are:
+
+* [useModelListener](https://api.sheetxl.com/functions/_sheetxl_react.useModelListener.html)
+* [useRangeListener](https://api.sheetxl.com/functions/_sheetxl_react.useRangeListener.html)
+
+
+```tsx title="useModelListener example"
+import { IWorkbook } from '@sheetxl/sdk';
+import { Studio, useModelListener } from '@sheetxl/mui-studio';
+
+/* Listen for changes to sheet */
+useModelListener<ISheet, ISheet.IListeners>(sheet, {
+  // See ISheet.IListeners for all events
+  onBeforeSave?(source: ISheet): Promise<void> | void {
+    // throw an exception to prevent save.
+  },
+  onSave(source: ISheet, json: ISheet.JSON): void {
+    // do something with the json
+  },
+}, {
+  // Optional: Fire listeners immediately on mount with current state
+  fireOnModelChange: true,
+  // Optional: Only fire once
+  once: false
+});
+
 ```
