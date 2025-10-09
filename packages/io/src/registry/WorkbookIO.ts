@@ -99,6 +99,23 @@ export class DefaultWorkbookIO implements IWorkbookIO {
         return await this._fromFile(file, options);
       }
 
+      case 'blob': {
+        const blob = source as Blob;
+        const arrayBuffer = await blob.arrayBuffer();
+        const readType = (await this.getReadFormats({ format, ext }))[0];
+
+        if (!readType) {
+          throw new Error('No read type available for blob input.');
+        }
+
+        const workbook: IWorkbook = await this._readArrayBuffer(arrayBuffer, readType, options);
+        return {
+          workbook,
+          title: name || 'read-blob',
+          format: readType
+        };
+      }
+
       case 'base64': {
         let base64String: string;
 
@@ -314,7 +331,7 @@ export class DefaultWorkbookIO implements IWorkbookIO {
    *
    * @internal
    */
-  protected _detectImportSourceType(source: ReadWorkbookOptions | string): 'base64' | 'fetch' | 'buffer' | 'file' | 'stream' | 'auto' | null {
+  protected _detectImportSourceType(source: ReadWorkbookOptions | string): 'base64' | 'fetch' | 'buffer' | 'file' | 'blob' | 'stream' | 'auto' | null {
     // Handle Base64Args - explicit disambiguation
     if (source && typeof source === 'object' && 'base64' in source) {
       return 'base64';
@@ -346,9 +363,14 @@ export class DefaultWorkbookIO implements IWorkbookIO {
       return 'fetch';
     }
 
-    // Handle File objects
+    // Handle File objects (must check before Blob since File extends Blob)
     if (typeof File !== 'undefined' && source instanceof File) {
       return 'file';
+    }
+
+    // Handle Blob objects (check after File)
+    if (typeof Blob !== 'undefined' && source instanceof Blob) {
+      return 'blob';
     }
 
     // Handle ArrayBuffer and TypedArrays

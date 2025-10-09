@@ -31,7 +31,7 @@ export interface Base64Args {
  * This type encompasses all the different ways data can be provided
  * for import operations, from simple strings to complex stream objects.
  */
-export type IOSource = string | File | ArrayBufferLike | ReadableStream<Uint8Array> | FetchArgs | Base64Args;
+export type IOSource = string | File | Blob | ArrayBufferLike | ReadableStream<Uint8Array> | FetchArgs | Base64Args;
 
 /**
  * Union type representing all possible input sources for workbook imports.
