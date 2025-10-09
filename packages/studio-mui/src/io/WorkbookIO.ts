@@ -1,121 +1,59 @@
 import type { IWorkbook } from '@sheetxl/sdk';
 
-
 // Re-export all types from @sheetxl/io
 export type * from '@sheetxl/io';
 
 // Import specific types we need locally
 import type {
-  ReadWorkbookOptions, WorkbookHandle, ReadFormatType, WriteFormatType, WriteWorkbookOptions
+  IWorkbookIO, GetFormatsOptions, ReadWorkbookOptions, WorkbookHandle, ReadFormatType, WriteFormatType, WriteWorkbookOptions
 } from '@sheetxl/io';
 
 import { IReactNotifier } from '@sheetxl/utils-react';
 
-// Copied from @sheetxl/io
-const DEFAULT_LOAD_TYPES: ReadFormatType[] = [
-  {
-    key: 'SheetXL',
-    description: 'SheetXL',
-    mimeType: '.sxl',
-    exts: ['sxl'],
-    handler: null,
-    isDefault: true
-  },
-  {
-    key: 'CSV',
-    description: 'Comma Delimited',
-    mimeType: 'text/csv',
-    exts: ['csv'],
-    handler: null
-  },
-  {
-    key: 'Excel',
-    description: 'Excel Workbook',
-    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    exts: [
-      'xlsx', // Excel Workbook
-      'xls', // Excel 97-2003 Workbook
-      'xlsm', // Excel Macro-Enabled Workbook
-      // 'xlsb', // Excel Binary Workbook
-      // 'xltx', // Excel Template
-      // 'xltm' // Excel Macro-Enabled Template
-    ],
-    handler: null
-  }
-];
-
-const DEFAULT_SAVE_TYPES: WriteFormatType[] = [
-  { key: 'SheetXL', mimeType: 'application/vnd.sheetxl.sheet', description: 'SheetXL', ext: 'sxl', handler: null, isDefault: true }, // our json extension. Note - We will be adding a compressed flavor with only .sxlz
-  { key: 'CSV', mimeType: 'text/csv', description: 'Comma Delimited', ext: 'csv', handler: null },
-  { key: 'Excel', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', description: 'Excel Workbook', ext: 'xlsx', tags: ['SheetJS Pro'], handler: null }
-];
 
 /**
  * Wraps the IO WorkbookIO class to provide lazy import.
  *
- * Documented
+ * @see '@sheetxl/io/IWorkbookIO'
  */
-export class _WorkbookIO {
+export class _WorkbookIO implements IWorkbookIO {
 
-  private _readFormatType: readonly ReadFormatType[] = [];
-  private _writeFormatType: readonly WriteFormatType[] = [];
+  protected _loadedIO: IWorkbookIO = null;
 
-  constructor(readFormatType: ReadFormatType[]=DEFAULT_LOAD_TYPES, writeFormatType: WriteFormatType[]=DEFAULT_SAVE_TYPES) {
-    this._readFormatType = Object.freeze([...readFormatType]);
-    this._writeFormatType = Object.freeze([...writeFormatType]);
-  }
+  protected async _loadIO(): Promise<IWorkbookIO> {
+    let loadedIO = this._loadedIO;
+    if (loadedIO) return loadedIO;
 
-  // TODO - make this a promise
-  getReadFormats(): readonly ReadFormatType[] {
-    return this._readFormatType;
-  }
-
-  // TODO - make this a promise
-  getWriteFormats(): readonly WriteFormatType[] {
-    return this._writeFormatType;
-  }
-
-  /**
-   * A string array of all the mimeTYpes. Used for the input accept attribute.
-   *
-   * @returns An array of strings for the input types.
-   */
-  getAllReadFormatTypeAsString(): string[] {
-    const inputTypes:string[] = [];
-    const types = this._readFormatType;
-    for (let i=0; i<types.length; i++) {
-      // inputTypes.push(types[i].mimeType);
-      for (let j=0; j<types[i].exts.length; j++) {
-        inputTypes.push('.' + types[i].exts[j]);
-      }
-    }
-    return inputTypes;
-  }
-
-  /**
-   * Exports to the local file system attempting to use the fileName provided. This will
-   * use the exportType to determine the export handler to use.
-   *
-   * @returns a Promise indicating success or failure.
-   */
-  async writeFile(fileName: string | null, workbook: IWorkbook, options?: WriteWorkbookOptions): Promise<boolean> {
-    if (!workbook || !fileName) {
-      throw new Error('Workbook model or file name must be provided.');
-    }
     try {
-      const moduleIO = await import(/* webpackChunkName: "io" */'@sheetxl/io');
-      return moduleIO.WorkbookIO.writeFile(
-        fileName,
-        workbook,
-        options
-      )
+      const ioModule = await import(/* webpackChunkName: "io" */'@sheetxl/io');
+      loadedIO = ioModule.WorkbookIO;
+      this._loadedIO = loadedIO;
     } catch (error: any) {
-      throw new Error('Unable to load io library', { cause: error });
+      throw error;
     }
+    return loadedIO;
+  }
+
+  /** @inheritdoc IWorkbookIO.getReadFormats */
+  async getReadFormats(options?: GetFormatsOptions): Promise<ReadFormatType[]> {
+    const loadedIO = await this._loadIO();
+    return loadedIO.getReadFormats(options);
+  }
+
+  /** @inheritdoc IWorkbookIO.getWriteFormats */
+  async getWriteFormats(options?: GetFormatsOptions): Promise<WriteFormatType[]> {
+    const loadedIO = await this._loadIO();
+    return loadedIO.getWriteFormats(options);
+  }
+
+  /** @inheritdoc IWorkbookIO.writeArrayBuffer */
+  async writeArrayBuffer(workbook: IWorkbook, options?: WriteWorkbookOptions): Promise<ArrayBufferLike> {
+    const loadedIO = await this._loadIO();
+    return loadedIO.writeArrayBuffer(workbook, options);
   }
 
   /**
-   * Returns A record that includes a title and a promise for the workbook.
+   * Override default IWorkbookIO to add notifier support.
    *
    * @param options {@link ReadWorkbookOptions}
    */
@@ -123,16 +61,13 @@ export class _WorkbookIO {
     options: ReadWorkbookOptions,
     notifier?: IReactNotifier
   ): Promise<WorkbookHandle> {
+
     let hideBusyReading:any;
-    let ioModule:any;
-    const hideBusyOpening = await notifier?.showBusy?.(`Opening${options.name ? ` ${options.name}` : ''}...`);
+    let hideBusyOpening:any;
     try {
-      ioModule = await import(/* webpackChunkName: "io" */'@sheetxl/io');
-    } catch (error: any) {
-      throw error;
-    }
-    try {
-      const retValue:WorkbookHandle = await ioModule.WorkbookIO.read({
+      hideBusyOpening = await notifier?.showBusy?.(`Opening${options.name ? ` ${options.name}` : ''}...`);
+      const loadedIO = await this._loadIO();
+      const retValue:WorkbookHandle = await loadedIO.read({
         ...options,
         progress: {
           async onStart(name: string): Promise<void> {
@@ -141,6 +76,8 @@ export class _WorkbookIO {
           }
         }
       });
+      hideBusyOpening?.();
+      hideBusyReading?.();
       return retValue;
     } catch (error: any) {
       // before rethrow
@@ -148,11 +85,49 @@ export class _WorkbookIO {
       hideBusyReading?.();
       throw error;
       // If the error is a string, we can assume it's
-    } finally {
-      hideBusyOpening?.();
-      hideBusyReading?.();
     }
   }
+
+  /** @inheritdoc IWorkbookIO.writeFile */
+  async writeFile(fileName: string | null, workbook: IWorkbook, options?: WriteWorkbookOptions): Promise<boolean> {
+    const loadedIO = await this._loadIO();
+    return loadedIO.writeFile(fileName, workbook, options);
+  }
+
+  /** @inheritdoc IWorkbookIO.registerReadFormat */
+  async registerReadFormat(format: ReadFormatType): Promise<void> {
+    const loadedIO = await this._loadIO();
+    return loadedIO.registerReadFormat(format);
+  }
+
+  /** @inheritdoc IWorkbookIO.registerWriteFormat */
+  async registerWriteFormat(format: WriteFormatType): Promise<void> {
+    const loadedIO = await this._loadIO();
+    return loadedIO.registerWriteFormat(format);
+  }
+
+  /**
+   * A string array of all the mimeTYpes. Used for the input accept attribute.
+   *
+   * @returns An array of strings for the input types.
+   */
+  async getAllReadFormatsAsString(): Promise<string> {
+    const loadedIO = await this._loadIO();
+    const types = await loadedIO.getReadFormats();
+    const inputTypes:string[] = [];
+    const typesLength = types.length;
+    for (let i=0; i<typesLength; i++) {
+      const type = types[i];
+      const exts = type.exts;
+      const extsLength = exts.length;
+      // inputTypes.push(types[i].mimeType);
+      for (let j=0; j<extsLength; j++) {
+        inputTypes.push('.' + exts[j]);
+      }
+    }
+    return inputTypes.join(', ');
+  }
+
 }
 
 /**

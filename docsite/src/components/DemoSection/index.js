@@ -7,7 +7,7 @@ const examples = [
   {
     url: `https://demo.sheetxl.com?source=${encodeURI('https://www.sheetxl.com/docs/examples/feature-highlights.xlsx')}`,
     src: '/docs/examples/feature-highlights-thumb.png',
-    gitSource: 'https://github.com/sheetxl/sheetxl/tree/main/examples/app',
+    gitSource: 'https://github.com/sheetxl/sheetxl/tree/main/examples/studio-mui',
     title: 'Feature Highlights',
     description: `Highlights current and planned features.`,
   },

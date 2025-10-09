@@ -1,5 +1,5 @@
-import { toBuffer } from './toBuffer';
-import { fromBuffer } from './fromBuffer';
+import { writeBuffer } from './writeBuffer';
+import { readBuffer } from './readBuffer';
 
-export { toBuffer as toBufferXLSX };
-export { fromBuffer as fromBufferXLSX };
+export { writeBuffer as writeBufferXLSX };
+export { readBuffer as readBufferXLSX };

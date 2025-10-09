@@ -3,7 +3,7 @@ import { Scalar, IRange, ICell, ICellRange, IWorkbook, Workbook, ISheet } from '
 // cspell:ignore papaparse, Unparse
 import type { ParseConfig, UnparseConfig } from 'papaparse';
 
-import type { WorkbookToHandler } from '../../types';
+import type { WorkbookWriteHandler } from '../../types';
 import type { WriteCSVOptions, ReadCSVOptions } from './Types';
 
 /**
@@ -16,7 +16,7 @@ import type { WriteCSVOptions, ReadCSVOptions } from './Types';
  * @remarks
  * This only exports the activeTab.
  */
-export const toBufferCSV: WorkbookToHandler = async (workbook: IWorkbook, options?: WriteCSVOptions): Promise<ArrayBufferLike> => {
+export const writeBufferCSV: WorkbookWriteHandler = async (workbook: IWorkbook, options?: WriteCSVOptions): Promise<ArrayBufferLike> => {
   const {
     trimLeadingBlankRow = true,
     trimLeadingBlankColumn = true,
@@ -93,7 +93,7 @@ export const toBufferCSV: WorkbookToHandler = async (workbook: IWorkbook, option
  * @remarks
  * Creates a workbook with a single tab.
  */
-export const fromBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOptions): Promise<IWorkbook> => {
+export const readBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOptions): Promise<IWorkbook> => {
   const {
     papaParseConfig,
     setValuesOptions,
@@ -152,3 +152,9 @@ export const fromBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOption
   });
   return workbook;
 }
+
+// export const registerCSV = (): void => {
+//   const { registerWorkbookRead, registerWorkbookWrite } = require('../../registry');
+//   registerWorkbookWrite('csv', toBufferCSV);
+//   registerWorkbookRead('csv', fromBufferCSV);
+// }

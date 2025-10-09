@@ -1,0 +1,47 @@
+
+.scrollpane {
+  position: relative;
+  display: flex;
+}
+
+.vertical-container {
+  display: flex;
+  flex: 0;
+}
+
+.horizontal-corner-container {
+  display: flex;
+  flex: none;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.horizontal-container {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+}
+
+.scrollbar-sizer {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+
+.scrollpane-content {
+  position: relative;
+  width: 100%;
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.scrollpane-content-element {
+  display: flex;
+  flex: 1 1 100%;
+  overflow: hidden;
+}

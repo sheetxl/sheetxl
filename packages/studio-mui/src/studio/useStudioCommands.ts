@@ -108,7 +108,7 @@ export const useStudioCommands = (
       inputFile = input;
     }
     if (!inputFile) {
-      inputResolve = await CommonUtils.openFileDialog(inputInputs ?? WorkbookIO.getAllReadFormatTypeAsString().join(','));
+      inputResolve = await CommonUtils.openFileDialog(inputInputs ?? (await WorkbookIO.getAllReadFormatsAsString()));
     } else {
       inputResolve = input as (File | Promise<File>);
     }
@@ -134,20 +134,20 @@ export const useStudioCommands = (
   const exportToFile = useCallbackRef(async (
     workbook: IWorkbook,
     fileNameDefault: string | null,
-    exportType?: WriteFormatType
+    format?: WriteFormatType
   ): Promise<boolean> => {
     if (!fileNameDefault && requestWorkbookTitle) {
-      const fileNameRequested: string | null = await requestWorkbookTitle(`Enter Workbook name to ${exportType.isDefault ? `Save.` : `Export as ${exportType.description}.`}`);
+      const fileNameRequested: string | null = await requestWorkbookTitle(`Enter Workbook name to ${format?.isDefault ? `Save.` : `Export as ${format?.description}.`}`);
       if (fileNameRequested === null) {
         return false;
       }
       return WorkbookIO.writeFile(fileNameRequested, workbook, {
-        formatType: exportType.key
+        format: format.key
       });
     }
 
     return WorkbookIO.writeFile(fileNameDefault, workbook, {
-      formatType: exportType.key
+      format: format.key
     });
   }, [notifier, workbook, requestWorkbookTitle]);
 
@@ -161,19 +161,25 @@ export const useStudioCommands = (
     };
   }, []);
 
-  const commandsArray = useMemo(() => {
-    const commandsExport: ICommand<any, any>[] = [];
-    if (!importExportDisabled) {
-      WorkbookIO.getWriteFormats().forEach((handler: WriteFormatType) => {
-        const isDefault = handler.isDefault;
+  const [commandsAsync, setCommandsAsync] = React.useState<ICommand<any, any>[]>([]);
+  useEffect(() => {
+    if (importExportDisabled) {
+      setCommandsAsync([]);
+      return;
+    }
+    const readExport = async () => {
+      const commands: ICommand<any, any>[] = [];
+      const writeFormats = await WorkbookIO.getWriteFormats();
+      writeFormats.forEach((format: WriteFormatType) => {
+        const isDefault = format.isDefault;
         const commandProperties:ICommandProperties<any, any> = {
-          label: isDefault ? `Save Workbook` : `Save Workbook as ${handler.description}`,
+          label: isDefault ? `Save Workbook` : `Save Workbook as ${format.description}`,
           scopedLabels: {
             'workbook': 'Save',
-            'saveWorkbook': `as ${handler.description}`
+            'saveWorkbook': `as ${format.description}`
           },
-          tags: handler.tags,
-          description: `Save the workbook to the desktop${isDefault ? '' : ` as ${handler.description}`}.`,
+          tags: format.tags,
+          description: `Save the workbook to the desktop${isDefault ? '' : ` as ${format.description}`}.`,
           icon: 'FileDownloadAsSheet'
         };
         if (isDefault) {
@@ -182,7 +188,7 @@ export const useStudioCommands = (
             modifiers: [KeyModifiers.Ctrl]
           }
           // Also do a save as with ctrl+shift+S
-          commandsExport.push(new Command<string>(`saveWorkbookAs`, target, {
+          commands.push(new Command<string>(`saveWorkbookAs`, target, {
             label: `Save Workbook As\u2026`, // '...' // ellipsis
             scopedLabels: {
               'workbook': 'Save as\u2026', // '...' // ellipsis
@@ -197,27 +203,27 @@ export const useStudioCommands = (
             description: `Save the workbook to the desktop with the provided name.`
           }, () => {
             // specifically ignore the name
-            exportToFile(workbook, null, handler)
+            exportToFile(workbook, null, format)
               .catch(error => {
               notifier.showError(error);
             });
           }));
         }
-        const formatKey = handler.key;
+        const formatKey = format.key;
         const commandKey = isDefault ? 'saveWorkbook' : `saveWorkbookAs${formatKey}`;
         if (formatKey === 'CSV') {
           commandProperties.icon = 'FileDownloadAsCSV';
         } else if (formatKey === 'Excel') {
           commandProperties.icon = 'FileDownloadAsExcel';
         }
-        commandsExport.push(new Command<string>(commandKey, target, commandProperties, (inputName: string) => {
-          exportToFile(workbook, inputName ?? workbookTitle, handler)
+        commands.push(new Command<string>(commandKey, target, commandProperties, (inputName: string) => {
+          exportToFile(workbook, inputName ?? workbookTitle, format)
             .catch(error => {
             notifier.showError(error);
           });
         }));
       });
-      commandsExport.push(new Command<File | Promise<File> | string>('openWorkbook', target, {
+      commands.push(new Command<File | Promise<File> | string>('openWorkbook', target, {
         label: 'Open Workbook\u2026', // '...' // ellipsis
         scopedLabels: {
           'workbook': 'Open\u2026', // '...'  // ellipsis
@@ -241,7 +247,7 @@ export const useStudioCommands = (
           const title = loadResults.title;
           const importedWorkbook = loadResults.workbook;
           const importedSheet = importedWorkbook.getSelectedSheet();
-          if (loadResults.formatType.mimeType === 'text/csv' && CSV_IMPORT_ADD_SHEET) {
+          if (loadResults.format.mimeType === 'text/csv' && CSV_IMPORT_ADD_SHEET) {
             // Add to existing sheet
             const newSheetName = workbook.findValidSheetName(title);
             await workbook.doBatch(async () => {
@@ -277,7 +283,7 @@ export const useStudioCommands = (
           notifier.showError(error);
         }
       }));
-      commandsExport.push(new Command<string>('openWorkbookFromUrl', target, {
+      commands.push(new Command<string>('openWorkbookFromUrl', target, {
         label: 'Open Workbook From Web',
         scopedLabels: {
           'insert': 'From Web',
@@ -308,8 +314,12 @@ export const useStudioCommands = (
         console.log('openWorkbookFromUrl', url);
         // addImage(this, { fetch: url });
       }));
+      setCommandsAsync(commands);
     }
+    readExport();
+  }, [importExportDisabled, notifier, workbook, workbookTitle]); // undoManager
 
+  const commandsSync = useMemo(() => {
     let commandsDarkModeToggle: ICommand<any, any>[] = [];
     if (themeOptions) {
       commandsDarkModeToggle = [
@@ -338,7 +348,6 @@ export const useStudioCommands = (
       ];
     }
     const commandsStudio: ICommand<any, any>[] = [
-      ...commandsExport,
       ...commandsDarkModeToggle,
       new SimpleCommand('help', target, {
         label: 'Show Help',
@@ -421,7 +430,14 @@ export const useStudioCommands = (
       // })
     ];
     return commandsStudio;
-  }, [workbook, workbookTitle, notifier, importExportDisabled, themeOptions, commandsParent, undoManager]);
+  }, [workbook, workbookTitle, notifier, importExportDisabled, themeOptions]);
+
+  const commandsArray = useMemo(() => {
+    return [
+      ...commandsSync,
+      ...commandsAsync
+    ];
+  }, [commandsSync, commandsAsync]);
 
   const commands = useMemo(() => {
     let retValue = null;
@@ -432,7 +448,7 @@ export const useStudioCommands = (
     }
     retValue.addCommands(commandsArray, true);
     return retValue;
-  }, [commandsParent, commandsArray]);
+  }, [commandsParent, commandsSync, commandsAsync]);
 
   // const commands:ICommands.IGroup = useMemo(() => {
   //   commandsParent?.addCommands(commandsArray, true);
