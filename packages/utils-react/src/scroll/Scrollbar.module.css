@@ -27,6 +27,7 @@
     background: transparent;
   }
   display: flex;
+  flex: 1 1 100%;
   overflow: hidden;
   border-radius: var(--scrollbar-border-radius);
   align-items: center;
@@ -58,6 +59,7 @@
   &:global(.vertical) {
     flex-direction: column;
     min-width: var(--scrollbar-width, 0px);
+    max-width: var(--scrollbar-width, 100%);
     .thumb {
       min-height: var(--scrollbar-min-thumb-size);
     }
@@ -69,6 +71,7 @@
   &:global(.horizontal) {
     flex-direction: row;
     min-height: var(--scrollbar-height, 0px);
+    max-height: var(--scrollbar-height, 100%);
     .thumb {
       min-width: var(--scrollbar-min-thumb-size);
     }

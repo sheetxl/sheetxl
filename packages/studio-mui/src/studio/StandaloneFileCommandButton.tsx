@@ -1,4 +1,4 @@
-import React, { memo, forwardRef } from 'react';
+import React, { memo, forwardRef, useState, useEffect } from 'react';
 
 import { Theme } from '@mui/material/styles';
 
@@ -23,6 +23,19 @@ const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & {
     disabled: propDisabled = false,
     ...rest
   } = props;
+
+  // Load write formats asynchronously
+  const [writeFormats, setWriteFormats] = useState<WriteFormatType[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    WorkbookIO.getWriteFormats().then(formats => {
+      if (mounted) {
+        setWriteFormats(formats);
+      }
+    });
+    return () => { mounted = false; };
+  }, []);
 
   const createPopupPanel = useCallbackRef((props: ExhibitPopupPanelProps) => {
     const commandButtonProps = {
@@ -59,7 +72,7 @@ const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & {
           };
 
           const saveAsItems = [];
-          WorkbookIO.getWriteFormats().forEach((formatType: WriteFormatType) => {
+          writeFormats.forEach((formatType: WriteFormatType) => {
             if (formatType.isDefault) return;
             const formatKey = formatType.key;
             const command = commands.getCommand(`saveWorkbookAs${formatKey}`);
@@ -86,7 +99,7 @@ const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & {
         return;
       props.closeFloatAll();
     }});
-  }, [propDisabled, commands, propCommandHook, scope]);
+  }, [propDisabled, commands, propCommandHook, scope, writeFormats]);
 
   const menuLabel = 'File'; // use different labels depending on context, For example in an embedded component 'Import' or 'Workbook' might make more sense.
   return (

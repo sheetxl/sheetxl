@@ -50,7 +50,7 @@ const Template: React.FC = (props) => {
       // For illustration purposes we are are doing to color negative values and dates not from this year with a different color.
       const csvOptions: ReadCSVOptions = {
         source: new TextEncoder().encode(csv).buffer,
-        formatType: 'csv',
+        format: 'CSV',
         createWorkbookOptions: {
           styles: customStyles
         },

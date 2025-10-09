@@ -20,7 +20,7 @@ const Template: React.FC = (props) => {
     // maxRows: 100
   };
 
-  const [fetchUrl, setFetchUrl] = useState<string>(`https://www.sheetxl.com/examples/features-checklist.xlsx`);
+  const [fetchUrl, setFetchUrl] = useState<string>(`https://www.sheetxl.com/docs/examples/feature-highlights.xlsx`);
   const [workbook, setWorkbook] = useState<IWorkbook | Promise<IWorkbook>>(null);
 
   const [workbookTitle, setWorkbookTitle] = useState<string>('');
@@ -47,7 +47,7 @@ const Template: React.FC = (props) => {
       source: {
         input: fetchUrl
       },
-      formatType: "xlsx"
+      format: "Excel"
     });
 
     /* not needed but we want to show a title for the workbook too */

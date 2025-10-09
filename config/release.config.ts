@@ -11,6 +11,8 @@ const plugins:ReadonlyArray<PluginSpec> = [
       releaseRules: [
         { type: 'feat', release: 'minor' },
         { type: 'fix', release: 'patch' },
+        { type: 'docs', release: 'patch' },
+        { type: 'chore', release: 'patch' }
       ],
     },
   ],
@@ -28,22 +30,26 @@ const plugins:ReadonlyArray<PluginSpec> = [
           if (cleanedSubject) {
             // Remove "Merge pull request #XX from..." patterns
             cleanedSubject = cleanedSubject.replace(/Merge pull request #\d+ from [^\s]+/gi, '');
+            // Remove ", closes #XX" patterns (GitHub auto-added)
+            cleanedSubject = cleanedSubject.replace(/,\s*closes\s+#\d+/gi, '');
             // Remove standalone PR references like (#123) or #123
             cleanedSubject = cleanedSubject.replace(/\(#\d+\)/g, '');
             cleanedSubject = cleanedSubject.replace(/#\d+/g, '');
-            // Clean up extra whitespace
-            cleanedSubject = cleanedSubject.trim();
+            // Clean up extra whitespace and commas
+            cleanedSubject = cleanedSubject.replace(/,\s*$/, '').trim();
           }
 
           // Clean body: Remove PR references if body exists
           let cleanedBody = commit.body || '';
           if (cleanedBody) {
             cleanedBody = cleanedBody.replace(/Merge pull request #\d+ from [^\s]+/gi, '');
+            cleanedBody = cleanedBody.replace(/,\s*closes\s+#\d+/gi, '');
             cleanedBody = cleanedBody.replace(/\(#\d+\)/g, '');
             cleanedBody = cleanedBody.replace(/#\d+/g, '');
-            cleanedBody = cleanedBody.trim();
+            cleanedBody = cleanedBody.replace(/,\s*$/, '').trim();
           }
 
+          console.log('Cleaning PR references from commit:', cleanedSubject, cleanedBody);
           // Return a new immutable object with cleaned messages and no commit hashes
           return {
             ...commit,

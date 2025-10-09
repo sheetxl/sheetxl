@@ -50,7 +50,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
   const showCustomScrollButtons = propShowCustomScrollButtons ?? !isTouch;
   const onScroll = useCallbackRef(propOnScroll, [propOnScroll]);
 
-  const [thumb, setThumb] = useState({ offset: 0, length: 0 }); // MIN_THUMB_PX
+  const [thumb, setThumb] = useState({ offset: 0, length: 0, disabled: false }); // MIN_THUMB_PX
   const refInFlight = useRef<number>(-1);
 
   const isVertical = orientation === ScrollbarOrientation.Vertical;
@@ -61,8 +61,12 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     offset: number, viewportSize: number, totalSize: number
   ) => {
     if (viewportSize === 0 || totalSize === 0) {
-      setThumb({ offset: 0, length: minThumbSize });
-      return;
+      const newThumb = { offset: 0, length: minThumbSize, disabled: true };
+      setThumb(newThumb);
+      return newThumb;
+    }
+    if (viewportSize >= totalSize) {
+      return { offset: 0, length: trackLength, disabled: true };
     }
     const totalProportional = totalSize / trackLength;
     const newViewPort = viewportSize / totalProportional;
@@ -71,7 +75,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     const newOffset = offset / totalProportional;
     const newBoundOffset = Math.min(Math.max(0, newOffset), trackLength - newThumbLength);
     // console.log('calcThumb', 'offset', offset, 'physicalOffset', newBoundOffset, 'newThumbLength', newThumbLength, 'viewportSize', viewportSize, 'totalSize', totalSize, 'trackLength', trackLength, 'totalProportional', totalProportional);
-    return { offset: newBoundOffset, length: newThumbLength };
+    return { offset: newBoundOffset, length: newThumbLength, disabled: false };
   }, [trackLength, minThumbSize, maxThumbSize]);
 
   const handlePhysicalScroll = useCallbackRef((
@@ -184,10 +188,14 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
   const refThumbEl = useRef<HTMLDivElement>(null);
   // Thumb element (Portal optional for mobile z-index)
   const thumbEl = useMemo(() => {
+    const disabled = thumb.disabled;
+    if (disabled) return null; // later we can style thumb
     const thumbInline = (
       <div
         {...thumbProps}
-        className={clsx(styles['thumb'])}
+        className={clsx(styles['thumb'], {
+          'disabled': disabled
+        })}
         ref={refThumbEl}
         role="slider"
         aria-label={isVertical ? 'Rows' : 'Columns'}
@@ -210,7 +218,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
         onPointerUp={onThumbPointerUp}
       />
     );
-    if (!isTouch) return thumbInline;
+    if (!isTouch || disabled) return thumbInline;
 
     return (<>
       {thumbInline}

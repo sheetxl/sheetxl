@@ -134,7 +134,7 @@ export interface SplitNumber {
    */
   ip: number;
   /**
-   * The movable part.
+   * The floating part.
    */
   fp: number;
   /**
@@ -142,14 +142,14 @@ export interface SplitNumber {
    */
   ipLength: number;
   /**
-   * The number if digits for the movable part.
+   * The number of digits for the floating part.
    */
   fpLength: number;
 }
 
 /**
  * Splits a number into the integer and fractional parts. Also returns the length of each
- * Accounts for rounding and doesn't use string to be high performant.
+ * component for rounding and doesn't use string to be high performant.
  * This has a max precision of 7.
  */
 export const splitNumber = (value: number): SplitNumber => {
@@ -185,7 +185,7 @@ export const splitNumber = (value: number): SplitNumber => {
  * Rounds a number to a specified number of decimal places, ensuring precision is maintained.
  * If no decimal places are provided, the default is 0 (rounds to the nearest integer).
  *
- * This function uses scientific notation to avoid movable-point precision errors
+ * This function uses scientific notation to avoid floating-point precision errors
  * commonly associated with rounding in JavaScript.
  *
  * @param number The number to round. If the number is `null` or not finite (e.g., `Infinity`), `null` is returned.
@@ -299,7 +299,7 @@ export const isObject = (obj: any): boolean => {
 }
 
 export const removeEmptyProperties = (obj: any): any => {
-  if (typeof obj !== 'object'  || Array.isArray(obj) || obj === null) return obj;
+  if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) return obj;
   Object.keys(obj).forEach(function (key) {
     if (obj[key] && typeof obj[key] === "object")
       removeEmptyProperties(obj[key]);
@@ -316,13 +316,22 @@ export const removeEmptyProperties = (obj: any): any => {
 }
 
 export const removeListenerAll = (removeListeners: [() => void]): [] => {
-  if (!removeListeners) return [];
-  for (let i=0; i<removeListeners.length; i++) {
-    if (removeListeners[i]) removeListeners[i]();
+  if (!removeListeners) return EmptyArray;
+  const removeListenersLength = removeListeners.length;
+  for (let i=0; i<removeListenersLength; i++) {
+    const listener = removeListeners[i];
+    if (!listener) continue;
+    listener();
   }
-  return [];
+  return EmptyArray;
 }
 
+/**
+ * Transposes a 2D matrix (array of arrays).
+ *
+ * @param matrix The 2D array to transpose.
+ * @returns The transposed 2D array.
+ */
 export const transpose = (matrix: number[][]): number[][] => {
   //   return matrix[0].map((col, i) => matrix.map(row => row[i]));
   if (!matrix)
@@ -354,9 +363,9 @@ const equalityCompare = (update: any, original: any): boolean => {
 /**
  * Removes from update any values that are identical in original.
  *
- * @param update
- * @param original
- * @param isEqual
+ * @param update The object to update.
+ * @param original The original object to compare against.
+ * @param isEqual A function to compare values for equality. Defaults to strict equality.
  *
  * @remarks
  * This mutates the update object.
@@ -419,12 +428,14 @@ export const diffValues = (check: Object, template: Object): Object => {
   const keysLength = keys.length;
   for (let k=0; k<keysLength; k++) {
     const key = keys[k];
-    if (check[key] === template[key])
+    const checkValue = check[key];
+    const templateValue = template[key];
+    if (checkValue === templateValue)
       continue;
-    if (check[key] === undefined)
-      diffs[key] = template[key];
+    if (checkValue === undefined)
+      diffs[key] = templateValue;
     else
-      diffs[key] = check[key];
+      diffs[key] = checkValue;
   }
   if (Object.keys(diffs).length === 0) {
     return null;

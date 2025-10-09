@@ -2,6 +2,7 @@ import React, {
   useMemo, memo, forwardRef, useEffect, useCallback, useRef
 } from 'react';
 
+import clsx from 'clsx';
 // import invariant from 'tiny-invariant';
 import { useMeasure } from 'react-use';
 
@@ -19,6 +20,8 @@ import {
 } from './IScrollPane';
 
 import { defaultCreateScrollbar } from './Utils';
+
+import styles from './ScrollPane.module.css';
 
 export const defaultCreateScrollCorner = ({ width, height }) => {
   return (
@@ -54,6 +57,7 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
     createHorizontalScrollbar = defaultCreateScrollbar,
     createVerticalScrollbar = defaultCreateScrollbar,
     style: propsStyle,
+    className: propClassName,
     touchElement,
     disableTouch,
     ...rest
@@ -174,10 +178,7 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
     });
     return (
       <div
-        style={{
-          display: "flex",
-          flex: "0",
-        }}
+        className={clsx('vertical-container', styles['vertical-container'])}
         ref={refMeasureVert}
       >
         {scrollbar}
@@ -201,25 +202,17 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
     });
     return (
       <div
-        style={{
-          display: "flex",
-          flex: "none",
-          flexDirection: 'row',
-          alignItems: 'stretch',
-          justifyContent: 'center'
-        }}
+        className={clsx('horizontal-corner-container', styles['horizontal-corner-container'])}
       >
         <div
+          className={clsx('horizontal-container', styles['horizontal-container'])}
           style={{
-            display: "flex",
-            flex: "1 1 100%",
-            flexDirection: 'column',
             width: `calc(100% - ${vertWidth}px)`,
           }}
         >
           <div
             ref={refMeasureHorz}
-            className="sizer"
+            className={clsx('scrollbar-sizer', styles['scrollbar-sizer'])}
           >
             {scrollbar}
           </div>
@@ -231,9 +224,8 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
 
   return (
     <div
+      className={clsx(propClassName, 'scrollpane', styles['scrollpane'])}
       style={{
-        position: "relative",
-        display: "flex",
         minWidth: showVerticalScrollbar ? `${vertWidth}px` : undefined,
         minHeight: showHorizontalScrollbar ? `${horzHeight}px` : undefined,
         ...propsStyle
@@ -242,31 +234,13 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
       ref={refLocal}
     >
       <div
-        style={{
-          position: "relative",
-          // height: "100%",
-          width: "100%",
-          flex: "1 1 100%",
-          // top: "0",
-          // left: "0",
-          display: "flex",
-          flexDirection: "column",
-          boxSizing: "border-box",
-        }}
+        className={clsx('scrollpane-content', styles['scrollpane-content'])}
       >
         <div
-          style={{
-            display: "flex",
-            flex: "1 1 100%",
-            overflow: "hidden", // showHorizontalScrollbar ? "hidden" : "visible"
-          }}
+          className={clsx('scrollpane-content-element', styles['scrollpane-content-element'])}
         >
           <div
-            style={{
-              display: "flex",
-              flex: "1 1 100%",
-              overflow: "hidden" // showVerticalScrollbar ? "hidden" : "visible"
-            }}
+            className={clsx('scrollpane-content-element', styles['scrollpane-content-element'])}
           >
             {children}
           </div>
