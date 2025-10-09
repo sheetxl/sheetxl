@@ -59,18 +59,24 @@ const FormulaBar = memo(
   } = props;
 
   const [sheet, setSelectedSheet] = useState<ISheet>(workbook?.getSelectedSheet());
+  const [activeCoords, setActiveCoords] = useState<ICell.Coords>(sheet.getSelectedCell().getCoords());
+  const [cellDisabled, setCellDisabled] = useState<boolean>(false);
+
+  const disabled = propDisabled || cellDisabled;
+
   useModelListener<IWorkbook, IWorkbook.IListeners>(workbook, {
     onSheetsChange: (source: IWorkbook) => {
-      setSelectedSheet(source?.getSelectedSheet());
+      const sheet = source?.getSelectedSheet();
+      setActiveCoords(sheet.getSelectedCell().getCoords());
+      setSelectedSheet(sheet);
     },
     onViewChange(source: IWorkbook): void {
-      setSelectedSheet(source?.getSelectedSheet());
+      const sheet = source?.getSelectedSheet();
+      setActiveCoords(sheet.getSelectedCell().getCoords());
+      setSelectedSheet(sheet);
     }
   });
 
-  const [activeCoords, setActiveCoords] = useState<ICell.Coords>(sheet.getSelection().getCoords().cell);
-  const activeCell = sheet.getRange(activeCoords).getCell();
-  const disabled = propDisabled || !activeCell.isEditAllowed();
   const editorRef = useRef<ICellEditorElement>(null);
 
   const defaultTextStyle:TextStyle = useMemo(() => {
@@ -81,14 +87,16 @@ const FormulaBar = memo(
 
   useModelListener<IRangeSelection, IRangeSelection.IListeners>(sheet.getSelection(), {
     onChange: () => {
-      setActiveCoords(sheet.getSelection().getCoords().cell);
+      const selectedCell = sheet.getSelectedCell();
+      setCellDisabled(!selectedCell.isEditAllowed());
+      setActiveCoords(selectedCell.getCoords());
     },
   });
 
   useModelListener<ISheet, ISheet.IListeners>(sheet, {
     onProtectionChange(): void {
       // A bit of a hack to trigger a re-render
-      setActiveCoords(sheet.getSelection().getCoords().cell);
+      setCellDisabled(!sheet.getSelectedCell().isEditAllowed());
     }
   });
 

@@ -23,6 +23,7 @@ export interface TaskProgress {
    * @param message The warning message.
    * @param context Optional context for the warning.
    */
+  // TODO context should be an object with more details
   onWarning?(message?: string, context?: string): void;
   /**
    * Called when the task is complete.

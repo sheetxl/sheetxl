@@ -18,7 +18,9 @@ import type { FetchArgs, TaskProgress } from '@sheetxl/utils';
  * ```
  */
 export interface Base64Args {
-  /** The base64 encoded string content */
+  /**
+   * The base64 encoded string content.
+   */
   base64: string;
 }
 
@@ -39,8 +41,11 @@ export type IOSource = string | File | ArrayBufferLike | ReadableStream<Uint8Arr
  * allowing for various formats such as URLs, files, and raw binary data.
  */
 export interface FormatType {
-    /**
+  /**
    * The key used to identify the type of import.
+   *
+   * @remarks
+   * Must be unique across all format types.
    */
   key: string;
   /**
@@ -64,6 +69,10 @@ export interface FormatType {
    * For import the default doesn't have any significance other than an indicator for the UI.
    */
   isDefault?: boolean;
+  /**
+   * The file extensions that this type of supports.
+   */
+  exts: string[];
 }
 
 /*
@@ -71,12 +80,9 @@ export interface FormatType {
  */
 export interface ReadFormatType extends FormatType {
   /**
-   * The file extensions that this type of import supports.
+   * The handler function for importing a workbook from this format.
    */
-  exts: string[];
-
-  // if string will look for an IO function that matched callback on the io module
-  handler: WorkbookFromHandler;
+  handler: WorkbookReadHandler;
 }
 
 /**
@@ -87,9 +93,10 @@ export interface ReadFormatType extends FormatType {
  * specific to saving formats, such as file extension and export handler.
  */
 export interface WriteFormatType extends FormatType {
-  ext: string;
-  // if string will look for an IO function that matched callback on the io module
-  handler: WorkbookToHandler;
+  /**
+   * The handler function for importing a workbook from this format.
+   */
+  handler: WorkbookWriteHandler;
 };
 
 /**
@@ -121,7 +128,7 @@ export interface ReadWorkbookOptions {
    * Used for type detection when it cannot be inferred from the source.
    * Examples: 'xlsx', 'csv', 'application/json', 'Excel'
    */
-  formatType?: string;
+  format?: string;
 
   /**
    * Optional human-readable name for the import.
@@ -162,26 +169,33 @@ export interface WriteWorkbookOptions {
    * Used for type detection when it cannot be inferred from the destination.
    * Examples: 'xlsx', 'csv', 'application/json', 'Excel'
    */
-  formatType?: string;
-
-  /**
-   * Optional human-readable name for the export.
-   *
-   * Used as a fallback filename and for display purposes.
-   * If not provided, a default name will be generated based on the workbook title.
-   */
+  format?: string;
+  // /**
+  //  * Optional human-readable name for the import.
+  //  *
+  //  * Used as a fallback filename and for display purposes.
+  //  * If not provided, a default name will be generated based on the source.
+  //  */
   // name?: string;
+
+  // /**
+  //  * Optional progress callback for long running imports.
+  //  */
+  // progress?: TaskProgress;
 }
 
 /**
- * Import for reading from an array into an IWorkbook.
+ * For reading from an array into an IWorkbook.
  *
  * @param arrayBuffer The array buffer containing the workbook data.
  * @param options Optional options for loading the workbook, such as format type and workbook options.
  * @returns A promise that resolves to an IWorkbook instance.
  */
 // TODO - Make Stream
-export type WorkbookFromHandler = (arrayBuffer: ArrayBufferLike, options?: Omit<ReadWorkbookOptions, 'source'>) => Promise<IWorkbook>;
+export type WorkbookReadHandler = (
+  arrayBuffer: ArrayBufferLike,
+  options?: Omit<ReadWorkbookOptions, 'source'>
+) => Promise<IWorkbook>;
 
 /**
  * Export for writing to an array from an IWorkbook
@@ -191,8 +205,9 @@ export type WorkbookFromHandler = (arrayBuffer: ArrayBufferLike, options?: Omit<
  * @returns A promise that resolves to an array buffer representing the workbook
  */
 // TODO - Make Stream
-export type WorkbookToHandler = (workbook: IWorkbook, options?: Omit<WriteWorkbookOptions, 'source'>) => Promise<ArrayBufferLike>;
-
+export type WorkbookWriteHandler = (
+  workbook: IWorkbook, options?: Omit<WriteWorkbookOptions, 'source'>
+) => Promise<ArrayBufferLike>;
 
 /**
  * Used for results that want to return a workbook instance with a title.
@@ -204,15 +219,15 @@ export interface WorkbookHandle {
   workbook: IWorkbook;
 
   /**
+   * The import type of import detected.
+   */
+  format: FormatType;
+
+  /**
    * The title of the workbook, if available.
    *
    * @remarks
    * This can be null if no title was provided or could not be determined.
    */
   title: string | null;
-
-  /**
-   * The import type of import detected.
-   */
-  formatType: FormatType;
 }

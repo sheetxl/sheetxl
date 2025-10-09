@@ -6,7 +6,7 @@ import { Studio } from '@sheetxl/studio-mui';
  *
  * To see an example that runs as a standalone application and includes page level
  * concerns. (light/dark Mode, tab title, pwa, etc)
- * visit: https://github.com/sheetxl/sheetxl/tree/main/examples/app
+ * visit: https://github.com/sheetxl/sheetxl/tree/main/examples/studio-mui
  *
  */
 export default function App() {

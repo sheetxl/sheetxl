@@ -3,7 +3,7 @@ sidebar_position: 70
 title: Loading and Saving
 ---
 
-### Loading and Saving State
+## Loading and Saving State
 
 Most models implement the <strong>[JSONSerializable](https://api.sheetxl.com/interfaces/_sheetxl_utils.JSONSerializable.html)</strong> interface
 which enables a common API for loading and saving state as JSON.
@@ -35,15 +35,20 @@ workbook.getSelectedSheet().getRange('A1:C3').setValues([
 ]);
 ```
 
-### Import and Exporting
+## Import and Exporting
+
+### Using SDK
 
 Import and exporting file formats other than the native SheetXL JSON type is done using using
 [@sheetxl/io](https://www.npmjs.com/package/@sheetxl/io) module.
+
+APIS details are available in the [API docs](https://api.sheetxl.com/classes/_sheetxl_io.DefaultWorkbookIO.html#read).
 
 The formats, including native JSON, currently support are:
 - SheetXL JSON (native)
 - CSV
 - Excel
+- Parquet (in beta)
 
 
 ```typescript title="@sheetxl/io/WorkbookIO"
@@ -54,33 +59,35 @@ The formats, including native JSON, currently support are:
  * that will be passed to the accept attribute of an
  * input: {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept}.
  *
- * @param options THe options for loading the workbook.
+ * @param options The options ReadWorkbookOptions for loading the workbook.
  * @returns A promise that resolves to an ImportResults object.
  *
  */
+import { WorkbookIO } from '@sheetxl/io';
+
 WorkbookIO.read(
   options: ReadWorkbookOptions
 ): Promise<ImportResults>;
 
 // Import from a file
-const result1 = await serialization.read({
+const result1 = await WorkbookIO.read({
   source: myFile,
   name: 'My Spreadsheet'
 });
 
 // Import from base64 (explicit disambiguation)
-const result2 = await serialization.read({
+const result2 = await WorkbookIO.read({
   source: { base64: 'iVBORw0KGgo...' },
   type: 'xlsx'
 });
 
 // Import from URL
-const result3 = await serialization.read({
-  source: 'https://example.com/data.xlsx'
+const result3 = await WorkbookIO.read({
+  source: 'https://www.sheetxl.com/docs/examples/financial-calculators.xlsx'
 });
 
 // Import from array buffer
-const result4 = await serialization.read({
+const result4 = await WorkbookIO.read({
   source: myArrayBuffer,
   type: 'csv',
   name: 'data.csv'
@@ -98,6 +105,47 @@ WorkbookIO.writeFile(
   exportType?: ExportType
 ): Promise<boolean>;
 ```
+
+:::tip
+The full source documentation is available at [API IWorkbookIO](https://api.sheetxl.com/types/_sheetxl_io.IOSource.html)
+:::
+
+### Using Studio
+
+If using the Studio React component this capabilities in wrapped in the workbook properties.
+
+
+
+```tsx title="Studio Import/Export"
+import { IWorkbook } from '@sheetxl/sdk';
+import { Studio } from '@sheetxl/mui-studio';
+
+// Instead of loading we can load from source URL
+// We need to wrap in a memo to ensure we don't rerender
+const workbookSource = useMemo(() => {
+  return {
+    // Lots of options available
+    source: 'https://www.sheetxl.com/docs/examples/financial-calculators.xlsx',
+    // Not required but if the viewer is meant to be readonly
+    readonly: true
+  }
+}, []);
+
+<Studio
+  workbook={workbookSource}
+  {/* Listen for when the results have be loaded */}
+  onWorkbookChange={(workbook: IWorkbook | null) => {
+    console.log('workbook changed', workbook);
+  }}
+/>
+
+```
+
+### Studio Example
+
+The following code sandbox shows a React application loading a read only viewer:
+
+[CodeSandbox-Studio-IO](https://codesandbox.io/p/devbox/studio-mui-io-zypz96)
 
 :::note
 If another format is needed or something is missing please let me know.

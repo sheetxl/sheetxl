@@ -5,7 +5,6 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Box } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
-import { IWorkbook, TextUtils } from '@sheetxl/sdk';
 
 import { type ReadWorkbookOptions, type WorkbookHandle } from '@sheetxl/io';
 
@@ -28,7 +27,8 @@ const Template: React.FC = (props) => {
    * a file is selected and then it will show the Studio widget.
    */
   const openFile = async (input: File | Promise<File> | string=null) => {
-    const sourceResolve = input ?? await CommonUtils.openFileDialog(WorkbookIO.getAllReadFormatTypeAsString().join(', '));
+    const asFormatString = await WorkbookIO.getAllReadFormatsAsString();
+    const sourceResolve = input ?? await CommonUtils.openFileDialog(asFormatString);
     if (!sourceResolve) return; // was a cancel
     /*
       The Studio will show a loading indicator if a workbook promise is passed.
