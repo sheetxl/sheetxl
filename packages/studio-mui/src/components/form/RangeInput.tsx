@@ -59,7 +59,7 @@ const toStringWithEmpty = (value: ICellRanges): string => {
 /**
  * Range input field.
  */
-const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivElement> }> =
+export const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivElement> }> =
    memo(forwardRef<HTMLDivElement, RangeInputProps>((props, refForward) => {
   const {
     formName,
@@ -223,4 +223,3 @@ const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivElement> }
 }));
 
 RangeInput.displayName = "RangeInput";
-export { RangeInput };

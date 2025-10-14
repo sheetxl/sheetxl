@@ -46,7 +46,7 @@ const defaultCreateCommandButton = (props: CommandButtonProps): React.ReactEleme
  * but... Perhaps we should just be like Excel (for example we have all text coloring grouped but excel has fill and border in the text section)
  * ...but we are not exactly following this rule as alignment, rotation, and formatting style is after fill, border, merge
  */
-const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((props, refForwarded) => {
+export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((props, refForwarded) => {
   const {
     commands,
     parentFloat,
@@ -372,4 +372,3 @@ const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((p
 }));
 
 HomeToolbar.displayName = "HomeToolbar";
-export { HomeToolbar };

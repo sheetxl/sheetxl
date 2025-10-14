@@ -17,41 +17,58 @@ shown below:
 |------------|------|
 | Studio | Fully functional application that can be easily embedded and/or extended using Material-UI and React. |
 | WorkbookElement | Accepts a Workbook and displays an ISheet and other editing artifacts. |
-| WorkbookToolbars | Collection of WorkbookToolbars that contain CommandButtons |
-| FormulaBar | A Wrapper around a SheetCellEditor.  |
-| NamedInput | Editor for creating and managing NamedReferences. |
+| WorkbookToolbars | A collection of WorkbookToolbars that contain CommandButtons |
+| FormulaBar | A wrapper around a SheetCellEditor.  |
+| NamedInput | An editor for creating and managing NamedReferences. |
 | SheetElement | Shows a collection of SheetCellRenders and SheetCellEditors as well as Headers. |
-| SheetCellRenderer | A read only rendering of a value an ICell. |
+| SheetCellRenderer | A read-only rendering of an ICell. |
 | SheetCellEditor | An editor that allows for updating an ICell. |
 | WorkbookStrip | Contains a set of WorkbookTabs to allow navigation between Sheets. |
-| Statusbar | A Collection of StatusbarItems. |
-| SheetZoomScale | An editor for selecting a zoom scale. |
-
-### Spreadsheet Dialogs
-
-Additionally SheetXL has a number of dialog specific for working with spreadsheets.
-| Dialog | Description |
-|------------|------|
-| FindReplaceWindow | Find/Replace items in the Workbook. |
-| NumberFormatDialog | Allow for editing of the number format. |
-| SortDialog | Advanced and multi-level sorting. |
+| Statusbar | A collection of StatusbarItems. |
+| SheetZoomScale | An editor for adjusting zoom scale. |
 
 ### Advanced Components
 
+Components that can designed to be used standalone but provide
+advanced editing capabilities found in spreadsheets.
+
 | Component | Description |
 |------------|------|
+| FindReplace | Find/Replace items in the Workbook. |
+| NumberFormat | Number Format Edit and Preview. |
+| Hyperlink | Hyperlink editor. |
+| Comments | Comments editor. |
+| Sort | Advanced and multi-level sorting. |
+| ThemeSelect | For previewing or selecting current theme from a list of predefined themes. |
+| ShortcutKeys | Display the shortcut keys associated with a CommandGroup. |
+| ResizeHeaders | Allows for resizing of row and column headers. |
+| TableNew | Simple table creation. |
+| TableEditor | Advanced table editing. |
 | ColorPanel | Color-chooser that is theme aware. |
 | PresetStylesSelector | For Previewing, selecting, and modifying predefined styles. |
-| ThemeSelectPanel | For previewing and selecting current theme from a list of predefined themes. |
-| ShortcutKeysPanel | Display the shortcut keys associated with a CommandGroup. |
 
+### Container Types
+
+SheetXL has 3 main container types
+
+| Container | Description |
+|------------|------|
+| Dialog | A modal dialog that blocks the UI until dismissed. |
+| TaskPane | A side pane container that can be collapsed and is expected to be 'selection aware'. |
+| Window | A floating window container that can be moved and resized. |
+
+### Notification Types
+
+| Toast | Alerts that appear temporarily and do not block the UI. |
+| Busy | A blocking indicator for operators that require the user to wait. |
+| StackError | An unexpected runtime error with details for debugging. |
 
 ### Common Dialogs
 
 | Dialog | Description |
 |------------|------|
-| OptionsDialog | Configurable options dialog, used for 'Goto', 'Rename', confirmation prompts, and other simple inputs. |
-
+| Input | Configurable input dialog, used for 'Goto', 'Rename', confirmation prompts, and other simple inputs. |
+| Options | Configurable options dialog for easily presenting a set of options. |
 
 ## Configuring Components
 

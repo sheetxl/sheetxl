@@ -17,7 +17,11 @@ import { IScriptEditor } from '@sheetxl/react';
 export interface RunScriptPopupPanelProps extends ExhibitPopupPanelProps, CommandPopupButtonProps {
 
 }
-const RunScriptPopupPanel = memo(forwardRef<any, RunScriptPopupPanelProps>((props: RunScriptPopupPanelProps, refForwarded) => {
+/**
+ * Popup panel showing available scripts to run and option to open script editor.
+ */
+export const RunScriptPopupPanel = memo(forwardRef<any, RunScriptPopupPanelProps>(
+  (props: RunScriptPopupPanelProps, refForwarded) => {
   const {
     // floatReference,
     commands: propCommands,
@@ -103,8 +107,6 @@ const RunScriptPopupPanel = memo(forwardRef<any, RunScriptPopupPanelProps>((prop
   );
 
   return defaultCreatePopupPanel({...rest, children});
-
 }));
 
 RunScriptPopupPanel.displayName = 'RunScriptPopupPanel';
-export { RunScriptPopupPanel };

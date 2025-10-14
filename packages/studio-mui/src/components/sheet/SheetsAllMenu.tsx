@@ -33,7 +33,11 @@ export interface SheetsAllMenuProps extends React.HTMLAttributes<HTMLDivElement>
   closeFloatAll: () => void;
 }
 
-const SheetsAllMenu = memo(forwardRef<HTMLDivElement, SheetsAllMenuProps>((props, refForwarded) => {
+/**
+ * Menu showing all sheets in the workbook.
+ */
+export const SheetsAllMenu = memo(forwardRef<HTMLDivElement, SheetsAllMenuProps>(
+  (props: SheetsAllMenuProps, refForwarded) => {
   const {
     workbook,
     gridStyle,
@@ -229,4 +233,3 @@ const SheetsAllMenu = memo(forwardRef<HTMLDivElement, SheetsAllMenuProps>((props
 }));
 
 SheetsAllMenu.displayName = "SheetsAllMenu";
-export { SheetsAllMenu };

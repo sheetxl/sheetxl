@@ -21,7 +21,7 @@
     }
   ],
   "compilerOptions": {
-    "tsBuildInfoFile": "./build/.tsbuildinfo.studio-vanilla",
+    "tsBuildInfoFile": "./build/.tsbuildinfo.studio-mui",
     "jsx": "react-jsx"
   },
   "include": [

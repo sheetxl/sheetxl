@@ -39,7 +39,7 @@ export interface CommandsWrapperProps extends StudioProps {
  * Because snackbar is configured using a context provider we have to create
  * an intermediary component to retrieve and wrap the notifier (and commands)
  */
-const CommandsWrapper: React.FC<CommandsWrapperProps> =
+export const CommandsWrapper: React.FC<CommandsWrapperProps> =
   memo((props: CommandsWrapperProps) => {
   const {
     workbook,
@@ -112,4 +112,3 @@ const CommandsWrapper: React.FC<CommandsWrapperProps> =
 });
 
 CommandsWrapper.displayName = "CommandsWrapper";
-export { CommandsWrapper };

@@ -28,7 +28,7 @@ export interface FiltersProps extends React.HTMLAttributes<HTMLDivElement> {
 /*
  * Placeholder for filters.
  */
-const Filters: React.FC<FiltersProps & { ref?: React.Ref<IFiltersElement> }> =
+export const Filters: React.FC<FiltersProps & { ref?: React.Ref<IFiltersElement> }> =
    memo(forwardRef<IFiltersElement, FiltersProps>((props, refForward) => {
   const {
     children: _propsChildren,
@@ -93,4 +93,3 @@ const Filters: React.FC<FiltersProps & { ref?: React.Ref<IFiltersElement> }> =
 }));
 
 Filters.displayName = "Filters";
-export { Filters };

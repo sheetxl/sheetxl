@@ -1,5 +1,5 @@
 /* cspell: disable */
-import { Scalar, FormulaError, IReferenceRange, FormulaContext, IRange } from '@sheetxl/primitives';
+import { FormulaContext, FormulaError, type Scalar, type IReferenceRange, type IRange } from '@sheetxl/primitives';
 
 /**
  * @summary Returns information about the cell.

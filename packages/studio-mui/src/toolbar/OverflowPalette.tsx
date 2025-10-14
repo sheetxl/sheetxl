@@ -27,10 +27,6 @@ export interface OverflowPaletteAttributes {
  */
 export interface IOverflowPaletteElement extends HTMLDivElement, OverflowPaletteAttributes {};
 
-export type OverflowPaletteRefAttribute = {
-  ref?: React.Ref<IOverflowPaletteElement>;
-};
-
 export interface OverflowPaletteProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
@@ -38,6 +34,11 @@ export interface OverflowPaletteProps extends React.HTMLAttributes<HTMLDivElemen
   sx?: SxProps<Theme>;
 
   parentFloat?: FloatReference;
+
+  /**
+   * Reference to the underlying element
+   */
+  ref?: React.Ref<IOverflowPaletteElement>;
 }
 
 /**
@@ -50,8 +51,8 @@ export interface OverflowPaletteProps extends React.HTMLAttributes<HTMLDivElemen
  * - Excel converts toolbar buttons to menu items. We could do this with the commands but would not be a 'general' solution and should
  *   be backed into CommandBar. (I sorta like the toolbar buttons better but will revisit.)
  */
-const OverflowPalette =
-   memo(forwardRef<IOverflowPaletteElement, OverflowPaletteProps>((props, refForwarded) => {
+export const OverflowPalette = memo(forwardRef<IOverflowPaletteElement, OverflowPaletteProps>(
+  (props: OverflowPaletteProps, refForwarded) => {
   const {
     children,
     sx: propSx,
@@ -312,5 +313,3 @@ const OverflowPalette =
     </Box>
   );
 }));
-
-export { OverflowPalette };

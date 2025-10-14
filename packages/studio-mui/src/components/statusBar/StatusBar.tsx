@@ -1,6 +1,8 @@
 import React, {
-  useRef, useEffect, useImperativeHandle, memo, forwardRef, useState, useMemo
+  useRef, useEffect, memo, forwardRef, useState, useMemo
 } from 'react';
+
+import { mergeRefs } from 'react-merge-refs';
 
 import { SxProps } from '@mui/system';
 import { Theme } from '@mui/material/styles';
@@ -49,22 +51,22 @@ export interface StatusBarProps extends React.HTMLAttributes<HTMLDivElement> {
   sheet?: ISheet;
   gridStyle?: GridStyle;
   childrenEnd?: React.ReactNode | undefined;
+
+  ref?: React.Ref<StatusBarElement>;
 }
 
-export interface StatusBarRef {
+export interface StatusBarAttributes {
   // No returns yet
 }
 
-export type StatusBarRefAttribute = {
-  ref?: React.Ref<StatusBarRef>;
-};
+export interface StatusBarElement extends HTMLDivElement, StatusBarAttributes {};
 
 /**
  * This show the current cell state as an unstyled editable field.
  * This wraps this with material styling and submit and cancel buttons
  */
-const StatusBar: React.FC<StatusBarProps & StatusBarRefAttribute> = memo(
-  forwardRef<StatusBarRef, StatusBarProps>((props, refForwarded) => {
+export const StatusBar = memo(
+  forwardRef<StatusBarElement, StatusBarProps>((props, refForwarded) => {
   const {
     sx: propSx,
     sheet,
@@ -75,22 +77,22 @@ const StatusBar: React.FC<StatusBarProps & StatusBarRefAttribute> = memo(
   } = props;
 
   /* Expose some methods in ref */
-  useImperativeHandle(refForwarded, () => {
-    return {
+  // useImperativeHandle(refForwarded, () => {
+  //   return {
+  //     isStatusBar: () => true
+  //   };
+  // });
 
-    };
-  });
-
-  const refSelf = useRef<HTMLDivElement>(null);
+  const refLocal = useRef<HTMLDivElement>(null);
   // Note - This isn't working because the Workbook is not returning a correct ref.
   // This should be at workbook standalone. Not here
   useEffect(() => {
     const handleWheel = (e: globalThis.WheelEvent) => e.preventDefault();
-    refSelf.current?.addEventListener("wheel", handleWheel, {
+    refLocal.current?.addEventListener("wheel", handleWheel, {
        passive: false,
      });
     return () => {
-      refSelf.current?.removeEventListener("wheel", handleWheel);
+      refLocal.current?.removeEventListener("wheel", handleWheel);
     };
   }, []);
 
@@ -109,7 +111,8 @@ const StatusBar: React.FC<StatusBarProps & StatusBarRefAttribute> = memo(
   const [statusMouseOver, setStatusMouseOver] = useState(false);
   return (
     <Box
-      ref={refSelf}
+      className="statusBar"
+      ref={mergeRefs([refLocal, refForwarded])}
       sx={{
         display: "flex",
         alignItems: "stretch",
@@ -123,6 +126,7 @@ const StatusBar: React.FC<StatusBarProps & StatusBarRefAttribute> = memo(
         // background: sliderMouseOver ? 'red' : 'pink',
         overflow: statusMouseOver ? 'visible' : 'hidden',
         boxShadow: `0px -1px 0px ${(gridStyle.header.edgeStrokeFill)}`,
+        zIndex: 1000, // To ensure box shadow is above item before it
         ...propSx
       }}
       onMouseOver={() => setStatusMouseOver(true)}
@@ -183,4 +187,3 @@ const StatusBar: React.FC<StatusBarProps & StatusBarRefAttribute> = memo(
 );
 
 StatusBar.displayName = "StatusBar";
-export { StatusBar };

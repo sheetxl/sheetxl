@@ -1,21 +1,24 @@
 import React from 'react';
 
 import {
-  SheetElement, type ISheetElement, type SheetProps
+  SheetElement, type SheetProps
 } from '@sheetxl/react';
 
+
 import {
-  LoadingPanel, type LoadingPanelProps
+  AnimatedLoadingPanel, type AnimatedLoadingPanelProps, StackTraceErrorPanel, type StackTraceErrorPanelProps
 } from '@sheetxl/utils-mui';
 
-import { FormulaBar, type FormulaBarProps, type IFormulaBarElement } from '../formulaBar';
+import { FormulaBar, type FormulaBarProps } from '../formulaBar';
 import { FilterColumnMenu, type FilterColumnMenuProps } from '../filter';
 import { StatusBar, type StatusBarProps } from '../statusBar';
+import { MovableContextMenu, type MovableContextMenuProps } from '../movable';
+import {
+  SheetTab, type SheetTabProps, SheetsAllMenu, type SheetsAllMenuProps, SheetTabMenu, type SheetTabMenuProps
+} from '../sheet';
 
 import { WorkbookStrip, type WorkbookStripProps } from './WorkbookStrip';
 import { WorkbookContextMenu, type WorkbookContextMenuProps } from './WorkbookContextMenu';
-
-import { MovableContextMenu, type MovableContextMenuProps } from '../movable';
 
 export const renderMovableContextMenu = (props: MovableContextMenuProps): React.ReactElement => {
   return <MovableContextMenu {...props}/>
@@ -29,16 +32,27 @@ export const renderFilterColumnMenu = (props: FilterColumnMenuProps): React.Reac
   return <FilterColumnMenu {...props}/>
 }
 
-export const renderWorkbookFormulaBar = (props: FormulaBarProps, ref: React.Ref<IFormulaBarElement>): React.ReactElement => {
-  return <FormulaBar ref={ref} {...props}/>
+export const renderWorkbookFormulaBar = (props: FormulaBarProps): React.ReactElement => {
+  return <FormulaBar {...props}/>
 }
 
-export const renderWorkbookLoadingPanel = (props: LoadingPanelProps): React.ReactElement => {
-  return <LoadingPanel {...props}/>
+export const renderWorkbookLoading = (props: AnimatedLoadingPanelProps): React.ReactElement => {
+  return <AnimatedLoadingPanel
+    transitionDelay='160ms'
+    transparentBackground={true}
+    {...props}
+  />
 }
 
-export const renderWorkbookSheet = (props: SheetProps, ref: React.Ref<ISheetElement>): React.ReactElement => {
-  return <SheetElement ref={ref} {...props}/>
+export const renderWorkbookError = (props: StackTraceErrorPanelProps): React.ReactElement => {
+  return <StackTraceErrorPanel
+    fullscreen={true}
+    {...props}
+  />
+}
+
+export const renderWorkbookSheet = (props: SheetProps): React.ReactElement => {
+  return <SheetElement {...props}/>
 }
 
 export const renderWorkbookStatusBar = (props: StatusBarProps): React.ReactElement => {
@@ -47,4 +61,17 @@ export const renderWorkbookStatusBar = (props: StatusBarProps): React.ReactEleme
 
 export const renderWorkbookStrip = (props: WorkbookStripProps): React.ReactElement => {
   return <WorkbookStrip {...props}/>
+}
+
+
+export const renderWorkbookStripContextMenu = (props: SheetTabMenuProps): React.ReactElement => {
+  return <SheetTabMenu {...props}/>
+}
+
+export const renderWorkbookStripSheetsAll = (props: SheetsAllMenuProps): React.ReactElement => {
+  return <SheetsAllMenu {...props}/>
+}
+
+export const renderWorkbookSheetTab = (props: SheetTabProps): React.ReactElement => {
+  return <SheetTab {...props}/>
 }

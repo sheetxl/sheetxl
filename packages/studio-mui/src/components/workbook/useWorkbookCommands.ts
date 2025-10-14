@@ -31,8 +31,6 @@ export interface useWorkbookCommandsOptions {
    */
   workbookElement: IWorkbookElement;
 
-  onNewWorkbook?: () => void;
-
   target: ICommands.ITarget | (() => ICommands.ITarget);
 
   commands: ICommands.IGroup;
@@ -67,16 +65,13 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
     // onExecute,
     target: commandTarget,
     commands: commandsParent,
-    darkMode,
-    onNewWorkbook: propOnNewWorkbook=defaultNewWorkbook
+    darkMode
   } = props;
 
   const notifier: IReactNotifier = useNotifier();
 
   const [activeSheet, setActiveSheet] = useState<ISheet>(workbook?.getSelectedSheet());
   const [sheets, setSheets] = useState<ISheet[]>(workbook?.getSheets().getItems());
-
-  const onNewWorkbook = useCallbackRef(propOnNewWorkbook, [propOnNewWorkbook]);
 
   const taskPaneArea = useTaskPaneArea();
 
@@ -455,24 +450,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       // new Command<boolean>('calculateSettings', commandTarget, {
       //   label: 'Calculation Settings',
       //   description: `Configure calculation settings.`
-      // }),
-      new SimpleCommand('closeWorkbook', commandTarget, { // CTRL+W only works in window mode - https://codereview.chromium.org/9701108
-        label: 'Close Workbook',
-        description: 'Close the workbook.',
-        shortcut: {
-          key: 'W',
-          modifiers: [KeyModifiers.Ctrl]
-        }
-      }),
-      new SimpleCommand('newWorkbook', commandTarget, { // CTRL+N only works in window mode - https://codereview.chromium.org/9701108
-        label: 'New Workbook',
-        description: 'Create a new workbook in another tab.',
-        icon: 'FileNew',
-        // shortcut: {
-        //   key: 'N',
-        //   modifiers: [KeyModifiers.Ctrl]
-        // }
-      }),
+      // })
     ];
   }, []);
 
@@ -828,26 +806,6 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
       workbook.getSelectedSheet().getEntireRange().calculate(true);
     });
 
-    commands.getCommand('closeWorkbook').updateCallback(async () => {
-      const doClose = () => {
-        window.close();
-      }
-      // TODO - confirm only if unsaved data
-      const option = await notifier.showOptions({
-        title: 'Confirm',
-        description: `This will close the current workbook tab. Do you want to continue?`,
-        options: ['Close', 'Cancel'],
-        defaultOption: 'Close'
-      });
-      if (option !== 'Close')
-          return;
-        doClose();
-    });
-
-    commands.getCommand('newWorkbook').updateCallback(() => {
-      onNewWorkbook?.();
-    });
-
     commands.getCommand('executeScript').updateCallback(executeScript);
     commands.getCommand('executeSelectedScript').updateCallback(executeScript);
   }, [workbook, notifier]);
@@ -1124,8 +1082,4 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
   }, [sheets, activeSheet]);
 
   return commands;
-}
-
-export const defaultNewWorkbook = () => {
-  window.open(window.origin.toString(), "sheetxl-" + CommonUtils.uuidV4(), "popup=true");
 }

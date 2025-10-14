@@ -6,8 +6,8 @@ import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 
 import { mergeRefs } from 'react-merge-refs';
-import FocusTrap from 'focus-trap-react';
 import { useMeasure } from 'react-use';
+import FocusTrap from 'focus-trap-react';
 
 import { alpha } from '@mui/system';
 import { Theme, useTheme, useThemeProps } from '@mui/material/styles';
@@ -22,14 +22,14 @@ import { Backdrop } from '@mui/material';
 import { IconButton } from '@mui/material'
 import { TouchRippleActions } from '@mui/material';
 
-import { ModalProps } from '@mui/material';
-import { DialogProps } from '@mui/material';
+import { type ModalProps } from '@mui/material';
+import { type DialogProps } from '@mui/material';
 // import { type BackdropProps } from '@mui/material';
 import { type TransitionProps } from '@mui/material/transitions';
 
 // import { Popper, PopperProps } from '@mui/material';
 
-import { Paper, PaperProps } from '@mui/material';
+import { Paper, type PaperProps } from '@mui/material';
 
 import Draggable, {
   DraggableEventHandler, DraggableEvent, DraggableData
@@ -38,7 +38,7 @@ import Draggable, {
 import { Point, Size, CommonUtils } from '@sheetxl/utils';
 
 import {
-  useCallbackRef, useImperativeElement, KeyCodes, useFullscreenPortal, DynamicIcon, ShowWindowOptions
+  useCallbackRef, useImperativeElement, KeyCodes, useFullscreenPortal, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import { ExhibitTooltip } from '../button';

@@ -288,7 +288,7 @@ export function createLibraryConfig(options: CreateViteConfigOptions) {
 
   // We have to not generate for node as there is a race condition
   // when generating types 2x quickly (file system race I think)
-  if (!isApp && !isNode) {
+  if ((!isApp && !isNode) || isCli) {
     plugins.push(dts({
       // The output directory for the final bundled .d.ts files
       outDir: resolve(dirname, `build/types`),

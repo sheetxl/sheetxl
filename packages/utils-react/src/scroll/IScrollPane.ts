@@ -4,13 +4,15 @@ import type { Size, TopLeft } from '@sheetxl/utils';
 import type { ScrollableViewport } from '../types';
 import type { ScrollbarProps } from './IScrollbar';
 
-export interface ScrollPaneAttributes {
+export interface IScrollPaneAttributes {
   isScrollPane: () => true;
 }
 
-export interface IScrollPaneElement extends HTMLDivElement, ScrollPaneAttributes {};
+export interface IScrollPaneElement extends HTMLDivElement, IScrollPaneAttributes {};
 
-
+/**
+ * Properties for the ScrollPane
+ */
 export interface ScrollPaneProps extends React.HTMLAttributes<HTMLDivElement> {
   viewport: ScrollableViewport;
 
@@ -34,4 +36,9 @@ export interface ScrollPaneProps extends React.HTMLAttributes<HTMLDivElement> {
    * @defaultValue false unless no touch events are detected
    */
   disableTouch?: boolean;
+
+  /**
+   * Reference to the scroll pane element
+   */
+  ref?: React.Ref<IScrollPaneElement>
 }

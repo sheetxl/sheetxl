@@ -15,7 +15,7 @@ import {
 } from '@sheetxl/utils-react';
 
 import {
-  AnimatedTraversingEllipsisIcon, LoadingPanel, useLazyWindow,
+  AnimatedTraversingEllipsisIcon, AnimatedLoadingPanel, useLazyWindow,
   useOptionsDialog, useInputDialog, IInternalWindowElement
 } from '@sheetxl/utils-mui';
 
@@ -30,7 +30,7 @@ interface SnackbarWrapperProps {
  * Because snackbar is configured using a context provider we have to create
  * an intermediary component to retrieve and wrap the notifier (and commands)
  */
-const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
+export const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
   memo((props: SnackbarWrapperProps) => {
   const {
     children
@@ -228,7 +228,7 @@ const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
 
     // long operation panel
     setLoadingPane(
-      <LoadingPanel
+      <AnimatedLoadingPanel
         icon={<AnimatedTraversingEllipsisIcon sx={{transform: 'scale(0.7)', marginLeft: '-6px'}}/>}
         panel={true}
         label={busy.label}
@@ -255,4 +255,3 @@ const SnackbarWrapper: React.FC<SnackbarWrapperProps> =
 });
 
 SnackbarWrapper.displayName = "SnackbarWrapper";
-export { SnackbarWrapper };

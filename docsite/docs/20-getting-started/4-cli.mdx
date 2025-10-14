@@ -68,7 +68,7 @@ Create a new Workbook and save with a single value.
 ```javascript title="New Workbook"
 wb = new Workbook();
 wb.getRange('a1').setValues([[1]]);
-saveWorkbook('myWorkbook.xlsx', wb);
+save('myWorkbook.xlsx', wb);
 ```
 
 :::info API Reference
@@ -80,7 +80,7 @@ See our full [SDK API Documentation](https://api.sheetxl.com) for a complete lis
 For automation and more complex tasks, you can pass a local JavaScript file to the CLI for execution. The script will run within the SheetXL environment, with the SDK available.
 
 ```bash
-npx sheetxl path/to/your/script.js
+npx sheetxl run path/to/your/script.js
 ```
 
 ### Direct Commands

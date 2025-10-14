@@ -16,7 +16,7 @@ import { IColor, Color, ITheme, CommonUtils } from '@sheetxl/sdk';
 
 import { useCallbackRef, DynamicIcon } from '@sheetxl/utils-react';
 
-import { LoadingPanel } from '@sheetxl/utils-mui';
+import { AnimatedLoadingPanel } from '@sheetxl/utils-mui';
 
 import { ColorPanelType, AutoColorPosition } from './Types';
 import { ColorButton } from './ColorButton';
@@ -363,7 +363,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
       <Suspense
         fallback={
           <div style={fullPanelStyle}>
-            <LoadingPanel/>
+            <AnimatedLoadingPanel/>
           </div>
         }
       >

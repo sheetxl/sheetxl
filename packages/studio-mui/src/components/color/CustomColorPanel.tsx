@@ -26,7 +26,7 @@ interface ColorSpace {
   source: any;
 }
 
-export const toState = (data:ColorSpace | string, oldHue:number=null) => {
+const toState = (data:ColorSpace | string, oldHue:number=null) => {
   const color = (data as ColorSpace).hex ? tinycolor((data as ColorSpace).hex) : tinycolor((data as string) || 'transparent');
   const hsl = color.toHsl();
   const hsv = color.toHsv();

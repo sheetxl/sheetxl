@@ -18,7 +18,10 @@ export interface SwatchProps extends React.HTMLAttributes<HTMLElement> {
   darkMode?: boolean;
 }
 
-const Swatch: React.FC<SwatchProps> = memo((props: SwatchProps) => {
+/**
+ * Small color swatch box to show a color and allow selection.
+ */
+export const Swatch: React.FC<SwatchProps> = memo((props: SwatchProps) => {
   const {
     selectedColor,
     onSelectColor,
@@ -130,6 +133,3 @@ const Swatch: React.FC<SwatchProps> = memo((props: SwatchProps) => {
     </div>
   )
 });
-
-export default Swatch;
-export { Swatch };

@@ -33,7 +33,7 @@ export class OutOfBoundsError extends ExpectedError {
 }
 
 /**
- * Special classification that suggests there was a partial error
+ * Special classification that suggests there was a partial error.
  */
 export class PartialError extends ChainedError {
   constructor(message: string='Partial Error', cause: Error=null) {

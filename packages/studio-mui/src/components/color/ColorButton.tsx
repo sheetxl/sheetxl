@@ -4,7 +4,7 @@ import { IColor, Color } from '@sheetxl/sdk';
 
 import { SimpleTooltip } from '@sheetxl/utils-mui';
 
-import Swatch, { SwatchProps } from './Swatch';
+import { Swatch, type SwatchProps } from './Swatch';
 
 export interface ColorButtonProps extends React.HTMLAttributes<HTMLElement> {
   colorDef: IColor.DefinitionWithLabel;
@@ -26,7 +26,7 @@ export interface ColorButtonProps extends React.HTMLAttributes<HTMLElement> {
 /**
  * Given a colorDef Provides a color preview as a swatch, a tooltip, and returns an adjusted color.
  */
-export const ColorButton: React.FC<ColorButtonProps> = memo((props:ColorButtonProps) => {
+export const ColorButton = memo((props: ColorButtonProps) => {
   const {
     schemeColorLookup,
     selectedColor,

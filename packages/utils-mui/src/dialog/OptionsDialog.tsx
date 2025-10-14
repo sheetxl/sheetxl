@@ -10,14 +10,14 @@ import { Box, Typography } from '@mui/material';
 import { DialogContent } from '@mui/material';
 import { DialogActions } from '@mui/material';
 
-import { Button, ButtonProps } from '@mui/material';
+import { Button, type ButtonProps } from '@mui/material';
 import { TouchRippleActions } from '@mui/material';
 
 import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
 
 import InternalWindow from './InternalWindow';
 
-import { OptionsDialogProps } from './useOptionsDialog';
+import { type OptionsDialogProps } from './useOptionsDialog';
 
 /**
  * Options DialogBox to give the user a choice of next actions.

@@ -42,7 +42,7 @@ const resolveCommands = <STATE=any, CONTEXT=any>(commands: ICommands.IGroup, key
  * A change to the commands, keys, or listeners will not trigger a rerender. The deps argument can be used.
  */
 
-function useCommands<STATE extends any, CONTEXT extends any=void>(
+export function useCommands<STATE extends any, CONTEXT extends any=void>(
   commands: ICommands.IGroup,
   keys: string[] = null,
   listener: ICommandsListeners<STATE, CONTEXT> = null,
@@ -89,5 +89,3 @@ function useCommands<STATE extends any, CONTEXT extends any=void>(
 
   return resolvedCommands;
 }
-
-export { useCommands };

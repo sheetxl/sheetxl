@@ -21,7 +21,7 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "tsBuildInfoFile": "./build/.tsbuildinfo",
+    "tsBuildInfoFile": "./build/.tsbuildinfo.docs",
     "baseUrl": "./",
   },
   "files": [], // Important: This tells TypeScript not to compile any files directly in the root

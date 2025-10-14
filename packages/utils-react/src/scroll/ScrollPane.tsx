@@ -16,7 +16,7 @@ import { detectIt } from '../utils/ReactUtils';
 import { useImperativeElement } from '../hooks/useImperativeElement';
 
 import {
-  IScrollPaneElement, ScrollPaneAttributes, ScrollPaneProps
+  IScrollPaneElement, IScrollPaneAttributes, ScrollPaneProps
 } from './IScrollPane';
 
 import { defaultCreateScrollbar } from './Utils';
@@ -45,8 +45,8 @@ export const defaultCreateScrollCorner = ({ width, height }) => {
  *
  * TODO - support wheel-mouse, snap, and zoom
  */
-const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElement> }> =
-   memo(forwardRef<IScrollPaneElement, ScrollPaneProps>((props, refForward) => {
+export const ScrollPane = memo(forwardRef<IScrollPaneElement, ScrollPaneProps>(
+  (props: ScrollPaneProps, refForward) => {
   const {
     children,
     viewport,
@@ -68,7 +68,7 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
   const showVerticalScrollbar = propShowVerticalScrollbar && createVerticalScrollbar;
   const onScrollViewport = useCallbackRef(propOnScrollViewport, [propOnScrollViewport]);
 
-  const refLocal = useImperativeElement<IScrollPaneElement, ScrollPaneAttributes>(refForward, () => {
+  const refLocal = useImperativeElement<IScrollPaneElement, IScrollPaneAttributes>(refForward, () => {
     return {
       isScrollPane: () => true
     }
@@ -205,7 +205,7 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
         className={clsx('horizontal-corner-container', styles['horizontal-corner-container'])}
       >
         <div
-          className={clsx('horizontal-container', styles['horizontal-container'])}
+          className={clsx('horizontal-sizer', styles['horizontal-sizer'])}
           style={{
             width: `calc(100% - ${vertWidth}px)`,
           }}
@@ -253,4 +253,3 @@ const ScrollPane: React.FC<ScrollPaneProps & { ref?: React.Ref<IScrollPaneElemen
 }));
 
 ScrollPane.displayName = 'ScrollPane';
-export { ScrollPane };

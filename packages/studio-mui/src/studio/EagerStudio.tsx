@@ -11,7 +11,7 @@ import { SnackbarProvider, SnackbarKey, CloseReason } from 'notistack';
 import { Theme, ThemeProvider } from '@mui/material/styles';
 
 import { CssBaseline } from '@mui/material';
-import { Box, SvgIcon } from '@mui/material';
+import { Paper, SvgIcon } from '@mui/material';
 
 import { UndoManager, CommonUtils } from '@sheetxl/utils';
 import { IWorkbook, Workbook, ITransaction } from '@sheetxl/sdk';
@@ -22,20 +22,20 @@ import {
 } from '@sheetxl/utils-react';
 
 import {
-  TaskPaneProvider, TaskPaneAreaProps, ITaskPaneAreaElement, useDocThemes
+  TaskPaneProvider, type TaskPaneAreaProps, ITaskPaneAreaElement, useDocThemes
 } from '@sheetxl/react';
 
 import {
-  LoadingPanel, ErrorPanel, createExhibitTheme, ModalProvider,
+  createExhibitTheme, ModalProvider,
   useResolvedThemeMode, ThemeModeOptions, ThemeMode
 } from '@sheetxl/utils-mui';
 
 import {
-  WorkbookElement, IWorkbookElement, WorkbookRefAttribute,
+  WorkbookElement, IWorkbookElement,
   WorkbookLoadEvent, WorkbookTitle, IWorkbookTitleElement
 } from '../components';
 
-import { WorkbookIO, type ReadWorkbookOptions, type WorkbookHandle } from '../io';
+import { WorkbookIO, type ReadWorkbookOptions } from '../io';
 
 import { ToastError } from '../toast';
 
@@ -51,6 +51,11 @@ import { TablePlugin } from '../components';
 import { ScriptingPlugin } from '../scripting';
 // import { AIPlugin } from '../ai/plugin';
 
+import {
+  renderWorkbookLoading as defaultRenderWorkbookLoading,
+  renderWorkbookError as defaultRenderWorkbookError
+} from '../components/workbook/WorkbookRenderers';
+
 // AIPlugin();
 TablePlugin(); // Components plugin
 ScriptingPlugin();
@@ -58,14 +63,14 @@ ScriptingPlugin();
 /**
  * Fully functional application. Wraps a workbook in a simple container for a standalone application.
  * Minimum usefulness is:
+ *  * resolve initial workbook and loading panel
  *  * workbook
  *  * snackbar
  *  * export/import to local file system
  *  * file name
  *  * material-ui theme for light/dark toggle
  */
-const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
-   memo(forwardRef<IWorkbookElement, StudioProps>((props, refForwarded) => {
+export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props: StudioProps, refForwarded) => {
   const {
     className: propClassName,
     sx: propSx,
@@ -73,12 +78,12 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     onElementLoad: propOnElementLoad,
     onError: propOnError,
     undoManager: propUndoManager,
-    errorPanel: PropErrorPanel = ErrorPanel,
+    renderWorkbookError: propRenderWorkbookError = defaultRenderWorkbookError,
     onKeyDown: propOnKeyDown,
 
     workbook: propWorkbook,
-    createWorkbookOptions: propCreateWorkbookOptions,
     onWorkbookChange: propOnModelChange,
+
     logo,
     importExportDisabled = false,
     themeOptions: propThemeOptions,
@@ -87,7 +92,8 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     title: propTitle,
     onTitleChange: propOnTitleChange,
     titleProps,
-    renderLoadingPanel,
+    renderLoading: propRenderLoading = defaultRenderWorkbookLoading,
+    loadingProps,
     ...rest
   } = props;
 
@@ -115,7 +121,7 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
 
   const [workbookResolved, setWorkbookResolved] = useState<{ workbook?: IWorkbook, error?: any}>(null);
 
-  const [workbook, setWorkbook] = useState<IWorkbook | Promise<IWorkbook> | WorkbookHandle | Promise<WorkbookHandle> | ReadWorkbookOptions>(null);
+  const [workbook, setWorkbook] = useState<IWorkbook | Promise<IWorkbook> | ReadWorkbookOptions>(null);
 
   const defaultThemes = useDocThemes();
   useLayoutEffect(() => {
@@ -128,7 +134,7 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
         //     maxRows: 100
         //   });
         // },
-        ...propCreateWorkbookOptions
+        // ...propCreateWorkbookOptions
       }
       setWorkbook(new Workbook(options));
     } else {
@@ -149,18 +155,13 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
 
     const resolveWorkbook = async () => {
       try {
-        let resultOrWorkbook: IWorkbook | WorkbookHandle | ReadWorkbookOptions = await Promise.resolve(workbook);
+        let resultOrWorkbook: IWorkbook | ReadWorkbookOptions = await Promise.resolve(workbook);
         if (resultOrWorkbook && (resultOrWorkbook as ReadWorkbookOptions).source) {
           resultOrWorkbook = await WorkbookIO.read(resultOrWorkbook as ReadWorkbookOptions);
         }
-        let workbookResolved: IWorkbook;
-        if ((resultOrWorkbook as WorkbookHandle).workbook) {
-          setWorkbookTitle((resultOrWorkbook as WorkbookHandle).title);
-          workbookResolved = (resultOrWorkbook as WorkbookHandle).workbook;
-        } else {
-          workbookResolved = resultOrWorkbook as IWorkbook;
-        }
+        let workbookResolved: IWorkbook = resultOrWorkbook as IWorkbook;
         onWorkbookChange?.(workbookResolved);
+        setWorkbookTitle(workbookResolved.getName() ?? '');
         setWorkbookResolved({ workbook: workbookResolved });
       } catch (error: any) {
         onWorkbookChange?.(null);
@@ -314,42 +315,6 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     };
   }, []);
 
-  const loadingPanel = useMemo(() => {
-    const props = {
-      transparentBackground: true
-    }
-    // TODO - switch this to a css-transition-group like workbook
-    return <Box
-      sx={propSx}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...propStyle
-      }}
-    >
-      {renderLoadingPanel?.(props) ?? (<LoadingPanel {...props} />)}
-    </Box>
-  }, [propSx, propStyle, renderLoadingPanel]);
-
-  const fallbackRender = useCallback(({ error }) => {
-    // https://legacy.reactjs.org/docs/error-boundaries.html
-    // https://github.com/bvaughn/react-error-boundary#readme
-    propOnError?.(error);
-    return (
-      <PropErrorPanel
-        sx={propSx}
-        style={propStyle}
-        error={error ?? 'Unable to display empty workbook.'}
-      />
-    )
-  }, [propSx, propStyle, propOnError]);
-
   const styles = useMemo(() => {
     return {
       ...propSx,
@@ -400,11 +365,11 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
   const createTaskPaneArea = useCallback((props: TaskPaneAreaProps, ref: React.Ref<ITaskPaneAreaElement>) => {
     return <StudioTaskPaneArea
       ref={ref}
-      model={workbook}
+      model={workbookResolved?.workbook}
       commands={commandsApplication}
       {...props}
     />;
-  }, [commandsApplication, workbook])
+  }, [commandsApplication, workbookResolved])
 
   const mainWrapper = useCallback((children: React.ReactElement) => {
     return (
@@ -419,11 +384,50 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
 
   // We show the loading panel
   const renderedWorkbook = useMemo(() => {
-    if (!workbookResolved)
-      return loadingPanel;
-    if (workbookResolved.error || !workbookResolved.workbook) {
-      return fallbackRender({ error: workbookResolved.error });
+    if (!workbookResolved) {
+      return (
+        <Paper
+          sx={propSx}
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            ...propStyle
+          }}
+        >
+          {propRenderLoading( {...loadingProps} )}
+        </Paper>
+      );
+    } else if (workbookResolved.error) {
+      return (
+        <Paper
+          sx={propSx}
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            display: 'flex',
+            alignItems: 'stretch',
+            justifyContent: 'stretch',
+            // padding: '16px',
+            ...propStyle
+          }}
+        >
+          {propRenderWorkbookError( {
+            style: {
+              width: '100%',
+              height: '100%',
+              ...propStyle
+            },
+            error: workbookResolved.error
+          } )}
+        </Paper>
+      );
     }
+
     let appTheme = null;
     let gridTheme = null;
     let enableDarkImages = false;
@@ -450,7 +454,8 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
         onKeyDown={(e: React.KeyboardEvent<any>) => {
           propOnKeyDown?.(e);
         }}
-        renderLoadingPanel={renderLoadingPanel}
+        loadingProps={loadingProps}
+        renderLoading={propRenderLoading}
         gridTheme={gridTheme}
         headersTheme={appTheme}
         enableDarkImages={enableDarkImages}
@@ -463,8 +468,8 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
     );
     return workbookElement;
   }, [
-    workbookResolved, titleWorkbook, undoManager, loadingPanel, renderLoadingPanel,// commandsStudio,
-    themeOptions, rest, renderToolbar, styles, mainWrapper // because we need to pass rest
+    workbookResolved, titleWorkbook, undoManager, propRenderLoading, loadingProps,// commandsStudio,
+    propRenderWorkbookError, themeOptions, rest, renderToolbar, styles, mainWrapper // because we need to pass rest
     // propStyle
   ]);
 
@@ -542,5 +547,4 @@ const EagerStudio: React.FC<StudioProps & WorkbookRefAttribute> =
 
 // export as both named and default
 EagerStudio.displayName = "EagerStudio";
-export { EagerStudio };
 export default EagerStudio;

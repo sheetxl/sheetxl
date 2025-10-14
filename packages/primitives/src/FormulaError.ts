@@ -12,7 +12,7 @@
  *  6. #NUM! Invalid numeric value.
  *  7. #N/A Value not available.
  * # Office 365
- *  8. #GETTING_DATA This raised when for long running calculations that not yet completed.
+ *  8. #GETTING_DATA This is raised for long running calculations that are not yet complete.
  *
  *  (Saves as #N/A to disk)
  *  9. #SPILL! Formula's output range is blocked.

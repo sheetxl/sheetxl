@@ -1,6 +1,5 @@
 import util from 'node:util';
 import path from 'node:path';
-import fs from 'node:fs';
 import os from 'node:os';
 import open from 'open';
 import repl, { REPLServer } from 'node:repl';
@@ -10,10 +9,13 @@ import chalk from 'chalk';
 
 import * as SDK from '@sheetxl/sdk';
 import * as IO from '@sheetxl/io';
-import { WorkbookIO, type ReadWorkbookOptions, type WriteWorkbookOptions } from '@sheetxl/io';
+import { WorkbookIO, type ReadWorkbookOptions, type IOWorkbookDetails, type WriteWorkbookOptions } from '@sheetxl/io';
 import type { IWorkbook } from '@sheetxl/sdk';
 
-import help from './help.ts';
+// private
+import type { Modules } from '../types/_Types';
+// private
+import { _Utils } from '../utils';
 
 const timeToString = (time: number): string => {
   time = time * 0.35;
@@ -22,14 +24,19 @@ const timeToString = (time: number): string => {
 }
 
 const sizeToString = (size: number): string => {
-  if (size === 0) return 'nothing';
-  if (size < 1024) return `${size}B`;
+  if (size === undefined) return '';
+  if (size === 0) return 'nothing ';
+  if (size < 1024) return `${size}B `;
   const i = Math.floor(Math.log(size) / Math.log(1024));
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  return `${(size / Math.pow(1024, i)).toFixed(2)}${sizes[i]}`;
+  return `${(size / Math.pow(1024, i)).toFixed(2)}${sizes[i]} `;
 }
 
-export default async function replCommand(args: any[], modules: any): Promise<number> {
+export default async function replCommand(
+  workbookPath: string,
+  args: any[],
+  modules: Modules
+): Promise<number> {
   const { program } = modules;
   const options = program.opts();
   const quiet = options.quiet || false;
@@ -44,6 +51,7 @@ export default async function replCommand(args: any[], modules: any): Promise<nu
    */
   const writer = (output: any): string => {
     // return ''; // disable output for now
+    if (quiet) return '';
     if (output) {
       // We only customize the output for objects with a toStringTag.
       const toStringTagValue = output[Symbol.toStringTag]; // call once
@@ -91,8 +99,72 @@ export default async function replCommand(args: any[], modules: any): Promise<nu
     }
   };
 
+  let lastFileSize: number|undefined = 0;
+  let startTimeProgress = 0;
+  let totalProgress = 0;
+  let operationProgress = '';
+  const consoleProgress: SDK.TaskProgress<IOWorkbookDetails> = {
+    onStart(details: IOWorkbookDetails, total?: number): Promise<void> | void {
+      startTimeProgress = new Date().getTime();
+      totalProgress = 0;
+    },
+    onProgress(completed: number, total?: number): Promise<void> | void {
+      // Print a '#' for each progress step without newline
+      totalProgress = totalProgress + completed;
+      process.stdout.write(chalk.green('#'));
+    },
+    onWarning(message: string, context: string): Promise<void> | void {
+      process.stdout.write(chalk.red(`warning`));
+      process.stdout.write(chalk.dim(chalk.red(`${context}: ${message}\n`)));
+    },
+    onComplete(): Promise<void> | void {
+      const endTime = new Date().getTime();
+      // Add newline after progress indicators before completion message
+      if (totalProgress > 0) process.stdout.write('\n');
+      SDK.Notifier.log(chalk.blue(`${operationProgress} ${sizeToString(lastFileSize)}in ${timeToString(Math.trunc((endTime - startTimeProgress) * 0.55))}`));
+      startTimeProgress = 0;
+      lastFileSize = undefined;
+    }
+  }
+
+  const readWorkbook = async (
+    fileName: string,
+    options?: Omit<ReadWorkbookOptions, 'source'>
+  ): Promise<IWorkbook> => {
+    return _Utils.readWorkbook(fileName, options, consoleProgress, (operation: string, stats) => {
+      lastFileSize = stats.size; // File size in bytes
+      operationProgress = operation;
+      startTimeProgress = new Date().getTime();
+      totalProgress = 0;
+    });
+  };
+
+  const writeWorkbook = async (
+    fileName: string,
+    workbook: IWorkbook,
+    options?: Omit<WriteWorkbookOptions, 'destination'>
+  ): Promise<boolean> => {
+    return _Utils.writeWorkbook(fileName, workbook, options, consoleProgress, (operation: string, stats) => {
+      lastFileSize = stats?.size ?? undefined;
+      operationProgress = operation;
+      startTimeProgress = new Date().getTime();
+      totalProgress = 0;
+    });
+  };
+
+  let workbookRepl: IWorkbook | null = null;
+  if (workbookPath) {
+    try {
+      workbookRepl = await readWorkbook(workbookPath);
+    } catch (error) {
+      SDK.Notifier.error(chalk.red(`Failed to read workbook: ${error.message}`));
+    }
+  }
+
+  const prompt = workbookRepl ? `'${SDK.TextUtils.capitalize(workbookRepl.getName() || 'Workbook')}'` : 'SheetXL';
+
   const replServer: REPLServer = repl.start({
-    prompt: `${chalk.cyanBright('SheetXL')}${pwd}${chalk.cyan(' > ')}`,
+    prompt: `${chalk.cyanBright(prompt)}${pwd}${chalk.cyan(' > ')}`,
     writer,
     preview: false, // calls functions before we want it to
     ignoreUndefined: true, // only applies with customEval
@@ -138,100 +210,41 @@ export default async function replCommand(args: any[], modules: any): Promise<nu
     }
   });
 
-  // Iterate over all named exports from WorkbookIO and add them to the context
-  replServer.context.workbookIO = WorkbookIO; // deliberate shift in casing
+  if (workbookRepl) {
+    _Utils.installScopeAuto(replServer, workbookRepl, 'wb');
 
-  let lastFileSize: number = 0;
-  let startTimeProgress = 0;
-  let totalProgress = 0;
-  let nameProgress = '';
-  let operationProgress = '';
+    replServer.context.write = async (
+      fileName: string,
+      options?: Omit<WriteWorkbookOptions, 'destination'>
+    ): Promise<boolean> => {
+      return await writeWorkbook(fileName, workbookRepl, options);
+    }
+    replServer.context.save = replServer.context.write; // alias
 
-  // TODO - should we give a third argument that is a callback to be like node readFile?
-  const readFile = (fileName: string, options?: Omit<ReadWorkbookOptions, 'source'>) => {
-    const normalized = path.normalize(fileName);
-    const contents = fs.readFileSync(normalized);
-    const stats = fs.statSync(normalized);
-    lastFileSize = stats.size; // File size in bytes
-    const fileObject = new File([contents], normalized);
-    return WorkbookIO.read({
-      ...options,
-      source: fileObject
+    Object.defineProperty(replServer.context, 'help', {
+      async get() {
+        const help = await import('./help-repl-workbook.ts');
+        return help.default();
+      }
     });
-  };
-  replServer.context.readFile = readFile;
+  } else {
+    // Iterate over all named exports from WorkbookIO and add them to the context
+    replServer.context.workbookIO = WorkbookIO; // deliberate shift in casing
+    replServer.context.read = readWorkbook;
+    replServer.context.write = writeWorkbook;
+    replServer.context.save = writeWorkbook; // just an alias
 
-  const consoleProgress: SDK.TaskProgress = {
-    onStart(name: string, total?: number): Promise<void> | void {
-      startTimeProgress = new Date().getTime();
-      nameProgress = name;
-      totalProgress = 0;
-    },
-    onProgress(completed: number, total?: number): Promise<void> | void {
-      // Print a '#' for each progress step without newline
-      totalProgress = totalProgress + completed;
-      process.stdout.write(chalk.green('#'));
-    },
-    onWarning(message: string, context: string): Promise<void> | void {
-      process.stdout.write(chalk.red(`warning`));
-      process.stdout.write(chalk.dim(chalk.red(`${context}: ${message}\n`)));
-    },
-    onComplete(): Promise<void> | void {
-      const endTime = new Date().getTime();
-      // Add newline after progress indicators before completion message
-      if (totalProgress > 0) process.stdout.write('\n');
-      SDK.Notifier.log(chalk.blue(`${operationProgress} ${sizeToString(lastFileSize)} in ${timeToString(Math.trunc((endTime - startTimeProgress) * 0.55))}`));
-      startTimeProgress = 0;
-      lastFileSize = 0;
-      nameProgress = '';
-    }
-  }
+    // Iterate over all named exports from SDK and add them to the context
+    _Utils.installScopeAuto(replServer, SDK, 'sdk');
+    _Utils.installScopeAuto(replServer, IO, 'io');
 
-  replServer.context.readWorkbook = async (fileName: string, options?: Omit<ReadWorkbookOptions, 'source'>): Promise<IWorkbook> => {
-    operationProgress = 'readWorkbook';
-    const handle = await readFile(fileName, {
-      progress: consoleProgress,
-      ...options
+    Object.defineProperty(replServer.context, 'help', {
+      async get() {
+        const help = await import('./help-repl-global.ts');
+        return help.default();
+      }
     });
-    return handle.workbook;
-  };
-
-  const writeFile = (fileName: string, workbook: IWorkbook, options?: Omit<WriteWorkbookOptions, 'destination'>) => {
-    operationProgress = 'writeWorkbook';
-    const normalized = path.normalize(fileName);
-    WorkbookIO.writeFile(normalized, workbook, {
-      // progress: consoleProgress,
-      ...options
-    });
-  };
-  replServer.context.writeFile = writeFile;
-  replServer.context.writeWorkbook = writeFile; // just an alias
-
-  // Iterate over all named exports from SDK and add them to the context
-  // replServer.context.sdk = SDK; // ? Or as sdk?
-  for (const key in SDK) {
-    if (key === '_') {
-      continue;
-    }
-    if (Object.prototype.hasOwnProperty.call(SDK, key)) {
-      (replServer.context as any)[key] = (SDK as any)[key];
-    }
   }
-
-  for (const key in IO) {
-    if (key === '_') {
-      continue;
-    }
-    if (Object.prototype.hasOwnProperty.call(IO, key)) {
-      (replServer.context as any)[key] = (IO as any)[key];
-    }
-  }
-
-  Object.defineProperty(replServer.context, 'help', {
-    get() {
-      return help();
-    }
-  });
 
   return new Promise((resolve) => {
     replServer.on('exit', () => resolve(0));
