@@ -15,7 +15,7 @@ describe("ioService", () => {
     // const asOut:ArrayBuffer = new TextEncoder().encode(JSON.stringify(asJson, null, 2));
 
     const location = path.resolve(__dirname, './data/simple-chart-utf8.xml');
-    const buffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './data/simple-chart-utf8.xml'), {flag:'r'});
+    const buffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './data/simple-chart-utf8.xml'), {flag:'r'}) as any;
     const asXMLString = new TextDecoder().decode(buffer);
     const xmlDoc = new DOMParser().parseFromString(asXMLString, 'text/xml') as unknown as Document;
     const asJSON = new FromOOXMLConverter().convert(xmlDoc, location);

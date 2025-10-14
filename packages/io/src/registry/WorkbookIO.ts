@@ -3,7 +3,7 @@ import { BufferUtils, type FetchArgs } from '@sheetxl/utils';
 import { type IWorkbook, TextUtils } from '@sheetxl/sdk';
 
 import type {
-  WriteWorkbookOptions, ReadWorkbookOptions, WorkbookHandle, Base64Args, FormatType,
+  WriteWorkbookOptions, ReadWorkbookOptions, Base64Args, FormatType,
   WorkbookReadHandler, WorkbookWriteHandler, ReadFormatType, WriteFormatType
 } from '../types';
 
@@ -48,12 +48,12 @@ export class DefaultWorkbookIO implements IWorkbookIO {
 
   /** @inheritdoc IWorkbookIO.writeArrayBuffer */
   async writeArrayBuffer(workbook: IWorkbook, options?: WriteWorkbookOptions): Promise<ArrayBufferLike> {
-    const writeType:WriteFormatType = (await this.getWriteFormats({ format: options?.format ?? 'slx' }))[0];
+    const writeType:WriteFormatType = (await this.getWriteFormats({ search: options?.format ?? 'slx' }))[0];
     return this._writeArrayBuffer(workbook, writeType, options);
   }
 
   /** @inheritdoc IWorkbookIO.read */
-  async read(options: ReadWorkbookOptions): Promise<WorkbookHandle> {
+  async read(options: ReadWorkbookOptions): Promise<IWorkbook> {
     if (!options) {
       throw new Error(`'options' must be provided for read.`);
     }
@@ -61,22 +61,14 @@ export class DefaultWorkbookIO implements IWorkbookIO {
     if (!source) {
       throw new Error(`'options.source' must be provided for read.`);
     }
-    const name = options.name;
+    let name = options.name;
     let format = options.format;
     let ext: string;
     if (!format && name) {
       ext = TextUtils.getFileNameExtension(name);
     }
 
-    // convenience for readonly
-    if (options.readonly !== undefined) {
-      options = { ...options };
-      options.createWorkbookOptions = {
-        readonly: true,
-        ...(options.createWorkbookOptions || {}),
-      }
-      delete options.readonly; // not needed but.
-    }
+
     // if function resolve
     if (typeof source === 'function') {
       source = source();
@@ -87,38 +79,77 @@ export class DefaultWorkbookIO implements IWorkbookIO {
     }
 
     const sourceType = this._detectImportSourceType(source as ReadWorkbookOptions | string);
-
     if (!sourceType) {
       throw new Error('Unable to detect source type from provided input.');
+    }
+
+    const _self = this;
+    const getReadFormat = async (search: string, ext: string, nameCustom?: string): Promise<ReadFormatType> => {
+      if (!search && !ext) {
+        throw new Error('Either format or file extension must be provided to determine read type.');
+      }
+      const formats = await _self.getReadFormats({ search, ext });
+      const readFormat = formats[0];
+      if (!readFormat) {
+        throw new Error(`No read format available for '${options.format ?? ext}' input.`);
+      }
+      options = {
+        ...options,
+        ...options?.typedCreateWorkbookOptions?.[readFormat.key]
+      }
+      delete options.typedCreateWorkbookOptions;
+
+      const nameFormat = name ?? nameCustom ?? `read-${sourceType}`;
+      options.createWorkbookOptions = {
+        ...(options.createWorkbookOptions || {}),
+        name: nameFormat
+      };
+      // convenience for readonly
+      if (options.readonly !== undefined) {
+        options.createWorkbookOptions = {
+          readonly: options.readonly,
+          ...options.createWorkbookOptions
+        }
+        delete options.readonly; // not needed but.
+      }
+
+      const onStart = options?.progress?.onStart;
+      if (onStart) {
+        await Promise.resolve(onStart({ format: readFormat, name: nameFormat }));
+      }
+      return readFormat;
+    }
+
+    const readFromBuffer = async (arrayBuffer: ArrayBufferLike | Promise<ArrayBufferLike>, readFormat: ReadFormatType, options?: ReadWorkbookOptions): Promise<IWorkbook> => {
+      const resolvedArrayBuffer = await Promise.resolve(arrayBuffer);
+      const results = await this._readArrayBuffer(resolvedArrayBuffer, readFormat, options);
+      options?.progress?.onComplete?.();
+      return results
     }
 
     // Handle different source types by delegating to appropriate methods
     switch (sourceType) {
       case 'file': {
         const file = source as File;
-        return await this._fromFile(file, options);
+        const fileName = file?.name;
+        let fileDisplay: string = '';
+        if (fileName) {
+          fileDisplay = `${TextUtils.getBaseName(fileName)}`;
+        }
+        const readFormat = await getReadFormat(format, TextUtils.getFileNameExtension(fileName), fileDisplay);
+        return readFromBuffer(file.arrayBuffer(), readFormat, options);
       }
 
       case 'blob': {
+        const readFormat = await getReadFormat(format, ext);
         const blob = source as Blob;
-        const arrayBuffer = await blob.arrayBuffer();
-        const readType = (await this.getReadFormats({ format, ext }))[0];
-
-        if (!readType) {
-          throw new Error('No read type available for blob input.');
-        }
-
-        const workbook: IWorkbook = await this._readArrayBuffer(arrayBuffer, readType, options);
-        return {
-          workbook,
-          title: name || 'read-blob',
-          format: readType
-        };
+        return readFromBuffer(blob.arrayBuffer(), readFormat, options);
       }
 
       case 'base64': {
-        let base64String: string;
+        const readFormat = await getReadFormat(format, ext);
 
+        let base64String: string;
         if (source && typeof source === 'object' && 'base64' in source) {
           // Handle Base64Args
           base64String = (source as Base64Args).base64;
@@ -130,18 +161,7 @@ export class DefaultWorkbookIO implements IWorkbookIO {
           base64String = source as string;
         }
 
-        const arrayBuffer = BufferUtils.base64ToArrayBuffer(base64String);
-        const readType = (await this.getReadFormats({ format, ext }))[0];
-        if (!readType) {
-          throw new Error('No read type available for base64.');
-        }
-
-        const workbook:IWorkbook = await this._readArrayBuffer(arrayBuffer, readType, options);
-        return {
-          workbook,
-          title: name || 'read-base64',
-          format: readType
-        };
+        return readFromBuffer(BufferUtils.base64ToArrayBuffer(base64String), readFormat, options);
       }
       case 'fetch': {
         let fetchInput: string | URL | Request = null;
@@ -165,10 +185,7 @@ export class DefaultWorkbookIO implements IWorkbookIO {
         // Determine type from URL extension or provided type
         const fetchStr =  typeof fetchInput === 'string' ? fetchInput : fetchInput.toString();
         const extension = ext || TextUtils.getFileNameExtension(fetchStr);
-        const readType = (await this.getReadFormats({ format, ext: extension }))[0];
-        if (!readType) {
-          throw new Error('No read type available for fetch.');
-        }
+        const readFormat = await getReadFormat(format, extension, TextUtils.getBaseName(fetchStr, true));
 
         try {
           const response = await fetch(fetchInput, {
@@ -185,13 +202,7 @@ export class DefaultWorkbookIO implements IWorkbookIO {
           if (!arrayBuffer) {
             throw new Error(`Unable to fetched content: ${fetchStr}`);
           }
-          const workbook: IWorkbook = await this._readArrayBuffer(arrayBuffer, readType, options);
-
-          return {
-            workbook,
-            title: name || TextUtils.getBaseName(fetchStr, true) || 'read-fetch',
-            format: readType
-          };
+          return readFromBuffer(arrayBuffer, readFormat, options);
         } catch (error: any) {
           clearTimeout(timeoutId);
           if (error.name === 'AbortError') {
@@ -202,21 +213,13 @@ export class DefaultWorkbookIO implements IWorkbookIO {
       }
 
       case 'buffer': {
-        const arrayBuffer: ArrayBufferLike  = source as ArrayBufferLike;
-        const readType = (await this.getReadFormats({ format, ext }))[0];
-        if (!readType) {
-          throw new Error('No read type available for buffer.');
-        }
-
-        const workbook:IWorkbook = await this._readArrayBuffer(arrayBuffer, readType, options);
-        return {
-          workbook,
-          title: name || 'read-buffer',
-          format: readType
-        };
+        const readFormat = await getReadFormat(format, ext);
+        const arrayBuffer: ArrayBufferLike = source as ArrayBufferLike;
+        return readFromBuffer(arrayBuffer, readFormat, options);
       }
 
       case 'stream': {
+        const readFormat = await getReadFormat(format, ext);
         // For now, convert stream to array buffer
         // TODO: Implement proper streaming support in the future
         const stream = source as ReadableStream<Uint8Array>;
@@ -244,17 +247,7 @@ export class DefaultWorkbookIO implements IWorkbookIO {
           offset += chunk.length;
         }
 
-        const readType = (await this.getReadFormats({ format, ext }))[0];
-        if (!readType) {
-          throw new Error('No read type available for stream.');
-        }
-
-        const workbook:IWorkbook = await this._readArrayBuffer(arrayBuffer, readType, options);
-        return {
-          workbook,
-          title: name || 'read-stream',
-          format: readType
-        };
+        return readFromBuffer(arrayBuffer, readFormat, options);
       }
 
       default:
@@ -270,8 +263,11 @@ export class DefaultWorkbookIO implements IWorkbookIO {
    */
   // TODO - rationalize to just write
   async writeFile(fileName: string | null, workbook: IWorkbook, options?: WriteWorkbookOptions): Promise<boolean> {
-    if (!workbook || !fileName) {
-      throw new Error('Workbook model or file name must be provided.');
+    if (!fileName) {
+      throw new Error('File name must be provided.');
+    }
+    if (!workbook) {
+      throw new Error('Workbook must be provided.');
     }
     if (!workbook.isIWorkbook) {
       throw new Error('Invalid workbook model provided. Must be an instance of IWorkbook.');
@@ -281,7 +277,7 @@ export class DefaultWorkbookIO implements IWorkbookIO {
       fileName = fileName.slice(0, fileName.length - fileExt.length - 1);
     }
 
-    const writeType: WriteFormatType = (await this.getWriteFormats({ format: options?.format, ext: fileExt }))[0];
+    const writeType: WriteFormatType = (await this.getWriteFormats({ search: options?.format, ext: fileExt }))[0];
     if (!writeType) {
       throw new Error(`Unable to determine write type for '${fileName}'.`);
     }
@@ -302,6 +298,7 @@ export class DefaultWorkbookIO implements IWorkbookIO {
     } catch (error: any) {
       throw new Error(`Unable to write file.`, { cause: error });
     }
+    options?.progress?.onComplete?.();
     return true;
   }
 
@@ -407,37 +404,44 @@ export class DefaultWorkbookIO implements IWorkbookIO {
       options = { ext: defaultExt };
     }
 
-    const extFilter = options.ext || defaultExt;
-    const normalizedExtFilter = extFilter ? extFilter.toLowerCase() : undefined;
+    const search = options.search?.toLocaleLowerCase();
+    // Filter formats based on all criteria (AND logic)
     return formats.filter(format => {
-      // Filter by extension (use defaultExt if ext not provided)
-      if (normalizedExtFilter) {
-        // Check if format has exts array (all FormatType have this)
-        if ('exts' in format && Array.isArray(format.exts)) {
-          const hasMatch = format.exts.some(ext => {
-            const normalizedExt = ext.toLowerCase();
-            return normalizedExt === normalizedExtFilter;
-          });
-          if (!hasMatch) return false;
-        }
+      // SEARCH: Case-insensitive search across multiple fields
+      // This is NOT a filter - it's a search that matches ANY field
+      if (search) {
+        const inKey = format.key.toLocaleLowerCase().includes(search);
+        const inExt = format.exts ? format.exts.some(ext => ext.toLocaleLowerCase().includes(search)) : false;
+        const inMime = format.mimeType ? format.mimeType.toLocaleLowerCase().includes(search) : false;
+        const inTags = format.tags ? format.tags.some(tag => tag.toLocaleLowerCase().includes(search)) : false;
+        const inDesc = format.description ? format.description.toLocaleLowerCase().includes(search) : false;
+        if (!inKey && !inExt && !inMime && !inTags && !inDesc) return false;
       }
 
-      // Filter by MIME type (exact match, case-sensitive)
-      if (options.mimeType !== undefined) {
+      // FILTER: Extension (exact match, case-insensitive)
+      const extFilter = options.ext || defaultExt;
+      if (extFilter) {
+        const normalizedExtFilter = extFilter.toLocaleLowerCase();
+        const hasMatch = format.exts.some(ext => ext.toLocaleLowerCase() === normalizedExtFilter);
+        if (!hasMatch) return false;
+      }
+
+      // FILTER: MIME type (exact match, case-sensitive)
+      if (options.mimeType) {
         if (format.mimeType !== options.mimeType) return false;
       }
 
-      // Filter by format key (exact match)
-      if (options.format !== undefined) {
-        if (format.key.toLocaleUpperCase() !== options.format.toLocaleUpperCase()) return false;
+      // FILTER: Format key (exact match, case-insensitive)
+      if (options.key) {
+        if (format.key.toLocaleLowerCase() !== options.key.toLocaleLowerCase()) return false;
       }
 
-      // Filter by isDefault flag
+      // FILTER: isDefault flag (exact match)
       if (options.isDefault !== undefined) {
         if (format.isDefault !== options.isDefault) return false;
       }
 
-      // Filter by tags (format must have ALL specified tags)
+      // FILTER: Tags (format must have ALL specified tags)
       if (options.tags) {
         const formatTags = format.tags || [];
         // Handle both string and array of strings for tags option
@@ -449,37 +453,6 @@ export class DefaultWorkbookIO implements IWorkbookIO {
       // If all filters passed, include this format
       return true;
     }) as T[];
-  }
-
-  protected async _fromFile(file: File, options: ReadWorkbookOptions=null): Promise<WorkbookHandle> {
-    let retValue: WorkbookHandle = null;
-    try {
-      let fileDisplay:string = '';
-      if (file?.name) {
-        fileDisplay = `${TextUtils.getBaseName(file.name)}`;
-      }
-      const readType = (await this.getReadFormats({ format: options?.format, ext: TextUtils.getFileNameExtension(file?.name) }))[0];
-      if (!readType) {
-        throw new Error(`Unknown file type: ${TextUtils.getFileNameExtension(file?.name) ?? file?.name ?? '(empty)'}.`);
-      }
-
-      const buffer: ArrayBuffer = await file.arrayBuffer();
-      // const array:ArrayBufferLike = new Uint8Array(buffer).buffer;
-      const optionsTyped: ReadWorkbookOptions = {
-        name: fileDisplay,
-        ...options,
-        ...options?.typedCreateWorkbookOptions?.[readType.key]
-      }
-      delete optionsTyped.typedCreateWorkbookOptions;
-
-      const handlerRead:WorkbookReadHandler = readType.handler;
-
-      const workbook: IWorkbook = await handlerRead(buffer, optionsTyped);
-      retValue = new WorkbookFileHandle(file, workbook, fileDisplay, readType);
-    } catch (error: any) {
-      throw error;
-    };
-    return retValue;
   }
 
   protected async _writeArrayBuffer(workbook: IWorkbook, writeType: WriteFormatType, options?: WriteWorkbookOptions): Promise<ArrayBufferLike> {
@@ -509,41 +482,13 @@ export class DefaultWorkbookIO implements IWorkbookIO {
       throw new Error(`Unable to resolve handler for format type: ${format?.description ?? format}.`);
     }
 
-    const optionsTyped = {
-      ...options,
-      ...options?.typedCreateWorkbookOptions?.[format.key]
-    }
-    delete optionsTyped.typedCreateWorkbookOptions;
     let workbook: IWorkbook;
     try {
-      workbook = await handlerRead(arrayBuffer, optionsTyped)
+      workbook = await handlerRead(arrayBuffer, options);
     } catch (error: any) {
       throw new Error(`Unable to read`, { cause: error });
     }
     return workbook;
-  }
-
-}
-
-class WorkbookFileHandle implements WorkbookHandle {
-  file: File;
-  workbook: IWorkbook;
-  title: string;
-  format: ReadFormatType;
-
-  constructor(file: File, workbook: IWorkbook, title: string, format: ReadFormatType) {
-    this.file = file;
-    this.workbook = workbook;
-    this.title = title;
-    this.format = format;
-  }
-
-  get [Symbol.toStringTag](): string {
-    return '[WorkbookHandle]';
-  }
-
-  toString(): string {
-    return `'${this.file.name}' ${this.file.size} (${this.format.description})`;
   }
 }
 

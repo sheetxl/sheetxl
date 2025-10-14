@@ -54,8 +54,8 @@ export interface ScrollbarProps extends React.HTMLAttributes<HTMLElement> {
   scrollButtonInitialRepeatDelay?: number;
   scrollButtonAdditionalRepeatDelay?: number;
 
-  createScrollStartButton?: (props: ScrollButtonProps, ref?: React.Ref<HTMLElement>) => React.ReactElement;
-  createScrollEndButton?: (props: ScrollButtonProps, ref?: React.Ref<HTMLElement>) => React.ReactElement;
+  createScrollStartButton?: (props: ScrollButtonProps) => React.ReactElement;
+  createScrollEndButton?: (props: ScrollButtonProps) => React.ReactElement;
 
   touchThumbProps?: Partial<TouchThumbHandleProps>;
 

@@ -100,6 +100,44 @@ export interface WriteFormatType extends FormatType {
 };
 
 /**
+ * Details about a workbook operation.
+ */
+export interface IOWorkbookDetails {
+  /**
+   * The format type of Workbook detected.
+   */
+  format: FormatType;
+
+  /**
+   * The name of the workbook, if available.
+   *
+   * @remarks
+   * This can be null if no name was provided or could not be determined.
+   */
+  name: string | null;
+}
+
+/**
+ * Details about a read workbook operation.
+ */
+export interface ReadWorkbookDetails extends IOWorkbookDetails {
+  /**
+   * The format type of Workbook detected.
+   */
+  format: ReadFormatType;
+}
+
+/**
+ * Details about a write workbook operation.
+ */
+export interface WriteWorkbookDetails extends IOWorkbookDetails {
+  /**
+   * The format type of Workbook detected.
+   */
+  format: WriteFormatType;
+}
+
+/**
  * Options for reading and creating a workbook from various sources.
  */
 export interface ReadWorkbookOptions {
@@ -141,7 +179,7 @@ export interface ReadWorkbookOptions {
   /**
    * Optional progress callback for long running imports.
    */
-  progress?: TaskProgress;
+  progress?: TaskProgress<ReadWorkbookDetails>;
 
   /**
    * Allows for different constructor arguments depending on the type of format detected.
@@ -170,18 +208,11 @@ export interface WriteWorkbookOptions {
    * Examples: 'xlsx', 'csv', 'application/json', 'Excel'
    */
   format?: string;
-  // /**
-  //  * Optional human-readable name for the import.
-  //  *
-  //  * Used as a fallback filename and for display purposes.
-  //  * If not provided, a default name will be generated based on the source.
-  //  */
-  // name?: string;
 
-  // /**
-  //  * Optional progress callback for long running imports.
-  //  */
-  // progress?: TaskProgress;
+  /**
+   * Optional progress callback for long running imports.
+   */
+  progress?: TaskProgress<WriteWorkbookDetails>;
 }
 
 /**
@@ -206,28 +237,6 @@ export type WorkbookReadHandler = (
  */
 // TODO - Make Stream
 export type WorkbookWriteHandler = (
-  workbook: IWorkbook, options?: Omit<WriteWorkbookOptions, 'source'>
+  workbook: IWorkbook,
+  options?: Omit<WriteWorkbookOptions, 'source'>
 ) => Promise<ArrayBufferLike>;
-
-/**
- * Used for results that want to return a workbook instance with a title.
- */
-export interface WorkbookHandle {
-  /**
-   * The workbook instance that was imported.
-   */
-  workbook: IWorkbook;
-
-  /**
-   * The import type of import detected.
-   */
-  format: FormatType;
-
-  /**
-   * The title of the workbook, if available.
-   *
-   * @remarks
-   * This can be null if no title was provided or could not be determined.
-   */
-  title: string | null;
-}

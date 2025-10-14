@@ -1,4 +1,4 @@
-import React, { useRef, memo, forwardRef, useMemo } from 'react';
+import React, { useRef, memo, forwardRef } from 'react';
 
 import { mergeRefs } from 'react-merge-refs';
 
@@ -28,7 +28,7 @@ const styleFlexFull: React.CSSProperties = {
  * @remarks
  * This adds a split pane to support the task pane alongside the workbook.
  */
-const StudioSplitPane = memo(
+export const StudioSplitPane = memo(
   forwardRef<HTMLDivElement, StudioSplitPaneProps>((props, refForwarded) => {
   const {
     mainElement,
@@ -96,4 +96,3 @@ const StudioSplitPane = memo(
 }));
 
 StudioSplitPane.displayName = "StudioSplitPane";
-export { StudioSplitPane };

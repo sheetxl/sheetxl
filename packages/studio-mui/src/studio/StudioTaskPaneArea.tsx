@@ -183,11 +183,12 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
   );
 }));
 
-const renderTaskPaneStrip = (props: TaskPaneStripProps, ref: React.Ref<ITaskPaneStrip>): React.ReactElement => {
-  return <StudioTaskPaneStrip ref={ref} {...props} />
+const renderTaskPaneStrip = (props: TaskPaneStripProps): React.ReactElement => {
+  return <StudioTaskPaneStrip {...props} />
 }
 
-export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioTaskPaneAreaProps>((props, ref) => {
+export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioTaskPaneAreaProps>(
+  (props: StudioTaskPaneAreaProps, refForwarded) => {
   const {
     commands: commandsApplication,
     model: workbook,
@@ -201,7 +202,7 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
   const marginBottom = `${(theme as any).spacing?.(0.5) ?? 4}px`;
 
   const refRipple = useRef<TouchRippleActions>(null);
-  const renderTaskPanelTitle = (props: TaskPaneTitleProps, ref: React.Ref<HTMLDivElement>): React.ReactElement => {
+  const renderTaskPanelTitle = (props: TaskPaneTitleProps): React.ReactElement => {
     const {
       title,
       icon,
@@ -288,11 +289,10 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
     );
   };
 
-
   return (
     <TaskPaneArea
       model={workbook}
-      ref={ref}
+      ref={refForwarded}
       frameProps={{
         style: {
           border,

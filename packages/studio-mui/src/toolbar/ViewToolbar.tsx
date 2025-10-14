@@ -18,7 +18,7 @@ import {
 import { RunScriptCommandButton } from '../scripting';
 import { OverflowPalette } from './OverflowPalette';
 
-const ViewToolbar = memo(forwardRef<HTMLDivElement,Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
+export const ViewToolbar = memo(forwardRef<HTMLDivElement,Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
   const {
     commands,
     parentFloat,
@@ -100,4 +100,3 @@ const ViewToolbar = memo(forwardRef<HTMLDivElement,Omit<CommandToolbarProps, "cr
 }));
 
 ViewToolbar.displayName = "ViewToolbar";
-export { ViewToolbar };

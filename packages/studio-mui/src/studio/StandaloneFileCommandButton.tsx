@@ -14,7 +14,7 @@ import { WorkbookIO, WriteFormatType } from '../io';
 export interface StandaloneFileCommandButtonProps extends CommandPopupButtonProps { }
 
 // TODO - revisit  with. https://wicg.github.io/file-system-access/. Only supported in some browsers (not safari, might be still ok with fallback)
-const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & { ref?: any }> = memo(
+export const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & { ref?: any }> = memo(
   forwardRef<any, StandaloneFileCommandButtonProps>((props, _refForwarded) => {
   const {
     commands,
@@ -132,4 +132,3 @@ const StandaloneFileCommandButton: React.FC<StandaloneFileCommandButtonProps & {
 }));
 
 StandaloneFileCommandButton.displayName = "StandaloneFileCommandButton";
-export { StandaloneFileCommandButton };

@@ -26,7 +26,7 @@ export interface ICommandListener<STATE extends any, CONTEXT extends any=void> e
  * @param listener
  */
 
-function useCommand<STATE=any, CONTEXT=any>(command: ICommand<STATE, CONTEXT> | ICommand<STATE, CONTEXT>[], listener: ICommandListener<STATE, CONTEXT> = null): number {
+export function useCommand<STATE=any, CONTEXT=any>(command: ICommand<STATE, CONTEXT> | ICommand<STATE, CONTEXT>[], listener: ICommandListener<STATE, CONTEXT> = null): number {
   const listenerRef = useRef<ICommandListener<STATE, CONTEXT>>(listener);
   listenerRef.current = listener;
 
@@ -79,5 +79,3 @@ function useCommand<STATE=any, CONTEXT=any>(command: ICommand<STATE, CONTEXT> | 
 
   return _;
 }
-
-export { useCommand };

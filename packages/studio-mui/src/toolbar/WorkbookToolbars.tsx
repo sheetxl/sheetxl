@@ -278,7 +278,7 @@ const OptionSelect = memo((props: OptionSelectProps) => {
 
 
 // TODO - add a beforeTabs and afterTabs top (for file and settings)
-const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
+export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
   ref?: React.Ref<WorkbookToolbarsRef>;
 }> = memo(
   forwardRef<WorkbookToolbarsRef, WorkbookToolbarsProps>((props, refForwarded) => {
@@ -426,4 +426,3 @@ const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
 }));
 
 WorkbookToolbars.displayName = "WorkbookToolbars";
-export { WorkbookToolbars };

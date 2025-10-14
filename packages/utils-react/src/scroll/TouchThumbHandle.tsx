@@ -56,6 +56,11 @@ export interface TouchThumbHandleProps extends React.HTMLAttributes<HTMLElement>
   key?: string;
 
   offset?: number;
+
+  /**
+   * Ref for the TouchThumbHandle element
+   */
+  ref?: React.Ref<TouchThumbHandleElement>;
 }
 
 export interface TouchThumbHandleAttributes {
@@ -63,13 +68,6 @@ export interface TouchThumbHandleAttributes {
 }
 
 export interface TouchThumbHandleElement extends HTMLDivElement, TouchThumbHandleAttributes {};
-
-
-export type TouchThumbHandleRefAttribute = {
-  ref?: React.Ref<TouchThumbHandleElement>;
-};
-
-export interface TouchThumbHandleRefProps extends TouchThumbHandleProps, TouchThumbHandleRefAttribute {}
 
 const supportsTouchEvents = ReactUtils.detectIt().supportsTouchEvents;
 

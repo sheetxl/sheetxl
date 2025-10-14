@@ -35,7 +35,7 @@ export interface ExhibitPopupIconButtonProps extends ExhibitPopupButtonProps {
 }
 
 // TODO - This should use the mui-state styled but I am not at all sure how to do this
-const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any }> = memo(
+export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any }> = memo(
     forwardRef<any, ExhibitPopupIconButtonProps>((props, refForwarded) => {
   const {
     dense = true,
@@ -483,4 +483,3 @@ const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { ref?: any
 }));
 
 ExhibitPopupIconButton.displayName = "ExhibitPopupIconButton";
-export { ExhibitPopupIconButton };

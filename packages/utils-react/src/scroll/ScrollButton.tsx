@@ -16,7 +16,8 @@ export interface ScrollButtonProps { // extend React.HTMLAttributes<HTMLElement>
   onMouseDown: (e: React.MouseEvent<HTMLElement>) => void;
   onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 
-  // TODO - add svg props
+
+  //ref?: React.Ref<HTMLElement>;
 }
 
 // TODO - make dynamic icons with viewport of 0 0 9 9

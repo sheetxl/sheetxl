@@ -79,7 +79,8 @@ const parseStack = (stackText: string): Frame[] => {
   });
 }
 
-const StackTrace: React.FC<StackTraceProps> = memo(({
+/** Basic StackTrace component */
+export const StackTrace: React.FC<StackTraceProps> = memo(({
   error,
   maxLines = Number.MAX_SAFE_INTEGER,
   hideLineNumbers = false
@@ -319,4 +320,3 @@ const StackTrace: React.FC<StackTraceProps> = memo(({
 });
 
 StackTrace.displayName = 'StackTrace';
-export { StackTrace };

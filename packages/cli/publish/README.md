@@ -68,7 +68,7 @@ wb.getRange('a1').getValues();
 For automation and more complex tasks, you can pass a local JavaScript file to the CLI for execution. The script will run within the SheetXL environment, with the SDK available.
 
 ```bash
-npx sheetxl path/to/your/script.js
+npx sheetxl run path/to/your/script.js
 ```
 
 ### Direct Commands

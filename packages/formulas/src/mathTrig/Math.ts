@@ -530,7 +530,8 @@ export function MROUND(number: number, multiple: number): number {
 export function MULTINOMIAL(...number: number[]): number {
   let numerator = 0;
   let denominator = 1;
-  for (let i=0; i<number.length; i++) {
+  const numberLength = number.length;
+  for (let i=0; i<numberLength; i++) {
     const num = number[i];
     if (num < 0) return Number.NaN;// throw FormulaError.BuiltIn.Num;
     numerator += num;
@@ -817,7 +818,8 @@ export function SEQUENCE(
  */
 export function SERIESSUM(x: number, n: number, m: number, ...coefficients: number[]): number {
   let result: number;
-  for (let i=0; i<coefficients.length; i++) {
+  const coefficientsLength = coefficients.length;
+  for (let i=0; i<coefficientsLength; i++) {
     const coefficient = coefficients[i];
     if (typeof coefficient !== "number") {
       throw FormulaError.BuiltIn.Value;
@@ -952,7 +954,8 @@ export function SUMPRODUCT(array1: any[][], ...rest: any[][][]): any {
     if (array1[0].length !== array[0].length || array1.length !== array.length) {
       throw FormulaError.BuiltIn.Value;
     }
-    for (let i=0; i<array1.length; i++) {
+    const array1Length = array1.length;
+    for (let i=0; i<array1Length; i++) {
       for (let j=0; j<array1[0].length; j++) {
         if (typeof array1[i][j] !== "number")
           array1[i][j] = 0;

@@ -3,7 +3,7 @@ import { IWorkbook, Workbook } from '@sheetxl/sdk';
 import type { WriteJSONOptions } from './Types';
 import type { WorkbookWriteHandler, WorkbookReadHandler, ReadWorkbookOptions } from '../../types';
 
-import * as _Utils from './_Utils';
+import * as CompressUtils from '@sheetxl/io/lib/compress';
 
 /**
  * Pretty-prints JSON so that:
@@ -79,7 +79,7 @@ export const writeBufferSXL: WorkbookWriteHandler = async (
   options?: WriteJSONOptions
 ): Promise<ArrayBuffer> => {
   const jsonWB:IWorkbook.JSON = await workbook.toJSON();
-  const whitespace:number = options?.whiteSpace ?? (__DEV__ ? 2 : 0);
+  const whitespace:number = options?.whiteSpace ?? (typeof __DEV__ !== 'undefined' && __DEV__ ? 2 : 0);
 
   options?.beforeWrite?.(workbook, jsonWB);
   let strJson:string;
@@ -90,9 +90,9 @@ export const writeBufferSXL: WorkbookWriteHandler = async (
   }
 
   let asArray:ArrayBufferLike = new TextEncoder().encode(strJson).buffer;
-  const compress = options?.compress ?? (__DEV__ ? false : true);
+  const compress = options?.compress ?? (typeof __DEV__ !== 'undefined' && __DEV__ ? false : true);
   if (compress) {
-    asArray = await _Utils.compressArrayBuffer(asArray, typeof compress === 'string' ? compress as any : undefined);
+    asArray = await CompressUtils.compressArrayBuffer(asArray, typeof compress === 'string' ? compress as any : undefined);
   }
   return asArray;
 }
@@ -109,13 +109,14 @@ export const readBufferSXL: WorkbookReadHandler = async (
   options: ReadWorkbookOptions
 ): Promise<IWorkbook> => {
   let decodedArray:ArrayBufferLike = array;
-  if (_Utils.isLikelyCompressedByMagicNumber(decodedArray)) {
-    decodedArray = await _Utils.decompressArrayBuffer(decodedArray);
+  if (CompressUtils.isLikelyCompressedByMagicNumber(decodedArray)) {
+    decodedArray = await CompressUtils.decompressArrayBuffer(decodedArray);
   }
   let decodedString = new TextDecoder().decode(decodedArray);
   const jsonWB:IWorkbook.JSON = JSON.parse(decodedString);
 
   const optionsCreateWB:IWorkbook.ConstructorOptions = {
+    name: options?.name,
     ...options?.createWorkbookOptions ?? {},
     json: jsonWB,
   }

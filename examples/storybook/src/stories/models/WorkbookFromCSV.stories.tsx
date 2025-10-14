@@ -4,7 +4,7 @@ import {
   type ICell, ScalarType, type IWorkbook, IColor, StyleCollection
 } from '@sheetxl/sdk';
 
-import { WorkbookIO, Studio, type WorkbookHandle } from '@sheetxl/studio-mui';
+import { WorkbookIO, Studio } from '@sheetxl/studio-mui';
 
 import { type ReadCSVOptions } from '@sheetxl/io';
 
@@ -23,9 +23,9 @@ const Template: React.FC = (props) => {
    * We also create a custom cell styles so we can illustrate
    * setting cell styles based on values.
    */
-  const loadResults:Promise<WorkbookHandle> = useMemo(() => {
+  const loadResults:Promise<IWorkbook> = useMemo(() => {
     // make async for each of use
-    const doLoad = async (): Promise<WorkbookHandle> => {
+    const doLoad = async (): Promise<IWorkbook> => {
       /**
        * Create a StyleCollection. This is not needed but
        * allows us to create Named Styles that then also appear in the styles menu
@@ -50,7 +50,7 @@ const Template: React.FC = (props) => {
       // For illustration purposes we are are doing to color negative values and dates not from this year with a different color.
       const csvOptions: ReadCSVOptions = {
         source: new TextEncoder().encode(csv).buffer,
-        format: 'CSV',
+        format: 'csv',
         createWorkbookOptions: {
           styles: customStyles
         },
@@ -83,8 +83,7 @@ const Template: React.FC = (props) => {
       }
 
       // import from array buffer using csv type
-      const handle: WorkbookHandle = await WorkbookIO.read(csvOptions);
-      const workbook: IWorkbook = handle.workbook;;
+      const workbook: IWorkbook = await WorkbookIO.read(csvOptions);
 
       // Since this is just a csv file
       workbook.getView().setShowFormulaBar(false);
@@ -93,7 +92,7 @@ const Template: React.FC = (props) => {
       workbook.getSelectedSheet().setName('CSVData'); // set the sheet name
       workbook.getSelectedSheet().getUsedRange().autoFit();
 
-      return handle;
+      return workbook;
     }
     return doLoad();
   }, []);

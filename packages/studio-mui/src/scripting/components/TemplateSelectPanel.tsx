@@ -52,7 +52,7 @@ export interface TemplateSelectPanelProps extends React.HTMLAttributes<HTMLDivEl
 /**
  * Panel displaying script buttons from a directory
  */
-const TemplateSelectPanel = memo(forwardRef<HTMLDivElement, TemplateSelectPanelProps>(
+export const TemplateSelectPanel = memo(forwardRef<HTMLDivElement, TemplateSelectPanelProps>(
   (props: TemplateSelectPanelProps, refForwarded) => {
   const {
     scriptPath=DEFAULT_SCRIPT_PATH,
@@ -116,7 +116,7 @@ const TemplateSelectPanel = memo(forwardRef<HTMLDivElement, TemplateSelectPanelP
           background: (theme: Theme) => {
             return theme.palette.background.paper;
           },
-          zIndex: 1000, // to ensure we sip above monaco scrolling
+          zIndex: 1000, // to ensure we stack above monaco scrollbar
           backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
           ...propSx
         }}
@@ -297,4 +297,3 @@ const TemplateSelectPanel = memo(forwardRef<HTMLDivElement, TemplateSelectPanelP
 }));
 
 TemplateSelectPanel.displayName = "TemplateSelectPanel";
-export { TemplateSelectPanel };

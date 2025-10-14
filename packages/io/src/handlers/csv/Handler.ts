@@ -101,9 +101,6 @@ export const readBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOption
   } = options ?? {};
 
   const taskProgress = options?.progress;
-  // If or type name if provided use this to override the createWorkbookOptions
-  const onStart = taskProgress?.onStart?.(options?.name ?? 'Parsing CSV');
-  await Promise.resolve(onStart);
 
   const onProgress = taskProgress?.onProgress;
 
@@ -136,7 +133,6 @@ export const readBufferCSV = async (buffer: ArrayBuffer, options?: ReadCSVOption
       // console.log(`CSV import: ${updatesCount} updates`);
     }
 
-    taskProgress?.onComplete?.(updatesCount);
     return value;
   }
 

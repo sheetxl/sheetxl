@@ -127,6 +127,7 @@ export const setGlobalIWorkbookElement = async (workbookElement: IWorkbookElemen
  * By default we will print examples message if dev and eval only
  *
  * @param forcePrintExamples
+ * @hidden
  */
 export const setPrintExamplesOnLoad = (forcePrintExamples: boolean) => {
   _forcePrintExamples = forcePrintExamples;

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import './App.css';
 
 import { useMediaQuery } from '@mui/material';
@@ -14,8 +14,9 @@ import { PersistenceStateProvider, LocalStorageStore } from '@sheetxl/utils-reac
 
 import { ThemeMode, ThemeModeOptions } from '@sheetxl/utils-mui';
 
+import type { ReadWorkbookOptions } from '@sheetxl/io';
 import {
-  Studio, WorkbookIO, setPrintExamplesOnLoad, useModelListener
+  Studio, setPrintExamplesOnLoad
 } from '@sheetxl/studio-mui';
 
 /**
@@ -88,8 +89,6 @@ function App() {
       onEnabledDarkImagesChange: (force: boolean) => setEnableDarkImages(force)
     }
   }, [themeMode, enableDarkGrid, enableDarkImages]);
-
-  const isAppStandalone = useMediaQuery('(display-mode: standalone)');
 
   // const observer = new PerformanceObserver((list, obj) => {
   //   list.getEntries().forEach((entry) => {
@@ -171,57 +170,41 @@ function App() {
     }
   }, []);
 
-  const state = useLocation();
-
-  const [workbook, setWorkbook] = useState<IWorkbook | Promise<IWorkbook>>(null);
-  const [workbookTitle, setWorkbookTitle] = useState<string>('');
-  useEffect(() => {
-    const searchParams = new URLSearchParams(state.search);
-
-    const fetchUrl = searchParams.get('source');
-    if (!fetchUrl) {
-      setWorkbookTitle(searchParams.get('title') ?? null);
-      setWorkbook(null);
-      return;
-    }
-    // Async function inside useEffect (recommended pattern)
-    const readWorkbook = async () => {
-      try {
-        const result = await WorkbookIO.read({
-          source: fetchUrl,
-          // createWorkbookOptions: {
-          //   readonly: true
-          // }
-        });
-        // Use the custom title from URL params, or fall back to a title derived from the URL
-        setWorkbookTitle(searchParams.get('title') ?? result.title ?? 'Untitled');
-        setWorkbook(result.workbook);
-      } catch (error: any) {
-        console.error('Failed to read workbook:', error);
-        // Handle error - maybe set error state or show notification
-        setWorkbook(null);
-        setWorkbookTitle('Error reading workbook');
-      }
-    };
-    readWorkbook();
-  }, [state]);
-
-  const [workbookResolved, setWorkbookResolved] = useState<IWorkbook>(null);
-  useModelListener<IWorkbook, IWorkbook.IListeners>(workbookResolved, {
-    onSelectionChange: (source: IWorkbook) => {
-      // console.log('Workbook Selection Changed', source?.getSelectedRanges().toString());
-    }
-  });
-
-  // // must memo as updates will reload
-  // const workbookOptions = useMemo(() => {
-  //   return {
-  //     readonly: true,
-  //     source: {
-  //       input: 'https://www.sheetxl.com/docs/examples/financial-calculators.xlsx',
-  //     }
+  // const [workbookResolved, setWorkbookResolved] = useState<IWorkbook>(null);
+  // useModelListener<IWorkbook, IWorkbook.IListeners>(workbookResolved, {
+  //   onSelectionChange: (source: IWorkbook) => {
+  //     // console.log('Workbook Selection Changed', source?.getSelectedRanges().toString());
   //   }
-  // }, []);
+  // });
+
+  // Check the url for a fetch resource and a title.
+  const state = useLocation();
+  const workbookOptions = useMemo(() => {
+    if (!state.search) {
+      // we could create a workbook with custom options
+      return null;
+    }
+
+    /// http://localhost:5173/?source=https://www.sheetxl.com/docs/examples/financial-calculators.xlsx&title=Testing
+    const asOptions: ReadWorkbookOptions = {} as ReadWorkbookOptions;
+    const searchParams = new URLSearchParams(state.search);
+    const fetchUrl = searchParams.get('source');
+    asOptions.source = fetchUrl;
+    if (searchParams.get('title')) {
+      asOptions.name = searchParams.get('title');
+    }
+    return asOptions;
+
+    // hard coded example
+    // return {
+    //   readonly: true,
+    //   source: {
+    //     input: 'https://www.sheetxl.com/docs/examples/financial-calculators.xlsx',
+    //   }
+    // }
+  }, [state?.search]);
+
+  const isAppStandalone = useMediaQuery('(display-mode: standalone)');
 
   return (
     <PersistenceStateProvider
@@ -240,15 +223,28 @@ function App() {
         // ref={(instance) => {
         //   console.log('Workbook Element ref called', instance);
         // }}
-        workbook={workbook}
-        // workbook={workbookOptions}
+        workbook={workbookOptions}
         onWorkbookChange={(wb: IWorkbook) => {
-          setWorkbookResolved(wb);
+          // do something interesting with the workbook
+          // setWorkbookResolved(wb);
         }}
-        title={workbookTitle}
-        // renderLoadingPanel={() => (
+        // with background
+        // renderLoading={() => (
+        //   <div style={{
+        //     width: '100%',
+        //     height: '100%',
+        //     display: 'flex',
+        //     alignItems: 'center',
+        //     justifyContent: 'center',
+        //     background: 'pink'
+        //   }}>
+        //     <div>Loading workbook...</div>
+        //   </div>
+        // )}
+        // renderLoading={() => (
         //   <div>Loading workbook...</div>
         // )}
+        // update the tab
         onTitleChange={(title: string) => {
           if (isAppStandalone) {
             document.title = title;

@@ -52,6 +52,11 @@ export interface FormulaBarProps extends React.HTMLAttributes<HTMLDivElement> {
    */
   // TODO - move to css properties
   gridStyle?: GridStyle;
+
+  /**
+   * Ref for the FormulaBar element.
+   */
+  ref?: React.Ref<IFormulaBarElement>;
 }
 
 
@@ -63,7 +68,3 @@ export interface FormulaBarAttributes {
  * Type returned via ref property
  */
 export interface IFormulaBarElement extends FormulaBarAttributes, HTMLElement {};
-
-export type FormulaBarAttribute = {
-  ref?: React.Ref<IFormulaBarElement>;
-};

@@ -32,7 +32,11 @@ export interface MovableContextMenuProps extends React.HTMLAttributes<HTMLDivEle
   floatReference: FloatReference;
 }
 
-const MovableContextMenu: React.FC<MovableContextMenuProps> = memo(forwardRef<HTMLDivElement, MovableContextMenuProps>((props: MovableContextMenuProps, refForwarded) => {
+/**
+ * Context menu for a movable elements.
+ */
+export const MovableContextMenu = memo(forwardRef<HTMLDivElement, MovableContextMenuProps>(
+  (props: MovableContextMenuProps, refForwarded) => {
   const {
     movable,
     commands,
@@ -189,4 +193,3 @@ const MovableContextMenu: React.FC<MovableContextMenuProps> = memo(forwardRef<HT
 }));
 
 MovableContextMenu.displayName = "MovableContextMenu";
-export { MovableContextMenu };

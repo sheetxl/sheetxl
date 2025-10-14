@@ -17,10 +17,6 @@ export interface NamedCollectionEditorAttributes {
  */
 export interface INamedCollectionEditorElement extends NamedCollectionEditorAttributes, HTMLDivElement {};
 
-export type NamedCollectionEditorRefAttribute = {
-  ref?: React.Ref<INamedCollectionEditorElement>;
-};
-
 export interface NamedCollectionEditorProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * The named ranges
@@ -48,4 +44,9 @@ export interface NamedCollectionEditorProps extends React.HTMLAttributes<HTMLDiv
   parentFloat?: FloatReference;
 
   commandPopupButtonProps?: CommandPopupButtonProps;
+
+  /**
+   * Reference to the underlying element
+   */
+  ref?: React.Ref<INamedCollectionEditorElement>;
 }

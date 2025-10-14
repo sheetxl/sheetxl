@@ -45,7 +45,11 @@ export interface SheetTabMenuProps extends React.HTMLAttributes<HTMLDivElement> 
   tabStripRef?: TabStripRef;
 }
 
-const SheetTabMenu: React.FC<SheetTabMenuProps> = memo(forwardRef<HTMLDivElement, SheetTabMenuProps>((props: SheetTabMenuProps, refForwarded) => {
+/**
+ * Menu for sheet tab operations such as renaming, deleting, and coloring.
+ */
+export const SheetTabMenu = memo(forwardRef<HTMLDivElement, SheetTabMenuProps>(
+  (props: SheetTabMenuProps, refForwarded) => {
   const {
     workbook,
     index,
@@ -178,4 +182,3 @@ const SheetTabMenu: React.FC<SheetTabMenuProps> = memo(forwardRef<HTMLDivElement
 }));
 
 SheetTabMenu.displayName = "SheetTabMenu";
-export { SheetTabMenu };

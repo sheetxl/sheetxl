@@ -32,6 +32,11 @@
       "node": "./src/lib/file/file.node.js",
       "browser": "./src/lib/file/file.browser.js",
       "default": "./src/lib/file/file.node.js"
+    },
+    "./lib/compress": {
+      "node": "./src/lib/compress/compress.node.js",
+      "browser": "./src/lib/compress/compress.browser.js",
+      "default": "./src/lib/compress/compress.node.js"
     }
   },
   "scripts": {
