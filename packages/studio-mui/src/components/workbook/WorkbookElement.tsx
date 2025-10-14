@@ -16,7 +16,7 @@ import { CSSTransition } from 'react-transition-group';
 
 import {
   Workbook, IWorkbook, IMovable, IAutoFilter, ISheet, IWorkbookProtection,
-  IWorkbookView, TypesUtils, CommonUtils, type TopLeft, type Bounds
+  IWorkbookView, TypesUtils, type TopLeft, type Bounds
 } from '@sheetxl/sdk';
 
 import {
@@ -28,33 +28,34 @@ import { GridStyle } from '@sheetxl/grid-react';
 
 import {
   ISheetElement, SheetLocation, SheetScrollbar, type SheetScrollbarProps,
-  useModelListener, useDocThemes, type MovableElementProps
+  useModelListener, type MovableElementProps
 } from '@sheetxl/react';
 
 import { PictureEditor, ChartEditor, EmptyFrame } from '@sheetxl/react';
 
 import {
   scrollbarTheming, useFloatStack, ExhibitPopupPanelProps, type ExhibitPopperProps,
-  LoadingPanel, SimpleTooltip
+  AnimatedLoadingPanel, SimpleTooltip
 } from '@sheetxl/utils-mui';
 
 import { createGridStyleFromMUITheme } from '../../theme';
+import resetsStyles from '../../theme/Resets.module.css';
+import themeStyles from '../../theme/Theme.module.css';
+
 import { renderWorkbookToolbars } from '../../toolbar';
 import { type IFormulaBarElement } from '../formulaBar';
 
 import { useWorkbookCommands } from './useWorkbookCommands';
 
 import type {
-  IWorkbookElement, WorkbookElementProps, WorkbookAttributes, WorkbookLoadEvent
+  IWorkbookElement, WorkbookElementProps, IWorkbookAttributes, WorkbookLoadEvent
 } from './IWorkbookElement';
-
-import resetsStyles from '../../theme/Resets.module.css';
-import themeStyles from '../../theme/Theme.module.css';
 
 import workbookStyles from './Workbook.module.css';
 import { setGlobalIWorkbookElement } from './GlobalWorkbookElement';
+
 import { renderMovableContextMenu, renderFilterColumnMenu, renderWorkbookContextMenu,
-  renderWorkbookFormulaBar, renderWorkbookLoadingPanel, renderWorkbookSheet,
+  renderWorkbookFormulaBar, renderWorkbookLoading, renderWorkbookSheet,
   renderWorkbookStatusBar, renderWorkbookStrip
 } from './WorkbookRenderers';
 
@@ -91,12 +92,9 @@ interface ContextMenuDetails {
   popperProps?: Partial<ExhibitPopperProps>;
 }
 
-const WorkbookElement =
-    memo(forwardRef<IWorkbookElement, WorkbookElementProps>((props, refForwarded) => {
+export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElementProps>((props: WorkbookElementProps, refForwarded) => {
   const {
-    workbook: propModel,
-    createWorkbookOptions: propCreateWorkbookOptions,
-    onNewWorkbook: propOnNewWorkbook,
+    workbook: propWorkbook,
     onElementLoad: propOnElementLoad,
     autoFocus = false,
     sx: propSx,
@@ -124,8 +122,8 @@ const WorkbookElement =
     renderFilterMenu: propRenderFilterMenu = renderFilterColumnMenu,
     renderMovableMenu: propRenderMovableMenu = renderMovableContextMenu,
 
-    renderLoadingPanel: propRenderLoadingPanel = renderWorkbookLoadingPanel,
-    loadingPanelProps: propsLoadingPanel,
+    renderLoading: propsRenderLoading = renderWorkbookLoading,
+    loadingProps: propsLoadingProps,
 
     sheetProps: propsSheet,
     renderSheet: propRenderSheet = renderWorkbookSheet,
@@ -140,16 +138,11 @@ const WorkbookElement =
     ...rest
   } = props;
 
-  const appTheme = useTheme();
-  const docThemes = useDocThemes();
+  if (!propWorkbook) {
+    throw new Error('IWorkbook must be provided.');
+  }
 
-  const workbook:IWorkbook = useMemo(() => {
-    const options = {
-      theme: docThemes.getDefaultTheme(),
-      ...propCreateWorkbookOptions
-    }
-    return propModel ?? new Workbook(options);
-  }, [propModel]);
+  const appTheme = useTheme();
 
   const refSheet = useRef<ISheetElement>(null);
   const [hasFocus, setFocus] = useState<boolean>(false);
@@ -182,10 +175,10 @@ const WorkbookElement =
   }, []);
 
   const refFormulaBar = useRef<IFormulaBarElement>(null);
-  const refLocal = useImperativeElement<IWorkbookElement, WorkbookAttributes>(refForwarded, () => {
-    const retValue:WorkbookAttributes & Partial<HTMLDivElement> = {
+  const refLocal = useImperativeElement<IWorkbookElement, IWorkbookAttributes>(refForwarded, () => {
+    const retValue:IWorkbookAttributes & Partial<HTMLDivElement> = {
       isWorkbookElement: () => true,
-      getWorkbook: () => { return workbook },
+      getWorkbook: () => { return propWorkbook },
       getSheetElement: () => refSheet.current,
       getViewportElement: () => viewportRef.current,
       getFormulaBarElement: () => refFormulaBar.current,
@@ -196,7 +189,7 @@ const WorkbookElement =
       }
     };
     return retValue;
-  }, [workbook]);
+  }, [propWorkbook]);
 
   // To ensure we call propOnElementLoad exactly once
   const refPropLoaded = useRef<(event: WorkbookLoadEvent) => void>(null);
@@ -228,9 +221,9 @@ const WorkbookElement =
     });
   }, []);
 
-  const [sheet, setSelectedSheet] = useState<ISheet>(workbook?.getSelectedSheet());
-  const [protection, setProtection] = useState<IWorkbookProtection>(workbook?.getProtection());
-  useModelListener<IWorkbook, IWorkbook.IListeners>(workbook, {
+  const [sheet, setSelectedSheet] = useState<ISheet>(propWorkbook.getSelectedSheet());
+  const [protection, setProtection] = useState<IWorkbookProtection>(propWorkbook.getProtection());
+  useModelListener<IWorkbook, IWorkbook.IListeners>(propWorkbook, {
     onSheetsChange: (source: IWorkbook) => {
       setSelectedSheet(source?.getSelectedSheet());
     },
@@ -242,7 +235,7 @@ const WorkbookElement =
     }
   });
 
-  useModelListener<IWorkbook, IWorkbook.IListeners>(workbook, {
+  useModelListener<IWorkbook, IWorkbook.IListeners>(propWorkbook, {
     onRequestSelect: async(source: IWorkbook, sheet: ISheet): Promise<boolean> => {
       return new Promise<boolean>((resolve) => {
         if (refSheet.current.getSheet() === sheet) {
@@ -261,7 +254,7 @@ const WorkbookElement =
 
   const [_, forceRender] = useReducer((s: number) => s + 1, 0);
 
-  const workbookView = workbook?.getView();
+  const workbookView = propWorkbook.getView();
   useModelListener<IWorkbookView, IWorkbookView.IListeners>(workbookView, {
     onViewChange: (_update: IWorkbookView | null | undefined): void => {
       forceRender();
@@ -286,14 +279,12 @@ const WorkbookElement =
 
 
   const commandsWorkbook = useWorkbookCommands({
-    workbook,
+    workbook: propWorkbook,
     workbookElement: refLocal.current,
     target: () => refSheet.current,
     onExecute,
     commands: propCommandsParent,
     darkMode: gridStyle.body.darkMode,
-    onNewWorkbook: propOnNewWorkbook,
-
   });
 
   const popperRef = useRef(null);
@@ -367,7 +358,7 @@ const WorkbookElement =
       gridStyle,
       onBeforeUserChange: handleBeforeSheetChange,
       onUserChange: handleOnSheetChange,
-      workbook: workbook,
+      workbook: propWorkbook,
       commands: commandsWorkbook,
       sheetTabProps: {
         // tabRadius: 0, // TODO - allow for tab direction (bottom, left, right, top, none) (this is a nicer flavor than tabRadius)
@@ -389,7 +380,7 @@ const WorkbookElement =
       )
     }
     return retValue;
-  }, [propRenderTabs, propsTabs, appTheme, workbook, gridTheme, isFullWidth, commandsWorkbook, showTabs]);
+  }, [propRenderTabs, propsTabs, appTheme, propWorkbook, gridTheme, isFullWidth, commandsWorkbook, showTabs]);
 
   const createTabStripSharedScrollbar = useCallback((props: ScrollbarProps) => {
     const {
@@ -471,9 +462,9 @@ const WorkbookElement =
     if (horizontalTabs && showHorizontalScrollbar) {
       horizontalArea = (
         <SplitPane
-          position={`${workbook.getView().getTabRatio() / 10}%`}
+          position={`${propWorkbook.getView().getTabRatio() / 10}%`}
           onPositionChange={({ percent }): void => {
-            workbook.getView().setTabRatio(Math.round(percent * 10));
+            propWorkbook.getView().setTabRatio(Math.round(percent * 10));
           }}
           minBefore="200px"
           minAfter="180px"
@@ -521,7 +512,7 @@ const WorkbookElement =
         {horizontalArea}
       </Box>
     );
-  }, [sheet, handleBeforeSheetChange, workbook, gridStyle, gridTheme, commandsWorkbook, showTabs, showHorizontalScrollbar, showStatusBar, isFullWidth]);
+  }, [sheet, handleBeforeSheetChange, propWorkbook, gridStyle, gridTheme, commandsWorkbook, showTabs, showHorizontalScrollbar, showStatusBar, isFullWidth]);
 
   const [contextMenuDetails, setContextMenuDetails] = React.useState<ContextMenuDetails>(null);
   const popperProps:Partial<ExhibitPopperProps> = useMemo(() => {
@@ -585,7 +576,7 @@ const WorkbookElement =
         });
       }
     });
-  }, [propRenderFilterMenu, propsContextMenuSx, commandsWorkbook, workbook, contextMenuDetails]);
+  }, [propRenderFilterMenu, propsContextMenuSx, commandsWorkbook, propWorkbook, contextMenuDetails]);
 
   const handleSheetContextMenu = useCallbackRef((location: SheetLocation): boolean => {
     if (location.originalEvent?.isDefaultPrevented()) return true;
@@ -597,7 +588,7 @@ const WorkbookElement =
         const { floatReference } = props;
         return propRenderContextMenu({
           commands: commandsWorkbook,
-          workbook,
+          workbook: propWorkbook,
           floatReference,
           sx: {
             ...propsContextMenuSx
@@ -605,7 +596,7 @@ const WorkbookElement =
         });
       }
     });
-  }, [propRenderContextMenu, propsContextMenuSx, commandsWorkbook, workbook]);
+  }, [propRenderContextMenu, propsContextMenuSx, commandsWorkbook, propWorkbook]);
 
   const handleMovableContextMenu = useCallbackRef((event: React.MouseEvent<HTMLElement>, movable: IMovable): boolean => {
     if (event?.isDefaultPrevented()) return true;
@@ -701,7 +692,7 @@ const WorkbookElement =
 
   const handleActiveWorkbookFocus = useCallbackRef(() => {
     setGlobalIWorkbookElement(refLocal.current);
-  }, [workbook, refLocal.current]);
+  }, []);
 
   const handleSheetFocus = useCallback(() => {
     setFocusedComponent('sheet')
@@ -871,34 +862,34 @@ const WorkbookElement =
           boxSizing: 'border-box',
         }}
       >
-        {propRenderLoadingPanel({
+        {propsRenderLoading?.({
           ref: refLoading,
-            transitionDelay: '0',
-            transparentBackground: false,
-            sx: {
-              opacity: isLoaded ? 0 : ((propSx as CSSProperties)?.opacity),
-              pointerEvents: isLoaded ? 'none' : ((propSx as CSSProperties)?.pointerEvents),
-              position: 'absolute',
-              left: '0px',
-              top: '0px',
-              width: '100%',
-              height: '100%',
-              ...propsLoadingPanel
-            }
-          })}
+          ...propsLoadingProps
+          // style: {
+          //   opacity: isLoaded ? 0 : ((propSx as CSSProperties)?.opacity),
+          //   pointerEvents: isLoaded ? 'none' : ((propSx as CSSProperties)?.pointerEvents),
+          //   position: 'absolute',
+          //   left: '0px',
+          //   top: '0px',
+          //   width: '100%',
+          //   height: '100%',
+          //   ...propsLoadingProps
+          // }
+        })}
         </Box>
       </CSSTransition>
     )
-  }, [isLoaded, propRenderLoadingPanel, propsLoadingPanel]);
+  }, [isLoaded, propsRenderLoading, propsLoadingProps]);
 
   const formulaBar = useMemo(() => {
     return propRenderFormulaBar({
+      ref: refFormulaBar,
       sx: {
         marginTop: (theme: Theme) => { return theme.spacing(0.25) },
         marginLeft: (theme: Theme) => { return theme.spacing(1) },
         marginRight: (theme: Theme) => { return theme.spacing(1) }
       },
-      workbook,
+      workbook: propWorkbook,
       sheetElement: refSheet.current,
       gridStyle,
       onFocus: handleFormulaBarFocus,
@@ -911,8 +902,8 @@ const WorkbookElement =
           ...propsFormulaBar?.NamedCollectionEditorProps?.commandPopupButtonProps,
         }
       }
-    }, refFormulaBar);
-  }, [propRenderFormulaBar, propsFormulaBar, workbook, gridStyle, commandsWorkbook, isLoaded]); /* isLoaded is proxy for sheet.ref */
+    });
+  }, [propRenderFormulaBar, propsFormulaBar, propWorkbook, gridStyle, commandsWorkbook, isLoaded]); /* isLoaded is proxy for sheet.ref */
 
   const renderMovable = useCallback((props: MovableElementProps) => {
       const {
@@ -932,12 +923,12 @@ const WorkbookElement =
       if (type === 'picture') {
         return <PictureEditor
           loadingPanel={
-            <LoadingPanel
-              transitionDelay={'100'}
-              // transparentBackground={false}
+            <AnimatedLoadingPanel
               style={{
                 position: 'absolute', // Why is this required?
               }}
+              transitionDelay={'100'}
+              // transparentBackground={false}
               sx={{
                 border: (theme: Theme) => {
                   return `solid 1px ${theme.palette.action.active}`;
@@ -994,6 +985,7 @@ const WorkbookElement =
     }
 
     return propRenderSheet({
+      ref: refSheet,
       style: styleFlexFull,
       onFocus: handleSheetFocus,
       gridStyle,
@@ -1034,7 +1026,7 @@ const WorkbookElement =
         onFilterButtonMouseDown,
         ...propsSheet?.cellRenderProps
       }
-    }, refSheet);
+    });
   }, [commandsWorkbook, propsSheet, sheet, gridStyle, propOnRepeatCommandChange]);
 
   const mainPane = useMemo(() => {
@@ -1258,4 +1250,3 @@ const WorkbookElement =
 );
 
 WorkbookElement.displayName = 'WorkbookElement';
-export { WorkbookElement };

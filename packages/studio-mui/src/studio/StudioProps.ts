@@ -1,10 +1,12 @@
-import { UndoManager } from '@sheetxl/utils';
+import { type UndoManager } from '@sheetxl/utils';
 
 import { type IWorkbook } from '@sheetxl/sdk';
 
-import { type ReadWorkbookOptions, type WorkbookHandle } from '@sheetxl/io';
+import { type ReadWorkbookOptions } from '@sheetxl/io';
 
-import { ErrorPanelProps, type ThemeModeOptions } from '@sheetxl/utils-mui';
+import { type ErrorPanelProps } from '@sheetxl/utils-react';
+
+import { type ThemeModeOptions } from '@sheetxl/utils-mui';
 
 import type { IWorkbookElement, WorkbookElementProps, WorkbookTitleProps } from '../components';
 
@@ -12,14 +14,14 @@ import type { IWorkbookElement, WorkbookElementProps, WorkbookTitleProps } from 
 /**
  * Properties for the Studio component.
  */
-export interface StudioProps extends Omit<WorkbookElementProps, "workbook" | "onError"> {
+export interface StudioProps extends Omit<WorkbookElementProps, "workbook"> {
   /**
    * The model to use in the IWorkbookElement.
    *
    * @remarks
    * If not provided a default model will be created.
    */
-  workbook?: IWorkbook | Promise<IWorkbook> | WorkbookHandle | Promise<WorkbookHandle> | ReadWorkbookOptions;
+  workbook?: IWorkbook | Promise<IWorkbook> | ReadWorkbookOptions;
   /**
    * Called if the `IWorkbook` changes.
    *
@@ -27,22 +29,21 @@ export interface StudioProps extends Omit<WorkbookElementProps, "workbook" | "on
    */
   onWorkbookChange?: (workbook: IWorkbook) => void;
   /**
-   * Custom logo.
-   */
-  logo?: React.ReactNode;
-  /**
    * Called if the workbook model is a promise that fails to load.
    *
    * @param error The error
    */
-  onError?: (error: any) => void;
+  onWorkbookError?: (error: any) => void;
   /**
-   * Allow for a custom error panel to be used for errors.
+   * Allow for a custom error panel if workbook load error occurs.
    *
-   * @defaultValue ErrorPanel
+   * @defaultValue StackTraceErrorPanel
    */
-  errorPanel?: React.ComponentType<ErrorPanelProps>;
-
+  renderWorkbookError?: (props: ErrorPanelProps) => React.ReactElement;
+  /**
+   * Custom logo.
+   */
+  logo?: React.ReactNode;
   /**
    * Title to display.
    *
@@ -58,6 +59,7 @@ export interface StudioProps extends Omit<WorkbookElementProps, "workbook" | "on
    *
    * @param title - The new title.
    */
+  // TODO - remove onTitleChange as it is not a workbook property
   onTitleChange?: (title: string) => void;
 
   /**

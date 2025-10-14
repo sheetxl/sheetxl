@@ -15,7 +15,7 @@ import type { WriteXLSXOptions } from './Types';
  * @param _options Optional options for saving the workbook.
  * @returns A promise that resolves to an array buffer representing the XLSX file.
  */
-export const writeBuffer: WorkbookWriteHandler = async (wbModel: IWorkbook, _options?: WriteXLSXOptions): Promise<ArrayBufferLike> => {
+export const writeBuffer: WorkbookWriteHandler = async (wbModel: IWorkbook, options?: WriteXLSXOptions): Promise<ArrayBufferLike> => {
   const XLSX = await import(/* webpackChunkName: "xlsx", webpackPrefetch: true */ 'xlsx');
   const wbJSON:IWorkbook.JSON = await wbModel.toJSON(true/*ignoreData*/);
   const wbx = XLSX.utils.book_new();
@@ -136,5 +136,6 @@ export const writeBuffer: WorkbookWriteHandler = async (wbModel: IWorkbook, _opt
 
   XLSX.write(wbx, { type: "array", bookType: "xlsx" });
   const u8 = XLSX.write(wbx, { type: "array", bookType: "xlsx" });
+
   return u8;
 }

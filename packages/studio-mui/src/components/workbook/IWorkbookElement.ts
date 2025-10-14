@@ -11,7 +11,7 @@ import { type ICommands,type ICommand } from '@sheetxl/utils-react';
 
 import { type SheetProps, type ISheetElement } from '@sheetxl/react';
 
-import { type LoadingPanelProps } from '@sheetxl/utils-mui';
+import { type LoadingPanelProps } from '@sheetxl/utils-react';
 
 import { type WorkbookToolbarsProps } from '../../toolbar';
 import { type FormulaBarProps, type IFormulaBarElement } from '../formulaBar';
@@ -24,9 +24,9 @@ import { type WorkbookContextMenuProps } from './WorkbookContextMenu';
 import { type MovableContextMenuProps } from '../movable';
 
 /**
- * Workbook specific attributes
+ * Workbook specific attributes beyond HTMLDivElement.
  */
-export interface WorkbookAttributes {
+export interface IWorkbookAttributes {
   isWorkbookElement: () => true;
   getWorkbook: () => IWorkbook;
   getViewportElement: () => HTMLElement;
@@ -38,18 +38,8 @@ export interface WorkbookAttributes {
 /**
  * Type returned via ref property
  */
-export interface IWorkbookElement extends HTMLDivElement, WorkbookAttributes {};
+export interface IWorkbookElement extends HTMLDivElement, IWorkbookAttributes {};
 
-/**
- * For elements that also need the ref. Less common but some factory renderers
- */
-export interface WorkbookRefProps extends WorkbookElementProps {
-  // ref?: React.Ref<HTMLDivElement>;
-}
-
-export type WorkbookRefAttribute = {
-  ref?: React.Ref<IWorkbookElement>;
-};
 
 export type WorkbookLoadEvent = {
   source: IWorkbookElement;
@@ -63,20 +53,10 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    */
   workbook?: IWorkbook;
   /**
-   * Options to use when a new Workbook is created.
-   * @remarks
-   * This is ignored if the model is provided externally.
-   * The default behavior is to use the options from the current workbook if provided.
-   */
-  createWorkbookOptions?: IWorkbook.ConstructorOptions;
-  /**
-   * Hook to perform a action on new workbook
-   */
-  onNewWorkbook?: () => void;
-  /**
    * Callback for when the workbook is loaded. Useful for hiding/showing
    * loading panels.
    */
+  // TODO - on first render
   onElementLoad?: (event: WorkbookLoadEvent) => void | Promise<void>;
   /**
    * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
@@ -101,10 +81,11 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
   formulaBarProps?: FormulaBarProps;
   /**
    * Render FormulaBar.
-   * @param props
+   *
+   * @param props The properties for the FormulaBar.
    * @returns A React Element representing the FormulaBar.
    */
-  renderFormulaBar?: (props: FormulaBarProps, ref: React.Ref<IFormulaBarElement>) => React.ReactElement;
+  renderFormulaBar?: (props: FormulaBarProps) => React.ReactElement;
   /**
    * This doesn't influence # of tabs just the visibility of the widget.
    * @defaultValue 'workbook model but can be overridden'
@@ -130,7 +111,8 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    */
   statusBarProps?: StatusBarProps;
   /**
-   * Pass in a custom toolbar.
+   * Pass in a custom statusbar.
+   *
    * @param props
    * @returns A React Element representing the StatusBar.
    */
@@ -170,22 +152,22 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    */
   renderMovableMenu?: (props: MovableContextMenuProps) => React.ReactElement;
   /**
-   * Allow for customizations on loading panel.
+   * Allow for customizations on loading panels.
    */
-  loadingPanelProps?: LoadingPanelProps;
+  loadingProps?: LoadingPanelProps;
   /**
-   * Render custom loading panel.
+   * Assign a custom loading panel.
    *
-   * @param props
    * @returns A React Element representing the LoadingPane.
    */
-  renderLoadingPanel?: (props: LoadingPanelProps) => React.ReactElement;
+  renderLoading?: (props: LoadingPanelProps) => React.ReactElement;
   /**
    * Allow for customizations on loading panel.
    */
   sheetProps?: SheetProps;
   /**
    * Render custom ISheetElement.
+   *
    * @param props
    * @returns A React Element representing the Sheet.
    */
@@ -228,5 +210,10 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    *
    * @defaultValue false
    */
+  // css attribute bot a prop
   enableDarkImages?: boolean;
+  /**
+   * Ref for the workbook element
+   */
+  ref?: React.Ref<IWorkbookElement>;
 }

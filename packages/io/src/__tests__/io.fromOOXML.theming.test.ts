@@ -118,7 +118,7 @@ describe("ioService", () => {
 
   it("Read OOXML Theme", () => {
     const location = path.resolve(__dirname, './data/theme.xml');
-    const buffer:ArrayBuffer = fs.readFileSync(location, {flag:'r'});
+    const buffer:ArrayBuffer = fs.readFileSync(location, {flag:'r'}) as any;
     const asXMLString = new TextDecoder().decode(buffer);
     const xmlDoc = new DOMParser().parseFromString(asXMLString, 'text/xml')
     const asJSON = new FromOOXMLConverter().convert(xmlDoc as any, location);

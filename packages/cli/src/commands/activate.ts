@@ -1,6 +1,7 @@
 import { type LicenseDetails, LicenseManager, Notifier } from '@sheetxl/sdk';
 
-import { Modules } from './Types';
+// private
+import type { Modules } from '../types/_Types';
 
 /**
  * Uses a license key for this run.

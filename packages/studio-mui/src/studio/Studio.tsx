@@ -2,9 +2,10 @@ import React, { memo, forwardRef, Suspense, useMemo } from 'react';
 
 import { LicenseManager } from '@sheetxl/sdk';
 
-import { Box } from '@mui/material';
-import { LoadingPanel } from '@sheetxl/utils-mui';
-import { type IWorkbookElement, type WorkbookRefAttribute } from '../components';
+import { Paper } from '@mui/material';
+import { type IWorkbookElement } from '../components';
+
+import { renderWorkbookLoading } from '../components/workbook/WorkbookRenderers';
 
 import { type StudioProps } from './StudioProps';
 
@@ -27,28 +28,25 @@ import { type StudioProps } from './StudioProps';
  *
  * - [Studio](https://api.sheetxl.com/variables/_sheetxl_studio-mui.Studio.html)
  */
-const Studio: React.FC<StudioProps & WorkbookRefAttribute> =
-memo(forwardRef<IWorkbookElement, StudioProps>((props, refForwarded) => {
+const Studio = memo(forwardRef<IWorkbookElement, StudioProps>((props: StudioProps, refForwarded: React.Ref<IWorkbookElement>) => {
   const {
     sx: propSx,
     style: propStyle,
     className: propClassName,
     licenseKey,
-    renderLoadingPanel,
+    renderLoading: propRenderLoading = renderWorkbookLoading,
+    loadingProps,
     ...rest
   } = props;
   if (licenseKey) {
     LicenseManager.setLicenseKey(licenseKey);
   }
 
-  const loadingPanel = useMemo(() => {
-    const props = {
-      transitionDelay: '160ms',
-      transparentBackground: true
-    }
+  const renderedLoadingPanel = useMemo(() => {
+    if (!propRenderLoading) return null;
     // TODO - switch this to a css-transition-group like workbook
     return (
-      <Box
+      <Paper
         sx={propSx}
         style={{
           width: '100%',
@@ -60,10 +58,12 @@ memo(forwardRef<IWorkbookElement, StudioProps>((props, refForwarded) => {
           ...propStyle
         }}
       >
-        {renderLoadingPanel?.(props) ?? (<LoadingPanel{...props}/>)}
-      </Box>
+        {propRenderLoading(
+          {...loadingProps}
+        )}
+      </Paper>
     );
-  }, [propSx, propStyle, renderLoadingPanel]);
+  }, [propSx, propStyle, propRenderLoading, loadingProps]);
 
   const EagerStudio = useMemo(() => {
     return React.lazy(async () => {
@@ -74,12 +74,16 @@ memo(forwardRef<IWorkbookElement, StudioProps>((props, refForwarded) => {
 
   return (<>
     <Suspense
-      fallback={loadingPanel}
+      fallback={renderedLoadingPanel}
     >
       <EagerStudio
         {...rest}
         className={propClassName}
-        renderLoadingPanel={renderLoadingPanel}
+        renderLoading={propRenderLoading}
+        loadingProps={{
+          ...loadingProps,
+          transitionDelay: '0ms' // because we were already rendering it
+        }}
         sx={propSx}
         style={propStyle}
         ref={refForwarded}

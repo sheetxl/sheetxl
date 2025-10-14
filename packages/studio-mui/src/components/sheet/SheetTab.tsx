@@ -34,7 +34,11 @@ export interface SheetTabProps extends TabProps {
   tabRadius?: number;
 }
 
-const SheetTab = memo(forwardRef<HTMLElement, TabProps>((props: SheetTabProps, refForwarded) => {
+/**
+ * A tab representing a sheet in a workbook.
+ */
+export const SheetTab = memo(forwardRef<HTMLElement, TabProps>(
+  (props: SheetTabProps, refForwarded) => {
   const {
     children,
     sheet,
@@ -221,4 +225,3 @@ const SheetTab = memo(forwardRef<HTMLElement, TabProps>((props: SheetTabProps, r
 }));
 
 SheetTab.displayName = "SheetTab";
-export { SheetTab };

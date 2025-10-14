@@ -4,10 +4,7 @@ import { Box } from '@mui/material';
 
 import type { IWorkbook } from '@sheetxl/sdk';
 
-import {
-  Studio, WorkbookIO,
-  type ReadWorkbookOptions, type WorkbookHandle
-} from '@sheetxl/studio-mui';
+import { Studio, WorkbookIO, type ReadWorkbookOptions } from '@sheetxl/studio-mui';
 
 const Template: React.FC = (props) => {
   const {
@@ -42,7 +39,7 @@ const Template: React.FC = (props) => {
       throw (`Unable to fetch: ${fetchResponse.url}`);
     }
 
-    const importResults: WorkbookHandle = await WorkbookIO.read({
+    const importResults: IWorkbook = await WorkbookIO.read({
       ...optionsLoad,
       source: {
         input: fetchUrl
@@ -51,9 +48,9 @@ const Template: React.FC = (props) => {
     });
 
     /* not needed but we want to show a title for the workbook too */
-    setWorkbookTitle(importResults.title);
-    setWorkbook(importResults.workbook);
-    return importResults.workbook;
+    setWorkbookTitle(importResults.getName());
+    setWorkbook(importResults);
+    return importResults;
   }
 
   const style: CSSProperties = {

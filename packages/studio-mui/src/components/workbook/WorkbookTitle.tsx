@@ -46,11 +46,6 @@ export interface WorkbookTitleAttributes {
  * Type returned via ref property
  */
 export interface IWorkbookTitleElement extends HTMLDivElement, WorkbookTitleAttributes {};
-
-export type WorkbookTitleRefAttribute = {
-  ref?: React.Ref<IWorkbookTitleElement>;
-};
-
 export interface WorkbookTitleProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
@@ -76,6 +71,11 @@ export interface WorkbookTitleProps extends React.HTMLAttributes<HTMLDivElement>
    * @defaultValue false
    */
   hidden?: boolean;
+
+  /**
+   * Ref for the IWorkbookTitleElement
+   */
+  ref?: React.Ref<IWorkbookTitleElement>;
 }
 
 const createTitleStyle = (outlined: boolean = false, readOnly: boolean = false) => {
@@ -119,8 +119,8 @@ const createTitleStyle = (outlined: boolean = false, readOnly: boolean = false) 
   };
 }
 
-const WorkbookTitle: React.FC<WorkbookTitleProps & WorkbookTitleRefAttribute> =
-   memo(forwardRef<IWorkbookTitleElement, WorkbookTitleProps>((props, refForwarded) => {
+export const WorkbookTitle = memo(forwardRef<IWorkbookTitleElement, WorkbookTitleProps>(
+  (props: WorkbookTitleProps, refForwarded) => {
   const {
     sx: propSx,
     workbook,
@@ -356,4 +356,3 @@ const WorkbookTitle: React.FC<WorkbookTitleProps & WorkbookTitleRefAttribute> =
 }));
 
 WorkbookTitle.displayName = 'WorkbookTitle';
-export { WorkbookTitle };

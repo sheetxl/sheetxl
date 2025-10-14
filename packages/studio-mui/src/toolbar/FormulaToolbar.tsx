@@ -13,7 +13,7 @@ import { InsertFunctionSumCommandPopupButton, InsertFunctionCommandPopupButton }
 export interface FormulaToolbarProps extends Omit<CommandToolbarProps, "createToolbarPalette"> {
 }
 
-const FormulaToolbar = memo(forwardRef<HTMLDivElement, FormulaToolbarProps>((props, refForwarded) => {
+export const FormulaToolbar = memo(forwardRef<HTMLDivElement, FormulaToolbarProps>((props, refForwarded) => {
   const {
     commands,
     parentFloat,
@@ -136,4 +136,3 @@ const FormulaToolbar = memo(forwardRef<HTMLDivElement, FormulaToolbarProps>((pro
 }));
 
 FormulaToolbar.displayName = "FormulaToolbar";
-export { FormulaToolbar };

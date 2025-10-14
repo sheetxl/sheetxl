@@ -48,7 +48,7 @@ export interface WorkbookContextMenuProps extends React.HTMLAttributes<HTMLDivEl
   floatReference: FloatReference;
 }
 
-const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<HTMLDivElement, WorkbookContextMenuProps>((props: WorkbookContextMenuProps, refForwarded) => {
+export const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<HTMLDivElement, WorkbookContextMenuProps>((props: WorkbookContextMenuProps, refForwarded) => {
   const {
     workbook,
     commands,
@@ -408,4 +408,3 @@ const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forwardRef<
 }));
 
 WorkbookContextMenu.displayName = "WorkbookContextMenu";
-export { WorkbookContextMenu };

@@ -12,7 +12,7 @@ import { OverflowPalette } from './OverflowPalette';
 import { InsertImageCommandButton } from '../command';
 import { InsertChartCommandButton } from '../chart/command';
 
-const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
+export const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
   const {
     commands,
     parentFloat,
@@ -82,4 +82,3 @@ const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolba
 }));
 
 InsertToolbar.displayName = "InsertToolbar";
-export { InsertToolbar };

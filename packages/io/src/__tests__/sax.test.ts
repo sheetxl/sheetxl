@@ -20,7 +20,7 @@ describe("SAX", () => {
     const sheetJSON: ISheet.JSON = {};
     const eventHandler:SaxParser.EventHandler = createSheetSaxVisitor(sheetJSON, () => null, () => -1);
 
-    const arrayBuffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './data/simple-sheet.xml'), {flag:'r'});
+    const arrayBuffer:NonSharedBuffer = fs.readFileSync(path.resolve(__dirname, './data/simple-sheet.xml'), {flag:'r'});
     const asReader = await arrayBufferToStringStream(arrayBuffer);
 
     try {
@@ -46,7 +46,7 @@ describe("SAX", () => {
 
     const eventHandler:SaxParser.EventHandler = createSheetSaxVisitor({}, () => null, () => -1);
 
-    const arrayBuffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './data/simple-sheet.xml'), {flag:'r'});
+    const arrayBuffer:NonSharedBuffer = fs.readFileSync(path.resolve(__dirname, './data/simple-sheet.xml'), {flag:'r'});
     const asReader = await arrayBufferToStringStream(arrayBuffer);
 
     await SaxParser.parseStream(asReader, eventHandler);

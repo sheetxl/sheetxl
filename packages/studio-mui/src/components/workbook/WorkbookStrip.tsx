@@ -26,10 +26,11 @@ import {
   createScrollEdgeButton, createScrollStartButton, createScrollEndButton
 } from '@sheetxl/utils-mui';
 
+import type { SheetTabProps, SheetsAllMenuProps, SheetTabMenuProps } from '../sheet';
+
 import {
-  SheetTab, SheetTabProps, SheetsAllMenu, SheetsAllMenuProps,
-  SheetTabMenu, SheetTabMenuProps
-} from '../sheet';
+  renderWorkbookSheetTab, renderWorkbookStripSheetsAll, renderWorkbookStripContextMenu
+} from './WorkbookRenderers';
 
 /**
  * Tab strip that operates on IWorkbook
@@ -113,19 +114,8 @@ export interface WorkbookStripProps extends React.HTMLAttributes<HTMLDivElement>
   gridStyle?: GridStyle;
 }
 
-const renderWorkbookStripContextMenu = (props: SheetTabMenuProps): React.ReactElement => {
-  return <SheetTabMenu {...props}/>
-}
 
-const renderWorkbookStripSheetsAll = (props: SheetsAllMenuProps): React.ReactElement => {
-  return <SheetsAllMenu {...props}/>
-}
-
-const renderWorkbookSheetTab = (props: SheetTabProps): React.ReactElement => {
-  return <SheetTab {...props}/>
-}
-
-const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
+export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
   (props: WorkbookStripProps, refForwarded) => {
   const {
     workbook,
@@ -474,4 +464,3 @@ const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
 }));
 
 WorkbookStrip.displayName = "WorkbookStrip";
-export { WorkbookStrip };

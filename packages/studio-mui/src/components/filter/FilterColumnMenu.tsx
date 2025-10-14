@@ -32,7 +32,11 @@ export interface FilterColumnMenuProps extends React.HTMLAttributes<HTMLDivEleme
   floatReference: FloatReference;
 }
 
-const FilterColumnMenu = memo(forwardRef<HTMLDivElement, FilterColumnMenuProps>((props, refForwarded) => {
+/**
+ * FilterColumnMenu component to provide a menu for filter column actions.
+ */
+export const FilterColumnMenu = memo(forwardRef<HTMLDivElement, FilterColumnMenuProps>(
+  (props: FilterColumnMenuProps, refForwarded) => {
   const {
     filter,
     commands,
@@ -154,4 +158,3 @@ const FilterColumnMenu = memo(forwardRef<HTMLDivElement, FilterColumnMenuProps>(
 }));
 
 FilterColumnMenu.displayName = "FilterColumnMenu";
-export { FilterColumnMenu };

@@ -47,13 +47,18 @@ export interface NamedInputProps extends FormControlProps {
    * This is only used if formName is provided.
    */
   formOptions?: RegisterOptions;
+
+  /**
+   * Underling reference to the input element.
+   */
+  ref?: React.Ref<HTMLDivElement>
 }
 
 /**
  * NamedItem input field.
  */
-const NamedInput: React.FC<NamedInputProps & { ref?: React.Ref<HTMLDivElement> }> =
-   memo(forwardRef<HTMLDivElement, NamedInputProps>((props, refForward) => {
+export const NamedInput = memo(forwardRef<HTMLDivElement, NamedInputProps>(
+  (props: NamedInputProps, refForward) => {
   const {
     disabled: propDisabled,
     style: propStyle,
@@ -178,4 +183,3 @@ const NamedInput: React.FC<NamedInputProps & { ref?: React.Ref<HTMLDivElement> }
 }));
 
 NamedInput.displayName = "NamedInput";
-export { NamedInput };

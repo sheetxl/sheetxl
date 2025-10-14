@@ -42,9 +42,7 @@ workbook.getSelectedSheet().getRange('A1:C3').setValues([
 Import and exporting file formats other than the native SheetXL JSON type is done using using
 [@sheetxl/io](https://www.npmjs.com/package/@sheetxl/io) module.
 
-APIS details are available in the [API docs](https://api.sheetxl.com/classes/_sheetxl_io.DefaultWorkbookIO.html#read).
-
-The formats, including native JSON, currently support are:
+The formats, including native JSON, currently supported are:
 - SheetXL JSON (native)
 - CSV
 - Excel
@@ -78,7 +76,7 @@ const result1 = await WorkbookIO.read({
 // Import from base64 (explicit disambiguation)
 const result2 = await WorkbookIO.read({
   source: { base64: 'iVBORw0KGgo...' },
-  type: 'xlsx'
+  format: 'xlsx'
 });
 
 // Import from URL
@@ -89,7 +87,7 @@ const result3 = await WorkbookIO.read({
 // Import from array buffer
 const result4 = await WorkbookIO.read({
   source: myArrayBuffer,
-  type: 'csv',
+  format: 'csv',
   name: 'data.csv'
 });
 
@@ -107,13 +105,12 @@ WorkbookIO.writeFile(
 ```
 
 :::tip
-The full source documentation is available at [API IWorkbookIO](https://api.sheetxl.com/types/_sheetxl_io.IOSource.html)
+The full source documentation is available at [IWorkbookIO API](https://api.sheetxl.com/interfaces/_sheetxl_io.IWorkbookIO.html)
 :::
 
 ### Using Studio
 
-If using the Studio React component this capabilities in wrapped in the workbook properties.
-
+If using the Studio React component this capabilities is wrapped in the workbook prop.
 
 
 ```tsx title="Studio Import/Export"

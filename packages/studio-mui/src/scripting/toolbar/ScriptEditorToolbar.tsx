@@ -10,7 +10,11 @@ import { OverflowPalette } from '../../toolbar/OverflowPalette';
 
 import { InsertScriptCommandButton } from '../command/InsertScriptCommandButton';
 
-const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
+/**
+ * Toolbar for script editor with common script commands.
+ */
+export const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandToolbarProps, "createToolbarPalette">>(
+  (props, refForwarded) => {
   const {
     commands,
     parentFloat,
@@ -87,4 +91,3 @@ const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandToolbarP
 }));
 
 ScriptEditorToolbar.displayName = "ScriptEditorToolbar";
-export { ScriptEditorToolbar };

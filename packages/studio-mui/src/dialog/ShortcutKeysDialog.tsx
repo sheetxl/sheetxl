@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { DialogContent } from '@mui/material';
+import { DialogContent, Paper } from '@mui/material';
 
 import { ICommands, KeyCodes } from '@sheetxl/utils-react';
 

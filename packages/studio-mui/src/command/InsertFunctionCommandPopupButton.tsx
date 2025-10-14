@@ -179,7 +179,7 @@ const InsertFunctionCommandButton = memo((props: any) => { // TODO - type
   )
 });
 
-const InsertFunctionCommandPopupButton = memo(
+export const InsertFunctionCommandPopupButton = memo(
   forwardRef<HTMLElement, InsertFunctionCommandButtonProps>((props, refForwarded) => {
   const {
     category,
@@ -227,7 +227,6 @@ const InsertFunctionCommandPopupButton = memo(
 }));
 
 InsertFunctionCommandPopupButton.displayName = "InsertFunctionCommandPopupButton";
-export { InsertFunctionCommandPopupButton };
 
 
 interface InsertFormulaPopupPanelProps extends ExhibitPopupPanelProps, CommandPopupButtonProps {

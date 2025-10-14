@@ -19,7 +19,7 @@ import styles from './Scrollbar.module.css';
 /**
  * Honors the scroll interface but uses native scrollbars.
  */
-const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: ScrollbarProps, refForwarded) => {
+export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: ScrollbarProps, refForwarded) => {
   const {
     offset: propOffset=0,
     totalSize: propTotalSize=0,
@@ -243,4 +243,3 @@ const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((props: 
 }));
 
 NativeScrollbar.displayName = 'NativeScrollbar';
-export { NativeScrollbar };

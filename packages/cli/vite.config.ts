@@ -20,10 +20,11 @@ const overrides: UserConfig = {
     rollupOptions: {
       input: {
         cli: path.resolve(__dirname, 'src/cli.ts'),
+        index: path.resolve(__dirname, 'src/index.ts'),
       },
       output: {
         format: 'es',
-        entryFileNames: 'cli.js',
+        entryFileNames: '[name].js', // Output cli.js and index.js
         chunkFileNames: 'assets/[hash:16].js',
         assetFileNames: 'assets/[hash:16][extname]'
       },

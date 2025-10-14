@@ -1,6 +1,5 @@
-import {
-  ReadWorkbookOptions, WorkbookHandle, WriteWorkbookOptions,
-  ReadFormatType, WriteFormatType
+import type {
+  ReadWorkbookOptions, WriteWorkbookOptions, ReadFormatType, WriteFormatType
  } from '../types';
 
 import { type IWorkbook } from '@sheetxl/sdk';
@@ -42,19 +41,19 @@ import { type IWorkbook } from '@sheetxl/sdk';
  * @example
  * ```typescript
  * // Example 1: File source with xlsx format
- * const wb: WorkbookHandle = await WorkbookIO.read({ source: fileObject }); // Auto-detects .xlsx
+ * const wb: IWorkbook = await WorkbookIO.read({ source: fileObject }); // Auto-detects .xlsx
  *
  * // Example 2: URL source with csv format
- * const wb: WorkbookHandle = await WorkbookIO.read({ source: 'https://example.com/data.csv' });
+ * const wb: IWorkbook = await WorkbookIO.read({ source: 'https://example.com/data.csv' });
  *
  * // Example 3: ArrayBuffer source with explicit format
- * const wb: WorkbookHandle = await WorkbookIO.read({
+ * const wb: IWorkbook = await WorkbookIO.read({
  *   source: arrayBuffer,
  *   format: 'xlsx' // Format can't be auto-detected or forced
  * });
  *
  * // Example 4: ArrayBuffer source with sxl format
- * const wb: WorkbookHandle = await WorkbookIO.read({
+ * const wb: IWorkbook = await WorkbookIO.read({
  *   source: arrayBuffer,
  *   format: 'sxl' // Format can't be auto-detected or forced
  * });
@@ -66,10 +65,7 @@ export interface IWorkbookIO {
    *
    * @param options - Configuration specifying the source and optional format.
    *
-   * @returns A promise resolving to a {@link WorkbookHandle} containing:
-   * - `workbook`: The loaded IWorkbook instance
-   * - `format`: The detected format type used
-   * - `title`: Detected or provided filename/title (if available)
+   * @returns A promise resolving to a {@link IWorkbook}.
    *
    * @throws {Error} When the source type cannot be detected or accessed
    * @throws {Error} When no appropriate format handler is available for the detected format
@@ -104,34 +100,34 @@ export interface IWorkbookIO {
    * @example
    * ```typescript
    * // Auto-detect everything from a File object
-   * const wb: WorkbookHandle = await WorkbookIO.read({ source: fileInput.files[0] });
+   * const wb: IWorkbook = await WorkbookIO.read({ source: fileInput.files[0] });
    *
    * // Fetch from URL (auto-detects format from extension or Content-Type)
-   * const wb: WorkbookHandle = await WorkbookIO.read({
+   * const wb: IWorkbook = await WorkbookIO.read({
    *   source: 'https://example.com/spreadsheet.xlsx'
    * });
    *
    * // SheetXL formatted workbook
-   * const wb: WorkbookHandle = await WorkbookIO.read({
+   * const wb: IWorkbook = await WorkbookIO.read({
    *   source: sxlArrayBuffer,
    *   format: 'sxl'
    * });
    *
    * // ArrayBuffer with explicit format
-   * const wb: WorkbookHandle = await WorkbookIO.read({
+   * const wb: IWorkbook = await WorkbookIO.read({
    *   source: arrayBuffer,
-   *   format: 'xlsx', // Format can't be auto-detected or force
+   *   format: 'xlsx', // Format can't be auto-detected or forced
    *   name: 'My Workbook' // Optional display name
    * });
    *
    * // Lazy loading with progress callback
-   * const wb: WorkbookHandle = await WorkbookIO.read({
+   * const wb: IWorkbook = await WorkbookIO.read({
    *   source: async () => await fetch('/api/workbook').then(r => r.arrayBuffer()),
-   *   progress: (percent, message) => console.log(`${percent}%: ${message}`)
+   *   progress: (amount) => console.log(`${amount}%:`)
    * });
    * ```
    */
-  read(options: ReadWorkbookOptions): Promise<WorkbookHandle>;
+  read(options: ReadWorkbookOptions): Promise<IWorkbook>;
 
   /**
    * Writes a workbook to an ArrayBuffer in the specified format.
@@ -378,50 +374,136 @@ export interface IWorkbookIO {
 }
 
 /**
- * Filter options for querying available format types.
+ * Options for filtering and searching format types.
  *
  * @remarks
- * Use these filters to find specific format types based on various criteria.
- * All filters are optional and can be combined using AND logic.
+ * All options are combined using **AND logic**. A format must match all specified criteria to be included.
+ *
+ * ## Search vs Filters
+ *
+ * ### `search` - Case-insensitive partial match (OR across fields)
+ * Searches across multiple fields (key, extensions, MIME type, tags, description) and includes
+ * formats where **ANY** field contains the search term.
+ *
+ * ### Other options - Exact filters (AND across options)
+ * All other options are exact filters that must match precisely. A format must satisfy
+ * **ALL** specified filters to be included.
+ *
+ * @example
+ * ```typescript
+ * // Search: Find formats containing "excel" anywhere
+ * getFormats({ search: 'excel' }); // Matches xlsx (in description), xml (in tags), etc.
+ *
+ * // Filter: Get only xlsx format
+ * getFormats({ ext: '.xlsx' }); // Exact match on extension
+ *
+ * // Combined: Search for "excel" AND only default formats
+ * getFormats({ search: 'excel', isDefault: true });
+ *
+ * // Multiple filters: xlsx extension AND spreadsheet tag
+ * getFormats({ ext: '.xlsx', tags: 'spreadsheet' });
+ * ```
  */
 export interface GetFormatsOptions {
   /**
-   * Filter by file extension (e.g., `'.xlsx'`, `'.csv'`).
+   * Case-insensitive partial search across multiple fields.
    *
    * @remarks
-   * Include the dot prefix. Case-insensitive.
+   * Searches in: key, file extensions, MIME type, tags, and description.
+   * Returns formats where **ANY** field contains the search term (OR logic).
+   *
+   * Use this for user-facing search boxes or fuzzy matching.
+   *
+   * @example
+   * ```typescript
+   * // Find all Excel-related formats
+   * getFormats({ search: 'excel' });
+   *
+   * // Find formats with "xml" anywhere
+   * getFormats({ search: 'xml' });
+   * ```
+   */
+  search?: string;
+
+  /**
+   * Filter by exact file extension (e.g., `'.xlsx'`, `'.csv'`).
+   *
+   * @remarks
+   * - Include the dot prefix
+   * - Case-insensitive exact match
+   * - Use this when you know the exact extension you want
+   *
+   * @example
+   * ```typescript
+   * // Get only XLSX formats
+   * getFormats({ ext: '.xlsx' });
+   * ```
    */
   ext?: string;
 
   /**
-   * Filter by MIME type (e.g., `'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'`).
+   * Filter by exact MIME type (e.g., `'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'`).
    *
    * @remarks
-   * Exact match, case-sensitive.
+   * - Case-sensitive exact match
+   * - Useful for matching HTTP Content-Type headers
+   *
+   * @example
+   * ```typescript
+   * // Get format by MIME type
+   * getFormats({ mimeType: 'text/csv' });
+   * ```
    */
   mimeType?: string;
 
   /**
-   * Filter by format key (e.g., `'sxl'`, `'xlsx'`, `'csv'`).
+   * Filter by exact format key.
    *
    * @remarks
-   * Exact match of the format's unique identifier.
+   * - Case-insensitive exact match
+   * - The key is the unique identifier for each format (e.g., 'xlsx', 'csv', 'sxl')
+   * - Use this when you need to find a specific format by its identifier
+   *
+   * @example
+   * ```typescript
+   * // Get the XLSX format
+   * getFormats({ key: 'xlsx' });
+   * ```
    */
-  format?: string;
+  key?: string;
 
   /**
    * Filter to only default format types.
    *
    * @remarks
-   * Useful for building UI pickers that should only show primary formats.
+   * - Exact boolean match
+   * - Default formats are the primary/recommended formats for each category
+   * - Useful for building UI pickers that should only show primary formats
+   *
+   * @example
+   * ```typescript
+   * // Get only default formats
+   * getFormats({ isDefault: true });
+   * ```
    */
   isDefault?: boolean;
 
   /**
-   * Filter by tags (e.g., `'spreadsheet'`, `'text'`).
+   * Filter by exact tags (e.g., `'spreadsheet'`, `'text'`).
    *
    * @remarks
-   * Returns formats that have ALL specified tags (AND logic).
+   * - Exact string match (case-sensitive)
+   * - If multiple tags are needed, pass an array
+   * - Returns formats that have **ALL** specified tags (AND logic)
+   *
+   * @example
+   * ```typescript
+   * // Get formats tagged as 'spreadsheet'
+   * getFormats({ tags: 'spreadsheet' });
+   *
+   * // Get formats with both 'spreadsheet' and 'binary' tags
+   * getFormats({ tags: ['spreadsheet', 'binary'] });
+   * ```
    */
-  tags?: string;
+  tags?: string | string[];
 }

@@ -18,7 +18,7 @@ import {
 
 import { IScript } from '@sheetxl/sdk';
 
-import { LoadingPanel } from '@sheetxl/utils-mui';
+import { AnimatedLoadingPanel } from '@sheetxl/utils-mui';
 
 import { ScriptEditorToolbar } from '../toolbar/ScriptEditorToolbar';
 
@@ -28,6 +28,7 @@ import { ScriptEditor } from '@sheetxl/react';
 
 import { DirectoryFile } from '../utils/FetchDirectory';
 import { TemplateSelectPanel } from '../components/TemplateSelectPanel';
+
 /**
  * Move this to another project. Automation-Editor
  */
@@ -65,6 +66,10 @@ export interface ScriptWorkspaceProps extends React.HTMLAttributes<HTMLElement> 
    * The script module to interact with.
    */
   scripts: IScript;
+  /**
+   * Reference to the component instance.
+   */
+  ref?: React.Ref<IScriptWorkspaceElement>;
 }
 
 
@@ -76,16 +81,12 @@ export interface ScriptWorkspaceAttributes {
  */
 export interface IScriptWorkspaceElement extends ScriptWorkspaceAttributes, HTMLDivElement {};
 
-export type ScriptWorkspaceAttribute = {
-  ref?: React.Ref<IScriptWorkspaceElement>;
-};
-
 /**
  * This tracks the selection of the sheet and
  * updates the a named range editor and a sheet cell editor.
  */
-const ScriptWorkspace: React.FC<ScriptWorkspaceProps & ScriptWorkspaceAttribute> = memo(
-  forwardRef<IScriptWorkspaceElement, ScriptWorkspaceProps>((props, refForwarded) => {
+export const ScriptWorkspace = memo(forwardRef<IScriptWorkspaceElement, ScriptWorkspaceProps>(
+  (props: ScriptWorkspaceProps, refForwarded) => {
   const {
     className: propClassName,
     sx: propSx,
@@ -164,7 +165,7 @@ const ScriptWorkspace: React.FC<ScriptWorkspaceProps & ScriptWorkspaceAttribute>
 
   const loadingPanel = useMemo(() => {
     return (
-      <LoadingPanel
+      <AnimatedLoadingPanel
         transitionDelay='160ms'
         style={{
           position: 'absolute',
@@ -428,4 +429,3 @@ const ScriptWorkspace: React.FC<ScriptWorkspaceProps & ScriptWorkspaceAttribute>
 );
 
 ScriptWorkspace.displayName = "ScriptWorkspace";
-export { ScriptWorkspace };

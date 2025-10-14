@@ -13,7 +13,7 @@ if (process.stdout.isTTY) {
 import { createCommand, Argument, Option, type Command } from 'commander';
 // import pkg from '../package.json' with { type: "json" }; // need for visual studio code debugging?
 
-async function main(): Promise<any> {
+async function main(): Promise<void> {
   const pkg = {
     version: typeof __BUILD_VERSION__ !== 'undefined' ? __BUILD_VERSION__ : 'local',
     description: 'SheetXL CLI',
@@ -55,6 +55,7 @@ async function main(): Promise<any> {
   const modules = {
     sdk: SDK,
     io: IO,
+    notifier: SDK.Notifier,
     program,
   }
 
@@ -69,7 +70,7 @@ async function main(): Promise<any> {
     .action(async () => {
       // Default action: if no command provided, start REPL
       const module = await import('./commands/repl.ts');
-      await module.default([], modules);
+      await module.default(null, [], modules);
     });
 
   // Handle unknown commands
@@ -122,14 +123,16 @@ async function main(): Promise<any> {
   // Before general commands but after license commands
 
   program
-    .command('extract')
-    .description('Extract values.')
-    .addArgument(new Argument('<file>', 'File to extract.').argRequired())
-    .addArgument(new Argument('<range>', 'A workbook range to extract.').argOptional())
-    .addOption(new Option('--password [password]', 'The password used to open the workbook.'))
-    .action(async (...args: any[]) => {
-      const module = await import('./commands/extract.ts');
-      await module.default(args, modules);
+    .command('run')
+    .option('--stdio')
+    .option('-w --workbook <file>')
+    .argument('<script>')              // the script file
+    .argument('[scriptArgs...]')       // capture ALL remaining tokens as an array
+    .description('Run a TypeScript or JavaScript script.')
+    .addHelpText('after', `\nExample:\n  sheetxl run script.ts\n  sheetxl run myScript.js`)
+    .action(async (script: string, scriptArgs: string[], opts: Record<string, string>) => {
+      const module = await import('./commands/run.ts');
+      await module.default(modules, script, scriptArgs, opts);
     });
 
   // this is repl help
@@ -142,16 +145,16 @@ async function main(): Promise<any> {
   //   });
 
   /**
-   * Command register
-   *
-   * @see https://github.com/tj/commander.js
+   * Explicit repl command (same as default)
    */
   program
     .command('repl')
+    .argument("[workbook]", "Workbook file to load")
     .description('Start interactive REPL mode.')
-    .action(async (...args: any[]) => {
+    .addHelpText('after', `\nRun either with no arguments or with a workbook`)
+    .action(async (workbookPath?: string, ...args: any[]) => {
       const module = await import('./commands/repl.ts');
-      await module.default(args, modules);
+      await module.default(workbookPath, args, modules);
     });
 
   await program.parseAsync(process.argv);

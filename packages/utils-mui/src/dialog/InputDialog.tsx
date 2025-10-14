@@ -9,7 +9,7 @@ import { FormControl } from '@mui/material';
 import { TextField } from '@mui/material';
 
 import {
-  ShowInputOptions, useCallbackRef, KeyCodes
+  type ShowInputOptions, useCallbackRef, KeyCodes
 } from '@sheetxl/utils-react';
 
 import { type OptionsDialogProps } from './useOptionsDialog';

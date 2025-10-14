@@ -42,7 +42,7 @@ const MAX_LINES_EXPANDED = 15;
  * This tracks the selection of the sheet and
  * updates the a named range editor and a sheet cell editor.
  */
-const FormulaBar = memo(
+export const FormulaBar = memo(
   forwardRef<IFormulaBarElement, FormulaBarProps>((props, refForwarded) => {
   const {
     sx: propSx,
@@ -513,4 +513,3 @@ const FormulaBar = memo(
 );
 
 FormulaBar.displayName = "FormulaBar";
-export { FormulaBar };

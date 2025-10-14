@@ -34,7 +34,7 @@ export interface SheetZoomScaleProps extends BoxProps {
   debounceDelay?: number;
 }
 
-const SheetZoomScale = memo(forwardRef<HTMLElement, SheetZoomScaleProps>((props: SheetZoomScaleProps, refForwarded) => {
+export const SheetZoomScale = memo(forwardRef<HTMLElement, SheetZoomScaleProps>((props: SheetZoomScaleProps, refForwarded) => {
   const {
     sheet,
     className,
@@ -225,7 +225,7 @@ const SheetZoomScale = memo(forwardRef<HTMLElement, SheetZoomScaleProps>((props:
         max={200}
         marks={[{ value: 100 }]}
         onAnimationEnd={() => setUserAnimation(false)}
-        onWheel={(e:React.WheelEvent) => {
+        onWheel={(e: React.WheelEvent) => {
           handleZoomScale(zoomToScale(CommonUtils.findNextStep(sheet.getView().getZoomScale(), e.deltaY < 0, 10)));
         }}
         onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
@@ -240,7 +240,7 @@ const SheetZoomScale = memo(forwardRef<HTMLElement, SheetZoomScaleProps>((props:
             focusRelated();
           }
         }}
-        onChange={(event, newValue: number) => {
+        onChange={(_event: Event, newValue: number) => {
           // Snap to 100. - This should space at nicer intervals and be 'momentum based'. (timer)
           if (Math.abs(newValue - 100) < 3) {
             handleZoomScale(100);
@@ -316,4 +316,3 @@ const SheetZoomScale = memo(forwardRef<HTMLElement, SheetZoomScaleProps>((props:
 }));
 
 SheetZoomScale.displayName = 'SheetZoomScale';
-export { SheetZoomScale };

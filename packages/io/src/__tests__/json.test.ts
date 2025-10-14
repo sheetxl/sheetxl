@@ -6,14 +6,20 @@ import * as os from 'os';
 
 import { IWorkbook } from '@sheetxl/sdk';
 
-import { toBufferJSON, fromBufferJSON } from '../handlers';
+import { WorkbookIO } from '..';
+
 import createSimpleWorkbook from './helpers/createSimpleWorkbook';
 
 describe("JSON Import/Export", () => {
 
   it("Import", async () => {
-    const buffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './json/simple.json'), {flag:'r'});
-    const workbook:IWorkbook = await fromBufferJSON(buffer);
+    const buffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './json/simple.json'), {flag:'r'}) as unknown as ArrayBuffer;
+
+    const workbook:IWorkbook = await WorkbookIO.read({
+      source: buffer,
+      // format: 'json',
+      name: 'simple.json'
+    });
 
     const ws = workbook.getSheets().getByName('Data');
     expect(ws?.getRange('A1').getCell().getValue()).toEqual('this has spaces');
@@ -23,16 +29,21 @@ describe("JSON Import/Export", () => {
     const workbook = createSimpleWorkbook(); // Create a simple workbook
 
     const options = {};
-    const buffer:ArrayBuffer = await toBufferJSON(workbook, options);
-
+    // const buffer:ArrayBuffer = await WorkbookIO.write({ workbook, format: 'json' });
+    // const buffer:ArrayBuffer = await toBufferJSON(workbook, options);
+    let success = false;
     try {
       const dirName = path.resolve(os.tmpdir(), 'json');
       fs.mkdirSync(dirName, { recursive: true });
-      fs.writeFileSync(path.resolve(dirName, 'simple.json'), Buffer.from(buffer));
+      success = await WorkbookIO.writeFile(
+        path.resolve(dirName, 'simple.json'),
+        workbook,
+        // { format: 'json' }
+      );
     } catch (err) {
-      // console.log(err);
+      console.log(err);
     }
 
-    expect(true).toEqual(true);
+    expect(success).toEqual(true);
   });
 });

@@ -36,16 +36,14 @@ export interface CommandToolbarProps extends ToolbarProps {
   parentFloat?: FloatReference;
 
   createToolbarPalette?: (props: CommandToolbarButtonProps) => React.ReactNode;
+
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export interface CommandToolbarAttributes {
 }
 
 export interface ICommandToolbarElement extends HTMLDivElement, CommandToolbarAttributes {};
-
-export interface CommandToolbarRefAttribute {
-  ref?: React.Ref<HTMLDivElement>;
-}
 
 export interface LabelIconProps extends BoxProps {
   scope?: string
@@ -101,8 +99,8 @@ export const LabelIcon = (props: LabelIconProps) => {
   );
 }
 
-export const CommandToolbar =
-   memo(forwardRef<ICommandToolbarElement, CommandToolbarProps>((props, refForwarded) => {
+export const CommandToolbar = memo(forwardRef<ICommandToolbarElement, CommandToolbarProps>(
+  (props: CommandToolbarProps, refForwarded) => {
   const {
     sx: sxProps,
     commands,

@@ -9,16 +9,16 @@ import styles from './studio.module.css';
 
 // const NeverResolving = React.lazy(() => new Promise(() => {}));
 
+const defaultBounds = {
+  minHeight: '580px',
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
 export default function StudioDemo() {
   const { colorMode } = useColorMode();
-
-  const defaultBounds = {
-    minHeight: '580px',
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
 
   const Studio = useMemo(() => {
     return React.lazy(() => import('@sheetxl/studio-mui'));

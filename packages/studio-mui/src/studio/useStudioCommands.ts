@@ -15,7 +15,7 @@ import {
 } from '@sheetxl/utils-mui';
 
 import {
-  WorkbookIO, type WorkbookHandle, type WriteFormatType
+  WorkbookIO, type ReadWorkbookDetails, type ReadWorkbookOptions, type ReadFormatType, type WriteFormatType
 } from '../io';
 
 export interface useStudioCommandsOptions {
@@ -90,10 +90,11 @@ export const useStudioCommands = (
   const onEnabledDarkGridChange = useCallbackRef(themeOptions?.onEnabledDarkGridChange, [themeOptions?.onEnabledDarkGridChange]);
   const onEnabledDarkImagesChange = useCallbackRef(themeOptions?.onEnabledDarkImagesChange, [themeOptions?.onEnabledDarkImagesChange]);
 
-  const importFromFile = useCallbackRef(async (
+  const importWorkbook = useCallbackRef(async (
     input: File | Promise<File> | string=null,
-    createWorkbookOptions: IWorkbook.ConstructorOptions=null
-  ): Promise<WorkbookHandle> => {
+    typedCreateWorkbookOptions: Record<string, IWorkbook.ConstructorOptions>=null,
+    onStart: (details: ReadWorkbookDetails, total?: number) => Promise<void> | void=null
+  ): Promise<IWorkbook> => {
     const warnings = [];
     const onWarning = (message: string) => {
       warnings.push(message);
@@ -118,11 +119,17 @@ export const useStudioCommands = (
       return null;
     }
 
-    const optionsFile = {
+    const optionsFile:ReadWorkbookOptions = {
       source: inputResolve,
-      createWorkbookOptions,
-      onWarning
+      typedCreateWorkbookOptions,
+      progress: {
+        onWarning
+      }
     }
+    if (onStart) {
+      optionsFile.progress.onStart = onStart;
+    }
+
     const retValue = await WorkbookIO.read(optionsFile, notifier);
     if (warnings.length > 0) {
       notifier.showMessage(`Some elements were not able to be imported. See console for details.`);
@@ -151,7 +158,7 @@ export const useStudioCommands = (
     });
   }, [notifier, workbook, requestWorkbookTitle]);
 
-  const target:() => ICommands.ITarget = useCallback(() => {
+  const commandTarget:() => ICommands.ITarget = useCallback(() => {
     return {
       contains(_element: Node | null): boolean {
         return true;
@@ -188,7 +195,7 @@ export const useStudioCommands = (
             modifiers: [KeyModifiers.Ctrl]
           }
           // Also do a save as with ctrl+shift+S
-          commands.push(new Command<string>(`saveWorkbookAs`, target, {
+          commands.push(new Command<string>(`saveWorkbookAs`, commandTarget, {
             label: `Save Workbook As\u2026`, // '...' // ellipsis
             scopedLabels: {
               'workbook': 'Save as\u2026', // '...' // ellipsis
@@ -216,14 +223,14 @@ export const useStudioCommands = (
         } else if (formatKey === 'Excel') {
           commandProperties.icon = 'FileDownloadAsExcel';
         }
-        commands.push(new Command<string>(commandKey, target, commandProperties, (inputName: string) => {
+        commands.push(new Command<string>(commandKey, commandTarget, commandProperties, (inputName: string) => {
           exportToFile(workbook, inputName ?? workbookTitle, format)
             .catch(error => {
             notifier.showError(error);
           });
         }));
       });
-      commands.push(new Command<File | Promise<File> | string>('openWorkbook', target, {
+      commands.push(new Command<File | Promise<File> | string>('openWorkbook', commandTarget, {
         label: 'Open Workbook\u2026', // '...' // ellipsis
         scopedLabels: {
           'workbook': 'Open\u2026', // '...'  // ellipsis
@@ -235,21 +242,29 @@ export const useStudioCommands = (
           modifiers: [KeyModifiers.Ctrl]
         }
       }, async (input: File | Promise<File> | string=null): Promise<void> => {
-        const options:IWorkbook.ConstructorOptions = {
-          date1904: workbook.isDate1904(),
-          ...workbook.options
+        // we want csv to inherit the current workbook options.
+        const typedCreateWorkbookOptions = {
+          'csv': {
+            date1904: workbook.isDate1904(),
+            ...workbook.options
+          }
         }
         try {
-          const loadResults:WorkbookHandle = await importFromFile(input, options);
-          if (!loadResults) return; // cancel
+          let formatType:ReadFormatType = null;
+          let readName: string;
+          const onStart = async (details: ReadWorkbookDetails) => {
+            formatType = details.format;
+            readName = details.name;
+          }
+          const importedWorkbook:IWorkbook = await importWorkbook(input, typedCreateWorkbookOptions, onStart);
+          if (!importedWorkbook) return; // cancel
           // We use the csv filename for sheet name
 
-          const title = loadResults.title;
-          const importedWorkbook = loadResults.workbook;
+          // const name = loadResults.name;
           const importedSheet = importedWorkbook.getSelectedSheet();
-          if (loadResults.format.mimeType === 'text/csv' && CSV_IMPORT_ADD_SHEET) {
+          if (formatType.mimeType === 'text/csv' && CSV_IMPORT_ADD_SHEET) {
             // Add to existing sheet
-            const newSheetName = workbook.findValidSheetName(title);
+            const newSheetName = workbook.findValidSheetName(readName);
             await workbook.doBatch(async () => {
               const topLeft = {
                 colStart: 0,
@@ -269,21 +284,21 @@ export const useStudioCommands = (
               const sheetTo = workbook.getSheets().add({ name: newSheetName, autoSelect: true });
               const rangeTo = sheetTo.getRange(topLeft);
               await rangeTo.copyFrom(importRange);
-            }, `Import CSV '${title}'`);
+            }, `Import CSV '${newSheetName}'`);
             // TODO - allow add sheet to be an unDoable action. Then we can wrap the import as a transaction that can be undone.
             // undoManager?.clear(); // copy is an unDoable action, but we don't want to undo it.
           } else {
             // clear old workbook
             workbook?.close();
             // Set name and replace.
-            setWorkbookTitle?.(title);
+            setWorkbookTitle?.(importedWorkbook.getName() ?? '');
             setWorkbook(importedWorkbook);
           }
         } catch (error: any) {
           notifier.showError(error);
         }
       }));
-      commands.push(new Command<string>('openWorkbookFromUrl', target, {
+      commands.push(new Command<string>('openWorkbookFromUrl', commandTarget, {
         label: 'Open Workbook From Web',
         scopedLabels: {
           'insert': 'From Web',
@@ -314,6 +329,41 @@ export const useStudioCommands = (
         console.log('openWorkbookFromUrl', url);
         // addImage(this, { fetch: url });
       }));
+      // CTRL+W only works in window mode - https://codereview.chromium.org/9701108
+      commands.push(new SimpleCommand('closeWorkbook', commandTarget, {
+        label: 'Close Workbook',
+        description: 'Close the workbook.',
+        shortcut: {
+          key: 'W',
+          modifiers: [KeyModifiers.Ctrl, KeyModifiers.Alt]
+        }
+      }, async function() {
+          const doClose = () => {
+          window.close();
+        }
+        // TODO - confirm only if unsaved data
+        // workbook.isDirty()
+        const option = await notifier.showOptions({
+          title: 'Confirm',
+          description: `This will close the current workbook tab. Do you want to continue?`,
+          options: ['Close', 'Cancel'],
+          defaultOption: 'Close'
+        });
+        if (option !== 'Close')
+            return;
+          doClose();
+      }));
+      commands.push(new SimpleCommand('newWorkbook', commandTarget, { // CTRL+N only works in window mode - https://codereview.chromium.org/9701108
+        label: 'New Workbook',
+        description: 'Create a new workbook in another tab.',
+        icon: 'FileNew',
+        // shortcut: {
+        //   key: 'N',
+        //   modifiers: [KeyModifiers.Ctrl]
+        // }
+      }, async function() {
+        defaultNewWorkbook();
+      }));
       setCommandsAsync(commands);
     }
     readExport();
@@ -323,25 +373,25 @@ export const useStudioCommands = (
     let commandsDarkModeToggle: ICommand<any, any>[] = [];
     if (themeOptions) {
       commandsDarkModeToggle = [
-        new Command<ThemeMode | null>('themeMode', target, {
+        new Command<ThemeMode | null>('themeMode', commandTarget, {
           label: `Light/Dark Mode`,
           scopedLabels: {
             'appearance': `Light/Dark Mode`
           },
           description: `Toggle the application styling between light and dark mode.`,
         }),
-        new Command<boolean>('defaultThemeMode', target, {
+        new Command<boolean>('defaultThemeMode', commandTarget, {
           label: `Use System Light/Dark Mode`,
           scopedLabels: {
             'appearance': `Use System Default`
           },
           description: `Use the system settings to determine styling for light and dark mode.`,
         }),
-        new Command<boolean>('enableDarkGrid', target, {
+        new Command<boolean>('enableDarkGrid', commandTarget, {
           label: `Enable Dark Grid`,
           description: `Allow the grid to render in dark mode if dark mode is being used. This is ensures that the grid will render the colors as specified in another tools (for example Excel).`,
         }),
-        new Command<boolean>('enableDarkImages', target, {
+        new Command<boolean>('enableDarkImages', commandTarget, {
           label: `Enable Dark Images`,
           description: `Allow the images to render in dark mode if dark mode is being used. This is ensures that the images will render the colors as specified in another tools (for example Excel). This only has any effect if the grid is in dark mode.`,
         })
@@ -349,7 +399,7 @@ export const useStudioCommands = (
     }
     const commandsStudio: ICommand<any, any>[] = [
       ...commandsDarkModeToggle,
-      new SimpleCommand('help', target, {
+      new SimpleCommand('help', commandTarget, {
         label: 'Show Help',
         description: 'Provide Help.',
         icon: 'Documentation',
@@ -357,7 +407,7 @@ export const useStudioCommands = (
           key: 'F1'
         }
       }, () => {}),
-      new SimpleCommand('showKeyboardShortcuts', target, {
+      new SimpleCommand('showKeyboardShortcuts', commandTarget, {
         label: 'Keyboard Shortcuts',
         description: 'Show keyboard shortcuts.',
         icon: 'Keyboard',
@@ -366,28 +416,28 @@ export const useStudioCommands = (
           modifiers: [KeyModifiers.Ctrl]
         }
       }, () => {}),
-      new Command<string>('gotoUrlGithub', target, {
+      new Command<string>('gotoUrlGithub', commandTarget, {
         label: 'Github',
         description: 'Download examples, explore source code, and leave a star.',
         icon: 'Github'
       }, () => {
         window?.open('https://github.com/sheetxl/sheetxl');
       }),
-      new Command<string>('gotoUrlDiscord', target, {
+      new Command<string>('gotoUrlDiscord', commandTarget, {
         label: 'Discord',
         description: 'Join our community on discord.',
         icon: 'Discord'
       }, () => {
         window?.open('https://discord.gg/NTKdwUgK9p');
       }),
-      new Command<string>('gotoUrlDocumentation', target, {
+      new Command<string>('gotoUrlDocumentation', commandTarget, {
         label: 'Documentation',
         description: 'Read the documentation.',
         icon: 'Documentation'
       }, () => {
         window?.open('https://www.sheetxl.com/docs');
       }),
-      new Command<string>('gotoUrlIssue', target, {
+      new Command<string>('gotoUrlIssue', commandTarget, {
         label: 'Create Issue',
         description: 'Create an issue to identify a bug or a feature request.',
         icon: 'Ticket'
@@ -442,9 +492,9 @@ export const useStudioCommands = (
   const commands = useMemo(() => {
     let retValue = null;
     if (commandsParent) {
-      retValue = commandsParent.createChildGroup(target, 'standaloneWorkbook', false);
+      retValue = commandsParent.createChildGroup(commandTarget, 'standaloneWorkbook', false);
     } else {
-      retValue = new CommandGroup(target, 'standaloneWorkbook');
+      retValue = new CommandGroup(commandTarget, 'standaloneWorkbook');
     }
     retValue.addCommands(commandsArray, true);
     return retValue;
@@ -528,4 +578,8 @@ export const useStudioCommands = (
   }, [commandsArray, commands]);
 
   return commands;
+}
+
+const defaultNewWorkbook = () => {
+  window.open(window.origin.toString(), "sheetxl-" + CommonUtils.uuidV4(), "popup=true");
 }

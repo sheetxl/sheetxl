@@ -53,4 +53,4 @@ pnpm build
 pnpm dev
 ```
 
-Select Launch an Debug (Ctrl+Shift+D) -> Vite App
+Select Launch and Debug (Ctrl+Shift+D) -> Studio MUI - Example

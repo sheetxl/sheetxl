@@ -6,7 +6,8 @@ import { Box } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
 
-import { type ReadWorkbookOptions, type WorkbookHandle } from '@sheetxl/io';
+import { type IWorkbook } from '@sheetxl/sdk';
+import { type ReadWorkbookOptions } from '@sheetxl/io';
 
 import { Studio, WorkbookIO } from '@sheetxl/studio-mui';
 
@@ -20,7 +21,7 @@ const Template: React.FC = (props) => {
     // maxRows: 100
   };
 
-  const [workbook, setWorkbook] = useState<WorkbookHandle | Promise<WorkbookHandle>>(null);
+  const [workbook, setWorkbook] = useState<IWorkbook | Promise<IWorkbook>>(null);
 
   /**
    * This example reads a file from the local filesystem by showing a file input field until
@@ -34,7 +35,7 @@ const Template: React.FC = (props) => {
       The Studio will show a loading indicator if a workbook promise is passed.
       Additionally we want to set the title to the name of the file.
     */
-    const loadResults:WorkbookHandle = await WorkbookIO.read({
+    const loadResults:IWorkbook = await WorkbookIO.read({
       ...optionsLoad,
       source: sourceResolve
     });

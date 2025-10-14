@@ -36,8 +36,8 @@ import {
 /**
  * Editor used for selecting, editing, or removing named ranges.
  */
-const NamedCollectionEditor =
-   memo(forwardRef<INamedCollectionEditorElement, NamedCollectionEditorProps>((props, refForwarded) => {
+export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorElement, NamedCollectionEditorProps>(
+  (props: NamedCollectionEditorProps, refForwarded) => {
   const {
     disabled,
     names,
@@ -629,4 +629,3 @@ const NamedCollectionEditor =
 }));
 
 NamedCollectionEditor.displayName = "NamedCollectionEditor";
-export { NamedCollectionEditor };

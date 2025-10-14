@@ -45,10 +45,6 @@ export const readBuffer = async (
   const warnings: [message: string, context: string][] = [];
   const taskProgress = options?.progress;
 
-  // If or type name if provided use this to override the createWorkbookOptions
-  const onStart = taskProgress?.onStart?.(options?.name ?? 'Parsing XLSX');
-  await Promise.resolve(onStart);
-
   const onProgress = taskProgress?.onProgress;
   let amountProgress = 0;
 
@@ -456,7 +452,6 @@ export const readBuffer = async (
       }
     }
 
-    taskProgress?.onComplete?.(amountProgress);
     // console.profileEnd("Import Excel");
     // console.timeEnd("Import Excel");
     return workbook;

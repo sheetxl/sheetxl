@@ -5,14 +5,15 @@ export type * from '@sheetxl/io';
 
 // Import specific types we need locally
 import type {
-  IWorkbookIO, GetFormatsOptions, ReadWorkbookOptions, WorkbookHandle, ReadFormatType, WriteFormatType, WriteWorkbookOptions
+  IWorkbookIO, GetFormatsOptions, ReadWorkbookOptions, ReadFormatType, WriteFormatType, WriteWorkbookOptions,
+  ReadWorkbookDetails
 } from '@sheetxl/io';
 
 import { IReactNotifier } from '@sheetxl/utils-react';
 
-
 /**
- * Wraps the IO WorkbookIO class to provide lazy import.
+ * Wraps the IO WorkbookIO class to provide lazy import and adds support for IReactNotifier
+ * notification to the read method.
  *
  * @see '@sheetxl/io/IWorkbookIO'
  */
@@ -60,19 +61,18 @@ export class _WorkbookIO implements IWorkbookIO {
   async read(
     options: ReadWorkbookOptions,
     notifier?: IReactNotifier
-  ): Promise<WorkbookHandle> {
-
+  ): Promise<IWorkbook> {
     let hideBusyReading:any;
     let hideBusyOpening:any;
     try {
       hideBusyOpening = await notifier?.showBusy?.(`Opening${options.name ? ` ${options.name}` : ''}...`);
       const loadedIO = await this._loadIO();
-      const retValue:WorkbookHandle = await loadedIO.read({
+      const retValue:IWorkbook = await loadedIO.read({
         ...options,
         progress: {
-          async onStart(name: string): Promise<void> {
-            await options?.progress?.onStart?.(name);
-            hideBusyReading = await notifier?.showBusy?.(`Opening '${name}'...`);
+          async onStart(details: ReadWorkbookDetails): Promise<void> {
+            await options?.progress?.onStart?.(details);
+            hideBusyReading = await notifier?.showBusy?.(`Opening '${details.name}'...`);
           }
         }
       });

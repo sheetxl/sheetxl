@@ -5,7 +5,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Studio MUI - Examples",
+      "name": "Studio MUI - Example",
       "url": "http://localhost:5173",
       "webRoot": "${workspaceFolder}/examples/studio-mui",
       "runtimeArgs": [
@@ -32,7 +32,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Studio ESM - Examples",
+      "name": "Studio ESM - Example",
       "url": "http://localhost:4000",
       "webRoot": "${workspaceFolder}/examples/studio-vanilla",
       "runtimeArgs": [
@@ -59,11 +59,26 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug CLI (TypeScript)",
+      "name": "CLI - Repl",
       "runtimeExecutable": "tsx",
       "args": ["src/cli.ts"], // as repl
+      // "args": ["src/cli.ts", "repl"], // as repl
+      // "args": ["src/cli.ts", "repl", "assets/simple.xlsx"], // as repl
       // "args": ["src/cli.ts", "license"], // as repl
-      // "args": ["src/cli.ts", "extract", "assets/simple"],
+      // "args": ["src/cli.ts", "extract", "assets/simple.xlsx"],
+      "cwd": "${workspaceFolder}/packages/cli",
+      "env": {
+        "NODE_ENV": "development",
+        "NODE_OPTIONS": "--conditions=development"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "CLI - Command",
+      "runtimeExecutable": "tsx",
+      "args": ["src/cli.ts", "run", "examples/simple-script.ts", "--workbook", "assets/simple.xlsx", "range", "--", "--testing=true", "-test2=123"],
       "cwd": "${workspaceFolder}/packages/cli",
       "env": {
         "NODE_ENV": "development",
@@ -74,7 +89,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Storybook - Examples",
+      "name": "Storybook - Example",
       "url": "http://localhost:6006",
       "webRoot": "${workspaceFolder}/examples/storybook",
       "runtimeArgs": [
@@ -101,7 +116,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Vitest {CurrentFile}",
+      "name": "Vitest - {CurrentFile}",
       "autoAttachChildProcesses": true,
       "skipFiles": ["<node_internals>/**"], // , "**/node_modules/**"
       "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
@@ -112,7 +127,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Vitest Debug Tests",
+      "name": "Vitest - Debug Tests",
       "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
       "args": ["run", "--reporter=verbose"],
       "env": {
@@ -124,7 +139,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Vitest Debug {CurrentFile}",
+      "name": "Vitest - Debug {CurrentFile}",
       "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
       "args": ["run", "${file}", "--reporter=verbose"],
       "env": {

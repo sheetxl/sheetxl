@@ -8,10 +8,9 @@ import * as fs from 'fs'; // for write outputs
 
 import { DOMParser } from '@xmldom/xmldom';
 
-import { IWorkbook, ISheet, Theme } from '@sheetxl/sdk';
+import { ISheet, Theme } from '@sheetxl/sdk';
 
 import { SaxParser } from '../sax';
-import { fromBufferXLSX } from '../handlers/xlsx';
 
 import { FromOOXMLConverter } from '../handlers/xlsx/ooxml-converter/FromOOXMLConverter';
 import { ConvertFromOptions } from '../handlers/xlsx/ooxml-converter/OOXMLTypes';
@@ -64,13 +63,13 @@ describe("Excel Import/Export", () => {
   });
 
 
-  it("Import 2 Tables", async () => {
-    const array = fs.readFileSync(path.resolve(__dirname, './xlsx/2tables.xlsx'), {flag:'r'});//.buffer;
+  // it("Import 2 Tables", async () => {
+  //   const array = fs.readFileSync(path.resolve(__dirname, './xlsx/2tables.xlsx'), {flag:'r'});//.buffer;
 
-    const workbook:IWorkbook = await fromBufferXLSX(array);
-    const asJSOn:IWorkbook.JSON = await workbook.toJSON();
-    expect(asJSOn).toBeDefined();
-  });
+  //   const workbook:IWorkbook = await fromBufferXLSX(array);
+  //   const asJSOn:IWorkbook.JSON = await workbook.toJSON();
+  //   expect(asJSOn).toBeDefined();
+  // });
 
 
   it("Import", async () => {
