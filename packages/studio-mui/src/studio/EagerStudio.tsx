@@ -9,12 +9,12 @@ import { mergeRefs } from 'react-merge-refs';
 import { SnackbarProvider, SnackbarKey, CloseReason } from 'notistack';
 
 import { Theme, ThemeProvider } from '@mui/material/styles';
-
 import { CssBaseline } from '@mui/material';
 import { Paper, SvgIcon } from '@mui/material';
 
 import { UndoManager, CommonUtils } from '@sheetxl/utils';
 import { IWorkbook, Workbook, ITransaction } from '@sheetxl/sdk';
+import type { ReadWorkbookOptions } from '@sheetxl/io';
 
 import {
   useCallbackRef, ICommand, ICommands, CommandGroup, DefaultDynamicIconService, DynamicIcon,
@@ -22,7 +22,7 @@ import {
 } from '@sheetxl/utils-react';
 
 import {
-  TaskPaneProvider, type TaskPaneAreaProps, ITaskPaneAreaElement, useDocThemes
+  TaskPaneProvider, useDocThemes, type TaskPaneAreaProps
 } from '@sheetxl/react';
 
 import {
@@ -31,13 +31,15 @@ import {
 } from '@sheetxl/utils-mui';
 
 import {
-  WorkbookElement, IWorkbookElement,
-  WorkbookLoadEvent, WorkbookTitle, IWorkbookTitleElement
+  WorkbookElement, WorkbookTitle,
+  type IWorkbookElement, type WorkbookLoadEvent, type IWorkbookTitleElement
 } from '../components';
 
-import { WorkbookIO, type ReadWorkbookOptions } from '../io';
+import { WorkbookIO } from '../io';
 
 import { ToastError } from '../toast';
+
+import type { WorkbookElementProps } from '../components';
 
 import type { StudioProps } from './StudioProps';
 import { StudioToolbar, type StudioToolbarProps } from './StudioToolbar';
@@ -70,10 +72,14 @@ ScriptingPlugin();
  *  * file name
  *  * material-ui theme for light/dark toggle
  */
-export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props: StudioProps, refForwarded) => {
+export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>(
+  (props: StudioProps, refForwarded) => {
   const {
     className: propClassName,
     sx: propSx,
+    square: propsSquare, // paperProps
+    elevation: propElevation, // paperProps
+    variant: propVariant,  // paperProps
     style: propStyle,
     onElementLoad: propOnElementLoad,
     onError: propOnError,
@@ -87,21 +93,21 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
     logo,
     importExportDisabled = false,
     themeOptions: propThemeOptions,
-    autoFocus = false,
+    autoFocus: propAutoFocus = false,
     commands: commandsParent,
     title: propTitle,
-    onTitleChange: propOnTitleChange,
-    titleProps,
+    onWorkbookTitleChange: propOnWorkbookTitleChange,
+    propsWorkbookTitle,
     renderLoading: propRenderLoading = defaultRenderWorkbookLoading,
-    loadingProps,
-    ...rest
+    propsLoading,
+    ...propsRest
   } = props;
 
   const refWorkbook = useRef<IWorkbookElement>(null);
 
   const onWorkbookChange = useCallbackRef(propOnModelChange, [propOnModelChange]);
-  const onTitleChange = useCallbackRef(propOnTitleChange ?? titleProps?.onTitleChange, [propOnTitleChange ?? titleProps?.onTitleChange]);
-  const titlePlaceHolder = titleProps?.placeHolder ?? 'Untitled';
+  const onWorkbookTitleChange = useCallbackRef(propOnWorkbookTitleChange ?? propsWorkbookTitle?.onTitleChange, [propOnWorkbookTitleChange ?? propsWorkbookTitle?.onTitleChange]);
+  const titlePlaceHolder = propsWorkbookTitle?.placeHolder ?? 'Untitled';
 
   const propThemeMode = propThemeOptions?.mode;
   const { themeMode, source } = useResolvedThemeMode({ mode: propThemeMode });
@@ -217,13 +223,13 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
     });
   }, [undoManager]);
 
-  const [titleWorkbook, setWorkbookTitle] = useState(propTitle ?? titleProps?.title ?? '');
+  const [titleWorkbook, setWorkbookTitle] = useState(propTitle ?? propsWorkbookTitle?.title ?? '');
   useEffect(() => {
-    setWorkbookTitle(propTitle ?? titleProps?.title ?? '');
-  }, [propTitle ?? titleProps?.title]);
+    setWorkbookTitle(propTitle ?? propsWorkbookTitle?.title ?? '');
+  }, [propTitle ?? propsWorkbookTitle?.title]);
 
   useEffect(() => {
-    onTitleChange?.(titleWorkbook);
+    onWorkbookTitleChange?.(titleWorkbook);
    } , [titleWorkbook]);
 
   const [viewportDOM, setViewportDOM] = useState(null);
@@ -255,21 +261,21 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
   }, [commandsApplication]);
 
   useEffect(() => {
-    if (!workbookLoaded || !autoFocus) return;
+    if (!workbookLoaded || !propAutoFocus) return;
     // TODO - If should still restore focus if it was in the component hierarchy even if autoFocus is true
-    workbookLoaded.source?.focus(typeof autoFocus === 'object' ? autoFocus : undefined);
-  }, [workbookLoaded])
+    workbookLoaded.source?.focus(typeof propAutoFocus === 'object' ? propAutoFocus : undefined);
+  }, [workbookLoaded, propAutoFocus])
 
   const refWorkbookTitle = useRef<IWorkbookTitleElement>(null);
   const renderToolbar = useCallback((props: StudioToolbarProps) => {
     let mainElement = null;
-    if (!titleProps?.hidden) {
+    if (!propsWorkbookTitle?.hidden) {
       mainElement = (
         <WorkbookTitle
-          {...titleProps}
+          {...propsWorkbookTitle}
           style={{
             maxWidth: '100%',
-            ...titleProps?.style
+            ...propsWorkbookTitle?.style
           }}
           workbook={refWorkbook.current}
           ref={refWorkbookTitle}
@@ -290,7 +296,7 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
         showAppearanceMenu={!!(themeOptions?.onEnabledDarkGridChange || themeOptions?.onEnabledDarkImagesChange || themeOptions?.onModeChange)}
       />
     );
-  }, [logo, titleWorkbook, titleProps, themeOptions, importExportDisabled, commandsApplication]);
+  }, [logo, titleWorkbook, propsWorkbookTitle, themeOptions, importExportDisabled, commandsApplication]);
 
   useEffect(() => {
     // TODO - should this be moved to app.tsx
@@ -315,9 +321,8 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
     };
   }, []);
 
-  const styles = useMemo(() => {
+  const localSX = useMemo(() => {
     return {
-      ...propSx,
       '& .SnackbarContainer-root': {
         position: 'absolute !important',
       },
@@ -356,22 +361,22 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
       },
       '*': {
         userSelect: 'none'
-      }
+      },
+      ...propSx
     }
   }, [propSx]);
 
   // TODO - roll this into StudioSplitPane and convert to a DockingPaneManager
   const [sideBar, setSideBar] = useState<React.ReactElement>(null);
-  const createTaskPaneArea = useCallback((props: TaskPaneAreaProps, ref: React.Ref<ITaskPaneAreaElement>) => {
+  const renderTaskArea = useCallback((props: TaskPaneAreaProps) => {
     return <StudioTaskPaneArea
-      ref={ref}
       model={workbookResolved?.workbook}
       commands={commandsApplication}
       {...props}
     />;
   }, [commandsApplication, workbookResolved])
 
-  const mainWrapper = useCallback((children: React.ReactElement) => {
+  const localWrapperMain = useCallback((children: React.ReactElement) => {
     return (
       <StudioSplitPane
         mainElement={children}
@@ -383,7 +388,12 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
   const refLocal = mergeRefs([refWorkbook, refForwarded]);
 
   // We show the loading panel
-  const renderedWorkbook = useMemo(() => {
+  const localRenderWorkbook = useCallback((props: WorkbookElementProps) => {
+    const {
+      commands,
+      ref: propRenderRef,
+      ...restRenderProps
+    } = props;
     if (!workbookResolved) {
       return (
         <Paper
@@ -398,7 +408,7 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
             ...propStyle
           }}
         >
-          {propRenderLoading( {...loadingProps} )}
+          {propRenderLoading( { ...propsLoading } )}
         </Paper>
       );
     } else if (workbookResolved.error) {
@@ -438,15 +448,13 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
     }
 
     // return the loading pane or error pane
-    let workbookElement = (
+    const workbookElement = (
       <WorkbookElement
         key="WorkbookElement"
-        sx={styles}
-        style={propStyle}
         tabIndex={0}
-        autoFocus={true}
+        autoFocus={false} // we managed this due to lazy load
         workbook={workbookResolved.workbook}
-        ref={refLocal}
+        ref={mergeRefs([propRenderRef, refLocal])}
         renderToolbar={renderToolbar}
         onElementLoad={onElementLoad}
         // commands={commandsStudio}
@@ -454,22 +462,44 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
         onKeyDown={(e: React.KeyboardEvent<any>) => {
           propOnKeyDown?.(e);
         }}
-        loadingProps={loadingProps}
+        propsLoading={propsLoading}
         renderLoading={propRenderLoading}
         gridTheme={gridTheme}
         headersTheme={appTheme}
         enableDarkImages={enableDarkImages}
-        mainWrapper={mainWrapper}
+        wrapperMain={localWrapperMain}
         className={clsx(propClassName)} //, 'sheetxl-studio')}
         // standalone application turns off context menu
         onContextMenu={e=> e.preventDefault()}
-        {...rest}
+        commands={commands}
+        {...propsRest}
+        {...restRenderProps}
       />
     );
-    return workbookElement;
+    return (
+      <Paper
+        sx={localSX}
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'stretch',
+          justifyContent: 'stretch',
+          // padding: '16px',
+          ...propStyle
+        }}
+        square={propsSquare} // paperProps
+        elevation={propElevation} // paperProps
+        variant={propVariant}  // paperProps
+      >
+        {workbookElement}
+      </Paper>
+    );
   }, [
-    workbookResolved, titleWorkbook, undoManager, propRenderLoading, loadingProps,// commandsStudio,
-    propRenderWorkbookError, themeOptions, rest, renderToolbar, styles, mainWrapper // because we need to pass rest
+    workbookResolved, titleWorkbook, undoManager, propRenderLoading, propsLoading,// commandsStudio,
+    propsRest, propsSquare, propElevation, propVariant,
+    propRenderWorkbookError, themeOptions, renderToolbar, localSX, localWrapperMain // because we need to pass rest
     // propStyle
   ]);
 
@@ -504,7 +534,7 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
       }}
     >
         <TaskPaneProvider
-          createArea={createTaskPaneArea}
+          renderArea={renderTaskArea}
           onUpdateArea={(areaElement) => {
             setSideBar(areaElement as any);
           }}
@@ -515,6 +545,7 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
                 <ReactErrorBoundary>
                   <CommandsWrapper
                     workbook={workbookResolved?.workbook}
+                    renderWorkbook={localRenderWorkbook}
                     setWorkbook={setWorkbook}
                     importExportDisabled={importExportDisabled}
                     titlePlaceHolder={titlePlaceHolder}
@@ -524,9 +555,7 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>((props
                     commands={commandsApplication}
                     undoManager={undoManager}
                     themeOptions={themeOptions}
-                  >
-                    {renderedWorkbook}
-                  </CommandsWrapper>
+                  />
                 </ReactErrorBoundary>
               </UncaughtErrorBoundary>
             </SnackbarWrapper>

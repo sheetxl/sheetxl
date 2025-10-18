@@ -32,7 +32,7 @@ export const WalkingCopyCommandButton: React.FC<WalkingCopyCommandButtonProps> =
       icon={
         <DynamicIcon
           iconKey="copy.walking"
-          sourceProps={{
+          propsSource={{
             isWalking,
             themedType: themedType
           }}

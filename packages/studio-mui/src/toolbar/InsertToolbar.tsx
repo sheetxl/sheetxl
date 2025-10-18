@@ -12,18 +12,18 @@ import { OverflowPalette } from './OverflowPalette';
 import { InsertImageCommandButton } from '../command';
 import { InsertChartCommandButton } from '../chart/command';
 
-export const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
+export const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<CommandToolbarProps, "renderToolbarPalette">>((props, refForwarded) => {
   const {
     commands,
     parentFloat,
-    commandButtonProps: propCommandButtonProps,
+    propsCommandButton: propCommandButtonProps,
     ...rest
   } = props;
 
-  const createToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
+  const renderToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
     const {
-      commandButtonProps,
-      commandPopupProps
+      propsCommandButton,
+      propsCommandPopup
     } = props;
 
     // TODO - all of the icons stroke lines are 'too thin' and need to be revisited by a designer, and ai, or me.
@@ -33,18 +33,18 @@ export const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<Comman
     >
       {/* pivot */}
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('insertTable'))}
       />
       {/* forms */}
       <InsertImageCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       {/* shapes */}
       {/* checkbox / controls */}
       {__DEV__ ? <>
         <InsertChartCommandButton
-          {...commandPopupProps}
+          {...propsCommandPopup}
         />
         <ExhibitDivider/>
       </>: null}
@@ -52,11 +52,11 @@ export const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<Comman
       {/* slicer */}
       {/* timeline? */}
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('updateHyperlink'))}
       />
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('updateComments'))}
       />
       {/* textbox / smartArt / header & footer */}
@@ -74,8 +74,8 @@ export const InsertToolbar = memo(forwardRef<ICommandToolbarElement, Omit<Comman
       ref={refForwarded}
       commands={commands}
       parentFloat={parentFloat}
-      commandButtonProps={propCommandButtonProps}
-      createToolbarPalette={createToolbarPalette}
+      propsCommandButton={propCommandButtonProps}
+      renderToolbarPalette={renderToolbarPalette}
       {...rest}
     />
   );

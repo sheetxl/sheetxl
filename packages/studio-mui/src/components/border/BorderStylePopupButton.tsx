@@ -200,7 +200,7 @@ export const BorderStylePopupButton = memo(
             paddingLeft: '16px',
             background: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`
           }}
-          tooltipProps={{
+          propsTooltip={{
             description: !showLabels ? definition.description : ''
           }}
           icon={null} // setting to null removes the padding
@@ -285,7 +285,7 @@ export const BorderStylePopupButton = memo(
     return IBorder.BuiltInDefinitions.get(selectedStyle);
   }, [selectedStyle]);
 
-  const buttonProps:ExhibitPopupButtonProps = {
+  const localPropsButton:ExhibitPopupButtonProps = {
     disabled: propDisabled,
     icon: iconSelected,
     tooltip: "Border Style: " + definition.description,
@@ -297,8 +297,8 @@ export const BorderStylePopupButton = memo(
     ...rest
   }
   return (variant === PopupButtonType.Toolbar ?
-    <ExhibitPopupIconButton {...buttonProps}/> :
-    <ExhibitPopupMenuItem {...buttonProps}/>
+    <ExhibitPopupIconButton {...localPropsButton}/> :
+    <ExhibitPopupMenuItem {...localPropsButton}/>
   );
 
 }));

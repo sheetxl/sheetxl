@@ -61,7 +61,7 @@ export interface ScriptWorkspaceProps extends React.HTMLAttributes<HTMLElement> 
   /**
    * Props to pass to the editor.
    */
-  editorProps?: ScriptEditorProps;
+  propsScriptEditor?: ScriptEditorProps;
   /**
    * The script module to interact with.
    */
@@ -90,7 +90,7 @@ export const ScriptWorkspace = memo(forwardRef<IScriptWorkspaceElement, ScriptWo
   const {
     className: propClassName,
     sx: propSx,
-    editorProps,
+    propsScriptEditor,
     commands,
     readOnly = false,
     // onClose: propOnClose,
@@ -311,13 +311,13 @@ export const ScriptWorkspace = memo(forwardRef<IScriptWorkspaceElement, ScriptWo
             commands={commands}
             onStatusChange={onStatusChange}
             darkMode={theme.palette.mode === 'dark'}
-            {...editorProps}
+            {...propsScriptEditor}
           />
         </Box>
         {statusBar}
       </Box>
     )
-  }, [theme, commands, toolbar, statusBar, hasFocus, loadingPanel, readOnly, editorProps, autoFocus, autoFocusSel, frame, onStatusChange]);
+  }, [theme, commands, toolbar, statusBar, hasFocus, loadingPanel, readOnly, propsScriptEditor, autoFocus, autoFocusSel, frame, onStatusChange]);
 
   const scriptWorkspace = useMemo(() => {
     let welcome:React.ReactNode;

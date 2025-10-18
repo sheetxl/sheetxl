@@ -69,7 +69,7 @@ export const RunScriptPopupPanel = memo(forwardRef<any, RunScriptPopupPanelProps
         {...commandButtonProps}
         command={propCommands.getCommand('executeScript') as ICommand<boolean>}
         commandState={{ declaration: udf }}
-        tooltipProps={{
+        propsTooltip={{
           description: `Execute ${udf.getName() ?? 'macro'}`
         }}
         icon={<DynamicIcon iconKey="ScriptMacro"/>}

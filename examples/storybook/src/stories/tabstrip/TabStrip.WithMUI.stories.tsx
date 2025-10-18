@@ -9,7 +9,7 @@ import { TabStrip } from '@sheetxl/react';
 import { DynamicIcon } from '@sheetxl/utils-react';
 import { ExhibitIconButton } from '@sheetxl/utils-mui';
 import {
-  createScrollEdgeButton, createScrollStartButton, createScrollEndButton
+  renderScrollButtonEdge, renderScrollButtonStart, renderScrollButtonEnd
 } from '@sheetxl/utils-mui';
 
 import { SheetTab } from '@sheetxl/studio-mui';
@@ -108,13 +108,13 @@ const Template: React.FC = (props) => {
         onTabMove={handleTabMove}
         background="white"
         activeColor={null}
-        createScrollStartButton={createScrollStartButton}
-        createScrollEndButton={createScrollEndButton}
-        createScrollEdgeButton={createScrollEdgeButton}
-        createTabButton={(props) => {
+        renderScrollButtonStart={renderScrollButtonStart}
+        renderScrollButtonEnd={renderScrollButtonEnd}
+        renderScrollButtonEdge={renderScrollButtonEdge}
+        renderTabButton={(props) => {
           return <SheetTab {...props}/>
         }}
-        editLabelProps={{
+        propsEditLabel={{
           styleHover: {
             fontWeight: '700'
           }

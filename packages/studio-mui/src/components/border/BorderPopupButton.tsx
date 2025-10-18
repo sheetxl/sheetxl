@@ -312,7 +312,7 @@ export const BorderPopupButton = memo(
           sx={{
             background: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`
           }}
-          tooltipProps={{
+          propsTooltip={{
             label: tooltip,
             simple: true,
             placement
@@ -381,7 +381,7 @@ export const BorderPopupButton = memo(
           }}
           darkMode={darkMode}
           tooltip={"Border Color"}
-          panelProps={{
+          propsPanel={{
             disableAlpha: true,
             autoColor,
             schemeLookup
@@ -428,8 +428,8 @@ export const BorderPopupButton = memo(
     <ExhibitPopupIconButton
       ref={refForwarded}
       createPopupPanel={createPopupPanel}
-      popupProps={{
-        popperProps: {
+      propsPopup={{
+        propsPopper: {
           resizeOnOverflow: false
         }
       }}
@@ -448,11 +448,11 @@ export const BorderPopupButton = memo(
       onQuickClick={() => {
         onSelectBorder?.(selectedBorder);
       }}
-      quickButtonProps={{
-        sx: {
-          // backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
-        }
-      }}
+      // propsQuickButton={{
+      //   sx: {
+      //     // backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+      //   }
+      // }}
       disabled={propDisabled}
       icon={selectedBorderIcon}
       {...rest}

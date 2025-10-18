@@ -3,28 +3,29 @@ import React, { memo, forwardRef } from 'react';
 import { Command, useCallbackRef } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, CommandToolbar, CommandToolbarButtonProps, CommandToolbarProps, ExhibitDivider
+  CommandButton, CommandToolbar, ExhibitDivider,
+  type CommandToolbarButtonProps, type CommandToolbarProps
 } from '@sheetxl/utils-mui';
 
 import { OverflowPalette } from './OverflowPalette';
 
 import { InsertFunctionSumCommandPopupButton, InsertFunctionCommandPopupButton } from '../command';
 
-export interface FormulaToolbarProps extends Omit<CommandToolbarProps, "createToolbarPalette"> {
+export interface FormulaToolbarProps extends Omit<CommandToolbarProps, "renderToolbarPalette"> {
 }
 
 export const FormulaToolbar = memo(forwardRef<HTMLDivElement, FormulaToolbarProps>((props, refForwarded) => {
   const {
     commands,
     parentFloat,
-    commandButtonProps: propCommandButtonProps,
+    propsCommandButton: propCommandButtonProps,
     ...rest
   } = props;
 
-  const createToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
+  const renderToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
     const {
-      commandButtonProps,
-      commandPopupProps
+      propsCommandButton,
+      propsCommandPopup
     } = props;
 
     // TODO - all of the icons stroke lines are 'too thin' and need to be revisited by a designer, and ai, or me.
@@ -34,83 +35,83 @@ export const FormulaToolbar = memo(forwardRef<HTMLDivElement, FormulaToolbarProp
     >
       {/* insert function dialog/wizard */}
       <InsertFunctionSumCommandPopupButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       {/* recently used FunctionCategory */}
       {/* create a FunctionCategory popup */}
       <InsertFunctionCommandPopupButton
         category={"financial"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"logical"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"text"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"dateTime"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"lookupReference"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"mathTrig"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"statDist"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"engineering"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"cube"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"information"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"database"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"web"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <InsertFunctionCommandPopupButton
         category={"custom"}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       {/* trace precedents */}
       {/* trace dependents */}
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('sheetViewToggleFormulaView') as Command<boolean>)}
         scope={"view"}
       />
       <ExhibitDivider/>
       {/* calculate options*/}
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('calculateAll'))}
       />
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('calculate'))}
       />
       {/* <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('calculateSettings'))} // calculateSettings
       /> */}
       {/* add automation here */}
@@ -128,8 +129,8 @@ export const FormulaToolbar = memo(forwardRef<HTMLDivElement, FormulaToolbarProp
       ref={refForwarded}
       commands={commands}
       parentFloat={parentFloat}
-      commandButtonProps={propCommandButtonProps}
-      createToolbarPalette={createToolbarPalette}
+      propsCommandButton={propCommandButtonProps}
+      renderToolbarPalette={renderToolbarPalette}
       {...rest}
     />
   );

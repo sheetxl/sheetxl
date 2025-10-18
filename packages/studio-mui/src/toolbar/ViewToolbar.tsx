@@ -18,18 +18,18 @@ import {
 import { RunScriptCommandButton } from '../scripting';
 import { OverflowPalette } from './OverflowPalette';
 
-export const ViewToolbar = memo(forwardRef<HTMLDivElement,Omit<CommandToolbarProps, "createToolbarPalette">>((props, refForwarded) => {
+export const ViewToolbar = memo(forwardRef<HTMLDivElement,Omit<CommandToolbarProps, "renderToolbarPalette">>((props, refForwarded) => {
   const {
     commands,
     parentFloat,
-    commandButtonProps: propCommandButtonProps,
+    propsCommandButton: proppropsCommandButton,
     ...rest
   } = props;
 
-  const createToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
+  const renderToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
     const {
-      commandButtonProps,
-      commandPopupProps
+      propsCommandButton,
+      propsCommandPopup
     } = props;
 
     // add zoom
@@ -40,46 +40,46 @@ export const ViewToolbar = memo(forwardRef<HTMLDivElement,Omit<CommandToolbarPro
       parentFloat={parentFloat}
     >
       <FreezeCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandPopup}
         command={(commands.getCommand('protectionSheetToggle') as Command<boolean>)}
       />
       <ExhibitDivider/>
       <ViewGridLinesCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ViewHeadingsCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('sheetViewToggleFormulaView') as Command<boolean>)}
         scope={"view"}
       />
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('sheetViewToggleShowZeros') as Command<boolean>)}
         scope={"view"}
       />
       <ExhibitDivider/>
       <WorkbookViewCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <DocThemeCommandButton
         command={(commands.getCommand('selectTheme') as Command<ITheme, CommandContext.Theme>)}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       <RunScriptCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         scope={"view"}
       />
       <ExhibitDivider/>
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('fullScreenToggle') as Command<boolean>)}
         scope={"view"}
       />
@@ -92,8 +92,8 @@ export const ViewToolbar = memo(forwardRef<HTMLDivElement,Omit<CommandToolbarPro
       ref={refForwarded}
       commands={commands}
       parentFloat={parentFloat}
-      commandButtonProps={propCommandButtonProps}
-      createToolbarPalette={createToolbarPalette}
+      propsCommandButton={proppropsCommandButton}
+      renderToolbarPalette={renderToolbarPalette}
       {...rest}
     />
   );

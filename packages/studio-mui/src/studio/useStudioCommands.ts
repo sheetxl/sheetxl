@@ -4,6 +4,7 @@ import { useMediaQuery } from '@mui/material';
 
 import { CommonUtils, UndoManager } from '@sheetxl/utils';
 import { IWorkbook } from '@sheetxl/sdk';
+import type { ReadWorkbookDetails, ReadWorkbookOptions, ReadFormatType, WriteFormatType } from '@sheetxl/io';
 
 import {
   SimpleCommand, Command, ICommand, ICommandProperties, ICommands, CommandGroup,
@@ -14,9 +15,7 @@ import {
   useModal, type ThemeModeOptions, ThemeMode, useResolvedThemeMode
 } from '@sheetxl/utils-mui';
 
-import {
-  WorkbookIO, type ReadWorkbookDetails, type ReadWorkbookOptions, type ReadFormatType, type WriteFormatType
-} from '../io';
+import { WorkbookIO } from '../io';
 
 export interface useStudioCommandsOptions {
   /**
@@ -313,7 +312,7 @@ export const useStudioCommands = (
             description: `Enter the web address for the workbook to open.`,
             inputLabel: 'Address',
             initialValue: 'https://www.sheetxl.com/examples/features-checklist.xlsx',
-            inputProps: {
+            propsInput: {
               style: {
                 minWidth: '440px'
               }

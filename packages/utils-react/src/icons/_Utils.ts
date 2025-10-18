@@ -184,7 +184,7 @@ export function normalizePackInput(input: IconPackInput | IconPack): IconPack {
 
   const pack: IconPack = { meta, icons };
 
-  // NEW: normalize & attach overrides (if present) onto the pack (private field)
+  // normalize & attach overrides (if present) onto the pack (private field)
   const rawOverrides = (input as any).overrides as
     | Record<string, Record<IconGlyphKey, IconGlyphInput>>
     | undefined;

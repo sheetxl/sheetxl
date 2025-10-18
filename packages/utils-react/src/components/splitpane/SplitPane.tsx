@@ -7,7 +7,7 @@ import { useMeasure } from 'react-use';
 import { useImperativeElement } from '../../hooks/useImperativeElement';
 import { useCallbackRef } from '../../hooks/useCallbackRef';
 
-import { SplitPaneResizerProps, SplitPaneResizer } from './SplitPaneResizer';
+import { type SplitPaneResizerProps, SplitPaneResizer } from './SplitPaneResizer';
 
 export interface SplitPaneAttributes {
   /**
@@ -74,16 +74,21 @@ export interface SplitPaneProps extends React.HTMLAttributes<HTMLDivElement> {
   splitDirection?: 'row' | 'column';
   disabled?: boolean;
 
-  resizerProps?: SplitPaneResizerProps;
-  paneProps?: React.HTMLAttributes<HTMLElement>;
-  paneBeforeProps?: React.HTMLAttributes<HTMLElement>;
-  paneAfterProps?: React.HTMLAttributes<HTMLElement>;
+  propsResizer?: SplitPaneResizerProps;
+  propsPane?: React.HTMLAttributes<HTMLElement>;
+  propsPaneBefore?: React.HTMLAttributes<HTMLElement>;
+  propsPaneAfter?: React.HTMLAttributes<HTMLElement>;
 
   onDragStart?: () => void;
   onDragResize?: (position: number) => void;
   onDragFinish?: (position: number) => void;
 
-  createResizer?: (props: SplitPaneResizerProps & React.Attributes & { ref?: React.Ref<HTMLDivElement> }) => React.ReactElement;
+  renderResizer?: (props: SplitPaneResizerProps) => React.ReactElement;
+
+  /**
+   * A ref that points to the HTMLDivElement.
+   */
+  ref?: React.Ref<ISplitPaneElement>;
 }
 
 const _EmptyProps: React.HTMLAttributes<HTMLElement> = {};
@@ -246,8 +251,8 @@ const calcDimensions = (
  * Because this component measures the elements (both panes and the resizer) it is important
  * that none of these have margins or paddings. If these are required then use a nested element.
  */
-export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneElement> }> =
-   memo(forwardRef<ISplitPaneElement, SplitPaneProps>((props, refForward) => {
+export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
+  (props: SplitPaneProps, refForwarded) => {
     const {
       elementBefore,
       elementAfter,
@@ -272,11 +277,11 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
       onDragResize: propOnDragResize,
       onDragFinish: propOnDragFinish,
 
-      resizerProps = _EmptyProps,
-      paneProps = _EmptyProps,
-      paneBeforeProps = _EmptyProps,
-      paneAfterProps = _EmptyProps,
-      createResizer = SplitPaneResizer,
+      propsResizer = _EmptyProps,
+      propsPane = _EmptyProps,
+      propsPaneBefore = _EmptyProps,
+      propsPaneAfter = _EmptyProps,
+      renderResizer = SplitPaneResizer,
     } = props;
     if (children) {
       throw new Error('Use elementBefore and elementAfter instead of children.');
@@ -339,7 +344,7 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
       style: paneStyle,
       className: paneClassName,
       ...restPropsPane
-    } = paneProps;
+    } = propsPane;
 
     const defaultPaneStyle: React.CSSProperties & { widthResizer: string } = {
       minWidth: 0,
@@ -358,13 +363,13 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
       className: paneClassNameBefore,
       style: paneStyleBefore,
       ...paneRestBefore
-    } = paneBeforeProps;
+    } = propsPaneBefore;
 
     const {
       className: paneClassNameAfter,
       style: paneStyleAfter,
       ...paneRestAfter
-    } = paneAfterProps;
+    } = propsPaneAfter;
 
     const style:React.CSSProperties = {
       flex: '1 1 100%',
@@ -379,7 +384,7 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
       style: resizerStyle,
       onPointerDown: onResizerPointerDown,
       ...restResizer
-    } = resizerProps;
+    } = propsResizer;
 
     const handleSetPosition = useCallbackRef((position: string | number): void => {
       const calcSize = parseCalcSize(position, propFixedPane === null)
@@ -448,7 +453,7 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
       document.addEventListener(`pointerup`, handlePointerUp, { passive: false });
     }, [onResizerPointerDown]);
 
-    const refLocal = useImperativeElement<ISplitPaneElement, SplitPaneAttributes>(refForward, () => {
+    const refLocal = useImperativeElement<ISplitPaneElement, SplitPaneAttributes>(refForwarded, () => {
       return {
         setPosition: handleSetPosition,
         isSplitPane: () => true
@@ -457,7 +462,7 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
 
     const resizer = useMemo(() => {
       if (!isDoubleElement) return null;
-      return createResizer?.({
+      return renderResizer?.({
         key: "resizer",
         ref: mergeRefs([refMeasureResizer, refResizer]),
         className: clsx('resizer', resizerClassName),
@@ -500,7 +505,7 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
           {elementBefore}
         </div>
       );
-    }, [elementBefore, paneProps, paneBeforeProps, limits, dimensions]);
+    }, [elementBefore, propsPane, propsPaneBefore, limits, dimensions]);
 
     const paneAfter = useMemo(() => {
       if (!elementAfter) return null;
@@ -524,7 +529,7 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
           {elementAfter}
         </div>
       );
-    }, [elementAfter, paneProps, paneAfterProps, limits, dimensions]);
+    }, [elementAfter, propsPane, propsPaneAfter, limits, dimensions]);
 
     return (
       <div
@@ -547,4 +552,5 @@ export const SplitPane: React.FC<SplitPaneProps & { ref?: React.Ref<ISplitPaneEl
     );
   }
 ));
+
 SplitPane.displayName = 'SplitPane';

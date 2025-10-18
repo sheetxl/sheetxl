@@ -7,9 +7,9 @@ import clsx from 'clsx';
 import { alpha } from '@mui/system';
 import { useTheme, Theme } from '@mui/material/styles';
 
-import { Box, BoxProps } from '@mui/material';
+import { Box, type BoxProps } from '@mui/material';
 import { IconButton } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import { type TooltipProps } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
 import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
@@ -18,7 +18,8 @@ import { SimpleTooltip } from '../components';
 import { ExhibitIconButton } from './ExhibitIconButton';
 
 import {
-  ExhibitPopupButtonProps, ExhibitQuickButtonProps, createDownArrow, useFloatStack
+  createDownArrow, useFloatStack,
+  type ExhibitPopupButtonProps, type ExhibitQuickButtonProps
 } from '../float';
 
 export interface OutlineBorder {
@@ -31,7 +32,7 @@ export interface ExhibitPopupIconButtonProps extends ExhibitPopupButtonProps {
   dense?: boolean;
   outlined?: boolean | OutlineBorder;
   disableHover?: boolean;
-  buttonProps?: BoxProps
+  propsButton?: BoxProps
 }
 
 // TODO - This should use the mui-state styled but I am not at all sure how to do this
@@ -45,16 +46,16 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     onQuickClick,
     parentFloat,
     createPopupPanel,
-    popupProps,
+    propsPopup,
     onPopupOpen: propOnPopupOpen,
     onPopupClose: propOnPopupClose,
-    quickButtonProps : propQuickButtonProps,
-    createQuickButton,// : propCreateQuickButton,
+    propsQuickButton,
+    renderQuickButton,// : propCreateQuickButton,
     tooltip = '',
     createTooltip,
     icon: propIcon,
     disabled: propDisabled,
-    buttonProps: propsButton = CommonUtils.EmptyObject,
+    propsButton = CommonUtils.EmptyObject,
     disableHover,
     touchRippleRef,
     primary,
@@ -66,7 +67,7 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
   // TODO - // if this is not specified perhaps we should just disable
   // if (!createPopupPanel)
   //   throw new Error('createPopupPanel is required');
-  // const createQuickButton = useCallback(propCreateQuickButton, [propCreateQuickButton]);
+  // const renderQuickButton = useCallback(propCreateQuickButton, [propCreateQuickButton]);
 
   const appTheme:Theme = useTheme();
 
@@ -113,7 +114,7 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     label: propLabel as string,
     createPopupPanel: createPopupPanel,
     parentFloat: parentFloat,
-    popperProps: popupProps?.popperProps,
+    propsPopper: propsPopup?.propsPopper,
     onClose: () => { setOpen(false); propOnPopupClose?.(); },
     onOpen: () => { setOpen(true); propOnPopupOpen?.(); }
   });
@@ -250,8 +251,8 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     )
   }, []);
 
-  const isSplit = onQuickClick || createQuickButton;
-  const isSplitTooltip = isSplit && (propQuickButtonProps?.tooltip || propQuickButtonProps?.createTooltip);
+  const isSplit = onQuickClick || renderQuickButton;
+  const isSplitTooltip = isSplit && (propsQuickButton?.tooltip || propsQuickButton?.createTooltip);
   const defaultCreateQuickButton = (props: ExhibitQuickButtonProps) => {
     const { tooltip : quickTooltip, createTooltip: quickCreateTooltip, sx: sxProp, ...rest } = props;
     let quickButton = <IconButton
@@ -290,7 +291,7 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
 
   if (isSplit) {
     let arrowStyling = isOpen ? styling.openQuickButtonStyling : styling.quickButtonStyling;
-    const quickButtonProps:ExhibitQuickButtonProps = {
+    const localPropsQuickButton:ExhibitQuickButtonProps = {
       tabIndex: -1,
       disabled: propDisabled,
       size: "small",
@@ -301,7 +302,7 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
       onMouseDown: (e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault(); handleQuickClick(e) },
       touchRippleRef: touchRippleRef as any,
       children: icon,
-      ...propQuickButtonProps,
+      ...propsQuickButton,
       className: clsx({
         ['Mui-focusVisible']: (isFocused || isOpen),
         ['Mui-selected']: propSelected,
@@ -311,15 +312,15 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
         'bordered': true,
         'left': true,
         'hard-right': true
-      }, propQuickButtonProps?.className),
+      }, propsQuickButton?.className),
       sx: {
         ...styling.quickButtonStyling,
         height: '100%',
-        ...propQuickButtonProps?.sx,
+        ...propsQuickButton?.sx,
       },
 
     };
-    const quickButton = (createQuickButton || defaultCreateQuickButton)(quickButtonProps);
+    const quickButton = (renderQuickButton || defaultCreateQuickButton)(localPropsQuickButton);
 
     let downArrow = createDownArrow(true, dense, isOpen);
     if (isSplitTooltip)

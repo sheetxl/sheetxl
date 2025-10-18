@@ -5,12 +5,13 @@ import { IColor, IScript } from '@sheetxl/sdk';
 import { useCommands, Command } from '@sheetxl/utils-react';
 
 import {
-  CommandContext, type CommandButtonProps, IScriptEditor, DefaultTaskPaneRegistry, useTaskPaneArea
+  CommandContext, DefaultTaskPaneRegistry, useTaskPaneArea,
+  type CommandButtonProps, type IScriptEditor
 } from '@sheetxl/react';
 
 import {
-  CommandButton, ExhibitDivider,
-  CommandToolbar, type CommandToolbarButtonProps, type CommandToolbarProps, type ICommandToolbarElement
+  CommandButton, ExhibitDivider, CommandToolbar,
+  type CommandToolbarButtonProps, type CommandToolbarProps, type ICommandToolbarElement
 } from '@sheetxl/utils-mui';
 
 import { AutoColorPosition } from '../components';
@@ -25,16 +26,16 @@ import {
   SortFilterCommandButton, UndoRedoCommandButton, InsertFunctionSumCommandPopupButton
  } from '../command';
 
- import { OverflowPalette } from './OverflowPalette';
-
 import { RunScriptCommandButton } from '../scripting';
+
+import { OverflowPalette } from './OverflowPalette';
 
 // import { CommandButton }  from '@sheetxl/utils-mui';
 
 // import { NestingPopupButton } from '@sheetxl/utils-mui';
 // import { PopupButtonType } from '@sheetxl/utils-mui';
 
-export interface HomeToolbarProps extends Omit<CommandToolbarProps, "createToolbarPalette"> {
+export interface HomeToolbarProps extends Omit<CommandToolbarProps, "renderToolbarPalette"> {
 }
 
 const defaultCreateCommandButton = (props: CommandButtonProps): React.ReactElement => {
@@ -46,11 +47,12 @@ const defaultCreateCommandButton = (props: CommandButtonProps): React.ReactEleme
  * but... Perhaps we should just be like Excel (for example we have all text coloring grouped but excel has fill and border in the text section)
  * ...but we are not exactly following this rule as alignment, rotation, and formatting style is after fill, border, merge
  */
-export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>((props, refForwarded) => {
+export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarProps>(
+  (props: HomeToolbarProps, refForwarded: React.Ref<ICommandToolbarElement>) => {
   const {
     commands,
     parentFloat,
-    commandButtonProps: propCommandButtonProps,
+    propsCommandButton: propCommandButtonProps,
     ...rest
   } = props;
 
@@ -98,10 +100,10 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
   // const service = useCommandUIService();
   // const surface = service.createSurface(variant);
 
-  const createToolbarPalette = useCallback((props: CommandToolbarButtonProps) => {
+  const renderToolbarPalette = useCallback((props: CommandToolbarButtonProps) => {
     const {
-      commandButtonProps,
-      commandPopupProps
+      propsCommandButton,
+      propsCommandPopup
     } = props;
 
     const entries = DefaultTaskPaneRegistry.findContributions('ribbon/home');
@@ -117,7 +119,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
         if (!command) continue;
         const propsCommandButton = {
           command,
-          ...commandPopupProps
+          ...propsCommandPopup
         };
         const createCommandButton = entry.createCommandButton ?? defaultCreateCommandButton;
         const button = createCommandButton(propsCommandButton);
@@ -126,10 +128,10 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
     }
     const formatFontColor = (
       <ColorCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         command={(commands.getCommand('formatFontColor') as Command<IColor, CommandContext.Color>)}
         isSplit={true}
-        panelProps={{
+        propsPanel={{
           disableAlpha: true, // Excel doesn't allow alpha
           // autoColorLabel: "Automatic", // default
           // autoColorPosition : AutoColorPosition.Start, // default
@@ -139,10 +141,10 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
 
     const formatFillColor = (
       <ColorCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         command={(commands.getCommand('formatFillColor') as Command<IColor, CommandContext.Color>)}
         isSplit={true}
-        panelProps={{
+        propsPanel={{
           disableAlpha: true,
           autoColorLabel: "No Fill",
           autoColorPosition : AutoColorPosition.End,
@@ -153,7 +155,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
     const commandUndo = commands.getCommand('undo');
     const undoButton = commandUndo ? (<>
       <UndoRedoCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         quickCommand="undo"
         // command={commandUndo as Command<any, any>}
       />
@@ -162,7 +164,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
     const commandRedo = false;//commands.getCommand('redo');
     const redoButton = commandRedo ? (<>
       <UndoRedoCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         quickCommand={'redo'}
         isRedo={true}
       />
@@ -171,10 +173,10 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
     const commandFind = commands.getCommand('find');
     const findButton = commandFind ? (<>
       <FindCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       {/* <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={commandFind}
         icon={<SearchIcon/>}
       /> */}
@@ -185,7 +187,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
       runScriptButton = (<>
         <ExhibitDivider/>
         <RunScriptCommandButton
-          {...commandPopupProps}
+          {...propsCommandPopup}
         />
       </>);
     }
@@ -198,107 +200,107 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
       {redoButton}
       {undoButton || redoButton ? <ExhibitDivider/> : null}
       {/* <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={commands.getCommand('cut')}
         icon={<ContentCutIcon/>}
       /> */}
       <PasteCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         command={commands.getCommand('paste') as Command<void>}
       />
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('formatPainterToggle') as Command<boolean>)}
       />
       <WalkingCopyCommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={commands.getCommand('copy')}
       />
       <ExhibitDivider/>
       <FontFamilyCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         command={(commands.getCommand('formatFontFamily') as Command<string>)}
       />
       <FontSizeCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
         command={(commands.getCommand('formatFontSize') as Command<number>)}
       />
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('formatBoldToggle') as Command<boolean>)}
       />
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={(commands.getCommand('formatItalicToggle') as Command<boolean>)}
       />
       <UnderlineCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <TextEffectsCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <BorderCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       {formatFillColor}
       {formatFontColor}
       <ExhibitDivider/>
       <HorizontalAlignCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <VerticalAlignCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <TextRotateCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <TextOverflowCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <MergeCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       <NumberFormatCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       {/* <ConditionalCellStylesCommandButton
         command={(commands.getCommand('conditionalCellStyle'))}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       /> */}
       {/* cell style is swapped with table style in excel online */}
       <PresetCellStylesCommandButton
         command={(commands.getCommand('formatCellStyle'))}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       {/* table style is swapped with cell style in excel online */}
       <PresetTableStylesCommandButton
         command={(commands.getCommand('formatTableStyle'))}
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       <CellsInsertCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <CellsDeleteCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <CellsFormatCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ExhibitDivider/>
       <InsertFunctionSumCommandPopupButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <FillCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <ClearCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
       <SortFilterCommandButton
-        {...commandPopupProps}
+        {...propsCommandPopup}
       />
 
       {findButton}
@@ -307,7 +309,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
 
       {/* <ExhibitDivider/>
       <CommandButton
-        {...commandButtonProps}
+        {...propsCommandButton}
         command={commands.getCommand('selectAll')}
         icon={<SelectAllIcon/>}
       /> */}
@@ -364,8 +366,8 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
       ref={refForwarded}
       commands={commands}
       parentFloat={parentFloat}
-      commandButtonProps={propCommandButtonProps}
-      createToolbarPalette={createToolbarPalette}
+      propsCommandButton={propCommandButtonProps}
+      renderToolbarPalette={renderToolbarPalette}
       {...rest}
     />
   );

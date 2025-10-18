@@ -59,12 +59,13 @@ interface StaticCellRendererProps extends BoxProps {
   styles: IStyleCollection;
   createTemporaryCell(update: ICell.Update): ICell;
   bodyStyle: GridSurfaceStyle;
-  borderProps?: StaticBorderRendererProps
+  propsBorder?: StaticBorderRendererProps
   disabled?: boolean;
 }
 
 // TODO - make this a more generalized component. A StaticCellRender and have use this as an HOC
-const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>((props, forwardRef) => {
+const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>(
+  (props: StaticCellRendererProps, refForwarded) => {
   const {
     value,
     cellStyle: propCellStyle,
@@ -72,7 +73,7 @@ const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>
     createTemporaryCell,
     bodyStyle,
     sx: propSx,
-    borderProps,
+    propsBorder,
     disabled: propDisabled,
     ...rest
   } = props;
@@ -100,7 +101,7 @@ const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>
 
   return (
     <Box
-      ref={forwardRef}
+      ref={refForwarded}
       // className={clsx({
       //     ['Mui-disabled']: propDisabled,
       //   }, "static-cell-renderer")
@@ -151,9 +152,9 @@ const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>
         style={{
           height: '100%',
           width: '100%',
-          ...borderProps?.style
+          ...propsBorder?.style
         }}
-        {...borderProps}
+        {...propsBorder}
       >
         {/* <SheetCellRenderer
           style={{
@@ -316,7 +317,7 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
         },
       }}
       key={namedStyle.getName()}
-      tooltipProps={{
+      propsTooltip={{
         label: namedStyle.getName(),
         placement: 'bottom-start', //'right-end'
       }}
@@ -642,7 +643,7 @@ export const PresetCellStylesCommandButton = memo(
           overflow: 'hidden',
           outline:(theme: Theme) => `1px solid ${theme.palette.action.hover}`
         }}
-        borderProps={{
+        propsBorder={{
           style: {
             height: 'calc(100% - 2px)',
             width: 'calc(100% - 1px)',

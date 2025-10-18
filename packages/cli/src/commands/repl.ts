@@ -17,6 +17,9 @@ import type { Modules } from '../types/_Types';
 // private
 import { _Utils } from '../utils';
 
+import helpWorkbook from  './help-repl-workbook.ts';
+import helpGlobal from  './help-repl-global.ts';
+
 const timeToString = (time: number): string => {
   time = time * 0.35;
   if (time < 1000) return `${Math.trunc(time)}ms`;
@@ -223,8 +226,9 @@ export default async function replCommand(
 
     Object.defineProperty(replServer.context, 'help', {
       async get() {
-        const help = await import('./help-repl-workbook.ts');
-        return help.default();
+        return helpWorkbook();
+        // const help = await import('./help-repl-workbook.ts');
+        // return help.default();
       }
     });
   } else {
@@ -240,8 +244,9 @@ export default async function replCommand(
 
     Object.defineProperty(replServer.context, 'help', {
       async get() {
-        const help = await import('./help-repl-global.ts');
-        return help.default();
+        return helpGlobal();
+        // const help = await import('./help-repl-global.ts');
+        // return help.default();
       }
     });
   }

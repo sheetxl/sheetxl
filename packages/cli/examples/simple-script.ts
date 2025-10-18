@@ -1,35 +1,37 @@
 import { type IWorkbook } from '@sheetxl/sdk';
 
-// type ModuleSDK = typeof import('@sheetxl/sdk');
-// type ModuleIO = typeof import('@sheetxl/io');
-// type Notifier = typeof import('@sheetxl/sdk').Notifier;
+type ModuleSDK = typeof import('@sheetxl/sdk');
+type ModuleIO = typeof import('@sheetxl/io');
+type Notifier = typeof import('@sheetxl/sdk').Notifier;
 
-// type ArgV = { raw: string[]; kv: Record<string, string|boolean>; _: string[] };
+type ArgV = { raw: string[]; kv: Record<string, string|boolean>; _: string[] };
 
-// type Context = {
-//   /**
-//    * SDK module
-//    */
-//   sdk: ModuleSDK;
-//   /**
-//    * IO module
-//    */
-//   io: ModuleIO;
-//   /**
-//    * Notifier for logging and errors
-//    */
-//   notifier: Notifier;
-//   /**
-//    * All tail args after the script
-//    */
-//   args: ArgV;
-//   /**
-//    * If a workbook context was provided, it will be here.
-//    */
-//   workbook: IWorkbook | null;
-// }
+type Context = {
+  /**
+   * SDK module
+   */
+  sdk: ModuleSDK;
+  /**
+   * IO module
+   */
+  io: ModuleIO;
+  /**
+   * Notifier for logging and errors
+   */
+  notifier: Notifier;
+  /**
+   * All tail args after the script
+   */
+  args: ArgV;
+  /**
+   * If a workbook context was provided, it will be here.
+   */
+  workbook: IWorkbook | null;
+}
 
-import type { Context } from '@sheetxl/cli';
+// TODO - this is not yet published
+// import type { Context } from '@sheetxl/cli';
+
 /**
  * Example script for testing the `sheetxl run` command
  */
@@ -58,13 +60,16 @@ export default async function main(ctx: Context): Promise<void> {
 
   notifier.log('✓ Set some values...');
 
-  // calculation is async so we need to await
+  // calculation is async so we need to await.
+  // In short running scripts the first time will be slower as the calculation
+  // engine initializes async lazily.
   await workbook.getCalculation().calculate();
 
   notifier.log(`  A1: ${sheet.getRange('A1').getValue()}`);
   notifier.log(`  A2: ${sheet.getRange('A2').getValue()}`);
   notifier.log(`  A3: ${sheet.getRange('A3').getValue()}`);
 
+  notifier.log('✓ Update some values...');
   sheet.getRange('A3').setValue('=A2*3');
   // calculation is async so we need to await
   await workbook.getCalculation().calculate();

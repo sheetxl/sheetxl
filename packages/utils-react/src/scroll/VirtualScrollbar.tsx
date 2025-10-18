@@ -5,9 +5,9 @@ import React, {
 import { ReactUtils } from '../utils';
 
 import { useCallbackRef } from '../hooks/useCallbackRef';
-import type { ScrollbarProps } from './IScrollbar';
+import type { IScrollbarElement, ScrollbarProps } from './IScrollbar';
 
-import { defaultCreateScrollbar } from './Utils';
+import { defaultRenderScrollbar } from './Utils';
 
 export interface VirtualScrollbarProps extends Omit<ScrollbarProps, "onScroll"> {
   /**
@@ -49,7 +49,7 @@ export interface VirtualScrollbarProps extends Omit<ScrollbarProps, "onScroll"> 
    */
   precisionFactor?: number;
 
-  createScrollbar?: (props: ScrollbarProps, ref?: React.Ref<HTMLElement>) => React.ReactNode,
+  renderScrollbar?: (props: ScrollbarProps) => React.ReactNode,
 }
 
 const DEFAULT_GAP = 300;
@@ -86,7 +86,8 @@ interface VirtualBounds {
  */
 
 // TODO - if we have dragged to the end then the start timer that will 'increment by a certain amount'
-export const VirtualScrollbar = memo(forwardRef<HTMLDivElement, VirtualScrollbarProps>((props: VirtualScrollbarProps, refForwarded) => {
+export const VirtualScrollbar = memo(forwardRef<IScrollbarElement, VirtualScrollbarProps>(
+  (props: VirtualScrollbarProps, refForwarded) => {
   const {
     offset: propOffset = 0,
     viewportSize: propViewportSize = 0,
@@ -102,7 +103,7 @@ export const VirtualScrollbar = memo(forwardRef<HTMLDivElement, VirtualScrollbar
     scaleLimit = DEFAULT_SCALE_LIMIT,
     scaleFactor = DEFAULT_SCALE_FACTOR,
     precisionFactor = DEFAULT_PRECISION_ADJUST,
-    createScrollbar = defaultCreateScrollbar,
+    renderScrollbar = defaultRenderScrollbar,
     ...rest
   } = props;
   if (propOnScroll) {
@@ -171,15 +172,16 @@ export const VirtualScrollbar = memo(forwardRef<HTMLDivElement, VirtualScrollbar
     });
   }, [handleMouseMove, handleMouseUp]);
 
-  return defaultCreateScrollbar({
+  return renderScrollbar({
     style: propStyle,
     ...rest,
     offset: bounds.offset,
     totalSize: bounds.totalSize,
     viewportSize: bounds.viewportSize,
     onMouseDown: handleMouseDown,
-    onScrollOffset: handleOnScrollOffset
-  }, refForwarded);
+    onScrollOffset: handleOnScrollOffset,
+    ref: refForwarded
+  });
 }));
 
 VirtualScrollbar.displayName = 'VirtualScrollbar';

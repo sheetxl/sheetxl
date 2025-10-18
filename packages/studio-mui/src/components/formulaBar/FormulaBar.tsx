@@ -50,7 +50,7 @@ export const FormulaBar = memo(
     sheetElement,
     gridStyle,
     showNamedCollectionEditor: propShowItemsEditor=true,
-    NamedCollectionEditorProps: propsItemsEditor,
+    propsNamedCollectionEditor,
     renderNamedCollectionEditor: propRenderNamedCollectionEditor = defaultRenderNamedCollectionEditor,
 
     disabled: propDisabled,
@@ -201,9 +201,9 @@ export const FormulaBar = memo(
       // workbook is only used to get the 'selectedRange' for new items.
       workbook,
       // disabled,  // we don't disabled the range editor, instead we disabled various commands
-      ...propsItemsEditor
+      ...propsNamedCollectionEditor
     }, refRangeEditor);
-  }, [propRenderNamedCollectionEditor, propsItemsEditor, propShowItemsEditor, sheet, workbook, disabled]);
+  }, [propRenderNamedCollectionEditor, propsNamedCollectionEditor, propShowItemsEditor, sheet, workbook, disabled]);
 
   const formulaButtonPanel = useMemo(() => {
     return (
@@ -238,7 +238,7 @@ export const FormulaBar = memo(
           color="warning"
           aria-label="cancel-formula-edit"
           icon={<DynamicIcon iconKey="CloseError" />}
-          tooltipProps={{
+          propsTooltip={{
             label: 'Cancel',
             simple: true
           }}
@@ -263,7 +263,7 @@ export const FormulaBar = memo(
           color="primary"
           aria-label="commit-formula-edit"
           icon={<DynamicIcon iconKey="CheckSuccess" />}
-          tooltipProps={{
+          propsTooltip={{
             label: 'Enter',
             simple: true
           }}
@@ -288,7 +288,7 @@ export const FormulaBar = memo(
           disabled={true} // TODO - implement
           aria-label="commit-formula-function"
           icon={<DynamicIcon iconKey="Function" style={{transform: 'scale(0.85)' }}/>}
-          tooltipProps={{
+          propsTooltip={{
             label: 'Insert Function',
             simple: true
           }}
@@ -417,7 +417,7 @@ export const FormulaBar = memo(
             outlined={false}
             aria-label="toggle-expand-formula-edit"
             icon={<DynamicIcon iconKey={linesVisible > 1 ? "ExpandLess" : "ExpandMore"} />}
-            tooltipProps={{
+            propsTooltip={{
               label: `${linesVisible > 1 ? 'Collapse' : 'Expand'} Formula Bar`,
               simple: true
             }}
@@ -463,17 +463,17 @@ export const FormulaBar = memo(
         fixedPane="before"
         minBefore="165px" // fit the default size
         minAfter="200px"
-        paneBeforeProps={{
+        propsPaneBefore={{
           style: {
             alignItems: 'flex-start'
           }
         }}
-        paneAfterProps={{
+        propsPaneAfter={{
           style: {
             overflow: 'visible', // to allow the resizer under the formula editor to overflow
           }
         }}
-        resizerProps={{
+        propsResizer={{
           style: {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='6' height='13' viewBox='0 0 6 13' version='1.1' fill='${(appTheme.palette.text as any).icon ?? appTheme.palette.action.active}' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'%3E%3Cpath d='m 4.5961932,11.36243 c 0,0.88365 -0.71627,1.59991 -1.59991,1.59991 -0.88365,0 -1.60005,-0.71626 -1.60005,-1.59991 0,-0.88365 0.7164,-1.6000508 1.60005,-1.6000508 0.88364,0 1.59991,0.7164008 1.59991,1.6000508 m 0,-4.881294 c 0,0.88364 -0.71627,1.60004 -1.59991,1.60004 -0.88365,0 -1.60005,-0.7164 -1.60005,-1.60004 0,-0.88365 0.7164,-1.60005 1.60005,-1.60005 0.88364,0 1.59991,0.7164 1.59991,1.60005 m 0,-4.881226 c 0,0.88365 -0.71627,1.60005 -1.59991,1.60005 -0.88365,0 -1.60005,-0.7164 -1.60005,-1.60005 0,-0.88365 0.7164,-1.59991 1.60005,-1.59991 0.88364,0 1.59991,0.71626 1.59991,1.59991' /%3E%3C/svg%3E%0A")`,
             backgroundRepeat: 'no-repeat',

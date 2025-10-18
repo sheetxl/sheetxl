@@ -2,7 +2,7 @@ import React, { useRef, useMemo, memo, forwardRef, useCallback } from 'react';
 
 import {
   useCommand, ICommand, CommandButtonType, ICommandHook, KeyCodes,
-  CommandButtonRefAttribute, CommandButtonProps, DynamicIcon
+  CommandButtonRefAttribute, type CommandButtonProps, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import { ExhibitIconButton, ExhibitMenuItem, SelectedIcon } from '../button';
@@ -24,7 +24,7 @@ export const CommandButton = memo(
     variant = CommandButtonType.Toolbar,
     shortcut,
     commandState,
-    tooltipProps,
+    propsTooltip,
     ...rest
   } = props;
 
@@ -139,7 +139,7 @@ export const CommandButton = memo(
       command={command}
       placement={variant === CommandButtonType.Toolbar? "bottom-start" : "right-start"}
       shortcut={shortcut}
-      {...tooltipProps}
+      {...propsTooltip}
     >
       {retValue}
     </CommandTooltip>

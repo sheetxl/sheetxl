@@ -1,7 +1,7 @@
 import type { IWorkbook } from '@sheetxl/sdk';
 
 // Re-export all types from @sheetxl/io
-export type * from '@sheetxl/io';
+// export type * from '@sheetxl/io';
 
 // Import specific types we need locally
 import type {
@@ -16,6 +16,7 @@ import { IReactNotifier } from '@sheetxl/utils-react';
  * notification to the read method.
  *
  * @see '@sheetxl/io/IWorkbookIO'
+ * @internal
  */
 export class _WorkbookIO implements IWorkbookIO {
 

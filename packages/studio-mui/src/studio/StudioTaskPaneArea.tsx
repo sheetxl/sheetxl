@@ -26,7 +26,8 @@ export interface StudioTaskPaneAreaProps extends TaskPaneAreaProps {
   model: IWorkbook;
 }
 
-const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>((props, refForward) => {
+const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
+  (props: TaskPaneStripProps, refForwarded) => {
   const {
     children,
     title,
@@ -135,7 +136,7 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
     });
   }, [taskPanes, propSelected, onSelect, registry]);
 
-  const refLocal = useImperativeElement<ITaskPaneStrip, TaskPaneStripAttributes>(refForward, () => {
+  const refLocal = useImperativeElement<ITaskPaneStrip, TaskPaneStripAttributes>(refForwarded, () => {
     return {
       isTaskPaneStrip: () => true
     }
@@ -293,7 +294,7 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
     <TaskPaneArea
       model={workbook}
       ref={refForwarded}
-      frameProps={{
+      propsFrame={{
         style: {
           border,
           borderRadius,

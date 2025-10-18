@@ -70,7 +70,7 @@ const Template: React.FC = (props) => {
 
   const {
     // commands: commandsSelection,
-    overlay: overlaySelection,
+    renderOverlay: renderSelection,
     ...selectionProps // used for callbacks
   } = useSelection({
     gridRef,
@@ -111,7 +111,7 @@ const Template: React.FC = (props) => {
         <Grid
           {...rest}
           ref={gridRef}
-          cellRenderer={sharedCellRenderer}
+          renderCell={sharedCellRenderer}
           // onKeyDown={(e: React.KeyboardEvent<any>) => {
           //   commandsSelection.onKeyDown(e);
           // }}
@@ -119,7 +119,7 @@ const Template: React.FC = (props) => {
             selectionProps.onPointerDown(e);
           }}
           onPointerMove={handlePointerMove}
-          overlays={[overlaySelection]}
+          renderOverlays={[renderSelection]}
         />
       </div>
     </Tooltip>

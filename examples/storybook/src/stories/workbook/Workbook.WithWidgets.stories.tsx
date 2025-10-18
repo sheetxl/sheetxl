@@ -110,7 +110,7 @@ const Template: React.FC = () => {
           workbook={workbook}
           onWorkbookChange={(model: IWorkbook) => setWorkbook(model)}
           ref={refIWorkbookElement}
-          titleProps={{
+          propsWorkbookTitle={{
             placeHolder: 'Untitled Widget Workbook'
           }}
           sx={{

@@ -30,7 +30,7 @@ export interface FormulaBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Allow for customizations on NamedCollectionEditor
    */
-  NamedCollectionEditorProps?: NamedCollectionEditorProps;
+  propsNamedCollectionEditor?: NamedCollectionEditorProps;
   /**
    * Override the default NamedCollectionEditor
    */

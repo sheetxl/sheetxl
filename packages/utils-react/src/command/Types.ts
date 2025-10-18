@@ -66,7 +66,7 @@ export interface CommandButtonOptions<STATE=any, CONTEXT=any> extends Omit<React
    * Tooltip properties. If this is specified then the tooltips are used.
    * Do not provide a child as this component will be the child.
    */
-  tooltipProps?: any;//Omit<ExhibitTooltipProps, 'children'>;
+  propsTooltip?: any;//Omit<ExhibitTooltipProps, 'children'>;
   /**
    * How the button will be styles.
    * @defaultValue CommandButtonType.Toolbar

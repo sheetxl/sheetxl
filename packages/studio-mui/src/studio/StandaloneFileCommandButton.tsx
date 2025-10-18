@@ -2,6 +2,8 @@ import React, { memo, forwardRef, useState, useEffect } from 'react';
 
 import { Theme } from '@mui/material/styles';
 
+import type { WriteFormatType } from '@sheetxl/io';
+
 import { CommandButtonType, useCallbackRef } from '@sheetxl/utils-react';
 
 import {
@@ -9,7 +11,7 @@ import {
   ExhibitDivider, ExhibitPopupPanelProps, LabelIcon
 } from '@sheetxl/utils-mui';
 
-import { WorkbookIO, WriteFormatType } from '../io';
+import { WorkbookIO } from '../io';
 
 export interface StandaloneFileCommandButtonProps extends CommandPopupButtonProps { }
 

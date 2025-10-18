@@ -73,7 +73,7 @@ export const ThemeSelectButton: React.FC<ThemeSelectButtonProps> = (props) => {
           darkMode={darkMode}
           key={ i + '-colorDef'}
           selectedColor={null}
-          // swatchProps={swatchProps}
+          // propsSwatch={localPropsSwatch}
         />
       ));
     }
@@ -115,7 +115,7 @@ export const ThemeSelectButton: React.FC<ThemeSelectButtonProps> = (props) => {
           }
         }
       }}
-      // tooltipProps={{
+      // propsTooltip={{
       //   // description: namedStyle.name as string
       // }}
       icon={null}
