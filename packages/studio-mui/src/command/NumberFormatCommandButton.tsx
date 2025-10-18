@@ -42,7 +42,7 @@ const NumberFormatMenuItem = memo((props: any) => { // TODO - type
       }}
       disabled={disabled}
       selected={selected}
-      // tooltipProps={{ // causes flicker at the moment
+      // propsTooltip={{ // causes flicker at the moment
       //   description: (<><div>Set format to:</div><div style={{}}>{format.formatCode}</div></>),
       //   maxWidth: 1000
       // }}

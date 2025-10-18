@@ -21,7 +21,8 @@ import styles from './Scrollbar.module.css';
 
 const DEFAULT_MIN_THUMB_PX = 24; // touch target
 
-export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((props, refForwarded) => {
+export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
+  (props: ScrollbarProps, refForwarded) => {
   const {
     offset: propOffset = 0,
     totalSize: propTotalSize = 0,         // total rows or total columns
@@ -37,10 +38,10 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     scrollButtonAdditionalRepeatDelay = 120, // we make first time slightly longer to similar a delayed start
     minThumbSize = DEFAULT_MIN_THUMB_PX,
     maxThumbSize,
-    createScrollStartButton = defaultCreateScrollStartButton,
-    createScrollEndButton = defaultCreateScrollEndButton,
-    touchThumbProps,
-    thumbProps,
+    renderScrollButtonStart = defaultCreateScrollStartButton,
+    renderScrollButtonEnd = defaultCreateScrollEndButton,
+    propsTouchThumb,
+    propsThumb,
     onMouseDown: propOnMouseDown,
     ...rest
   } = props;
@@ -192,7 +193,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     if (disabled) return null; // later we can style thumb
     const thumbInline = (
       <div
-        {...thumbProps}
+        {...propsThumb}
         className={clsx(styles['thumb'], {
           'disabled': disabled
         })}
@@ -205,7 +206,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
         aria-valuenow={propOffset}
         tabIndex={0}
         style={{
-          ...thumbProps?.style,
+          ...propsThumb?.style,
           position: 'relative',
           [isVertical ? 'height' : 'width']: `${thumb.length}px`,
           [isVertical ? 'width' : 'height']: '100%',
@@ -223,7 +224,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
     return (<>
       {thumbInline}
       <TouchThumbHandle
-        {...touchThumbProps}
+        {...propsTouchThumb}
         offset={thumb.offset}
         // length={thumb.length}
         orientation={isVertical ? ScrollbarOrientation.Vertical : ScrollbarOrientation.Horizontal}
@@ -233,7 +234,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
       />
     </>
     )
-  }, [thumb, minThumbSize, maxOffset, propOffset, isVertical, isTouch, propOnMouseDown, touchThumbProps, thumbProps]);
+  }, [thumb, minThumbSize, maxOffset, propOffset, isVertical, isTouch, propOnMouseDown, propsTouchThumb, propsThumb]);
 
   const [scrollScrolling, setScrollScrolling] = useState<number | null>(null);
 
@@ -302,7 +303,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
       onMouseDown:() => startScrolling(propOffset, true, true),
     }
 
-    return createScrollStartButton?.(props);
+    return renderScrollButtonStart?.(props);
   }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling]);
 
   const scrollEndButton = useMemo(() => {
@@ -314,7 +315,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>((pro
       onMouseLeave:stopScrolling,
       onMouseDown:() => startScrolling(propOffset, true, false),
     }
-    return createScrollEndButton?.(props);
+    return renderScrollButtonEnd?.(props);
   }, [showCustomScrollButtons, orientation, propOffset, maxOffset, scrollScrolling]);
 
 

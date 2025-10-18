@@ -27,7 +27,7 @@ const Template: React.FC = () => {
             flex: '1 1 100%'
           }}
           renderContextMenu={() => <></>}
-          tabsProps={{
+          propsTabs={{
             renderContextMenu: () => <></>,
             readOnly: true
           }}

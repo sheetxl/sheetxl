@@ -2,7 +2,7 @@ import React, { memo, forwardRef } from 'react';
 
 import { Theme } from '@mui/material/styles';
 
-import { Typography, TypographyProps } from '@mui/material';
+import { Typography, type TypographyProps } from '@mui/material';
 
 export interface ExhibitMenuHeaderProps extends TypographyProps {
   /**

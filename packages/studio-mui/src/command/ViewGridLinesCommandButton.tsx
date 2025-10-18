@@ -54,7 +54,7 @@ export const ViewGridLinesCommandButton = memo(
         {...commandButtonProps}
         command={(commands.getCommand('sheetViewFormatGridlinesColor') as Command<IColor, CommandContext.Color>)}
         icon={<DynamicIcon iconKey="stroke.colored" />}
-        panelProps={{
+        propsPanel={{
           disableAlpha: true
         }}
       />

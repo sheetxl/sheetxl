@@ -4,14 +4,14 @@ import clsx from 'clsx';
 
 import { alpha } from '@mui/system';
 import { Theme } from '@mui/material/styles';
-import { IconButton, IconButtonProps } from '@mui/material';
+import { IconButton, type IconButtonProps } from '@mui/material';
 import { Box } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
 
 import { DynamicIcon } from '@sheetxl/utils-react';
 
-import { ExhibitTooltip, ExhibitTooltipProps } from './ExhibitTooltip';
+import { ExhibitTooltip, type ExhibitTooltipProps } from './ExhibitTooltip';
 
 import { FloatReference } from '../float/useFloatStack';
 import { SimpleTooltip } from '../components';
@@ -38,7 +38,7 @@ export interface ExhibitIconButtonProps extends IconButtonProps {
    * Tooltip properties. If this is specified then the tooltips are used.
    * Do not provide a child as this component will be the child.
    */
-  tooltipProps?: Omit<ExhibitTooltipProps, 'children'>;
+  propsTooltip?: Omit<ExhibitTooltipProps, 'children'>;
 
   parentFloat?: FloatReference;
 }
@@ -55,7 +55,7 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
     parentFloat,
     selected = undefined,
     icon: propIcon,
-    tooltipProps,
+    propsTooltip,
     children,
     primary,
     sx: propSx,
@@ -183,8 +183,8 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
       {children}
     </IconButton>
   );
-  if (tooltipProps) {
-    if (tooltipProps.simple && tooltipProps.label && !tooltipProps.disabled) {
+  if (propsTooltip) {
+    if (propsTooltip.simple && propsTooltip.label && !propsTooltip.disabled) {
       const { // strip out specific props
         label,
         description,
@@ -196,7 +196,7 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
         chips,
         ref, // Remove ref to avoid conflicts
         ...simpleProps
-      } = tooltipProps;
+      } = propsTooltip;
     retValue = (
       <SimpleTooltip
         disableInteractive
@@ -216,7 +216,7 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
       retValue = (
         <ExhibitTooltip
           children={retValue}
-          {...tooltipProps}
+          {...propsTooltip}
         />
       )
     }

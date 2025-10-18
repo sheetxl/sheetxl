@@ -76,6 +76,7 @@ export interface ShowOptionsOptions<T=any, C=any> extends ShowWindowOptions<T, C
    * @remarks
    * The option is passed as the `children` prop and as the second argument
    */
+  // TODO - make this a regular render.
   createOptionsButton?: (option: string, props: React.HTMLAttributes<HTMLButtonElement> & React.Attributes, isDefaultOption: boolean) => React.ReactNode;
   /**
    * Call when an option is selected. If false is returned, the the
@@ -144,7 +145,7 @@ export interface ShowInputOptions<T=string, C=any> extends ShowOptionsOptions<T,
   /**
    * Css style for input
    */
-  inputProps?:  React.HTMLAttributes<HTMLInputElement | HTMLTextAreaElement>;
+  propsInput?:  React.HTMLAttributes<HTMLInputElement | HTMLTextAreaElement>;
 
   inputLabel?:  string;
 

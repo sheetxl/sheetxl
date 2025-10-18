@@ -13,7 +13,7 @@ import { ICommand } from '@sheetxl/utils-react';
 import { LogoNoPaddingIcon } from '@sheetxl/react';
 import { ExhibitTooltip, useFloatStack } from '@sheetxl/utils-mui';
 
-import { WorkbookToolbarsProps, renderWorkbookToolbars } from '../toolbar';
+import { type WorkbookToolbarsProps, renderWorkbookToolbars } from '../toolbar';
 import { AppearanceCommandButton } from '../command';
 
 import { StandaloneFileCommandButton } from './StandaloneFileCommandButton';
@@ -75,7 +75,7 @@ export const StudioToolbar = memo(
 
   const { reference } = useFloatStack();
   const [refMeasureContainer, { width: widthContainer }] = useMeasure<HTMLDivElement>();
-  const renderCompact =  widthContainer < 530;
+  const isCompact =  widthContainer < 530;
 
   const startElement = (showFileMenu ?
     <StandaloneFileCommandButton
@@ -106,7 +106,7 @@ export const StudioToolbar = memo(
     />
   : null);
 
-  const selectWrapper = (children: React.ReactNode) => {
+  const wrapperSelect = (children: React.ReactNode) => {
     return (
       <Box
         sx={{
@@ -158,7 +158,7 @@ export const StudioToolbar = memo(
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'end',
-            flex: (renderCompact && !endElement) ? '0 0 auto' : '1 1 100%'
+            flex: (isCompact && !endElement) ? '0 0 auto' : '1 1 100%'
           }}
         >
           {endElement}
@@ -167,7 +167,7 @@ export const StudioToolbar = memo(
     );
   }
 
-  const selectProps = useMemo(() => {
+  const localPropsSelect = useMemo(() => {
     return {
       paddingLeft: (theme: Theme) => theme.spacing(1),
       paddingRight: (theme: Theme) => theme.spacing(1)
@@ -182,16 +182,16 @@ export const StudioToolbar = memo(
       {...rest}
     >
       {renderWorkbookToolbars({
-          commands,
-          renderCompact,
-          workbook,
-          selectWrapper,
-          selectProps,
-          toolbarsProps: {
-            'Home': {
-              sx: {}
-            }
+        commands,
+        isCompact,
+        workbook,
+        wrapperSelect,
+        propsSelect: localPropsSelect,
+        propsToolbars: {
+          'Home': {
+            sx: {}
           }
+        }
       })}
     </Box>
   );

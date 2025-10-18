@@ -3,10 +3,9 @@ import React, { useCallback, useRef, useState, useMemo } from 'react';
 import { CellCoords } from '@sheetxl/utils';
 
 import {
-  ScrollableGrid as Grid, IGridElement, useSelection,
-  useKeyboardEditorOverlay, DefaultCellEditor, CellEditorProps,
-  DefaultCellRenderer, CellRendererProps, getDefaultStringEditState,
-  EditState
+  ScrollableGrid as Grid, IGridElement, useSelection, useKeyboardEditorOverlay,
+  DefaultCellEditor, DefaultCellRenderer, getDefaultStringEditState,
+  type CellRendererProps, type CellEditorProps, type EditState
 } from '@sheetxl/grid-react';
 
 const cellIdentity = (rowIndex: number, colIndex: number): string => {
@@ -24,7 +23,7 @@ const Template: React.FC = (props) => {
   const [values, setValues] = useState({});
 
   // Very important to memoize the cell renderer
-  const cellRenderer = useCallback((props: CellRendererProps) => {
+  const renderCell = useCallback((props: CellRendererProps) => {
     const range = props.range;
     const identity = cellIdentity(range.rowStart, range.colStart);
     let value = values[identity];
@@ -45,8 +44,7 @@ const Template: React.FC = (props) => {
     selection,
     navigate, // provide to editor to allow tab/enter
     navigateSelection, // provide to editor to allow tab/enter
-    // commands: commandsSelection,
-    overlay: selectionOverlay,
+    renderOverlay: renderSelection,
     ...selectionProps // used for callbacks
   } = useSelection({
     gridRef,
@@ -78,7 +76,7 @@ const Template: React.FC = (props) => {
   }, [editState]);
 
   const {
-    overlay: editorOverlay,
+    renderOverlay: renderEditor,
     isEditing,
     startEdit: overlayStartEdit,
     submitEdit: overlaySubmitEdit,
@@ -127,10 +125,10 @@ const Template: React.FC = (props) => {
   // We merge selection and editor overlays
   const overlays = useMemo(() => {
     return [
-      selectionOverlay,
-      editorOverlay
+      renderSelection,
+      renderEditor
     ]
-  }, [selectionOverlay, editorOverlay]);
+  }, [renderSelection, renderEditor]);
 
   const buttons = useMemo(() => {
     return (
@@ -224,7 +222,7 @@ const Template: React.FC = (props) => {
             border: '1px solid black',
           }}
           ref={gridRef}
-          cellRenderer={cellRenderer}
+          renderCell={renderCell}
           onKeyDown={(e: React.KeyboardEvent<any>) => {
             overlayEditorOnKeyEvent(e); // before selection props
             // commandsSelection.onKeyDown(e);
@@ -236,7 +234,7 @@ const Template: React.FC = (props) => {
           onDoubleClick={(e: React.PointerEvent<any>) => {
             overlayEditorOnPointerEvent(e);  // before selection props
           }}
-          overlays={overlays}
+          renderOverlays={overlays}
         />
       </div>
     </div>

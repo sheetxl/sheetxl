@@ -43,7 +43,7 @@ export interface NamedCollectionEditorProps extends React.HTMLAttributes<HTMLDiv
 
   parentFloat?: FloatReference;
 
-  commandPopupButtonProps?: CommandPopupButtonProps;
+  propsCommandPopupButton?: CommandPopupButtonProps;
 
   /**
    * Reference to the underlying element

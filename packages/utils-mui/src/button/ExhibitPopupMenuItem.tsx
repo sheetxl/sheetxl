@@ -10,15 +10,15 @@ import { Theme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import { Divider } from '@mui/material'
 import { MenuItem } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import { type TooltipProps } from '@mui/material';
 
 import { ArrowRightIcon } from '../theme';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
 import {
-  ExhibitQuickButtonProps, useFloatStack, ExhibitFloatPanelProps,
-  ExhibitPopperProps, ExhibitPopupButtonProps
+  useFloatStack,
+  type ExhibitQuickButtonProps, type ExhibitFloatPanelProps, type ExhibitPopperProps, type ExhibitPopupButtonProps
 } from '../float';
 import { SimpleTooltip } from '../components';
 
@@ -31,7 +31,7 @@ export interface ExhibitPopupMenuItemProps extends ExhibitPopupButtonProps {
 
 }
 
-const emptyPopupProps: Partial<ExhibitFloatPanelProps> = {};
+const PropsEmptyPopup: Partial<ExhibitFloatPanelProps> = {};
 
 // TODO - This should use the mui-state styled but I am not at all sure how to do this
 export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: any }> = memo(
@@ -44,11 +44,11 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
     onQuickClick,
     parentFloat,
     createPopupPanel,
-    popupProps = emptyPopupProps,
+    propsPopup = PropsEmptyPopup,
     onPopupOpen: propOnPopupOpen,
     onPopupClose: propOnPopupClose,
-    quickButtonProps : propQuickButtonProps,
-    createQuickButton,// : propCreateQuickButton,
+    propsQuickButton: propsQuickButton,
+    renderQuickButton,// : propCreateQuickButton,
     tooltip: _tooltipProp = '',
     createTooltip,
     icon,
@@ -63,7 +63,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
   // TODO - // if this is not specified perhaps we should just disable
   // if (!createPopupPanel)
   //   throw new Error('createPopupPanel is required');
-  // const createQuickButton = useCallback(propCreateQuickButton, [propCreateQuickButton]);
+  // const renderQuickButton = useCallback(propCreateQuickButton, [propCreateQuickButton]);
 
   const [isOpen, setOpen] = useState<boolean>(false);
 
@@ -77,26 +77,26 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
 
   const popupIconRef = useRef(null);
 
-  const popupPropsAdjusted:Partial<ExhibitPopperProps> = useMemo(() => {
-    if (!popupProps) return;
+  const localPropsPopper:Partial<ExhibitPopperProps> = useMemo(() => {
+    if (!propsPopup) return;
     const {
-      popperProps,
+      propsPopper: popperProps,
       // ...popupPropsRest
-     } = popupProps;
+     } = propsPopup;
 
     return {
       placement:"right-start",
       offsets: [-4, -2],
       ...popperProps
     }
-  }, [popupProps]);
+  }, [propsPopup]);
 
   const floatStack = useFloatStack({
     anchor: anchorRef.current,
     label: propLabel as string,
     createPopupPanel: createPopupPanel,
     parentFloat: parentFloat,
-    popperProps: popupPropsAdjusted,
+    propsPopper: localPropsPopper,
     onClose: () => { setOpen(false); propOnPopupClose?.(); },
     onOpen: () => { setOpen(true); propOnPopupOpen?.(); }
     // ...popupPropsRest
@@ -139,7 +139,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
     )
   }, []);
 
-  const isSplit = onQuickClick || createQuickButton;
+  const isSplit = onQuickClick || renderQuickButton;
   const defaultCreateQuickButton = (props: any) => {
     // TODO - types between buttons and menus are not rationalized
     const { tooltip : quickTooltip, createTooltip: quickCreateTooltip, ...rest } = props;
@@ -175,7 +175,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
 
   let button = <></>;
   if (isSplit) {
-    const quickButtonProps:ExhibitQuickButtonProps = {
+    const localPropsQuickButton:ExhibitQuickButtonProps = {
       tabIndex: -1,
       disabled: propDisabled,
       onMouseEnter: () => { floatStack.reference.parent.closeChild() },
@@ -183,11 +183,11 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
       className: clsx('quick-left', {
         // ['Mui-selected']: isOpen,
         // ['Mui-hovered']: isHovered',
-      }, propQuickButtonProps?.className),
+      }, propsQuickButton?.className),
       // onMouseUp: handleQuickClick,
-      ...propQuickButtonProps
+      ...propsQuickButton
     };
-    const quickButton = (createQuickButton || defaultCreateQuickButton)(quickButtonProps);
+    const quickButton = (renderQuickButton || defaultCreateQuickButton)(localPropsQuickButton);
     button = (<>
       {quickButton}
       <Divider sx={{ ml: '0px', mr: '0px' }} orientation="vertical" variant="middle" flexItem />
@@ -322,10 +322,10 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
   );
 
   // Menus only show a tooltip for quickButtons because they open on hover
-  const isSplitTooltip = isSplit && !isArrowHovered && (propQuickButtonProps?.tooltip || propQuickButtonProps?.createTooltip);
+  const isSplitTooltip = isSplit && !isArrowHovered && (propsQuickButton?.tooltip || propsQuickButton?.createTooltip);
   if (isSplitTooltip) {
-    buttonRoot = (propQuickButtonProps?.createTooltip ?? defaultTooltip)({
-      title: !isOpen ? (buttonRoot ?? propQuickButtonProps?.tooltip) : '',
+    buttonRoot = (propsQuickButton?.createTooltip ?? defaultTooltip)({
+      title: !isOpen ? (buttonRoot ?? propsQuickButton?.tooltip) : '',
       children: buttonRoot
     }, isOpen);
   }

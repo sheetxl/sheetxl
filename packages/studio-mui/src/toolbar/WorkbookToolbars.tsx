@@ -12,6 +12,7 @@ import { FormControl } from '@mui/material';
 import { Select, SelectChangeEvent, type SelectProps } from '@mui/material';
 import { type ToolbarProps } from '@mui/material';
 
+import { CommonUtils } from '@sheetxl/utils';
 import { ICommands } from '@sheetxl/utils-react';
 
 import { IWorkbookElement } from '../components';
@@ -24,35 +25,35 @@ import { ViewToolbar } from './ViewToolbar';
 export interface WorkbookToolbarsProps extends React.HTMLAttributes<HTMLDivElement> {
   commands: ICommands.IGroup;
   /**
-   * Wrap the select with custom component
+   * Wrap the select with custom component.
+   *
    * @param children
    */
-  selectWrapper?: (children: React.ReactNode) => React.ReactNode;
+  wrapperSelect?: (children: React.ReactNode) => React.ReactNode;
   /**
    * Properties for the select
    */
-  selectProps?: SxProps;
-  /** If we need to render compact */
-  renderCompact?: boolean;
+  propsSelect?: SxProps;
   /**
-   * Wrap the palette with custom component
+   * If we need to render compact.
+   */
+  isCompact?: boolean;
+  /**
+   * Wrap the palette with custom component.
+   *
    * @param children
    */
-  paletteWrapper?: (children: React.ReactNode) => React.ReactNode;
+  wrapperPalette?: (children: React.ReactNode) => React.ReactNode;
 
-  paletteProps?: PaperProps;
+  propsPalette?: PaperProps;
 
-  toolbarsProps? : Record<string, ToolbarProps>;
+  propsToolbars?: Record<string, ToolbarProps>;
 
   workbook?: IWorkbookElement;
   /**
    * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
    */
   sx?: SxProps;
-}
-
-export interface WorkbookToolbarsRef {
-  // No returns yet
 }
 
 interface StyledTabProps extends TabProps {
@@ -182,7 +183,7 @@ type OptionSelectProps = Omit<SelectProps, 'variant' | 'onSelect'> & {
   toolbars: any;
   value: number;
   onToolbarChange: (newValue: number) => void;
-  selectProps?: SxProps;
+  propsSelect?: SxProps;
 }
 
 const OptionSelect = memo((props: OptionSelectProps) => {
@@ -190,7 +191,7 @@ const OptionSelect = memo((props: OptionSelectProps) => {
     toolbars,
     value: propValue,
     onToolbarChange,
-    selectProps,
+    propsSelect,
     ...rest
   } = props;
 
@@ -257,7 +258,7 @@ const OptionSelect = memo((props: OptionSelectProps) => {
             }
           }
         },
-        ...selectProps
+        ...propsSelect
       }}
       size="small"
     >
@@ -278,18 +279,16 @@ const OptionSelect = memo((props: OptionSelectProps) => {
 
 
 // TODO - add a beforeTabs and afterTabs top (for file and settings)
-export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
-  ref?: React.Ref<WorkbookToolbarsRef>;
-}> = memo(
-  forwardRef<WorkbookToolbarsRef, WorkbookToolbarsProps>((props, refForwarded) => {
+export const WorkbookToolbars = memo(forwardRef<HTMLElement, WorkbookToolbarsProps>(
+  (props: WorkbookToolbarsProps, refForwarded) => {
   const {
     commands,
-    selectWrapper,
-    selectProps = {},
-    renderCompact = false,
-    paletteWrapper,
-    toolbarsProps,
-    paletteProps = {},
+    wrapperSelect,
+    propsSelect = CommonUtils.EmptyObject,
+    isCompact = false,
+    wrapperPalette,
+    propsToolbars = CommonUtils.EmptyObject,
+    propsPalette = CommonUtils.EmptyObject,
     workbook,
     sx: sxProp,
     ...rest
@@ -300,7 +299,7 @@ export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
     const {
       ref: toolbarHomeRef,
       ...restToolbarHomeProps
-    } = toolbarsProps?.['Home'] || {};
+    } = propsToolbars?.['Home'] || CommonUtils.EmptyObject;
 
     retValue.push({
       label: 'Home',
@@ -310,7 +309,7 @@ export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
     const {
       ref: toolbarInsertRef,
       ...restToolbarInsertProps
-    } = toolbarsProps?.['Insert'] || {};
+    } = propsToolbars?.['Insert'] || CommonUtils.EmptyObject;
     retValue.push({
       label: 'Insert',
       component: <InsertToolbar commands={commands} {...restToolbarInsertProps} />
@@ -319,7 +318,7 @@ export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
       const {
         ref: toolbarFormulasRef,
         ...restToolbarFormulasProps
-      } = toolbarsProps?.['Formulas'] || {};
+      } = propsToolbars?.['Formulas'] || CommonUtils.EmptyObject;
       retValue.push({
         label: 'Formulas',
         component: <FormulaToolbar commands={commands} {...restToolbarFormulasProps} />
@@ -328,7 +327,7 @@ export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
     const {
       ref: toolbarViewRef,
       ...restToolbarViewProps
-    } = toolbarsProps?.['View'] || {};
+    } = propsToolbars?.['View'] || CommonUtils.EmptyObject;
     retValue.push({
       label: 'View',
       component: <ViewToolbar commands={commands} {...restToolbarViewProps} />
@@ -358,13 +357,13 @@ export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
 
   const toolbarSelect = useMemo(() => {
     // TODO - return focus after select (or better yet prevent on click focus)
-    if (renderCompact) {
+    if (isCompact) {
       return (
         <OptionSelect
           toolbars={toolbars}
           value={tabIndex}
           onToolbarChange={handleToolbarChange}
-          sx={selectProps}
+          sx={propsSelect}
         />
       );
     }
@@ -373,15 +372,15 @@ export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
         toolbars={toolbars}
         value={tabIndex}
         onToolbarChange={handleToolbarChange}
-        sx={selectProps}
+        sx={propsSelect}
       />
     );
-  }, [toolbars, tabIndex, selectProps, renderCompact]);
+  }, [toolbars, tabIndex, propsSelect, isCompact]);
 
   const {
     sx: paletteSXProps,
     ...paletteRest
-  } = paletteProps;
+  } = propsPalette;
   const paletteElement = (
     <Paper
       elevation={2}
@@ -419,8 +418,8 @@ export const WorkbookToolbars: React.FC<WorkbookToolbarsProps & {
       }}
       {...rest}
     >
-      {selectWrapper ? selectWrapper(toolbarSelect) : toolbarSelect}
-      {paletteWrapper ? paletteWrapper(paletteElement) : paletteElement}
+      {wrapperSelect ? wrapperSelect(toolbarSelect) : toolbarSelect}
+      {wrapperPalette ? wrapperPalette(paletteElement) : paletteElement}
     </Box>
   );
 }));

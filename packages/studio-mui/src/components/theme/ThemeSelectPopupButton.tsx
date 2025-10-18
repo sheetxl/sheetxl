@@ -26,13 +26,18 @@ export interface ThemeSelectPopupButtonProps extends Omit<ExhibitPopupIconButton
    */
   variant?: PopupButtonType;
 
-  panelProps?: Partial<ThemeSelectPanelProps>;
+  propsPanel?: Partial<ThemeSelectPanelProps>;
 
   darkMode?: boolean;
+
+  /**
+   * Ref to the underlying element
+   */
+  ref?: React.Ref<HTMLElement>;
 }
 
-export const ThemeSelectPopupButton: React.FC<ThemeSelectPopupButtonProps & { ref?: any }> = memo(
-  forwardRef<any, ThemeSelectPopupButtonProps>((props, refForwarded) => {
+export const ThemeSelectPopupButton = memo( forwardRef<HTMLElement, ThemeSelectPopupButtonProps>(
+  (props: ThemeSelectPopupButtonProps, refForwarded) => {
   const {
     themes,
     selectedTheme,
@@ -42,7 +47,7 @@ export const ThemeSelectPopupButton: React.FC<ThemeSelectPopupButtonProps & { re
     label,
     variant = PopupButtonType.Toolbar,
     darkMode,
-    panelProps,
+    propsPanel,
     ...rest
   } = props;
 
@@ -51,7 +56,7 @@ export const ThemeSelectPopupButton: React.FC<ThemeSelectPopupButtonProps & { re
     const { closeFloatAll } = props;
     return (
       <ThemeSelectPanel
-        {...panelProps}
+        {...propsPanel}
         themes={themes}
         selectedTheme={selectedTheme}
         onSelectTheme={onSelectTheme}
@@ -64,13 +69,13 @@ export const ThemeSelectPopupButton: React.FC<ThemeSelectPopupButtonProps & { re
         }}
       />
     )
-  }, [themes, selectedTheme, onSelectTheme, panelProps, darkMode]);
+  }, [themes, selectedTheme, onSelectTheme, propsPanel, darkMode]);
 
   const propsButton = {
     // ref: refForwarded,
     createPopupPanel: createPopupPanel,
-    // popupProps: {
-    //   popperProps: {
+    // propsPopup: {
+    //   propsPopper: {
     //   },
     // },
     tooltip: tooltip || label || "Theme",

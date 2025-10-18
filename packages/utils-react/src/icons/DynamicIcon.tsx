@@ -26,7 +26,7 @@ export interface DynamicIconProps extends React.HTMLAttributes<HTMLElement> {
   ariaHidden?: boolean;
 
   /** Extra props forwarded to React glyphs (if the glyph is of type `react`) */
-  sourceProps?: unknown;
+  propsSource?: unknown;
 }
 
 export const DynamicIcon = memo((props: DynamicIconProps) => {
@@ -39,7 +39,7 @@ export const DynamicIcon = memo((props: DynamicIconProps) => {
     title,
     size,
     ariaHidden: propAriaHidden,
-    sourceProps,
+    propsSource,
     children,
     ...rest
   } = props;
@@ -153,7 +153,7 @@ export const DynamicIcon = memo((props: DynamicIconProps) => {
       'aria-hidden': ariaHidden,
       title,
       ...rest,
-      ...(sourceProps as any)
+      ...(propsSource as any)
     };
     return wrap(<C {...passProps} />);
   }

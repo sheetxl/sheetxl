@@ -34,7 +34,7 @@ const Template: React.FC = (props) => {
     <div className="storybook-container">
       <Grid
         {...rest}
-        cellRenderer={sharedCellRenderer}
+        renderCell={sharedCellRenderer}
         getColumnWidth={(index: number): number => {
           if (index % 4 === 0) return 180;
           return 60;

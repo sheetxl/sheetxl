@@ -147,7 +147,7 @@ export const FontSizeCommandButton = memo(
     return `${IFont.getSharedMeasurer()(templateString, Math.round(appTheme.typography.fontSize), appTheme.typography.fontFamily).width}px`;
   }, [appTheme]);
 
-  const createInputQuickButton = useCallback((props: ExhibitQuickButtonProps) => {
+  const renderInputQuickButton = useCallback((props: ExhibitQuickButtonProps) => {
     const {
       onMouseDown,
       onMouseUp,
@@ -353,7 +353,7 @@ export const FontSizeCommandButton = memo(
           </ExhibitTooltip>
         );
       }}
-      createQuickButton={createInputQuickButton}
+      renderQuickButton={renderInputQuickButton}
       {...rest}
     />
   )

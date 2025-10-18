@@ -7,12 +7,17 @@ import { DefaultTaskPaneRegistry } from '@sheetxl/react';
 import { ScriptTaskPane } from './workspace';
 
 // TODO - accept plugin config object
+// TODO - model as vite plugin with a pipeline of hooks?
 export const ScriptingPlugin = () => {
+  // Register Icons to existing pack (how to add to existing? lazy load?)
   // Register i18n strings
+  // Register addition icons
+
+  // Call functions (to allow for any generic work to be done)
 
   // Register commands.
 
-  // commands are labeled as 'type.action' on a "key & type" (action & noun) 'workbook, sheet, table, drawing (chart image, table), scripts, etc
+  // commands are register against an 'on' 'action' (action & noun) 'workbook, sheet, table, drawing (chart image, table), scripts, etc
 
   // The same command key can work on multiple object. (copy or select)
 

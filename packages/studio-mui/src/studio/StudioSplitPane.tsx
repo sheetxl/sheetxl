@@ -66,7 +66,7 @@ export const StudioSplitPane = memo(
       minAfter={isStandardScreen ? '280px' : '120px'}
       splitDirection={isStandardScreen ? 'row' : 'column'}
 
-      resizerProps={{
+      propsResizer={{
         className: "styled-resizer",
         // todo - move this to css
         style: {
@@ -78,14 +78,14 @@ export const StudioSplitPane = memo(
         },
       }}
       elementBefore={mainElement}
-      paneBeforeProps={{
+      propsPaneBefore={{
         style: {
           flexDirection: 'column',
           marginRight: !sidebarElement ? '6px' : undefined,
         }
       }}
       elementAfter={sidebarElement}
-      paneAfterProps={{
+      propsPaneAfter={{
         style: {
           marginLeft: isStandardScreen ? '0px' : '4px',
           marginRight: isStandardScreen ? '8px' : '4px'

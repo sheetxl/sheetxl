@@ -8,22 +8,24 @@ import { useMeasure } from 'react-use';
 
 import { Scroller } from '../scroller';
 
+import { Size } from '@sheetxl/utils';
+
 import { ScrollbarOrientation } from './IScrollbar';
-import { useCallbackRef } from '../hooks/useCallbackRef';
-
+import { useImperativeElement, useCallbackRef } from '../hooks';
+// tree-shake
 import { detectIt } from '../utils/ReactUtils';
-
-import { useImperativeElement } from '../hooks/useImperativeElement';
 
 import {
   IScrollPaneElement, IScrollPaneAttributes, ScrollPaneProps
 } from './IScrollPane';
 
-import { defaultCreateScrollbar } from './Utils';
+import { defaultRenderScrollbar } from './Utils';
 
 import styles from './ScrollPane.module.css';
 
-export const defaultCreateScrollCorner = ({ width, height }) => {
+export const defaultCreateScrollCorner = (size: Size) => {
+  const width = size?.width;
+  const height = size?.height;
   return (
     <div
       className="corner"
@@ -46,7 +48,7 @@ export const defaultCreateScrollCorner = ({ width, height }) => {
  * TODO - support wheel-mouse, snap, and zoom
  */
 export const ScrollPane = memo(forwardRef<IScrollPaneElement, ScrollPaneProps>(
-  (props: ScrollPaneProps, refForward) => {
+  (props: ScrollPaneProps, refForwarded) => {
   const {
     children,
     viewport,
@@ -54,8 +56,8 @@ export const ScrollPane = memo(forwardRef<IScrollPaneElement, ScrollPaneProps>(
     showHorizontalScrollbar: propShowHorizontalScrollbar = true,
     showVerticalScrollbar: propShowVerticalScrollbar = true,
     createScrollCorner = defaultCreateScrollCorner,
-    createHorizontalScrollbar = defaultCreateScrollbar,
-    createVerticalScrollbar = defaultCreateScrollbar,
+    renderScrollbarHorizontal = defaultRenderScrollbar,
+    renderScrollbarVertical = defaultRenderScrollbar,
     style: propsStyle,
     className: propClassName,
     touchElement,
@@ -64,11 +66,11 @@ export const ScrollPane = memo(forwardRef<IScrollPaneElement, ScrollPaneProps>(
   } = props;
   // invariant(!(viewport), "viewport must be specified");
 
-  const showHorizontalScrollbar = propShowHorizontalScrollbar && createHorizontalScrollbar;
-  const showVerticalScrollbar = propShowVerticalScrollbar && createVerticalScrollbar;
+  const showHorizontalScrollbar = propShowHorizontalScrollbar && renderScrollbarHorizontal;
+  const showVerticalScrollbar = propShowVerticalScrollbar && renderScrollbarVertical;
   const onScrollViewport = useCallbackRef(propOnScrollViewport, [propOnScrollViewport]);
 
-  const refLocal = useImperativeElement<IScrollPaneElement, IScrollPaneAttributes>(refForward, () => {
+  const refLocal = useImperativeElement<IScrollPaneElement, IScrollPaneAttributes>(refForwarded, () => {
     return {
       isScrollPane: () => true
     }
@@ -164,7 +166,7 @@ export const ScrollPane = memo(forwardRef<IScrollPaneElement, ScrollPaneProps>(
 
   const verticalScroll = useMemo(() => {
     if (!showVerticalScrollbar) return null;
-    const scrollbar = createVerticalScrollbar({
+    const scrollbar = renderScrollbarVertical({
       orientation: ScrollbarOrientation.Vertical,
       offset: viewport?.top,
       viewportSize: viewport?.height,
@@ -184,11 +186,11 @@ export const ScrollPane = memo(forwardRef<IScrollPaneElement, ScrollPaneProps>(
         {scrollbar}
       </div>
     );
-  }, [createVerticalScrollbar, viewport?.top, viewport?.height, viewport?.totalHeight]);
+  }, [renderScrollbarVertical, viewport?.top, viewport?.height, viewport?.totalHeight]);
 
   const horizontalScroll = useMemo(() => {
     if (!showHorizontalScrollbar) return null;
-    const scrollbar = createHorizontalScrollbar({
+    const scrollbar = renderScrollbarHorizontal({
       orientation:ScrollbarOrientation.Horizontal,
       offset: viewport?.left,
       viewportSize: viewport?.width,
@@ -220,7 +222,7 @@ export const ScrollPane = memo(forwardRef<IScrollPaneElement, ScrollPaneProps>(
         {(showVerticalScrollbar ? createScrollCorner({ width: vertWidth, height: horzHeight}) : <></>)}
       </div>
     );
-  }, [createHorizontalScrollbar, viewport?.left, viewport?.width, viewport?.totalWidth, showVerticalScrollbar, createScrollCorner, vertWidth, horzHeight]);
+  }, [renderScrollbarHorizontal, viewport?.left, viewport?.width, viewport?.totalWidth, showVerticalScrollbar, createScrollCorner, vertWidth, horzHeight]);
 
   return (
     <div

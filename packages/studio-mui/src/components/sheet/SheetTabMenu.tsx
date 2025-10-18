@@ -151,7 +151,7 @@ export const SheetTabMenu = memo(forwardRef<HTMLDivElement, SheetTabMenuProps>(
       // onSelectColor={(color: Color.Color | null, isCustom: boolean) => {
       //   // handleRecent(color, isCustom);
       // }}
-      panelProps={{
+      propsPanel={{
         disableAlpha: true,
         autoColorLabel: "No Tab Color",
         autoColorPosition : AutoColorPosition.End,

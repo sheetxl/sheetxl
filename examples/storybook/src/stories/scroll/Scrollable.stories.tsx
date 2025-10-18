@@ -34,17 +34,16 @@ const Template: React.FC = (props) => {
   const {
     showVerticalScrollbar,
     showHorizontalScrollbar,
-    createHorizontalScrollbar,
-    createVerticalScrollbar,
+    renderScrollbarHorizontal,
+    renderScrollbarVertical,
     createScrollCorner,
     ...rest
   } = props as any;
 
-  const scrollPaneProps:ScrollPaneProps = rest;
+  const propsScrollPane:ScrollPaneProps = rest;
 
   const refScrollPane = useRef<IScrollPaneElement>(null);
 
-  // const viewport:ScrollableViewport =
   const [viewport, setViewport] = useState<ScrollableViewport>({
     left: 0,
     top: 0,
@@ -56,7 +55,7 @@ const Template: React.FC = (props) => {
   return (
     <div className="storybook-container">
       <ScrollPane
-        {...scrollPaneProps}
+        {...propsScrollPane}
         viewport={viewport}
         onScrollViewport={(scrollPoint: Partial<TopLeft>) => {
           setViewport((prev: ScrollableViewport) => {
@@ -70,8 +69,8 @@ const Template: React.FC = (props) => {
         ref={refScrollPane}
         showVerticalScrollbar={showVerticalScrollbar}
         showHorizontalScrollbar={showHorizontalScrollbar}
-        createHorizontalScrollbar={createHorizontalScrollbar}
-        createVerticalScrollbar={createVerticalScrollbar}
+        renderScrollbarHorizontal={renderScrollbarHorizontal}
+        renderScrollbarVertical={renderScrollbarVertical}
         createScrollCorner={createScrollCorner}
       >
         <div
@@ -108,8 +107,8 @@ const Template: React.FC = (props) => {
 
 export const ScrollPaneTemplate = Template.bind({});
 ScrollPaneTemplate.args = {
-  createHorizontalScrollbar: createRedScrollbar,
-  createVerticalScrollbar: createRedScrollbar,
+  renderScrollbarHorizontal: createRedScrollbar,
+  renderScrollbarVertical: createRedScrollbar,
   createScrollCorner: createCustomCorner,
   showVerticalScrollbar: true,
   showHorizontalScrollbar: true,

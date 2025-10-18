@@ -38,7 +38,7 @@ const Template: React.FC = (props) => {
 
   const {
     // commands: commandsSelection,
-    overlay: overlaySelection,
+    renderOverlay: renderSelection,
     selection,
     ...selectionProps // used for callbacks
   } = useSelection({
@@ -49,7 +49,7 @@ const Template: React.FC = (props) => {
       <Grid
         {...rest}
         ref={gridRef}
-        cellRenderer={sharedCellRenderer}
+        renderCell={sharedCellRenderer}
         // context menu here
         onContextMenu={(e) => {
           // We get the view
@@ -74,7 +74,7 @@ const Template: React.FC = (props) => {
           setContextMenuPosition(null); // context menu here, notice it's before we pass to selection
           selectionProps.onPointerDown(e);
         }}
-        overlays={[overlaySelection]}
+        renderOverlays={[renderSelection]}
       />
       {contextMenuPosition && <ContextMenu {...contextMenuPosition} /> /* note - that this sits outsize of grid */}
     </div>

@@ -144,7 +144,7 @@ const InsertFunctionCommandButton = memo((props: any) => { // TODO - type
       // icon={null}
       disabled={propDisabled}
 
-      tooltipProps={{ // causes flicker at the moment
+      propsTooltip={{ // causes flicker at the moment
         label: promiseLabel,
         maxWidth: 1000
       }}

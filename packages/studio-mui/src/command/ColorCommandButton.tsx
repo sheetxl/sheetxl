@@ -58,7 +58,7 @@ export const ColorCommandButton = memo(
     disabled: propDisabled = false,
     variant = CommandButtonType.Toolbar,
     quickColor: propQuickColor,
-    panelProps: propPanelProps,
+    propsPanel,
     isSplit = false,
     darkMode: propDarkMode,
     icon: propIcon,
@@ -70,7 +70,7 @@ export const ColorCommandButton = memo(
     schemeLookup: propSchemeLookup,
     recentColors: propRecentColors,
     ...restPanelProps
-  } = propPanelProps;
+  } = propsPanel;
 
   if ((rest as any).selectedColor)
     throw new Error('Command selectedColor will be used. Do not try to provide one as a direct argument');
@@ -85,7 +85,7 @@ export const ColorCommandButton = memo(
   const recentColors = propRecentColors ?? context?.recentColors;
   const darkMode = propDarkMode ?? context?.darkMode;
 
-  const panelProps:Partial<ColorPanelProps> = useMemo(() => {
+  const localPropsPanel:Partial<ColorPanelProps> = useMemo(() => {
     return {
       autoColor,
       schemeLookup,
@@ -140,7 +140,7 @@ export const ColorCommandButton = memo(
   return (
     <ColorPopupButton
       ref={refForwarded}
-      panelProps={panelProps}
+      propsPanel={localPropsPanel}
       icon={propIcon ?? command?.icon(context) as any }
       quickColor={quickColor}
       selectedColor={command?.state()}

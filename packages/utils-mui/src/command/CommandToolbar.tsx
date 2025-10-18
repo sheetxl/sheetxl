@@ -23,19 +23,19 @@ export interface CommandToolbarPopupButtonProps extends CommandButtonOptions {
 export interface CommandToolbarButtonProps {
   commands: ICommands.IGroup;
 
-  commandButtonProps: CommandButtonOptions;
+  propsCommandButton: CommandButtonOptions;
 
-  commandPopupProps: CommandToolbarPopupButtonProps;
+  propsCommandPopup: CommandToolbarPopupButtonProps;
 }
 
 export interface CommandToolbarProps extends ToolbarProps {
   commands: ICommands.IGroup;
 
-  commandButtonProps?: CommandButtonOptions;
+  propsCommandButton?: CommandButtonOptions;
 
   parentFloat?: FloatReference;
 
-  createToolbarPalette?: (props: CommandToolbarButtonProps) => React.ReactNode;
+  renderToolbarPalette?: (props: CommandToolbarButtonProps) => React.ReactNode;
 
   ref?: React.Ref<HTMLDivElement>;
 }
@@ -104,16 +104,16 @@ export const CommandToolbar = memo(forwardRef<ICommandToolbarElement, CommandToo
   const {
     sx: sxProps,
     commands,
-    commandButtonProps: propsCommandButtonProps,
+    propsCommandButton: propsCommandButtonProps,
     parentFloat,
-    createToolbarPalette,//: propCreateToolbarPalette,
+    renderToolbarPalette,//: propCreateToolbarPalette,
     children,
     ...rest
   } = props;
 
-  // TODO - if children error and say use createToolbarPalette
+  // TODO - if children error and say use renderToolbarPalette
 
-  // const createToolbarPalette = useCallbackRef(propCreateToolbarPalette, [propCreateToolbarPalette]);
+  // const renderToolbarPalette = useCallbackRef(propCreateToolbarPalette, [propCreateToolbarPalette]);
   const refLocal = useImperativeElement<ICommandToolbarElement, CommandToolbarAttributes>(refForwarded, () => ({
   }), []);
 
@@ -140,7 +140,7 @@ export const CommandToolbar = memo(forwardRef<ICommandToolbarElement, CommandToo
     }
   }, []);
 
-  const buttonProps = useMemo(() => {
+  const localPropsButton = useMemo(() => {
     return {
       dense: true,
       outlined: false,
@@ -148,7 +148,7 @@ export const CommandToolbar = memo(forwardRef<ICommandToolbarElement, CommandToo
     }
   }, []);
 
-  const commandProps:CommandButtonOptions = useMemo(() => {
+  const localPropsCommandButton:CommandButtonOptions = useMemo(() => {
     const {
       commandHook: propCommandHook,
       ...rest
@@ -177,10 +177,10 @@ export const CommandToolbar = memo(forwardRef<ICommandToolbarElement, CommandToo
 
   const commandButtonProps = useMemo(() => {
     return {
-      ...buttonProps,
-      ...commandProps
+      ...localPropsButton,
+      ...localPropsCommandButton
     }
-  }, [buttonProps, commandProps]);
+  }, [localPropsButton, localPropsCommandButton]);
 
   const [_, forceRender] = useReducer((s: number) => s + 1, 0);
   useCommands(commands, [], {
@@ -189,35 +189,35 @@ export const CommandToolbar = memo(forwardRef<ICommandToolbarElement, CommandToo
     }
   });
 
-  const commandPopupProps = useMemo(() => {
+  const localPropsCommandPopup = useMemo(() => {
     return {
       commands,
       parentFloat: floatReferenceToolbar,
-      ...commandProps
+      ...localPropsCommandButton
     }
   }, [_, commandButtonProps, floatReferenceToolbar, propsCommandButtonProps]);
 
   let columnGap = 0;
-  if (!buttonProps.dense)
+  if (!localPropsButton.dense)
     columnGap = columnGap + 2;
-  if (buttonProps.outlined)
+  if (localPropsButton.outlined)
     columnGap++;
 
   let verticalPadding = 2;
-  if (!buttonProps.dense)
+  if (!localPropsButton.dense)
     verticalPadding = 4;
 
   const palette = useMemo(() => {
-    return createToolbarPalette({
+    return renderToolbarPalette({
       commands,
-      commandButtonProps: commandButtonProps,
-      commandPopupProps: {
+      propsCommandButton: commandButtonProps,
+      propsCommandPopup: {
         commands,
-        ...commandPopupProps,
+        ...localPropsCommandPopup,
         ...propsCommandButtonProps
       }
     });
-  }, [_, commandButtonProps, commandPopupProps, createToolbarPalette]);
+  }, [_, commandButtonProps, localPropsCommandPopup, renderToolbarPalette]);
 
   return (
     <Toolbar

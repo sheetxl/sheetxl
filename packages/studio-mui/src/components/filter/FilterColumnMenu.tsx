@@ -1,12 +1,8 @@
 import React, { useMemo, memo, forwardRef } from 'react';
 
-import { Theme } from '@mui/material/styles';
-import { SxProps } from '@mui/system';
-
 import { Box } from '@mui/material';
-// import { Button } from '@mui/material';
 
-import { IAutoFilter } from '@sheetxl/sdk';
+import type { IAutoFilter } from '@sheetxl/sdk';
 
 import {
   ICommand, ICommands, CommandButtonType
@@ -24,10 +20,6 @@ export interface FilterColumnMenuProps extends React.HTMLAttributes<HTMLDivEleme
   commands?: ICommands.IGroup;
 
   disabled?: boolean;
-  /**
-   * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
-   */
-  sx?: SxProps<Theme>;
 
   floatReference: FloatReference;
 }
@@ -41,7 +33,7 @@ export const FilterColumnMenu = memo(forwardRef<HTMLDivElement, FilterColumnMenu
     filter,
     commands,
     disabled: propDisabled,
-    sx: propSx,
+    style: propStyle,
     floatReference,
     ...rest
   } = props;
@@ -143,12 +135,12 @@ export const FilterColumnMenu = memo(forwardRef<HTMLDivElement, FilterColumnMenu
   return (
     <Box
       ref={refForwarded}
-      sx={{
+      style={{
         paddingTop: '4px', // TODO - size of rounded border from theme
         paddingBottom: '4px', // TODO - size of rounded border from theme
         display: 'flex',
         flexDirection: 'column',
-        ...propSx,
+        ...propStyle,
       }}
       {...rest}
     >

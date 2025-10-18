@@ -15,9 +15,9 @@ export type ScrollbarOrientation = typeof ScrollbarOrientation[keyof typeof Scro
 
 export interface ScrollbarProps extends React.HTMLAttributes<HTMLElement> {
   offset: number;
-  viewportSize : number;
+  viewportSize: number;
   totalSize: number;
-  orientation : ScrollbarOrientation;
+  orientation: ScrollbarOrientation;
   onScrollOffset: (offset: number, viewportSize: number, totalSize: number) => void;
 
   /**
@@ -54,12 +54,16 @@ export interface ScrollbarProps extends React.HTMLAttributes<HTMLElement> {
   scrollButtonInitialRepeatDelay?: number;
   scrollButtonAdditionalRepeatDelay?: number;
 
-  createScrollStartButton?: (props: ScrollButtonProps) => React.ReactElement;
-  createScrollEndButton?: (props: ScrollButtonProps) => React.ReactElement;
+  renderScrollButtonStart?: (props: ScrollButtonProps) => React.ReactElement;
+  renderScrollButtonEnd?: (props: ScrollButtonProps) => React.ReactElement;
 
-  touchThumbProps?: Partial<TouchThumbHandleProps>;
+  propsTouchThumb?: Partial<TouchThumbHandleProps>;
 
-  thumbProps?: React.HTMLAttributes<HTMLElement>;
+  propsThumb?: React.HTMLAttributes<HTMLElement>;
+  /**
+   * Reference to the underling element
+   */
+  ref?: React.Ref<IScrollbarElement>;
 }
 
 export interface IScrollbarAttributes extends HTMLDivElement {

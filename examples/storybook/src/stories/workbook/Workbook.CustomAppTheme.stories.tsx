@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { ThemeProvider, createTheme, Theme } from '@mui/material/styles';
 
@@ -6,6 +6,7 @@ import { Box } from '@mui/material';
 import { Paper } from '@mui/material';
 import { Button } from '@mui/material';
 
+import { Workbook, type IWorkbook, type ISheet, type ICellRange } from '@sheetxl/sdk';
 import { Studio, WorkbookElement } from '@sheetxl/studio-mui';
 
 
@@ -57,6 +58,14 @@ const Template: React.FC = () => {
 
   const [currentTheme, setCurrentTheme] = React.useState<Theme>(lightTheme);
 
+  const workbook: IWorkbook = useMemo<IWorkbook>(() => {
+    const wb: IWorkbook = new Workbook();
+    const sheet: ISheet = wb.getSheetAt(0);
+    const range: ICellRange = sheet.getRange("A1:B1");
+    range.setValues([["Hello", "World"]]);
+    return wb;
+  }, []);
+
   const App = () => {
     return (
       <ThemeProvider theme={currentTheme}>
@@ -92,6 +101,7 @@ const Template: React.FC = () => {
           sx={{
             flex: '1 1 100%'
           }}
+          workbook={workbook}
         />
       </Box>
       </ThemeProvider>

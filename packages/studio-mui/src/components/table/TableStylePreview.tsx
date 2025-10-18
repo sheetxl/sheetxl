@@ -4,7 +4,7 @@ import React, {
 
 import clsx from 'clsx';
 
-import { Box, BoxProps } from '@mui/material';
+import { Box, type BoxProps } from '@mui/material';
 
 import {
   ITable, Table, ITableStyle, IStyleCollection, IBorder, IStyle, IRange
@@ -33,7 +33,7 @@ export interface TableStylePreviewProps extends BoxProps {
 
   bodyStyle: GridSurfaceStyle;
 
-  // borderProps?: StaticBorderRendererProps
+  // propsBorder?: StaticBorderRendererProps
   disabled?: boolean;
   /**
    * If `true` then the border will be forced to be thin.
@@ -68,7 +68,8 @@ const defaultCellScale = 1.3;
  * @remarks
  * This is intended to be used for the table options pane but is currently not in use.
  */
-export const TableStylePreview = memo(forwardRef((props: TableStylePreviewProps, forwardRef) => {
+export const TableStylePreview = memo(forwardRef(
+  (props: TableStylePreviewProps, refForwarded) => {
   const {
     styles,
     table: propTable,
@@ -192,7 +193,7 @@ export const TableStylePreview = memo(forwardRef((props: TableStylePreviewProps,
 
   return (
     <Box
-      ref={forwardRef}
+      ref={refForwarded}
       className="table-format-preview"
       // className={clsx({
       //     ['Mui-disabled']: propDisabled,

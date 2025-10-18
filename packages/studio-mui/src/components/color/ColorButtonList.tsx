@@ -9,7 +9,7 @@ import { IColor } from '@sheetxl/sdk';
 
 import { ReactUtils } from '@sheetxl/utils-react';
 
-import { SwatchProps } from './Swatch';
+import { type SwatchProps } from './Swatch';
 import { ColorButton } from './ColorButton';
 
 export interface ColorButtonListProps extends React.HTMLAttributes<HTMLElement> {
@@ -23,7 +23,7 @@ export interface ColorButtonListProps extends React.HTMLAttributes<HTMLElement> 
   onSelectColorDef?: (colorDef: IColor.DefinitionWithLabel) => void;
   onPreviewColorDef?: (colorDef: IColor.DefinitionWithLabel) => void;
 
-  swatchProps?: Partial<SwatchProps>;
+  propsSwatch?: Partial<SwatchProps>;
   compareRGB?: boolean;
   darkMode?: boolean;
 }
@@ -41,7 +41,7 @@ export const ColorButtonList: React.FC<ColorButtonListProps> = memo((props: Colo
     style:propStyle = ReactUtils.EmptyCssProperties,
     compareRGB = false,
     darkMode,
-    swatchProps,
+    propsSwatch,
     ...rest
   } = props;
 
@@ -80,7 +80,7 @@ export const ColorButtonList: React.FC<ColorButtonListProps> = memo((props: Colo
               previewColor={previewColor}
               onSelectColorDef={handleSelectColorDef}
               onPreviewColorDef={handlePreviewColorDef}
-              swatchProps={swatchProps}
+              propsSwatch={propsSwatch}
               compareRGB={compareRGB}
               darkMode={darkMode}
             />

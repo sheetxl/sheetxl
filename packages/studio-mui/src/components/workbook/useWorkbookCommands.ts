@@ -708,7 +708,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         title: commands.getCommand('newCellStyle')?.label('cellStyle'),
         description: `Enter a name for the new cell style.`,
         inputLabel: 'Style Name',
-        inputProps: {
+        propsInput: {
           style: {
             minWidth: '300px'
           }

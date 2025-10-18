@@ -23,7 +23,7 @@ import {
 } from '@sheetxl/utils-mui';
 
 import {
-  createScrollEdgeButton, createScrollStartButton, createScrollEndButton
+  renderScrollButtonEdge, renderScrollButtonStart, renderScrollButtonEnd
 } from '@sheetxl/utils-mui';
 
 import type { SheetTabProps, SheetsAllMenuProps, SheetTabMenuProps } from '../sheet';
@@ -62,7 +62,7 @@ export interface WorkbookStripProps extends React.HTMLAttributes<HTMLDivElement>
   /**
    * Allow for customizations on context menu
    */
-  contextMenuProps?: Partial<SheetTabMenuProps>;
+  propsContextMenu?: Partial<SheetTabMenuProps>;
   /**
    * Render custom context menu.
    *
@@ -73,7 +73,7 @@ export interface WorkbookStripProps extends React.HTMLAttributes<HTMLDivElement>
   /**
    * Allow for customizations on context menu
    */
-  sheetsAllProps?: SheetsAllMenuProps;
+  propsSheetsAll?: SheetsAllMenuProps;
   /**
    * Render custom sheet all menu.
    *
@@ -84,7 +84,7 @@ export interface WorkbookStripProps extends React.HTMLAttributes<HTMLDivElement>
   /**
    * Allow for customizations om sheet tabs.
    */
-  sheetTabProps?: Partial<SheetTabProps>;
+  propsSheetTab?: Partial<SheetTabProps>;
   /**
    * Render custom sheet tabs.
    * @param props
@@ -124,12 +124,12 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
     onUserChange,
     disabled=false,
     readOnly=false,
-    contextMenuProps: propsContextMenu,
+    propsContextMenu,
     renderContextMenu: propRenderContextMenu = renderWorkbookStripContextMenu,
-    sheetsAllProps: propsSheetsAll,
+    propsSheetsAll,
     renderSheetsAll: propRenderSheetsAll = renderWorkbookStripSheetsAll,
 
-    sheetTabProps: propsSheetTab,
+    propsSheetTab,
     renderSheetTab: propRenderSheetTab,
 
     background="transparent",
@@ -193,7 +193,7 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
     onUserChange?.(index);
   }, [workbook, onBeforeUserChange, onUserChange, activeSheetOffset]);
 
-  const popperProps:Partial<ExhibitPopperProps> = useMemo(() => {
+  const localPropsPopper:Partial<ExhibitPopperProps> = useMemo(() => {
     return {
       placement:"top-start",
     }
@@ -217,7 +217,7 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
     component: allSheetsMenuComponent
   } = useFloatStack({
     label: 'allSheet',
-    popperProps: popperProps,
+    propsPopper: localPropsPopper,
     anchor: allSheetsRef.current,
     onOpen: () => setShowAllSheets(true),
     onClose: () => setShowAllSheets(false),
@@ -227,7 +227,7 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
   const tabStripRef = useRef<any>(null);
   const [sheetTabMenuLocation, setSheetTabMenuLocation] = useState(null);
 
-  const createSheetTabMenuPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
+  const renderSheetTabMenuPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const { floatReference } = props;
     return propRenderContextMenu?.({
       workbook,
@@ -245,7 +245,7 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
     component: sheetTabMenuComponent
   } = useFloatStack({
     label: 'sheetTab',
-    popperProps: popperProps,
+    propsPopper: localPropsPopper,
     anchor: {
       getBoundingClientRect: () => {
         return new DOMRect(
@@ -257,7 +257,7 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
       }
     },
     onClose: () => setSheetTabMenuLocation(null),
-    createPopupPanel: createSheetTabMenuPopupPanel
+    createPopupPanel: renderSheetTabMenuPopupPanel
   });
 
   useEffect(() => {
@@ -278,7 +278,7 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
 
   }, []);
 
-  const createTabButton = useCallbackRef((props: SheetTabProps): React.ReactElement<any> => {
+  const renderTabButton = useCallbackRef((props: SheetTabProps): React.ReactElement<any> => {
     let sheet:ISheet;
     try { // Shouldn't be needed but during open and drag the workbook will render with stale sheet props
       sheet = workbook?.getSheetAt(props.index);
@@ -362,11 +362,11 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
         activeColor={null}
         disabled={disabled}
         disableDrag={isProtectedOrReadOnly}
-        createScrollStartButton={createScrollStartButton}
-        createScrollEndButton={createScrollEndButton}
-        createScrollEdgeButton={createScrollEdgeButton}
-        createTabButton={createTabButton}
-        createTabDivider={(props) => {
+        renderScrollButtonStart={renderScrollButtonStart}
+        renderScrollButtonEnd={renderScrollButtonEnd}
+        renderScrollButtonEdge={renderScrollButtonEdge}
+        renderTabButton={renderTabButton}
+        renderTabDivider={(props) => {
           const { key, ...rest } = props;
           return (
             <ExhibitDivider
@@ -382,7 +382,7 @@ export const WorkbookStrip = memo(forwardRef<HTMLElement, WorkbookStripProps>(
             />
           );
         }}
-        editLabelProps={{
+        propsEditLabel={{
           readOnly: isProtectedOrReadOnly,
           maxLength: 31,
           styleHover: {

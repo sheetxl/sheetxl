@@ -215,7 +215,7 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         },
       }}
       key={tableStyle.getName()}
-      tooltipProps={{
+      propsTooltip={{
         label: tableStyle.getName() ?? 'None',
         placement: 'bottom-start', //'right-end'
       }}

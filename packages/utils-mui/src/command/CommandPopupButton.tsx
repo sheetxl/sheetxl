@@ -170,8 +170,8 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
 
   // if we have a quick command then override the tooltip
   if (quickCommand) {
-    propsCommand.quickButtonProps = {};
-    propsCommand.quickButtonProps.createTooltip = ({children, placement}: TooltipProps, disabled: boolean) => {
+    propsCommand.propsQuickButton = {};
+    propsCommand.propsQuickButton.createTooltip = ({children, placement}: TooltipProps, disabled: boolean) => {
       return (
         <CommandTooltip
           command={quickCommand}

@@ -6,18 +6,17 @@ import { ScrollbarOrientation } from './IScrollbar';
 
 import styles from './Scrollbar.module.css';
 
-export interface ScrollButtonProps { // extend React.HTMLAttributes<HTMLElement> {
-  style?: React.CSSProperties;
+export interface ScrollButtonProps extends React.HTMLAttributes<any> {
+  // style?: React.CSSProperties;
   orientation?: ScrollbarOrientation;
   disabled?: boolean;
 
-  onMouseUp: (e: React.MouseEvent<HTMLElement>) => void;
-  onMouseLeave: (e: React.MouseEvent<HTMLElement>) => void;
-  onMouseDown: (e: React.MouseEvent<HTMLElement>) => void;
-  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
+  onMouseUp: (e: React.MouseEvent<any>) => void;
+  onMouseLeave: (e: React.MouseEvent<any>) => void;
+  onMouseDown: (e: React.MouseEvent<any>) => void;
+  onClick?: (e: React.MouseEvent<any>) => void;
 
-
-  //ref?: React.Ref<HTMLElement>;
+  ref?: React.Ref<any>;
 }
 
 // TODO - make dynamic icons with viewport of 0 0 9 9

@@ -11,8 +11,8 @@ import { IColor } from '@sheetxl/sdk';
 import { useCallbackRef, KeyCodes, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
-  ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitPopupPanelProps,
-  ExhibitPopupIconButtonProps, PopupButtonType
+  ExhibitPopupIconButton, ExhibitPopupMenuItem, type ExhibitPopupPanelProps,
+  type ExhibitPopupIconButtonProps, PopupButtonType
 } from '@sheetxl/utils-mui';
 
 import { ColorPanel, type ColorPanelProps } from './ColorPanel';
@@ -38,7 +38,7 @@ export interface ColorPopupButtonProps extends Omit<ExhibitPopupIconButtonProps,
    */
   variant?:PopupButtonType;
 
-  panelProps?: Partial<ColorPanelProps>;
+  propsPanel?: Partial<ColorPanelProps>;
 
   /**
    * When closing the popup closeAll movables or just the current.
@@ -63,7 +63,7 @@ export const ColorPopupButton = memo(
     onPreviewColorImmediate: propOnPreviewColorImmediate,
     onSelectColor: propOnSelectColor,
     variant = PopupButtonType.Toolbar,
-    panelProps,
+    propsPanel,
     shouldCloseFloatAll = true,
     compareRGB = false,
     darkMode = false,
@@ -77,7 +77,7 @@ export const ColorPopupButton = memo(
   const [previewColor, setPreviewColor] = useState<IColor>(() => undefined);
 
   const activeColorPopup = previewColor || selectedColor;
-  const activeColorButton = quickColor || activeColorPopup || panelProps?.autoColor;
+  const activeColorButton = quickColor || activeColorPopup || propsPanel?.autoColor;
   // const icon = propIcon; // || (<IconComponent dynamicColor={activeColorButton.toString()}/>)
 
   // Needed for closing animations we can and often do get mouse event after starting close
@@ -143,7 +143,7 @@ export const ColorPopupButton = memo(
     const { closeFloat, closeFloatAll } = props;
     return (
       <ColorPanel
-        {...panelProps}
+        {...propsPanel}
         selectedColor={selectedColor}
         previewColor={previewColor}
         onDone={shouldCloseFloatAll ? closeFloatAll : closeFloat}
@@ -161,14 +161,14 @@ export const ColorPopupButton = memo(
         darkMode={darkMode}
       />
     )
-  }, [selectedColor, previewColor, shouldCloseFloatAll, activeColorButton, panelProps?.autoColor, darkMode]); // Note - we should be watching panelProps but most consumers are not memo-ing.
+  }, [selectedColor, previewColor, shouldCloseFloatAll, activeColorButton, propsPanel?.autoColor, darkMode]); // Note - we should be watching panelProps but most consumers are not memo-ing.
 
   const propsButton = {
     // ref: refForwarded,
     onQuickClick: quickColor ? handleSplitClick : undefined,
     createPopupPanel: createPopupPanel,
-    popupProps: {
-      popperProps: {
+    propsPopup: {
+      propsPopper: {
         resizeOnOverflow: false,
       },
     },

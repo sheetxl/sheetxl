@@ -29,7 +29,7 @@ const Template: React.FC = (props) => {
     }
   });
 
-  const cellRenderer = useCallback((props: CellRendererProps) => {
+  const renderCell = useCallback((props: CellRendererProps) => {
     const {
       style: propStyle,
       key,
@@ -52,7 +52,7 @@ const Template: React.FC = (props) => {
 
   const {
     // commands: commandsSelection,
-    overlay: overlaySelection,
+    renderOverlay: renderSelection,
     ...selectionProps // used for callbacks
   } = useSelection({
     selection,
@@ -66,14 +66,14 @@ const Template: React.FC = (props) => {
         {...rest}
         rowCount={rowCount}
         ref={gridRef}
-        cellRenderer={cellRenderer}
+        renderCell={renderCell}
         // onKeyDown={(e: React.KeyboardEvent<any>) => {
         //   commandsSelection.onKeyDown(e);
         // }}
         onPointerDown={(e: React.PointerEvent<any>) => {
           selectionProps.onPointerDown(e);
         }}
-        overlays={[overlaySelection]}
+        renderOverlays={[renderSelection]}
       />
     </div>
   );
