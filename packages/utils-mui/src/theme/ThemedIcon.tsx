@@ -50,7 +50,7 @@ const ThemeableIcon: React.FC<ThemedIconProps & { ref?: any }> = memo(
   forwardRef<React.ReactElement<any, any>, ThemedIconProps>((props, refForwarded) => {
   const {
     sx: sxProps,
-    size = 'small',
+    size = 'medium',
     activeColor,
     children,
     className: propClassName,
@@ -60,15 +60,12 @@ const ThemeableIcon: React.FC<ThemedIconProps & { ref?: any }> = memo(
   // to trigger invalidation
 
   // let padding;
-  let width: any = '1rem';
-  let height: any = '1rem';
-  if (size === 'medium') {
-    width = '1.25rem';
-    height = '1.25rem';
+  let sizeAdj: any = 'var(--icon-size)';
+  if (size === 'small') {
+    sizeAdj = 'calc(var(--icon-size-sm) * .875)';
     // padding = '2px 2px';
   } else if (size === 'large') {
-    width = '1.5rem';
-    height = '1.5rem';
+    sizeAdj = 'calc(var(--icon-size-lg) * 1.5)';
     // padding = '4px 4px';
   }
 
@@ -77,8 +74,9 @@ const ThemeableIcon: React.FC<ThemedIconProps & { ref?: any }> = memo(
       ref={refForwarded}
       className={clsx("icon", propClassName)}
       sx={{
-        width,
-        height,
+        width: 'var(--icon-size)',
+        height: 'var(--icon-size)',
+        '--icon-size-adj': sizeAdj,
         // padding,
         ...sxProps
       }}
@@ -92,6 +90,9 @@ const ThemeableIcon: React.FC<ThemedIconProps & { ref?: any }> = memo(
 
 const ThemedIcon:any = styled(ThemeableIcon)(({ theme }) => {
   return {
+    fontSize: 'var(--icon-size-adj)',
+    minWidth: 'var(--icon-size-adj)',
+    minHeight: 'var(--icon-size-adj)',
     fill: "currentColor",
     '& .activeColor': {
       fill: theme.palette.primary.main//`${activeColor ? activeColor : 'currentColor'}`;

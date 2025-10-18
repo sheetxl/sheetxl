@@ -1,7 +1,8 @@
 import React, { useCallback, useRef } from 'react';
 
 import {
-  DefaultCellRenderer, CellRendererProps, ScrollableGrid as Grid, IGridElement, useSelection
+  DefaultCellRenderer, type CellRendererProps, ScrollableGrid as Grid,
+  IGridElement, useSelection
 } from '@sheetxl/grid-react';
 
 const Template: React.FC = (props) => {
@@ -16,13 +17,13 @@ const Template: React.FC = (props) => {
   const {
     selection,
     // commands: commandsSelection,
-    overlay: overlaySelection,
+    renderOverlay: renderSelection,
     ...selectionProps // used for callbacks
   } = useSelection({
     gridRef
   });
 
-  const cellRenderer = useCallback((props: CellRendererProps) => {
+  const renderCell = useCallback((props: CellRendererProps) => {
     const {
       key,
       style: propStyle,
@@ -43,7 +44,7 @@ const Template: React.FC = (props) => {
   }, [freezeTop, freezeLeft]);
 
   const freezeDividerProps = {
-    pathProps: {
+    propsPath: {
       stroke: 'blue'
     }
   }
@@ -52,18 +53,18 @@ const Template: React.FC = (props) => {
       <Grid
         {...rest}
         ref={gridRef}
-        cellRenderer={cellRenderer}
+        renderCell={renderCell}
         freezeTop={freezeTop}
         freezeLeft={freezeLeft}
-        freezeLeftProps={freezeDividerProps}
-        freezeTopProps={freezeDividerProps}
+        propsFreezeLeft={freezeDividerProps}
+        propsFreezeTop={freezeDividerProps}
         // onKeyDown={(e: React.KeyboardEvent<any>) => {
         //   commandsSelection.onKeyDown(e);
         // }}
         onPointerDown={(e: React.PointerEvent<any>) => {
           selectionProps.onPointerDown(e);
         }}
-        overlays={[overlaySelection]}
+        renderOverlays={[renderSelection]}
       />
     </div>
   );

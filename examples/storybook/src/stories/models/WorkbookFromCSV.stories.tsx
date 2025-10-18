@@ -52,7 +52,8 @@ const Template: React.FC = (props) => {
         source: new TextEncoder().encode(csv).buffer,
         format: 'csv',
         createWorkbookOptions: {
-          styles: customStyles
+          styles: customStyles,
+          name: 'From CSV'
         },
         setValuesOptions: {
           textParser: { // csv defaults this to true, set to false if every value should remain as text
@@ -112,8 +113,7 @@ const Template: React.FC = (props) => {
       sx={style}
       {...rest}
       workbook={loadResults}
-      title='From CSV'
-      titleProps={{
+      propsWorkbookTitle={{
         readOnly: true
       }}
       importExportDisabled={true}

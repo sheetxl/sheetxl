@@ -36,7 +36,7 @@ export interface  ExhibitFloatPanelProps extends BoxProps {
 
   createPopupPanel?: (props: ExhibitPopupPanelProps) => React.ReactElement<any>;
 
-  popperProps?: Partial<ExhibitPopperProps>;
+  propsPopper?: Partial<ExhibitPopperProps>;
 
   onClosing?: () => void;
 
@@ -47,10 +47,15 @@ export interface  ExhibitFloatPanelProps extends BoxProps {
   onOpening?: () => void;
 
   onOpen?: () => void;
+
+  /**
+   * Reference to the underlying element
+   */
+  ref?: React.Ref<any>;
 }
 
-const ExhibitFloatPanel: React.FC<ExhibitFloatPanelProps & { ref?: any }> = memo(
-    forwardRef<any, ExhibitFloatPanelProps>((props, refForwarded) => {
+export const ExhibitFloatPanel = memo(forwardRef<any, ExhibitFloatPanelProps>(
+  (props: ExhibitFloatPanelProps, refForwarded) => {
   const {
     open,
     anchorEl,
@@ -58,7 +63,7 @@ const ExhibitFloatPanel: React.FC<ExhibitFloatPanelProps & { ref?: any }> = memo
     label,
     floatReference,
     createPopupPanel = defaultCreatePopupPanel,
-    popperProps,
+    propsPopper,
     onMount: propOnMount,
     onClosing: propOnClosing,
     onClose: propOnClose,
@@ -130,7 +135,7 @@ const ExhibitFloatPanel: React.FC<ExhibitFloatPanelProps & { ref?: any }> = memo
       onOpen={handleOpen}
       onClosing={handleClosing}
       onClose={handleClose}
-      {...popperProps}
+      {...propsPopper}
     >
       {popupPanel}
     </ExhibitPopper>
@@ -138,4 +143,3 @@ const ExhibitFloatPanel: React.FC<ExhibitFloatPanelProps & { ref?: any }> = memo
 }));
 
 ExhibitFloatPanel.displayName = "ExhibitFloatPanel";
-export { ExhibitFloatPanel };

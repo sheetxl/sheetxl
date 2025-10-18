@@ -16,7 +16,7 @@ export interface ColorButtonProps extends React.HTMLAttributes<HTMLElement> {
   onSelectColorDef?: (colorDef: IColor.DefinitionWithLabel) => void;
   onPreviewColorDef?: (colorDef: IColor.DefinitionWithLabel) => void;
 
-  swatchProps?: Partial<SwatchProps>;
+  propsSwatch?: Partial<SwatchProps>;
   defaultButtonSize?: number; // default button size in pixels, used for alpha check size
   isLarge?: boolean;
   compareRGB?: boolean;
@@ -34,7 +34,7 @@ export const ColorButton = memo((props: ColorButtonProps) => {
     colorDef,
     onSelectColorDef,
     onPreviewColorDef,
-    swatchProps,
+    propsSwatch,
     defaultButtonSize = 24,
     isLarge = false,
     compareRGB = false,
@@ -117,7 +117,7 @@ export const ColorButton = memo((props: ColorButtonProps) => {
           onPreviewColor={handlePreviewColor}
           alphaCheckSize={isLarge ? 9 : undefined}
           darkMode={darkMode}
-          {...swatchProps}
+          {...propsSwatch}
         >
         <div
           style={{

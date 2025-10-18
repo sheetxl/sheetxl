@@ -13,8 +13,8 @@ const Template: React.FC = (props) => {
   const {
     showVerticalScrollbar,
     showHorizontalScrollbar,
-    createHorizontalScrollbar,
-    createVerticalScrollbar,
+    renderScrollbarHorizontal,
+    renderScrollbarVertical,
     createScrollCorner,
     ...rest
   } = props as any;
@@ -25,10 +25,10 @@ const Template: React.FC = (props) => {
         {...rest}
         showVerticalScrollbar={showVerticalScrollbar}
         showHorizontalScrollbar={showHorizontalScrollbar}
-        createHorizontalScrollbar={createHorizontalScrollbar}
-        createVerticalScrollbar={createVerticalScrollbar}
+        renderScrollbarHorizontal={renderScrollbarHorizontal}
+        renderScrollbarVertical={renderScrollbarVertical}
         createScrollCorner={createScrollCorner}
-        cellRenderer={sharedCellRenderer}
+        renderCell={sharedCellRenderer}
       />
     </div>
   );
@@ -69,8 +69,8 @@ const createCustomCorner = ({ width, height }) => {
 
 export const CustomScrollElements = Template.bind({});
 CustomScrollElements.args = {
-  createHorizontalScrollbar: createRedScrollbar,
-  createVerticalScrollbar: createRedScrollbar,
+  renderScrollbarHorizontal: createRedScrollbar,
+  renderScrollbarVertical: createRedScrollbar,
   createScrollCorner: createCustomCorner,
   columnCount: 200,
   rowCount: 200,

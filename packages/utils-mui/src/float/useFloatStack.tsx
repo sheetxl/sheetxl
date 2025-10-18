@@ -38,7 +38,7 @@ export interface FloatStackOptions {
   /**
    * Passed to the underlying popup panel
    */
-  popperProps?: Partial<ExhibitPopperProps>;
+  propsPopper?: Partial<ExhibitPopperProps>;
 }
 
 // Stable reference key
@@ -174,7 +174,7 @@ export const useFloatStack = (props?: FloatStackOptions): FloatStack => {
     parentFloat: propParentFloat = null,
     onOpen: propOnOpen,
     onClose: propOnClose,
-    popperProps,
+    propsPopper,
     createPopupPanel : propCreatePopupPanel = defaultCreatePopupPanel
   } = props ?? {};
 
@@ -445,7 +445,7 @@ export const useFloatStack = (props?: FloatStackOptions): FloatStack => {
         onClosing={handleClosing}
         onClose={() => { setFloatVisible(false); parentFloat.onChildHidden();}} //  onClose?.() onOpen?
         onMount={handleMount}
-        popperProps={{
+        propsPopper={{
           onKeyDown: handleKeyDown,
           onMouseEnter: (_e) => {
             // If we were scheduled to close and we have moved the mouse back over then don't cancel
@@ -455,11 +455,11 @@ export const useFloatStack = (props?: FloatStackOptions): FloatStack => {
               floatReference.closeChild(); // We reschedule our children to close however
             }
           },
-          ...popperProps
+          ...propsPopper
         }}
         createPopupPanel={createPopupPanel}
       />);
-  }, [isFloatVisible, isOpen, propLabel, disablePopup, popperProps, createPopupPanel, _]); // , anchor
+  }, [isFloatVisible, isOpen, propLabel, disablePopup, propsPopper, createPopupPanel, _]); // , anchor
 
   const closeListener = useCallbackRef((event: globalThis.MouseEvent | globalThis.KeyboardEvent) => {
     // Do nothing if clicking ref's element or descendent elements

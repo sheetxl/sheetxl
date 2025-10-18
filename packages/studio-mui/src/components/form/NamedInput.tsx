@@ -58,7 +58,7 @@ export interface NamedInputProps extends FormControlProps {
  * NamedItem input field.
  */
 export const NamedInput = memo(forwardRef<HTMLDivElement, NamedInputProps>(
-  (props: NamedInputProps, refForward) => {
+  (props: NamedInputProps, refForwarded) => {
   const {
     disabled: propDisabled,
     style: propStyle,
@@ -138,7 +138,7 @@ export const NamedInput = memo(forwardRef<HTMLDivElement, NamedInputProps>(
         ...propSx
       }}
       size="small"
-      ref={refForward}
+      ref={refForwarded}
       className={clsx('named-input', propClassName)}
       {...rest}
     >

@@ -10,7 +10,7 @@ const Template: React.FC = (props) => {
     ...rest
   } = props as any;
 
-  const cellRenderer = useCallback((props: CellRendererProps) => {
+  const renderCell = useCallback((props: CellRendererProps) => {
     const {
       key,
       style: propStyle,
@@ -42,7 +42,7 @@ const Template: React.FC = (props) => {
         getColumnWidth={(index: number): number => {
           return 120; // to be more like google sheets
         }}
-        cellRenderer={cellRenderer}
+        renderCell={renderCell}
       />
     </div>
   );

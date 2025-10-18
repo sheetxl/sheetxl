@@ -48,6 +48,10 @@ export interface RangeInputProps extends FormControlProps {
    * @param address
    */
   resolvedAddress: (address: ICellRanges.Address) => ICellRanges;
+  /**
+   * Reference to the element.
+   */
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 /** `null` safe toString. */
@@ -59,8 +63,8 @@ const toStringWithEmpty = (value: ICellRanges): string => {
 /**
  * Range input field.
  */
-export const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivElement> }> =
-   memo(forwardRef<HTMLDivElement, RangeInputProps>((props, refForward) => {
+export const RangeInput = memo(forwardRef<HTMLDivElement, RangeInputProps>(
+  (props: RangeInputProps, refForwarded) => {
   const {
     formName,
     formOptions,
@@ -175,7 +179,7 @@ export const RangeInput: React.FC<RangeInputProps & { ref?: React.Ref<HTMLDivEle
         ...propSx
       }}
       size="small"
-      ref={refForward}
+      ref={refForwarded}
       className={clsx('range-input', propClassName)}
       {...rest}
     >

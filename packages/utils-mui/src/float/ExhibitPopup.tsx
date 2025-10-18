@@ -84,7 +84,7 @@ export interface ExhibitPopupButtonProps extends BoxProps {
 
   onPopupClose?: () => void;
 
-  popupProps?: Partial<ExhibitFloatPanelProps>;
+  propsPopup?: Partial<ExhibitFloatPanelProps>;
 
   /**
    * Tooltip title. Zero-length titles string are never displayed.
@@ -101,8 +101,8 @@ export interface ExhibitPopupButtonProps extends BoxProps {
    */
   onQuickClick?: (e: React.MouseEvent<Element>) => void;
 
-  quickButtonProps?: ExhibitQuickButtonProps;
-  createQuickButton?: (props: ExhibitQuickButtonProps) => React.ReactNode;
+  propsQuickButton?: ExhibitQuickButtonProps;
+  renderQuickButton?: (props: ExhibitQuickButtonProps) => React.ReactNode;
 
   disabled?: boolean;
 
@@ -116,7 +116,7 @@ export interface ExhibitPopupButtonProps extends BoxProps {
   /**
    * Props applied to the `TouchRipple` element.
    */
-  TouchRippleProps?: Partial<any>;//TouchRippleProps>;
+  propsTouchRipple?: Partial<any>;//TouchRippleProps>;
 
   /**
   * A ref that points to the `TouchRipple` element.

@@ -8,7 +8,7 @@ import {
 
 import { SimpleTooltip } from '../components';
 
-export const createScrollEdgeButton = (props: ScrollButtonProps) => {
+export const renderScrollButtonEdge = (props: ScrollButtonProps) => {
   const propsCustom = {
     style: {
       cursor: 'pointer'
@@ -54,7 +54,7 @@ export const createScrollButton = (props: ScrollButtonProps, icon: React.ReactEl
   )
 }
 
-export const createScrollStartButton = (props: ScrollButtonProps) => {
+export const renderScrollButtonStart = (props: ScrollButtonProps) => {
   return createScrollButton(
     props,
     (ScrollbarOrientation.Horizontal ? <DynamicIcon iconKey="ArrowLeft" size="small"/> : <DynamicIcon iconKey="ArrowUpward" size="small"/>),
@@ -63,7 +63,7 @@ export const createScrollStartButton = (props: ScrollButtonProps) => {
   );
 }
 
-export const createScrollEndButton = (props: ScrollButtonProps) => {
+export const renderScrollButtonEnd = (props: ScrollButtonProps) => {
   return createScrollButton(
     props,
     (ScrollbarOrientation.Horizontal ? <DynamicIcon iconKey="ArrowRight" size="small"/> : <DynamicIcon iconKey="ArrowDownward" size="small"/>),

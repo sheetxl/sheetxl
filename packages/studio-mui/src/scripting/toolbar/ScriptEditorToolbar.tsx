@@ -13,19 +13,19 @@ import { InsertScriptCommandButton } from '../command/InsertScriptCommandButton'
 /**
  * Toolbar for script editor with common script commands.
  */
-export const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandToolbarProps, "createToolbarPalette">>(
+export const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandToolbarProps, "renderToolbarPalette">>(
   (props, refForwarded) => {
   const {
     commands,
     parentFloat,
-    commandButtonProps: propCommandButtonProps,
+    propsCommandButton: propCommandButtonProps,
     ...rest
   } = props;
 
-  const createToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
+  const renderToolbarPalette = useCallbackRef((props: CommandToolbarButtonProps) => {
     const {
-      commandButtonProps,
-      commandPopupProps: _commandPopupProps
+      propsCommandButton,
+      propsCommandPopup: _commandPopupProps
     } = props;
 
     // TODO - all of the icons stroke lines are 'too thin' and need to be revisited by a designer, and ai, or me.
@@ -46,7 +46,7 @@ export const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandT
         }}
       >
         <CommandButton
-          {...commandButtonProps}
+          {...propsCommandButton}
           command={(commands?.getCommand('saveScripts'))}
         />
         {/* log viewer - console */}
@@ -67,7 +67,7 @@ export const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandT
         }}
       >
         <InsertScriptCommandButton
-          {...commandButtonProps}
+          {...propsCommandButton}
           commands={commands}
         />
       </OverflowPalette>
@@ -83,8 +83,8 @@ export const ScriptEditorToolbar = memo(forwardRef<HTMLDivElement, Omit<CommandT
       ref={refForwarded}
       commands={commands}
       parentFloat={parentFloat}
-      commandButtonProps={propCommandButtonProps}
-      createToolbarPalette={createToolbarPalette}
+      propsCommandButton={propCommandButtonProps}
+      renderToolbarPalette={renderToolbarPalette}
       {...rest}
     />
   );

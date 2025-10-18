@@ -70,13 +70,13 @@ export const NestingPopupButton = memo(
     );
   }, [nestedChildren]);
 
-  const buttonProps: ExhibitPopupButtonProps = {
+  const localPropsButton: ExhibitPopupButtonProps = {
     disabled: propDisabled,
     createPopupPanel,
     ...rest
   }
   return (variant === PopupButtonType.Toolbar ?
-    <ExhibitPopupIconButton {...buttonProps}/> :
-    <ExhibitPopupMenuItem {...buttonProps}/>
+    <ExhibitPopupIconButton {...localPropsButton}/> :
+    <ExhibitPopupMenuItem {...localPropsButton}/>
   );
 }));

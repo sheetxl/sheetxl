@@ -130,12 +130,12 @@ const Template: React.FC = (props) => {
         onSelectedTabIndexChange={handleSelectedTabIndexChange}
         onTabNameChange={handleTabNameChange}
         onTabMove={handleTabMove}
-        createTabButton={(props) => {
+        renderTabButton={(props) => {
           return <CustomTab {...props}/>
         }}
         activeColor={new Color('red')}
-        editLabelProps={{
-          createInput: (props) => {
+        propsEditLabel={{
+          renderInput: (props) => {
             return (
               <input
                 {...props}

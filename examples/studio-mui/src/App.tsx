@@ -12,12 +12,11 @@ import { IWorkbook, LicenseManager } from '@sheetxl/sdk';
 
 import { PersistenceStateProvider, LocalStorageStore } from '@sheetxl/utils-react';
 
-import { ThemeMode, ThemeModeOptions } from '@sheetxl/utils-mui';
+import type { ThemeMode, ThemeModeOptions } from '@sheetxl/utils-mui';
 
 import type { ReadWorkbookOptions } from '@sheetxl/io';
-import {
-  Studio, setPrintExamplesOnLoad
-} from '@sheetxl/studio-mui';
+
+import { Studio, setPrintExamplesOnLoad } from '@sheetxl/studio-mui';
 
 /**
  * Google Analytics. This is optional and can be set to your own id or removed.
@@ -245,7 +244,7 @@ function App() {
         //   <div>Loading workbook...</div>
         // )}
         // update the tab
-        onTitleChange={(title: string) => {
+        onWorkbookTitleChange={(title: string) => {
           if (isAppStandalone) {
             document.title = title;
           } else {

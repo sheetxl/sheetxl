@@ -52,7 +52,7 @@ const PresetChartIconButton = memo((props: PresetChartIconButtonProps) => {
   return (
     <ExhibitIconButton
       key={presetKey}
-      tooltipProps={{
+      propsTooltip={{
         description: descriptor.description
       }}
       icon={
@@ -207,7 +207,7 @@ export const InsertChartCommandButton = memo(
       selected={false}
       icon={
         <ThemedIcon
-          size={'small'}
+          // size={'small'}
         >
           <ChartIcon/>
         </ThemedIcon>

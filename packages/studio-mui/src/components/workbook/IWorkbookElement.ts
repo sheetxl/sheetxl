@@ -1,9 +1,6 @@
 import React from 'react';
 
-import { type SxProps } from '@mui/system';
 import { type Theme } from '@mui/material/styles';
-
-import { type PaperProps } from '@mui/material';
 
 import { type IWorkbook } from '@sheetxl/sdk';
 
@@ -45,7 +42,10 @@ export type WorkbookLoadEvent = {
   source: IWorkbookElement;
 }
 
-export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
+/**
+ * Properties and methods available on the workbook element.
+ */
+export interface WorkbookElementProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'autoFocus'> {
   /**
    * A memory model of the workbook.
    * If one is not provided a default workbook model will be used.
@@ -58,10 +58,6 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    */
   // TODO - on first render
   onElementLoad?: (event: WorkbookLoadEvent) => void | Promise<void>;
-  /**
-   * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
-   */
-  sx?: SxProps<Theme>;
   /**
    * Additional commands provided by application.
    */
@@ -78,7 +74,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
   /**
    * Allow for customizations on FormulaBar.
    */
-  formulaBarProps?: FormulaBarProps;
+  propsFormulaBar?: FormulaBarProps;
   /**
    * Render FormulaBar.
    *
@@ -94,7 +90,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
   /**
    * Allow for customizations on tabs.
    */
-  tabsProps?: WorkbookStripProps;
+  propsTabs?: WorkbookStripProps;
   /**
    * Render custom tabs.
    * @param props
@@ -109,7 +105,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
   /**
    * Customizations for the status bar
    */
-  statusBarProps?: StatusBarProps;
+  propsStatusBar?: StatusBarProps;
   /**
    * Pass in a custom statusbar.
    *
@@ -120,7 +116,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
   /**
    * Props for the toolbar.
    */
-  toolbarProps?: WorkbookToolbarsProps;
+  propsToolbar?: WorkbookToolbarsProps;
   /**
    * Pass in a custom toolbar.
    * @param props
@@ -128,9 +124,9 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    */
   renderToolbar?: (props: WorkbookToolbarsProps) => React.ReactElement;
   /**
-   * Allow for customizations on the context menu.
+   * Props for the context menu.
    */
-  contextMenuSx?: SxProps<Theme>;
+  propsContextMenu?: WorkbookContextMenuProps;
   /**
    * Render custom context menu.
    * @param props
@@ -143,6 +139,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    * @param props
    * @returns A React Element representing the FilterMenu.
    */
+  // TODO - add propsFilterMenu
   renderFilterMenu?: (props: FilterColumnMenuProps) => React.ReactElement;
   /**
    * Render custom movable menu.
@@ -150,11 +147,12 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
    * @param props
    * @returns A React Element representing the MovableMenu.
    */
+  // TODO - propsMovableMenu
   renderMovableMenu?: (props: MovableContextMenuProps) => React.ReactElement;
   /**
    * Allow for customizations on loading panels.
    */
-  loadingProps?: LoadingPanelProps;
+  propsLoading?: LoadingPanelProps;
   /**
    * Assign a custom loading panel.
    *
@@ -164,7 +162,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
   /**
    * Allow for customizations on loading panel.
    */
-  sheetProps?: SheetProps;
+  propsSheet?: SheetProps;
   /**
    * Render custom ISheetElement.
    *
@@ -175,7 +173,7 @@ export interface WorkbookElementProps extends Omit<PaperProps, 'autoFocus'> {
   /**
    * Allows users to Wrap stage children in Top level Context
    */
-  mainWrapper?: (children: React.ReactNode) => React.ReactElement;
+  wrapperMain?: (children: React.ReactNode) => React.ReactElement;
   /**
    * Show the horizontal scrollbar
    */

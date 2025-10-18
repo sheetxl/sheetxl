@@ -1,6 +1,6 @@
-import React, { memo, forwardRef } from 'react';
+import React, { useMemo, memo, forwardRef } from 'react';
 
-import { SxProps } from '@mui/system';
+import { type SxProps } from '@mui/system';
 import { Theme } from '@mui/material/styles';
 import { alpha } from '@mui/system';
 
@@ -25,7 +25,8 @@ export interface SelectedIconProps extends React.HTMLAttributes<HTMLElement> {
   outlined?: boolean;
 }
 
-export const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>((props: SelectedIconProps, refForwarded) => {
+export const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>(
+  (props: SelectedIconProps, refForwarded) => {
   const {
     children : propChildren,
     selected = true,
@@ -34,22 +35,25 @@ export const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>((
     ...rest
   } = props;
 
-  const style = {
-    display: 'flex',
-    // padding: '1px 1px',
-    border: (theme: Theme) => {
-      if (!selected)
-        return `solid transparent 1px`; // to preserve sizing
-      // return 'red solid 1px';
-      return `solid ${(outlined ? theme.palette.divider : "transparent")} 1px`
-    },
-    borderRadius : (theme: Theme) => `${theme.shape.borderRadius}px`,
-    backgroundColor: (theme: Theme) => {
-      if (!selected)
-        return;
-      return alpha(((theme.palette.text as any).icon ?? theme.palette.action.active), theme.palette.action.selectedOpacity);
+  const localPropSx = useMemo(() => {
+    return {
+      display: 'flex',
+      // padding: '1px 1px',
+      border: (theme: Theme) => {
+        if (!selected)
+          return `solid transparent 1px`; // to preserve sizing
+        // return 'red solid 1px';
+        return `solid ${(outlined ? theme.palette.divider : "transparent")} 1px`
+      },
+      borderRadius : (theme: Theme) => `${theme.shape.borderRadius}px`,
+      backgroundColor: (theme: Theme) => {
+        if (!selected)
+          return;
+        return alpha(((theme.palette.text as any).icon ?? theme.palette.action.active), theme.palette.action.selectedOpacity);
+      },
+      ...propSX
     }
-  };
+  }, [propSX]);
 
   let children = propChildren;
   if (children === null)
@@ -60,10 +64,7 @@ export const SelectedIcon = memo(forwardRef<HTMLDivElement, SelectedIconProps>((
   return (
     <Box
       ref={refForwarded}
-      sx={{
-        ...style,
-        ...propSX
-      }}
+      sx={localPropSx}
       {...rest}
     >
       { children }

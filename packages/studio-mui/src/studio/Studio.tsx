@@ -20,22 +20,24 @@ import { type StudioProps } from './StudioProps';
  *  * Material-ui theme width light/dark toggle
  *  * lazy loading
  *
- * Demos:
+ * Demo:
  *
- * - [SheetXL](https://storybook.sheetxl.com/)
+ * - [SheetXL](https://storybook.sheetxl.com/?path=/story/studio--workbook-studio)
  *
  * API:
  *
- * - [Studio](https://api.sheetxl.com/variables/_sheetxl_studio-mui.Studio.html)
+ * - [StudioProps](https://api.sheetxl.com/interfaces/_sheetxl_studio-mui.StudioProps.html)
+ * - [IWorkbookElement](https://api.sheetxl.com/interfaces/_sheetxl_studio-mui.IWorkbookElement.html)
  */
-const Studio = memo(forwardRef<IWorkbookElement, StudioProps>((props: StudioProps, refForwarded: React.Ref<IWorkbookElement>) => {
+const Studio = memo(forwardRef<IWorkbookElement, StudioProps>(
+  (props: StudioProps, refForwarded: React.Ref<IWorkbookElement>) => {
   const {
     sx: propSx,
     style: propStyle,
     className: propClassName,
     licenseKey,
     renderLoading: propRenderLoading = renderWorkbookLoading,
-    loadingProps,
+    propsLoading,
     ...rest
   } = props;
   if (licenseKey) {
@@ -59,11 +61,11 @@ const Studio = memo(forwardRef<IWorkbookElement, StudioProps>((props: StudioProp
         }}
       >
         {propRenderLoading(
-          {...loadingProps}
+          {...propsLoading}
         )}
       </Paper>
     );
-  }, [propSx, propStyle, propRenderLoading, loadingProps]);
+  }, [propSx, propStyle, propRenderLoading, propsLoading]);
 
   const EagerStudio = useMemo(() => {
     return React.lazy(async () => {
@@ -80,8 +82,8 @@ const Studio = memo(forwardRef<IWorkbookElement, StudioProps>((props: StudioProp
         {...rest}
         className={propClassName}
         renderLoading={propRenderLoading}
-        loadingProps={{
-          ...loadingProps,
+        propsLoading={{
+          ...propsLoading,
           transitionDelay: '0ms' // because we were already rendering it
         }}
         sx={propSx}

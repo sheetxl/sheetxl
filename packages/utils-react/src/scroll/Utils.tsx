@@ -25,8 +25,6 @@ export const getScrollTo = (currentLocation: number, boundary: number, children:
   return defaultValue;
 }
 
-
-export const defaultCreateScrollbar = (props: ScrollbarProps, ref?: React.Ref<HTMLDivElement>) => {
-  // return <NativeScrollbar {...props} ref={ref} />;
-  return <Scrollbar {...props} ref={ref as any} />;
+export const defaultRenderScrollbar = (props: ScrollbarProps) => {
+  return <Scrollbar {...props} />;
 }

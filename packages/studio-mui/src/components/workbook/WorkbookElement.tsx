@@ -9,18 +9,17 @@ import { useMeasure } from 'react-use';
 import { useTheme, Theme, alpha, getOverlayAlpha } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
-import { Paper } from '@mui/material';
 import { Typography } from '@mui/material';
 
 import { CSSTransition } from 'react-transition-group';
 
 import {
-  Workbook, IWorkbook, IMovable, IAutoFilter, ISheet, IWorkbookProtection,
+  IWorkbook, IMovable, IAutoFilter, ISheet, IWorkbookProtection,
   IWorkbookView, TypesUtils, type TopLeft, type Bounds
 } from '@sheetxl/sdk';
 
 import {
-  ScrollPane, ScrollbarProps, ToolTipPlacement, KeyModifiers, SimpleCommand,
+  ScrollPane, type ScrollbarProps, ToolTipPlacement, KeyModifiers, SimpleCommand,
   useCallbackRef, useImperativeElement, SplitPane,
 } from '@sheetxl/utils-react';
 
@@ -34,7 +33,7 @@ import {
 import { PictureEditor, ChartEditor, EmptyFrame } from '@sheetxl/react';
 
 import {
-  scrollbarTheming, useFloatStack, ExhibitPopupPanelProps, type ExhibitPopperProps,
+  scrollbarTheming, useFloatStack, type ExhibitPopupPanelProps, type ExhibitPopperProps,
   AnimatedLoadingPanel, SimpleTooltip
 } from '@sheetxl/utils-mui';
 
@@ -89,15 +88,18 @@ interface ContextMenuDetails {
   clientX?: number;
   clientY?: number;
   anchor?: React.ReactElement | any;
-  popperProps?: Partial<ExhibitPopperProps>;
+  propsPopper?: Partial<ExhibitPopperProps>;
 }
 
-export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElementProps>((props: WorkbookElementProps, refForwarded) => {
+/**
+ * The main component for rendering a workbook.
+ */
+export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElementProps>(
+  (props: WorkbookElementProps, refForwarded) => {
   const {
     workbook: propWorkbook,
     onElementLoad: propOnElementLoad,
     autoFocus = false,
-    sx: propSx,
     style: propStyle,
     className: propClassName,
     onFocus: propOnFocus,
@@ -106,29 +108,28 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
     onRepeatCommandChange: propOnRepeatCommandChange,
     commands: propCommandsParent,
     showFormulaBar: propShowFormulaBar,
-    formulaBarProps: propsFormulaBar,
+    propsFormulaBar,
     renderFormulaBar: propRenderFormulaBar = renderWorkbookFormulaBar,
     showTabs: propShowTabs,
-    tabsProps: propsTabs,
+    propsTabs,
     renderTabs: propRenderTabs = renderWorkbookStrip,
     showStatusBar: propShowStatusBar,
-    statusBarProps: propsStatusBar,
+    propsStatusBar,
     renderStatusBar: propRenderStatusBar = renderWorkbookStatusBar,
-    toolbarProps: propsToolbar,
+    propsToolbar,
     renderToolbar: propRenderToolbar = renderWorkbookToolbars,
-    contextMenuSx: propsContextMenuSx,
-
+    propsContextMenu,
     renderContextMenu: propRenderContextMenu = renderWorkbookContextMenu,
     renderFilterMenu: propRenderFilterMenu = renderFilterColumnMenu,
     renderMovableMenu: propRenderMovableMenu = renderMovableContextMenu,
 
     renderLoading: propsRenderLoading = renderWorkbookLoading,
-    loadingProps: propsLoadingProps,
+    propsLoading,
 
-    sheetProps: propsSheet,
+    propsSheet,
     renderSheet: propRenderSheet = renderWorkbookSheet,
 
-    mainWrapper: propsMainWrapper,
+    wrapperMain: propWrapperMain,
 
     showHorizontalScrollbar: propShowHorizontalScrollbar,
     showVerticalScrollbar: propShowVerticalScrollbar,
@@ -360,7 +361,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
       onUserChange: handleOnSheetChange,
       workbook: propWorkbook,
       commands: commandsWorkbook,
-      sheetTabProps: {
+      propsSheetTab: {
         // tabRadius: 0, // TODO - allow for tab direction (bottom, left, right, top, none) (this is a nicer flavor than tabRadius)
       },
       // commandsSheet,
@@ -410,7 +411,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
               ...propsStyle
             }}
             /* HACK - required because thumbs are in portals */
-            touchThumbProps={{
+            propsTouchThumb={{
               backgroundColor: gridTheme.palette.background.paper,
               borderColor: gridTheme.palette.primary.main,
               fillColor: 'grey',
@@ -468,7 +469,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
           }}
           minBefore="200px"
           minAfter="180px"
-          resizerProps={{
+          propsResizer={{
             style: {
               // borderLeft: `${appTheme.palette.action.active} solid 1px`,
               // borderRight: `${appTheme.palette.action.active} solid 1px`,
@@ -515,19 +516,19 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
   }, [sheet, handleBeforeSheetChange, propWorkbook, gridStyle, gridTheme, commandsWorkbook, showTabs, showHorizontalScrollbar, showStatusBar, isFullWidth]);
 
   const [contextMenuDetails, setContextMenuDetails] = React.useState<ContextMenuDetails>(null);
-  const popperProps:Partial<ExhibitPopperProps> = useMemo(() => {
+  const localPropsPopper:Partial<ExhibitPopperProps> = useMemo(() => {
     return {
       placement: "right-start",
-      ...contextMenuDetails?.popperProps
+      ...contextMenuDetails?.propsPopper
     }
-  }, [contextMenuDetails?.popperProps]);
+  }, [contextMenuDetails?.propsPopper]);
 
   const {
     reference: contentMenuReference,
     component: contextMenuComponent
   } = useFloatStack({
     label: 'contextMenu',
-    popperProps,
+    propsPopper: localPropsPopper,
     anchor: contextMenuDetails?.anchor ?? {
       getBoundingClientRect: () => {
         return new DOMRect(
@@ -561,7 +562,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
     }
     setContextMenuDetails({
       anchor: event.currentTarget,
-      popperProps: {
+      propsPopper: {
         offsets: [-4, 2] // we want on the right shift up by the rounded corner amount.
       },
       createPopupPanel: (props: ExhibitPopupPanelProps) => {
@@ -570,13 +571,11 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
           filter,
           commands: commandsWorkbook,
           floatReference,
-          sx: {
-            ...propsContextMenuSx
-          }
+          ...propsContextMenu
         });
       }
     });
-  }, [propRenderFilterMenu, propsContextMenuSx, commandsWorkbook, propWorkbook, contextMenuDetails]);
+  }, [propRenderFilterMenu, propsContextMenu, commandsWorkbook, propWorkbook, contextMenuDetails]);
 
   const handleSheetContextMenu = useCallbackRef((location: SheetLocation): boolean => {
     if (location.originalEvent?.isDefaultPrevented()) return true;
@@ -590,13 +589,11 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
           commands: commandsWorkbook,
           workbook: propWorkbook,
           floatReference,
-          sx: {
-            ...propsContextMenuSx
-          }
+          ...propsContextMenu
         });
       }
     });
-  }, [propRenderContextMenu, propsContextMenuSx, commandsWorkbook, propWorkbook]);
+  }, [propRenderContextMenu, propsContextMenu, commandsWorkbook, propWorkbook]);
 
   const handleMovableContextMenu = useCallbackRef((event: React.MouseEvent<HTMLElement>, movable: IMovable): boolean => {
     if (event?.isDefaultPrevented()) return true;
@@ -610,13 +607,11 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
           movable,
           commands: commandsWorkbook,
           floatReference,
-          sx: {
-            ...propsContextMenuSx
-          }
+          ...propsContextMenu
         });
       }
     });
-  }, [propRenderMovableMenu, propsContextMenuSx, commandsWorkbook]);
+  }, [propRenderMovableMenu, propsContextMenu, commandsWorkbook]);
 
 
   useMemo(() => {
@@ -716,7 +711,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
           paddingBottom: '4px'
         }}
         /* HACK - required because thumbs are in portals */
-        touchThumbProps={{
+        propsTouchThumb={{
           backgroundColor: gridTheme.palette.background.paper,
           borderColor: gridTheme.palette.primary.main,
           fillColor: 'grey',
@@ -738,106 +733,6 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
     }
   }, []);
 
-  const [dragText, setDragText] = React.useState<string>(null);
-  // handle drag events
-  const handleDrag = useCallback((e: React.DragEvent<any>) => {
-    if (!commandsWorkbook?.getCommand('openWorkbook')) return;
-    if (e.type === "dragenter" || e.type === "dragover") {
-      // Note - drop will be supported at the sheet level soon. If will auto handle text types and provide a callback for files (to open or embed)
-      if (e.dataTransfer?.types.includes('Files')) {
-        if (e.dataTransfer.files[0]?.type?.startsWith("image/") || e.dataTransfer.items[0]?.type?.startsWith("image/")) {
-          // TODO - add drop indicator for cell.
-          // The easiest, perhaps, nice ways to do this is with a tooltip?
-        } else if (e.dataTransfer.types.length === 1) { // only a single item
-          setDragText('Drop to open');
-        }
-        // e.dataTransfer.dropEffect = "copy";
-      } else if (e.dataTransfer?.types.includes('text/html') || e.dataTransfer?.types.includes('text/plain')) {
-        // Behavior needs to. (1. convert to in-memory sheet (to find shape). 2. Provide a drop target with shape on drag. 3. paste on drop)
-        //setDragText(`Drop to paste`);
-        //e.dataTransfer.effectAllowed = "copy";
-        e.dataTransfer.effectAllowed = "none";
-        e.dataTransfer.dropEffect = "none";
-      } else {
-        e.dataTransfer.effectAllowed = "none";
-        e.dataTransfer.dropEffect = "none";
-      }
-    } else if (e.type === "dragleave") {
-      setDragText(null);
-    }
-    e.preventDefault();
-  }, [commandsWorkbook]);
-
-  // triggers when file is dropped
-  const handleDrop = useCallbackRef((e: React.DragEvent<any>) => {
-    if (!commandsWorkbook?.getCommand('openWorkbook')) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setDragText(null);
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      if (!file) return;
-      if (file?.type?.startsWith("image/")) {
-        const view = refSheet.current?.getGridElement().getViewFromClient(e.clientX, e.clientY);
-        if (!view) return;
-        const point = view.getRelativePointFromClient(e.clientX, e.clientY);
-        // TODO - would be nice if view had a getAbsoluteBoundsFromClient method
-        const pointAbs = view.toAbsoluteBounds({
-          ...point,
-          width: 0,
-          height: 0,
-        });
-        const coords = view.getCellCoordsFromClient(e.clientX, e.clientY);
-        if (!coords) return;
-        commandsWorkbook?.getCommand('insertImageFromFile')?.execute({
-          file,
-          options: {
-            bounds: {
-              x: pointAbs.x,
-              y: pointAbs.y
-            }
-          },
-          goto: {
-            range: {
-              ...coords
-            }
-          }
-        });
-      } else {
-        commandsWorkbook?.getCommand('openWorkbook')?.execute(file);
-      }
-    }
-  }, [commandsWorkbook, dragText]);
-
-  const dropOverlay = useMemo(() => {
-    if (!dragText) return null;
-    return (
-      <Box
-        sx={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          boxSizing: 'border-box',
-          pointerEvents: 'none',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          background: (theme: Theme) => {
-            return theme.palette.divider;
-          },
-          color: (theme: Theme) => {
-            return theme.palette.primary.dark;
-          }
-        }}
-      >
-        <Typography variant="h4">
-          {dragText}
-        </Typography>
-      </Box>
-    )
-  }, [dragText]);
-
   const refLoading = useRef<HTMLDivElement>(null);
   const loadingPane = useMemo(() => {
     return (
@@ -850,21 +745,21 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
       >
         <Box
           style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          left: '0px',
-          top: '0px',
-          width: '100%',
-          height: '100%',
-          pointerEvents: isLoaded ? 'none' : ((propSx as CSSProperties)?.pointerEvents),
-          position: 'absolute',
-          boxSizing: 'border-box',
-        }}
-      >
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            left: '0px',
+            top: '0px',
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            boxSizing: 'border-box',
+            pointerEvents: isLoaded ? 'none' : (propStyle?.pointerEvents),
+          }}
+        >
         {propsRenderLoading?.({
           ref: refLoading,
-          ...propsLoadingProps
+          ...propsLoading
           // style: {
           //   opacity: isLoaded ? 0 : ((propSx as CSSProperties)?.opacity),
           //   pointerEvents: isLoaded ? 'none' : ((propSx as CSSProperties)?.pointerEvents),
@@ -879,7 +774,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
         </Box>
       </CSSTransition>
     )
-  }, [isLoaded, propsRenderLoading, propsLoadingProps]);
+  }, [isLoaded, propsRenderLoading, propsLoading]);
 
   const formulaBar = useMemo(() => {
     return propRenderFormulaBar({
@@ -894,12 +789,12 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
       gridStyle,
       onFocus: handleFormulaBarFocus,
       ...propsFormulaBar,
-      NamedCollectionEditorProps: {
+      propsNamedCollectionEditor: {
         restoreFocus: (options: FocusOptions) => refSheet.current.focus(options),
-        ...propsFormulaBar?.NamedCollectionEditorProps,
-        commandPopupButtonProps: {
+        ...propsFormulaBar?.propsNamedCollectionEditor,
+        propsCommandPopupButton: {
           commands: commandsWorkbook,
-          ...propsFormulaBar?.NamedCollectionEditorProps?.commandPopupButtonProps,
+          ...propsFormulaBar?.propsNamedCollectionEditor?.propsCommandPopupButton,
         }
       }
     });
@@ -980,7 +875,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
 
   const sheetElement = useMemo(() => {
     const onFilterButtonMouseDown=(e: React.MouseEvent<HTMLDivElement, MouseEvent>, filter: IAutoFilter.IColumn) => {
-      propsSheet?.cellRenderProps?.onFilterButtonMouseDown(e, filter);
+      propsSheet?.propsCellRender?.onFilterButtonMouseDown(e, filter);
       handleFilterMenu(e, filter);
     }
 
@@ -1022,9 +917,9 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
       // rowHeaderProps,
       // docTheme,
       ...propsSheet,
-      cellRenderProps: {
+      propsCellRender: {
         onFilterButtonMouseDown,
-        ...propsSheet?.cellRenderProps
+        ...propsSheet?.propsCellRender
       }
     });
   }, [commandsWorkbook, propsSheet, sheet, gridStyle, propOnRepeatCommandChange]);
@@ -1041,8 +936,8 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
         }}
         showHorizontalScrollbar={showHorizontalScrollbar || showTabs}
         showVerticalScrollbar={showVerticalScrollbar}
-        createHorizontalScrollbar={createTabStripSharedScrollbar}
-        createVerticalScrollbar={createSizedVerticalScrollbarCallback}
+        renderScrollbarHorizontal={createTabStripSharedScrollbar}
+        renderScrollbarVertical={createSizedVerticalScrollbarCallback}
       >
         {sheetElement}
       </ScrollPane>
@@ -1053,11 +948,11 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
         {workbookStrip}
       </>)
     }
-    if (!propsMainWrapper) return mainElement;
-    return propsMainWrapper(mainElement);
+    if (!propWrapperMain) return mainElement;
+    return propWrapperMain(mainElement);
   }, [
     showHorizontalScrollbar, showTabs, createTabStripSharedScrollbar, showVerticalScrollbar, viewport, isFullWidth,
-    sheetElement, workbookStrip, appTheme, propsMainWrapper, gridTheme
+    sheetElement, workbookStrip, appTheme, propWrapperMain, gridTheme
   ]);
 
   const tooltip = useMemo(() => {
@@ -1131,15 +1026,13 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
         // some css resets
         fontWeight: 400,
       },
-      '&.Mui-focusVisible': {
-      },
       '& .viewport-overlay': {
         borderRight: `solid ${borderColor} ${borderWidth}px`,
         // the bottom is associated to the horizontal scrollPane
       },
-      ...propSx
+      ...propStyle
     }
-  }, [propSx, gridStyle]);
+  }, [propStyle, gridStyle]);
 
   const formulaBarPadding = useMemo(() => {
     return (
@@ -1195,7 +1088,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
   }, []);
 
   return (
-    <Paper
+    <Box
       className={clsx(
         "sheetxl-workbook", workbookStyles['sheetxl-workbook'],
         {
@@ -1207,28 +1100,21 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
 
       sx={effectiveStyle as any}
       style={propStyle}
-      square={false}
       {...rest}
       ref={refLocal}
-      onFocus={(e: React.FocusEvent<any>) => { setFocus(true); handleActiveWorkbookFocus(); propOnFocus?.(e); }}
-      onBlur={(e: React.FocusEvent<any>) => { setFocus(false); propOnBlur?.(e); }}
+      onFocus={(e: React.FocusEvent<any>) => {
+        setFocus(true);
+        handleActiveWorkbookFocus();
+        propOnFocus?.(e);
+      }}
+      onBlur={(e: React.FocusEvent<any>) => {
+        setFocus(false);
+        propOnBlur?.(e);
+      }}
       onKeyDown={(e: React.KeyboardEvent<any>) => {
         handleKeyDown(e);
         propOnKeyDown?.(e);
       }}
-      onDragStart={(e: React.DragEvent<any>) => {
-        // TODO - dragging an image from the sheet causes a duplicate but should share the resource.
-        // We want the pointer at the top/left
-        if ((e.target as any).src) {
-          const img = new Image();
-          img.src = (e.target as any).src;
-          e.dataTransfer.setDragImage(img, 1, 1);
-        }
-      }}
-      onDragEnter={handleDrag}
-      onDragLeave={handleDrag}
-      onDragOver={handleDrag}
-      onDrop={handleDrop}
     >
       <div
         className={classNameEffective}
@@ -1241,10 +1127,9 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
         {statusBar}
         {tooltip}
         {contextMenuComponent}
-        {dropOverlay}
       </div>
       {loadingPane}
-    </Paper>
+    </Box>
     );
   })
 );

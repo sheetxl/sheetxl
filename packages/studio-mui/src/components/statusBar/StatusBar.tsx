@@ -77,7 +77,7 @@ export const StatusBar = memo(
   } = props;
 
   /* Expose some methods in ref */
-  // useImperativeHandle(refForwarded, () => {
+  // useImperativeElement(refForwarded, () => {
   //   return {
   //     isStatusBar: () => true
   //   };

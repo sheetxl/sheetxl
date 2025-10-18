@@ -59,7 +59,7 @@ const Template: React.FC = (props) => {
             });
           }}
           ref={gridRefTopLeft}
-          cellRenderer={sharedCellRenderer}
+          renderCell={sharedCellRenderer}
         />
       </ScrollPane>
       <ScrollPane
@@ -86,7 +86,7 @@ const Template: React.FC = (props) => {
             setViewPortTopRight(v);
           }}
           ref={gridRefTopRight}
-          cellRenderer={sharedCellRenderer}
+          renderCell={sharedCellRenderer}
         />
       </ScrollPane>
       </div>

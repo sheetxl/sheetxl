@@ -377,7 +377,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
     );
   }, [isCustomColors, activeColor]);
 
-  const swatchProps = useMemo(() => {
+  const localPropsSwatch = useMemo(() => {
     return {
       onClick: handlePresetClick,
       alphaGrey: ((appTheme.palette.text as any).icon ?? appTheme.palette.action.active) // for light/dark mode
@@ -426,7 +426,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
             isLarge={true}
             darkMode={darkMode}
             compareRGB={compareRGB}
-            swatchProps={swatchProps}
+            propsSwatch={localPropsSwatch}
           />
         </Box>
         <Typography
@@ -486,7 +486,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
           colorDefs={colorPalettes.primaryColors}
           selectedColor={selectedColor}
           previewColor={previewColor === undefined ? selectedColor : previewColor}
-          swatchProps={swatchProps}
+          propsSwatch={localPropsSwatch}
           onPreviewColorDef={handleOnPreviewColorDef}
           onSelectColorDef={handleOnSelectColorDef}
           compareRGB={compareRGB}
@@ -497,7 +497,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
           colorDefs={colorPalettes.modifiedPresets}
           selectedColor={selectedColor}
           previewColor={previewColor === undefined ? selectedColor : previewColor}
-          swatchProps={swatchProps}
+          propsSwatch={localPropsSwatch}
           onPreviewColorDef={handleOnPreviewColorDef}
           onSelectColorDef={handleOnSelectColorDef}
           compareRGB={compareRGB}
@@ -515,7 +515,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
           colorDefs={colorPalettes.standardColors}
           selectedColor={selectedColor}
           previewColor={previewColor === undefined ? selectedColor : previewColor}
-          swatchProps={swatchProps}
+          propsSwatch={localPropsSwatch}
           onPreviewColorDef={handleOnPreviewColorDef}
           onSelectColorDef={handleOnSelectColorDef}
           compareRGB={compareRGB}
@@ -540,7 +540,7 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
             colorDefs={colorPalettes.recentColorsLimited}
             selectedColor={selectedColor}
             previewColor={previewColor === undefined ? selectedColor : previewColor}
-            swatchProps={swatchProps}
+            propsSwatch={localPropsSwatch}
             onPreviewColorDef={handleOnPreviewColorDef}
             onSelectColorDef={handleOnSelectColorDef}
             compareRGB={compareRGB}

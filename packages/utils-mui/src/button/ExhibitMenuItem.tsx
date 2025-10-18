@@ -6,12 +6,12 @@ import { DynamicIcon } from '@sheetxl/utils-react';
 
 import { Theme } from '@mui/material/styles';
 
-import { MenuItem, MenuItemProps } from '@mui/material';
+import { MenuItem, type MenuItemProps } from '@mui/material';
 import { ListItemIcon } from '@mui/material';
 
 import { ChipStrip } from '../components';
-import { ExhibitIconButtonProps } from './ExhibitIconButton';
-import { ExhibitTooltip, ExhibitTooltipProps } from './ExhibitTooltip';
+import { type ExhibitIconButtonProps } from './ExhibitIconButton';
+import { ExhibitTooltip, type ExhibitTooltipProps } from './ExhibitTooltip';
 
 import { FloatReference } from '../float/useFloatStack';
 
@@ -33,7 +33,7 @@ export interface ExhibitMenuItemProps extends MenuItemProps {
    * Tooltip properties. If this is specified then the tooltips are used.
    * Do not provide a child as this component will be the child.
    */
-  tooltipProps?: Omit<ExhibitTooltipProps, 'children'>;
+  propsTooltip?: Omit<ExhibitTooltipProps, 'children'>;
 
   parentFloat?: FloatReference;
 
@@ -60,7 +60,7 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
     disabled,
     children,
     sx: propSx,
-    tooltipProps,
+    propsTooltip,
     chips,
     primary,
     ...rest
@@ -156,12 +156,12 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
     </MenuItem>
   );
 
-  if (tooltipProps) {
+  if (propsTooltip) {
     retValue = (
     <ExhibitTooltip
       children={retValue}
       placement="right-start"
-      {...tooltipProps}
+      {...propsTooltip}
     />)
   }
   return retValue;

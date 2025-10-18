@@ -33,8 +33,8 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
     scrollButtonIncrement = 200,
     scrollButtonInitialRepeatDelay = 260,
     scrollButtonAdditionalRepeatDelay = 120, // we make first time slightly longer to similar a delayed start
-    createScrollStartButton = defaultCreateScrollStartButton,
-    createScrollEndButton = defaultCreateScrollEndButton,
+    renderScrollButtonStart = defaultCreateScrollStartButton,
+    renderScrollButtonEnd = defaultCreateScrollEndButton,
     ...rest
   } = props;
   const onScroll = useCallbackRef(propOnScroll, [propOnScroll]);
@@ -171,7 +171,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
       onMouseDown:() => startScrolling(propOffset, true, true),
     }
 
-    return createScrollStartButton?.(props);
+    return renderScrollButtonStart?.(props);
   }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
 
   const scrollEndButton = useMemo(() => {
@@ -183,7 +183,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
       onMouseLeave:stopScrolling,
       onMouseDown:() => startScrolling(propOffset, true, false),
     }
-    return createScrollEndButton?.(props);
+    return renderScrollButtonEnd?.(props);
   }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
 
   return (

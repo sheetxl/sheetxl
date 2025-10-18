@@ -5,16 +5,18 @@ import clsx from 'clsx';
 
 const _EmptyProps: React.HTMLAttributes<HTMLElement> = {};
 
-export interface SplitPaneResizerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SplitPaneResizerProps extends React.HTMLAttributes<HTMLDivElement>, React.Attributes {
   splitDirection?: 'row' | 'column';
   disabled?: boolean;
 
   paddingBefore?: number;
   paddingAfter?: number;
-  hitAreaProps?: React.HTMLAttributes<HTMLDivElement>;
+  propsHitArea?: React.HTMLAttributes<HTMLDivElement>;
+
+  ref?: React.Ref<HTMLDivElement>;
 }
 
-export const SplitPaneResizer = (props: SplitPaneResizerProps & React.Attributes & { ref?: React.Ref<HTMLDivElement> }): React.ReactElement => {
+export const SplitPaneResizer = (props: SplitPaneResizerProps): React.ReactElement => {
   const {
     onPointerDown,
     style: propStyle,
@@ -23,7 +25,7 @@ export const SplitPaneResizer = (props: SplitPaneResizerProps & React.Attributes
     paddingAfter = 0,
     disabled,
     key,
-    hitAreaProps = _EmptyProps,
+    propsHitArea = _EmptyProps,
     ...rest
   } = props;
 
@@ -32,7 +34,7 @@ export const SplitPaneResizer = (props: SplitPaneResizerProps & React.Attributes
     style: propHitAreaStyle,
     className: propHitAreaClassName,
     ...hitAreaRest
-  } = hitAreaProps;
+  } = propsHitArea;
 
   return (
     <div

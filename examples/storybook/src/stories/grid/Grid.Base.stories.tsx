@@ -26,7 +26,7 @@ const Template: React.FC = (props) => {
           border: 'blue solid 1px',
           position: 'relative'
         }}
-        cellRenderer={sharedCellRenderer}
+        renderCell={sharedCellRenderer}
       />
     </div>
   );

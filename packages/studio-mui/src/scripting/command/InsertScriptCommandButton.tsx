@@ -50,7 +50,7 @@ const InsertSnippetMenuItem = memo((props: any) => { // TODO - type
       }}
       disabled={disabled}
       // selected={selected}
-      // tooltipProps={{ // causes flicker at the moment
+      // propsTooltip={{ // causes flicker at the moment
       //   description: (<><div>Some descriptive info will go here</div></>),
       //   maxWidth: 1000
       // }}

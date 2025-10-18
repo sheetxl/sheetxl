@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-import { GridView } from '@sheetxl/grid-react';
+import { type IGridView } from '@sheetxl/grid-react';
 
 import { CoordUtils } from '@sheetxl/utils';
 import { Sheet } from '@sheetxl/sdk';
@@ -23,9 +23,9 @@ const Template: React.FC = (props) => {
     });
   });
 
-  const overlays:((view: GridView) => React.ReactNode)[] = useMemo(() => {
+  const overlays:((view: IGridView) => React.ReactNode)[] = useMemo(() => {
     return [
-      (view: GridView): React.ReactNode => {
+      (view: IGridView): React.ReactNode => {
         const range = {
           colStart: 4,
           rowStart: 15,
@@ -93,7 +93,7 @@ const Template: React.FC = (props) => {
         height: "100%",
       }}
       sheet={sheet} // Required
-      overlays={overlays}
+      renderOverlays={overlays}
       showRowHeaders={showRowHeaders}
       showColumnHeaders={showColumnHeaders}
       {...rest}

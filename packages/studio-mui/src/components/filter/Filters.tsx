@@ -14,22 +14,26 @@ export interface FiltersAttributes {
 
 export interface IFiltersElement extends HTMLDivElement, FiltersAttributes {};
 
-export interface FilterRefProps extends FiltersProps {
-  ref?: React.Ref<HTMLDivElement>;
-}
-
-
 export interface FiltersProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * The filter to display.
+   */
   filter: IAutoFilter.IColumn;
-
+  /**
+   * Disables the filter UI.
+   */
   disabled?: boolean;
+  /**
+   * Ref for the Element.
+   */
+  ref?: React.Ref<IFiltersElement>;
 }
 
 /*
  * Placeholder for filters.
  */
-export const Filters: React.FC<FiltersProps & { ref?: React.Ref<IFiltersElement> }> =
-   memo(forwardRef<IFiltersElement, FiltersProps>((props, refForward) => {
+export const Filters = memo(forwardRef<IFiltersElement, FiltersProps>(
+  (props: FiltersProps, refForwarded) => {
   const {
     children: _propsChildren,
     className: propClassName,
@@ -41,7 +45,7 @@ export const Filters: React.FC<FiltersProps & { ref?: React.Ref<IFiltersElement>
 
   // invariant(!(children), "children is not supported");
 
-  const refLocal = useImperativeElement<IFiltersElement, FiltersAttributes>(refForward, () => {
+  const refLocal = useImperativeElement<IFiltersElement, FiltersAttributes>(refForwarded, () => {
     return {
       isFilters: () => true
     }

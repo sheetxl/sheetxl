@@ -18,11 +18,14 @@ export interface TableStyleCanvasPreviewProps extends React.HTMLAttributes<HTMLD
   bodyStyle: GridSurfaceStyle;
 
   disabled?: boolean;
-
   /**
    * If provided then this context will be used.
    */
   canvas?: HTMLCanvasElement;
+  /**
+   * Reference to the element.
+   */
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 const line = (ctx: CanvasRenderingContext2D, x: number, y: number, x2: number, y2: number): void => {
@@ -44,9 +47,8 @@ const textWidth = 7;
 /**
  * This is a way to canvas based TableStylePreview. It has a simple rendering but is lightweight.
  */
-export const TableStyleCanvasPreview: React.FC<TableStyleCanvasPreviewProps & { ref?: React.Ref<HTMLDivElement> }> =
-   memo(forwardRef<HTMLDivElement, TableStyleCanvasPreviewProps>((props, refForward) => {
-
+export const TableStyleCanvasPreview = memo(forwardRef<HTMLDivElement, TableStyleCanvasPreviewProps>(
+  (props: TableStyleCanvasPreviewProps, refForwarded) => {
   const {
     table: propTable,
     tableStyle,
@@ -182,7 +184,7 @@ export const TableStyleCanvasPreview: React.FC<TableStyleCanvasPreviewProps & { 
 
   return (
     <div
-      ref={refForward}
+      ref={refForwarded}
       className={clsx('table-style-preview', propClassName)}
       style={{
         backgroundImage,

@@ -5,7 +5,7 @@ import React, {
 import { IKeyStroke } from '@sheetxl/utils-react';
 
 import {
-  ExhibitIconButton, ExhibitIconButtonProps, ExhibitTooltip
+  ExhibitIconButton, ExhibitTooltip, type ExhibitIconButtonProps
 } from '.';
 
 interface ExhibitOptionButtonProps extends ExhibitIconButtonProps {

@@ -6,20 +6,31 @@ import { type ReadWorkbookOptions } from '@sheetxl/io';
 
 import { type ErrorPanelProps } from '@sheetxl/utils-react';
 
+import { type SxProps } from '@mui/system';
+import { type Theme } from '@mui/material/styles';
+
+import { type PaperProps } from '@mui/material';
+
 import { type ThemeModeOptions } from '@sheetxl/utils-mui';
 
 import type { IWorkbookElement, WorkbookElementProps, WorkbookTitleProps } from '../components';
 
-
 /**
  * Properties for the Studio component.
  */
-export interface StudioProps extends Omit<WorkbookElementProps, "workbook"> {
+export interface StudioProps extends Omit<WorkbookElementProps, "workbook">, Omit<PaperProps, 'autoFocus' | 'ref'> {
   /**
-   * The model to use in the IWorkbookElement.
+   * The IWorkbook for the studio.
    *
    * @remarks
-   * If not provided a default model will be created.
+   * This can be either an [IWorkbook](./_sheetxl_sdk.IWorkbook.html), a `Promise`
+   * that resolves to an [IWorkbook](./_sheetxl_sdk.IWorkbook.html), or
+   * a [ReadWorkbookOptions](./_sheetxl_io.ReadWorkbookOptions.html) object to create
+   * the workbook from various sources.
+   *
+   * @see
+   * * [IWorkbook](./_sheetxl_sdk.IWorkbook.html)
+   * * [ReadWorkbookOptions](./_sheetxl_io.ReadWorkbookOptions.html)
    */
   workbook?: IWorkbook | Promise<IWorkbook> | ReadWorkbookOptions;
   /**
@@ -44,31 +55,20 @@ export interface StudioProps extends Omit<WorkbookElementProps, "workbook"> {
    * Custom logo.
    */
   logo?: React.ReactNode;
-  /**
-   * Title to display.
-   *
-   * @defaultValue none
-   *
-   * @remarks
-   * If title is null then it is hidden but if it is '' then it is shown with placeholder
-   */
-  title?: string;
 
   /**
    * Callback for title changes.
    *
    * @param title - The new title.
    */
-  // TODO - remove onTitleChange as it is not a workbook property
-  onTitleChange?: (title: string) => void;
-
+  onWorkbookTitleChange?: (title: string) => void;
   /**
    * Additional WorkbookTitle properties.
    *
    * @remarks
    * If onTitleChange or title is provided then the prop versions are ignored
    */
-  titleProps?: WorkbookTitleProps;
+  propsWorkbookTitle?: WorkbookTitleProps;
   /**
    * Disable the import export options in the menu.
    */
@@ -85,6 +85,7 @@ export interface StudioProps extends Omit<WorkbookElementProps, "workbook"> {
    */
   themeOptions?: ThemeModeOptions;
 
+  // TODO - on workbook element but I think we are going to have Studio not extend workbook
   /**
    * Autofocus on load. If loading multiple workbooks or using an a secondary component this
    * should be set to false.
@@ -106,9 +107,11 @@ export interface StudioProps extends Omit<WorkbookElementProps, "workbook"> {
    * This will only be used the first time.
    */
   licenseKey?: string;
-  // onNew
-  // onOpen
-  // onSave
+
+  /**
+   * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
+   */
+  sx?: SxProps<Theme>;
 }
 
 /**

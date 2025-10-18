@@ -3,11 +3,13 @@ import invariant from 'tiny-invariant';
 
 import React, { memo, forwardRef, useMemo, useEffect } from 'react';
 
-import { Theme, SxProps } from '@mui/system';
+import { Theme, type SxProps } from '@mui/system';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
-import { FloatReference, useFloatStack, ExhibitPopupPanelProps, ExhibitPopperProps } from '../float';
+import {
+  FloatReference, useFloatStack, type ExhibitPopupPanelProps, type ExhibitPopperProps
+} from '../float';
 
 export interface ContextMenuAttributes {
   isContextMenu: () => true;
@@ -27,22 +29,20 @@ export interface ContextMenuProps extends React.HTMLAttributes<HTMLElement> {
   /**
    * Passed to the underlying popup panel
    */
-  popperProps?: Partial<ExhibitPopperProps>;
+  propsPopper?: Partial<ExhibitPopperProps>;
 
   /**
    * Use for float reference
    */
   label?: string;
+
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export interface ContextMenuElement extends HTMLDivElement, ContextMenuAttributes {};
 
 
-export interface ScrollbarRefProps extends ContextMenuProps {
-  ref?: React.Ref<HTMLDivElement>;
-}
-
-const DEFAULT_POPPER_PROPS:Partial<ExhibitPopperProps> = {
+const DEFAULT_POPPER_PROPS: Partial<ExhibitPopperProps> = {
   placement: "right-start"
 }
 
@@ -50,14 +50,15 @@ const DEFAULT_POPPER_PROPS:Partial<ExhibitPopperProps> = {
 /**
  * Wraps a component to give it a context menu.
  */
-export const ContextMenu: React.FC<ScrollbarRefProps> =
-   memo(forwardRef<ContextMenuElement, ContextMenuProps>((props, _refForward) => {
+// TODO - pass ref
+export const ContextMenu = memo(forwardRef<ContextMenuElement, ContextMenuProps>(
+  (props: ContextMenuProps, _refForward) => {
   const {
     children,
     sx: propSx,
     parentFloat,
     createPopupPanel: propCreatePopupPanel,
-    popperProps = DEFAULT_POPPER_PROPS,
+    propsPopper = DEFAULT_POPPER_PROPS,
     label,
     ...rest
   } = props;
@@ -66,7 +67,7 @@ export const ContextMenu: React.FC<ScrollbarRefProps> =
   const childrenTyped = children as React.ReactElement<any>;
 
   // add on context menu here
-  const propsChildren = useMemo(() => {
+  const localPropsChildren = useMemo(() => {
     return {
       ...childrenTyped?.props,
       ...rest,
@@ -90,7 +91,7 @@ export const ContextMenu: React.FC<ScrollbarRefProps> =
     component: contextMenuComponent
   } = useFloatStack({
     label: label ?? 'contextMenu',
-    popperProps,
+    propsPopper,
     parentFloat,
     anchor: {
       getBoundingClientRect: () => {
@@ -116,7 +117,7 @@ export const ContextMenu: React.FC<ScrollbarRefProps> =
 
   return (
     <>
-      {React.cloneElement(children, propsChildren)}
+      {React.cloneElement(children, localPropsChildren)}
       {contextMenuComponent}
     </>
   );

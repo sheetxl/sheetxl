@@ -5,11 +5,12 @@ import { Theme } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import { type TooltipProps } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
 
 import { IKeyStroke, KeyModifiers, ReactUtils } from '@sheetxl/utils-react';
+
 import { ChipStrip, SimpleTooltip } from '../components';
 
 export interface ExhibitTooltipProps extends Omit<TooltipProps, "title"> {

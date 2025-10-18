@@ -47,7 +47,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
     readonly = false,
     // icon,
     disabled: propDisabled = false,
-    commandPopupButtonProps,
+    propsCommandPopupButton,
     sx: propSx,
     ...rest
   } = props;
@@ -62,7 +62,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { reference: floatReference } = useFloatStack({
-    parentFloat: commandPopupButtonProps?.parentFloat
+    parentFloat: propsCommandPopupButton?.parentFloat
   });
 
   const [isReadOnlyOrProtected, setIsReadOnlyOrProtected] = useState(() => {
@@ -267,7 +267,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
 
   const refInput = useRef(null)
 
-  const createInputQuickButton = useCallback((props: ExhibitQuickButtonProps) => {
+  const renderInputQuickButton = useCallback((props: ExhibitQuickButtonProps) => {
     const {
       onMouseDown,
       onMouseUp,
@@ -285,7 +285,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
         disableRipple={true}
       >
         <Input
-          inputMode={'text'}
+          inputMode={'text'} // Keep virtual keyboard but request simple text mode
           // disabled={propDisabled || !command || command.disabled()}
           inputProps={{
             tabIndex: 0,
@@ -296,6 +296,10 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
             spellCheck: false,
             // placeholder: 'Type to search key bindings',
             autoComplete: "off",
+            autoCorrect: "off",
+            autoCapitalize: "off",
+            // Tell mobile keyboards to send proper Enter events
+            enterKeyHint: "done",
             ref: refInput
           }}
           sx={{
@@ -348,6 +352,15 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
             // }, 0);
           }}
           onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+            // Debug logging for mobile
+            // console.log('🔴 NamedCollectionEditor KeyDown:', {
+            //   key: e.key,
+            //   keyCode: e.keyCode,
+            //   which: e.which,
+            //   code: e.code,
+            //   timeStamp: e.timeStamp
+            // });
+
             if ((e.which === KeyCodes.Enter || e.which === KeyCodes.Tab)) {
               let doGoto:IRange.FixableCoords | string = rangeText;
               if (committedRangeText() !== rangeText) {
@@ -409,8 +422,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
       if (found) {
         await found?.select();
       }
-      await workbook.getRanges(address)?.select();
-
+      await workbook.getRanges(address)?.select({ autoFocus: true });
     } catch (error: any) {
       notifier.showMessage?.(error.message, { type: NotifierType.Error });
     }
@@ -424,14 +436,14 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
       variant: CommandButtonType.Menuitem,
       parentFloat: props.floatReference,
       commandHook: {
-        ...commandPopupButtonProps?.commandHook,
+        ...propsCommandPopupButton?.commandHook,
         beforeExecute(command: any, args: any): Promise<boolean | void> | boolean | void {
           floatReference?.closeAll();
-          return commandPopupButtonProps?.commandHook?.beforeExecute?.(command, args);
+          return propsCommandPopupButton?.commandHook?.beforeExecute?.(command, args);
         }
       },
-      scope: commandPopupButtonProps?.scope,
-      commands: commandPopupButtonProps?.commands,
+      scope: propsCommandPopupButton?.scope,
+      commands: propsCommandPopupButton?.commands,
       // disabled: propDisabled
     }
 
@@ -499,7 +511,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
             popupScope="namedItem"
             scope="namedItem"
             commandState={item}
-            commands={commandPopupButtonProps?.commands}
+            commands={propsCommandPopupButton?.commands}
             label={item.getName()}
             quickCommand={'selectNamed'}
             disabled={!item.getRanges() || propDisabled}
@@ -514,7 +526,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
             popupCommandKeys={popupCommandKeysTable}
             popupScope="namedItem"
             scope="namedItem"
-            commands={commandPopupButtonProps?.commands}
+            commands={propsCommandPopupButton?.commands}
             commandState={item}
             label={item.getName()}
             quickCommand={'selectNamed'}
@@ -539,7 +551,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
           <CommandButton
             {...commandButtonProps}
             scope='namedItem'
-            command={commandPopupButtonProps?.commands.getCommand('addNamedReference')}
+            command={propsCommandPopupButton?.commands.getCommand('addNamedReference')}
           />
         ) : null}
         {(menus && menus.length > 0) ? (<>
@@ -591,7 +603,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
           },
           ...propSx
         }}
-        buttonProps={{
+        propsButton={{
           sx: {
             // background: 'pink',
             backgroundColor: (theme: Theme) => theme.palette.background.paper,
@@ -622,7 +634,7 @@ export const NamedCollectionEditor = memo(forwardRef<INamedCollectionEditorEleme
             </ExhibitTooltip>
           );
         }}
-        createQuickButton={createInputQuickButton}
+        renderQuickButton={renderInputQuickButton}
       />
     </Box>
   );
