@@ -1,16 +1,15 @@
 // react hook for listening for command updates
-import {
-  useEffect, useRef, useState
-} from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { CommonUtils } from '@sheetxl/utils';
 
-import { ICommand, ICommandHook } from './Command';
+import { ICommand } from './ICommand';
 import { ICommands } from './ICommands';
 
-export interface ICommandsListeners<STATE extends any, CONTEXT extends any=void> extends ICommandHook<STATE, CONTEXT> {
+export interface ICommandsListeners<STATE extends any, CONTEXT extends any=void> extends ICommand.Hook<STATE, CONTEXT> {
   /**
    * Called when either the command group is updated or if keys are provided then the commands as well.
+   *
    * @param commands
    */
   onChange?(commands: ICommands.IGroup): void;
@@ -30,7 +29,7 @@ const resolveCommands = <STATE=any, CONTEXT=any>(commands: ICommands.IGroup, key
 }
 
 /**
- * Useful for capture command changes. This can be used with an @see ICommandHook or without.
+ * Useful for capture command changes. This can be used with an @see ICommand.Hook or without.
  * If used with then will call the function. If not then a change will force a re-render.
  *
  * @param commands

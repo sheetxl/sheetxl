@@ -30,7 +30,7 @@ export const RunScriptCommandButton: React.FC<RunScriptCommandButtonProps & { re
   const resolvedCommands = useCommands(propCommands, ['executeScript', 'showScriptEditor']);
 
   const executeScriptCommand = resolvedCommands[0];
-  const context:IScriptEditor.Context = executeScriptCommand.context() as unknown as IScriptEditor.Context; // ExecuteScriptContext
+  const context:IScriptEditor.Context = executeScriptCommand.getContext() as unknown as IScriptEditor.Context; // ExecuteScriptContext
 
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const panel = (<RunScriptPopupPanel {...props} commands={commands} />);
@@ -43,7 +43,7 @@ export const RunScriptCommandButton: React.FC<RunScriptCommandButtonProps & { re
       commands={propCommands}
       commandHook={propCommandHook}
       createPopupPanel={createPopupPanel}
-      selected={propCommands.getCommand(quickCommandKey).state()}
+      selected={propCommands.getCommand(quickCommandKey).getState()}
       label="Macros" // TODO - provide the name of the function
       tooltip="Run or manage macros." // TODO - provide the name of the script
       // TODO - create a quickExecuteScriptCommand

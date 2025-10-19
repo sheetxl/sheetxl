@@ -53,7 +53,7 @@ export const UndoRedoCommandButton = memo(
   const resolved = useCommands<any, UndoContext>(propCommands, commandKeys);
   const command = resolved[0];
   const commandRedo = resolved[1];
-  const undoManager = propUndoManager ?? command?.context?.()?.undoManager;
+  const undoManager = propUndoManager ?? command?.getContext?.()?.undoManager;
 
   let disabled = propDisabled;
   if (!propDisabled) {
@@ -65,7 +65,7 @@ export const UndoRedoCommandButton = memo(
 
   const [actionCount, setActionCount] = useState<number>(0);
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
-    let actionText = actionCount === 0 ? `Cancel` : `${command.label()} ${actionCount} Action${actionCount === 1 ? '' : 's'}`;
+    let actionText = actionCount === 0 ? `Cancel` : `${command.getLabel()} ${actionCount} Action${actionCount === 1 ? '' : 's'}`;
     let isEmpty = false;
     if (!undoManager) {
       isEmpty = true;
@@ -219,7 +219,7 @@ export const UndoRedoCommandButton = memo(
     );
 
     return defaultCreatePopupPanel({...props, children});
-  }, [command?.context(), command?.state(), scope, undoManager, actionCount, disabled]); // , propCommandHook
+  }, [command?.getContext(), command?.getState(), scope, undoManager, actionCount, disabled]); // , propCommandHook
 
   return (
     <CommandPopupButton
@@ -229,8 +229,8 @@ export const UndoRedoCommandButton = memo(
       // commandHook={propCommandHook}
       scope={scope}
       disabled={disabled}
-      label={command?.label() ?? (isRedo ? 'Redo' : 'Undo')}
-      tooltip={(<><span>{`${command?.label() ?? 'No'} last actions.`}</span></>)}
+      label={command?.getLabel() ?? (isRedo ? 'Redo' : 'Undo')}
+      tooltip={(<><span>{`${command?.getLabel() ?? 'No'} last actions.`}</span></>)}
       createPopupPanel={createPopupPanel}
       icon={icon ?? (isRedo ? 'Redo' : 'Undo')}
       selected={false} // ignore state

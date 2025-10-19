@@ -125,7 +125,7 @@ export const InsertScriptCommandButton: React.FC<InsertScriptCommandButtonProps 
 
   // we use executeScript just to get the context.
   const resolvedCommands = useCommands(propsCommands, ['executeSelectedScript']);
-  const contextScript:any = resolvedCommands[0]?.context?.();
+  const contextScript:any = resolvedCommands[0]?.getContext();
 
   useEffect(() => {
     const loadSnippets = async () => {

@@ -55,10 +55,10 @@ export const AppearanceCommandButton = memo(forwardRef<HTMLElement, CommandPopup
     return defaultCreatePopupPanel({...props, children});
   }, [propDisabled, commandMode, propCommandHook, scope]);
 
-  const darkModeUserOverride:ThemeMode = commandMode?.state();
+  const darkModeUserOverride:ThemeMode = commandMode?.getState();
   const darkModeSystemDefault = useMediaQuery('(prefers-color-scheme: dark)');
   const currentDark = darkModeUserOverride === 'dark' || (darkModeUserOverride === null && darkModeSystemDefault);
-  const isUserOverride = commandMode?.state() !== null;
+  const isUserOverride = commandMode?.getState() !== null;
 
   return (
     <CommandPopupButton

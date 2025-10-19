@@ -1,10 +1,10 @@
-import { CommonUtils, RemoveListener } from '@sheetxl/utils';
+import { CommonUtils, type RemoveListener } from '@sheetxl/utils';
 
-import { KeyModifiers, IKeyStroke } from '../types';
+import { KeyModifiers, type IKeyStroke } from '../types';
 
 import { toPrettyKeyCode } from '../utils/ReactUtils';
 
-import { ICommand, ICommandPropertyListener, ICommandProperties } from './Command';
+import { ICommand } from './ICommand';
 
 /**
  * The ICommands namespace contains interfaces for managing collections of commands and
@@ -48,30 +48,6 @@ export namespace ICommands {
   }
 
   /**
-   * Used to interactive with a dom element.
-   *
-   * @remarks
-   * * When dispatching keystrokes the target is used to determine if the keystroke
-   * can be consumed by the element.
-   * * Many commands will refocus the target after they have completed. The target focus will be called.
-   */
-  export interface ITarget {
-    /**
-     * Used to determine if a dom element is contained with the group.
-     *
-     * @param element
-     *
-     * @remarks
-     * This is used for validating keystrokes and focus traversal.
-     */
-    contains(element: Node | null): boolean;
-    /**
-     * Called after a command is executed.
-     */
-    focus(): void;
-  }
-
-  /**
    * Contains commands and child command maps.
    */
   export interface ILookup {
@@ -91,11 +67,11 @@ export namespace ICommands {
     /**
      * Create a new map to add Commands.
      *
-     * @param target {@link ICommands.ITarget}.
+     * @param target {@link ICommand.ITarget}.
      * @param groupKey String description describing the reason for the group. This is presented to the user in the shortcut UI.
      * @param replace If `true` replace the existing commands. If `false` ignores duplicates. If unspecified a warning will be logged for duplicates.
      */
-    createChildGroup(target: ICommands.ITarget | (() => ICommands.ITarget), groupKey: string, replace?: boolean): ICommands.IGroup;
+    createChildGroup(target: ICommand.ITarget | (() => ICommand.ITarget), groupKey: string, replace?: boolean): ICommands.IGroup;
     /**
      * Returns the keys associated with the group
      */
@@ -182,7 +158,7 @@ export namespace ICommands {
  * Default implementation of `ICommands.IGroup`.
  */
 export class CommandGroup implements ICommands.IGroup {
-  protected _target: ICommands.ITarget | (() => ICommands.ITarget) = null;
+  protected _target: ICommand.ITarget | (() => ICommand.ITarget) = null;
   protected _groupKey: string = null;
 
   protected _root: CommandGroup | null = null;
@@ -206,9 +182,9 @@ export class CommandGroup implements ICommands.IGroup {
   // we should filter the listeners to not notify for groups belong the listener but we can review later.
   protected _listenersByKey: Map<string, Set<ICommands.IListener> | null>; // only belongs to root.
   protected _unListenersByCommand: Map<ICommand, RemoveListener>; // only belongs to root.
-  protected _commandsPropertyListener: ICommandPropertyListener<any, any>;
+  protected _commandsPropertyListener: ICommand.PropertyListener<any, any>;
 
-  constructor(target: ICommands.ITarget | (() => ICommands.ITarget), groupKey?: string) {
+  constructor(target: ICommand.ITarget | (() => ICommand.ITarget), groupKey?: string) {
     this._target = target;
     this._groupKey = groupKey ?? null;
     this._root = this;
@@ -223,10 +199,10 @@ export class CommandGroup implements ICommands.IGroup {
     const _self = this;
     this._unListenersByCommand = new Map<ICommand, RemoveListener>();
     this._listenersByKey = new Map<string, Set<ICommands.IListener> | null>();
-    this._commandsPropertyListener = (props: ICommandProperties<any, any>, command: ICommand<any, any>): void => {
+    this._commandsPropertyListener = (props: ICommand.Properties<any, any>, command: ICommand<any, any>): void => {
       /** we only use the root listenersByKey */
       const listenersByKey = _self._root._listenersByKey;
-      const key = command.key();
+      const key = command.getKey();
       const listeners = listenersByKey.get(key);
       if (listeners) {
         _self._notifyCommands(listeners, 'onCommandChange', command);
@@ -257,7 +233,7 @@ export class CommandGroup implements ICommands.IGroup {
   }
 
   /** {@inheritDoc ICommands.IGroup.createChildGroup} */
-  createChildGroup(target: ICommands.ITarget | (() => ICommands.ITarget), when: string, replace?: boolean): ICommands.IGroup {
+  createChildGroup(target: ICommand.ITarget | (() => ICommand.ITarget), when: string, replace?: boolean): ICommands.IGroup {
     let child:CommandGroup;
 
     // if !replacing look for existing child
@@ -323,9 +299,10 @@ export class CommandGroup implements ICommands.IGroup {
     const commandsPropertyListener = this._root._commandsPropertyListener;
     const unListenersByCommand = this._root._unListenersByCommand;
     // const _self = this;
-    for (let i=0; i<commands.length; i++) {
+    const commandsLength = commands.length;
+    for (let i=0; i<commandsLength; i++) {
       const command = commands[i];
-      const commandKey = command.key();
+      const commandKey = command.getKey();
       if (byKey.has(commandKey)) {
         if (!replace) {
           if (replace === undefined) {
@@ -346,13 +323,14 @@ export class CommandGroup implements ICommands.IGroup {
       const unListener = command.addPropertyListener(commandsPropertyListener);
       unListenersByCommand.set(command, unListener);
 
-      const shortcut:IKeyStroke | IKeyStroke[] = command.shortcut();
+      const shortcut:IKeyStroke | readonly IKeyStroke[] = command.getShortcut();
       if (!shortcut)
         continue; // no keyboard support for command.
 
       const asArray:IKeyStroke[] = Array.isArray(shortcut) ? shortcut as IKeyStroke[] : [shortcut as IKeyStroke];
 
-      for (let i=0; i<asArray.length; i++) {
+      const asArrayLength = asArray.length;
+      for (let i=0; i<asArrayLength; i++) {
       const shortcutString = toShortcutString(asArray[i]);
         const existing = byShortcut.get(shortcutString);
         if (existing && !replace) {
@@ -390,8 +368,10 @@ export class CommandGroup implements ICommands.IGroup {
 
     const removeWhenFromChildren = (group: CommandGroup) => {
       group._children.forEach((node: CommandGroup) => {
-        for (let i=0; i<removed.length; i++) {
-          node._nodes.delete(removed[i]);
+        const removedLength = removed.length;
+        const nodes = node._nodes;
+        for (let i=0; i<removedLength; i++) {
+          nodes.delete(removed[i]);
         }
         removeWhenFromChildren(node as CommandGroup);
       });
@@ -484,7 +464,7 @@ export class CommandGroup implements ICommands.IGroup {
       if (command && command.disabled()) {
         command = null;
       }
-      if (command && (!command.target() || !command.target().contains(e.target as any))) {
+      if (command && (!command.getTarget() || !command.getTarget().contains(e.target as any))) {
         command = null;
       }
     }
@@ -514,7 +494,7 @@ export class CommandGroup implements ICommands.IGroup {
       return false;
 
     // we need to allow these through for safari to allow copy paste events
-    // if (command.key() !== 'copy' && command.key() !== 'paste' && command.key() !== 'cut') {
+    // if (command.getKey() !== 'copy' && command.getKey() !== 'paste' && command.getKey() !== 'cut') {
     //   console.log('prevent');
     //   e.preventDefault();
     command.execute();
@@ -550,7 +530,8 @@ export class CommandGroup implements ICommands.IGroup {
     let setsRemove:Set<ICommands.IListener>[] = null;
     const removeListener:RemoveListener = (): void => {
       if (setsRemove) {
-        for (let i=0; i<setsRemove.length; i++) {
+        const setsRemoveLength = setsRemove.length;
+        for (let i=0; i<setsRemoveLength; i++) {
           const set = setsRemove[i];
           set.delete(listener);
         }
@@ -558,7 +539,8 @@ export class CommandGroup implements ICommands.IGroup {
       listeners.delete(listener);
     };
     if (keys) {
-      for (let i=0; i<keys.length; i++) {
+      const keysLength = keys.length;
+      for (let i=0; i<keysLength; i++) {
         const key = keys[i];
         if (!key) continue; // ignore empty keys
         let set:Set<ICommands.IListener> = listenersByKey.get(key);

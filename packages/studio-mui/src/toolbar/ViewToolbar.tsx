@@ -4,7 +4,8 @@ import { ITheme } from '@sheetxl/sdk';
 
 import { useCallbackRef, Command } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
+
 import {
   CommandButton, ExhibitDivider, CommandToolbar,
   type CommandToolbarButtonProps, type CommandToolbarProps

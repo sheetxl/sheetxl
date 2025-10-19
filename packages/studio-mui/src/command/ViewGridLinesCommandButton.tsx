@@ -7,7 +7,7 @@ import {
 import { IColor } from '@sheetxl/sdk';
 
 import { DynamicIcon } from '@sheetxl/utils-react';
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
 
 import {
   CommandButton, CommandPopupButton, CommandPopupButtonProps,
@@ -75,7 +75,7 @@ export const ViewGridLinesCommandButton = memo(
     <CommandPopupButton
       ref={refForwarded}
       parentFloat={parentFloat}
-      quickCommand={resolvedCommands[0]?.key()}
+      quickCommand={resolvedCommands[0]?.getKey()}
       commands={propCommands}
       commandHook={propCommandHook}
       createPopupPanel={createPopupPanel}

@@ -231,7 +231,7 @@ export const WorkbookContextMenu: React.FC<WorkbookContextMenuProps> = memo(forw
 
   const contextBefore = [];
   const formatTableStyleCommand = commands.getCommand('formatTableStyle');
-  const activeTable = formatTableStyleCommand?.context()?.table();
+  const activeTable = formatTableStyleCommand?.getContext()?.table();
 
   /* bit of a hack. we need to listen for changes to state because we update the menu */
   const _activeTableInvalidate = useCommand(formatTableStyleCommand);

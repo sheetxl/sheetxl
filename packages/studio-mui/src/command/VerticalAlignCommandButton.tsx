@@ -39,7 +39,7 @@ export const VerticalAlignCommandButton = memo(
     for (let i=0; i<resolvedCommandsLength; i++) {
       const command = (resolvedCommands[i] as Command<boolean>);
       if (command && !command.disabled()) {
-        if (!activeCommand && command?.state()) {
+        if (!activeCommand && command?.getState()) {
           activeCommand = command;
         }
         count++;
@@ -95,7 +95,7 @@ export const VerticalAlignCommandButton = memo(
       disabled={propDisabled || allDisabled}
       label="Vertical Alignment"
       tooltip="Configure how text is placed in the vertical direction of the cell."
-      icon={activeCommand?.icon() ?? 'TextVerticalBottom'}
+      icon={activeCommand?.getIcon() ?? 'TextVerticalBottom'}
       {...rest}
     />
   )

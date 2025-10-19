@@ -3,11 +3,11 @@ import React, { forwardRef, memo, useRef, useMemo } from 'react';
 import { type TooltipProps } from '@mui/material';
 
 import {
-  ICommand, ICommands, CommandButtonType, ICommandHook, useCommands, useCallbackRef, DynamicIcon
+  ICommand, ICommands, CommandButtonType, useCommands, useCallbackRef, DynamicIcon
 } from '@sheetxl/utils-react';
 
 import {
-  ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitPopupIconButtonProps, ExhibitTooltip
+  ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitTooltip, type ExhibitPopupIconButtonProps
 } from '../button';
 import { type ExhibitPopupPanelProps } from '../float';
 
@@ -36,7 +36,7 @@ export interface CommandPopupButtonProps<STATE=any, CONTEXT=any> extends Omit<Ex
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
   disableHover?: boolean;
 
@@ -82,8 +82,8 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
   const refRippleSelf = useRef<boolean>(false);
   const rippleDuration = 180;
 
-  const commandHook:ICommandHook<any, any> = useMemo(() => {
-    const retValue:ICommandHook<any, any> = {
+  const commandHook:ICommand.Hook<any, any> = useMemo(() => {
+    const retValue:ICommand.Hook<any, any> = {
       onExecute(command: ICommand<any, any>, args: any): void {
         propCommandHook?.onExecute?.(command, args);
         if (!refRippleSelf.current) {
@@ -117,12 +117,12 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
       }
     }
     if (!label) {
-      label = quickCommand?.label?.(propScope);
+      label = quickCommand?.getLabel?.(propScope);
     }
 
     let icon = propIcon;
     if (!icon) {
-      icon = quickCommand?.icon?.();
+      icon = quickCommand?.getIcon?.();
     }
 
     if (typeof icon === 'string') {
@@ -190,7 +190,7 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
   } else if (quickCommandKey) {
     propsCommand.onQuickClick = () => {} // ensure popup icon
   }
-  propsCommand.selected = propSelected ?? quickCommand?.state();
+  propsCommand.selected = propSelected ?? quickCommand?.getState();
 
   propsCommand.createPopupPanel = createPopupPanel;
   return (variant === CommandButtonType.Toolbar ?

@@ -7,7 +7,7 @@ import { IWorkbook } from '@sheetxl/sdk';
 import type { ReadWorkbookDetails, ReadWorkbookOptions, ReadFormatType, WriteFormatType } from '@sheetxl/io';
 
 import {
-  SimpleCommand, Command, ICommand, ICommandProperties, ICommands, CommandGroup,
+  SimpleCommand, Command, ICommand, ICommands, CommandGroup,
   KeyModifiers, useUndoManager, useCallbackRef, useNotifier
 } from '@sheetxl/utils-react';
 
@@ -157,7 +157,7 @@ export const useStudioCommands = (
     });
   }, [notifier, workbook, requestWorkbookTitle]);
 
-  const commandTarget:() => ICommands.ITarget = useCallback(() => {
+  const commandTarget:() => ICommand.ITarget = useCallback(() => {
     return {
       contains(_element: Node | null): boolean {
         return true;
@@ -178,7 +178,7 @@ export const useStudioCommands = (
       const writeFormats = await WorkbookIO.getWriteFormats();
       writeFormats.forEach((format: WriteFormatType) => {
         const isDefault = format.isDefault;
-        const commandProperties:ICommandProperties<any, any> = {
+        const commandProperties:ICommand.Properties<any, any> = {
           label: isDefault ? `Save Workbook` : `Save Workbook as ${format.description}`,
           scopedLabels: {
             'workbook': 'Save',

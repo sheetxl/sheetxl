@@ -1,23 +1,21 @@
 import React, { forwardRef, memo, useCallback, useMemo } from 'react';
 
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 import { useCommand } from '@sheetxl/utils-react';
 
 import { IColor, Color } from '@sheetxl/sdk';
 
-import { Command, CommandButtonType, ICommand, ICommandHook } from '@sheetxl/utils-react';
+import { Command, CommandButtonType, ICommand } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
 
-import {
-  CommandTooltip, PopupButtonType
-} from '@sheetxl/utils-mui';
+import { CommandTooltip, PopupButtonType } from '@sheetxl/utils-mui';
 
 import {
-  ColorPopupButton, ColorPanelProps, ColorPopupButtonProps
-} from '../components/color';
+  ColorPopupButton, type ColorPanelProps, type ColorPopupButtonProps
+} from '../components';
 
 /**
  * Wraps ColorPopupButton with a command.
@@ -31,7 +29,7 @@ export interface ColorCommandButtonProps extends Omit<ColorPopupButtonProps, "se
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
   icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
 
@@ -76,7 +74,7 @@ export const ColorCommandButton = memo(
     throw new Error('Command selectedColor will be used. Do not try to provide one as a direct argument');
   const _ = useCommand(command);
 
-  const context:CommandContext.Color = command?.context();
+  const context:CommandContext.Color = command?.getContext();
   let quickColor = propQuickColor ?? context?.quickColor;
   if (isSplit && !quickColor)
     quickColor = new Color('transparent');
@@ -113,7 +111,7 @@ export const ColorCommandButton = memo(
 
     let retValue = props.children;
     // no tooltip then we are done
-    // if (!command?.label())
+    // if (!command?.getLabel())
     //   return retValue;
 
     // can't have a disabled component in a tooltip
@@ -141,13 +139,13 @@ export const ColorCommandButton = memo(
     <ColorPopupButton
       ref={refForwarded}
       propsPanel={localPropsPanel}
-      icon={propIcon ?? command?.icon(context) as any }
+      icon={propIcon ?? command?.getIcon(context) as any }
       quickColor={quickColor}
-      selectedColor={command?.state()}
+      selectedColor={command?.getState()}
       onSelectColor={handleOnSelectColor}
       variant={variant === CommandButtonType.Menuitem ? PopupButtonType.Menuitem : PopupButtonType.Toolbar } // TODO - clean this up
       createTooltip={createTooltip}
-      label={command?.label() as any}
+      label={command?.getLabel() as any}
       disabled={propDisabled || !command || command.disabled()}
       compareRGB={true}
       darkMode={darkMode}

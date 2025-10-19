@@ -1,18 +1,18 @@
 import React, { memo, forwardRef, useCallback } from 'react';
 
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 
 import { IThemeCollection, ITheme } from '@sheetxl/sdk';
 
 import {
-  ICommand, Command, CommandButtonType, useCommand, useCallbackRef, ICommandHook
+  ICommand, Command, CommandButtonType, useCommand, useCallbackRef
 } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
 
 import { CommandTooltip, PopupButtonType } from '@sheetxl/utils-mui';
 
-import { ThemeSelectPopupButton, ThemeSelectPopupButtonProps } from '../components/theme';
+import { ThemeSelectPopupButton, type ThemeSelectPopupButtonProps } from '../components/theme';
 
 
 export interface DocThemeCommandButtonProps extends Omit<ThemeSelectPopupButtonProps, "createPopupPanel" | "variant" | "themes" | "icon" | "label"> {
@@ -29,7 +29,7 @@ export interface DocThemeCommandButtonProps extends Omit<ThemeSelectPopupButtonP
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
   selectedTheme?: ITheme;
   onSelectTheme?: (docTheme: ITheme) => void;
@@ -59,9 +59,9 @@ export const DocThemeCommandButton = memo(
   } = props;
 
   const _ = useCommand(command);
-  const themes:IThemeCollection = command?.context()?.themes;
-  const selectedTheme = propSelectedTheme || command?.context()?.theme;
-  const darkMode = propDarkMode ?? command?.context()?.darkMode;
+  const themes:IThemeCollection = command?.getContext()?.themes;
+  const selectedTheme = propSelectedTheme || command?.getContext()?.theme;
+  const darkMode = propDarkMode ?? command?.getContext()?.darkMode;
   const disabled = propDisabled || command?.disabled();
 
   const handleOnSelectTheme = useCallbackRef((theme: ITheme) => {

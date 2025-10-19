@@ -1,5 +1,5 @@
-import { IKeyStroke } from '../types';
-import { ICommand, ICommandHook } from './Command';
+import type { IKeyStroke } from '../types';
+import type { ICommand } from './ICommand';
 
 /**
  * Follow useCommandsButtons. pattern createCommandButtonSet
@@ -39,7 +39,7 @@ export interface CommandButtonOptions<STATE=any, CONTEXT=any> extends Omit<React
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<STATE, CONTEXT>;
+  commandHook?: ICommand.Hook<STATE, CONTEXT>;
   /**
    * Optional string to enable the command label to be configured based on the scope of how it is being used.
    */
