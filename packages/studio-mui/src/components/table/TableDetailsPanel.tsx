@@ -71,7 +71,7 @@ export const TableDetailsPanel =
 
   const commandsResolved = useCommands(commands, ['editTable']);
 
-  const context: CommandContext.Table = commandsResolved[0].context() as unknown as CommandContext.Table;
+  const context: CommandContext.Table = commandsResolved[0].getContext() as unknown as CommandContext.Table;
   const table = context.table();
   const [ranges, setRanges] = useState<ICellRanges>(() => {
     return table ? context.getNames().getRanges(table.getRange()) : null;

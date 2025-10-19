@@ -1,16 +1,16 @@
 import React, { memo, forwardRef, useCallback } from 'react';
 
 import { Box } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 
 import {
-  Command, ICommands, useCommands, useCallbackRef, ICommandHook
+  ICommand, ICommands, Command, useCommands, useCallbackRef
 } from '@sheetxl/utils-react';
 
 import {
-  ThemedIcon, CommandPopupButtonProps, ExhibitPopupPanelProps, ExhibitMenuHeader,
-  ExhibitTooltip, CommandPopupButton, ExhibitIconButton, ExhibitIconButtonProps,
-  ExhibitDivider
+  ThemedIcon, ExhibitMenuHeader,
+  ExhibitTooltip, CommandPopupButton, ExhibitIconButton, ExhibitDivider,
+  type CommandPopupButtonProps, type ExhibitPopupPanelProps, type ExhibitIconButtonProps
 } from '@sheetxl/utils-mui';
 
 import {
@@ -25,7 +25,7 @@ export interface InsertChartCommandButtonProps extends CommandPopupButtonProps {
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-   commandHook?: ICommandHook<any, any>;
+   commandHook?: ICommand.Hook<any, any>;
 }
 
 interface PresetChartIconButtonProps extends ExhibitIconButtonProps {
@@ -202,7 +202,7 @@ export const InsertChartCommandButton = memo(
         );
       }}
       // TODO - add a insert chart quick Command
-      label={command?.label(propScope) ?? `Insert Chart...`}
+      label={command?.getLabel(propScope) ?? `Insert Chart...`}
       disabled={disabled}
       selected={false}
       icon={

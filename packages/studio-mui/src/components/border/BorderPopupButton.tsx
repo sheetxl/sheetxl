@@ -5,16 +5,15 @@ import React, {
 import { alpha, getOverlayAlpha } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import type{ TooltipProps } from '@mui/material';
 
 import { IColor, Color, IBorder, ICell } from '@sheetxl/sdk';
 
 import { useCallbackRef, DynamicIcon } from '@sheetxl/utils-react';
 
 import {
-  ExhibitDivider, ExhibitPopupPanelProps, PopupButtonType,
-  ExhibitTooltip, ExhibitPopupIconButton, ExhibitPopupIconButtonProps,
-  ExhibitIconButton, strokeShadowFilter
+  ExhibitDivider, PopupButtonType, ExhibitTooltip, ExhibitPopupIconButton, ExhibitIconButton, strokeShadowFilter,
+  type ExhibitPopupPanelProps, type ExhibitPopupIconButtonProps
 } from '@sheetxl/utils-mui';
 
 import { StaticBorderRenderer } from '@sheetxl/react';
@@ -388,7 +387,7 @@ export const BorderPopupButton = memo(
             // recentColors: recentColors
           }}
           // createTooltip={createTooltip}
-          // label={command?.label()}
+          // label={command?.getLabel()}
           disabled={propDisabled || activeStyle === IBorder.StrokeStyle.None}
           parentFloat={floatReference}
           shouldCloseFloatAll={false}

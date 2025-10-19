@@ -36,11 +36,11 @@ export const CommandTooltip: React.FC<CommandTooltipProps & { ref?: any }> = mem
   return (
     <ExhibitTooltip
       ref={refForwarded}
-      label={propDisabled !== undefined ? command?.label() : ''}
-      shortcut={propShortcut !== undefined ? propShortcut : Array.isArray(command?.shortcut()) ? command?.shortcut()[0]: command?.shortcut()}
-      description={command?.description()}
+      label={propDisabled !== undefined ? command?.getLabel() : ''}
+      shortcut={propShortcut !== undefined ? propShortcut : Array.isArray(command?.getShortcut()) ? command?.getShortcut()[0]: command?.getShortcut()}
+      description={command?.getDescription()}
       disabled={propDisabled}
-      chips={command?.tags()}
+      chips={command?.getTags()}
       componentDisabled={command?.disabled()}
       {...rest}
     >

@@ -1,7 +1,7 @@
 import React, { useRef, useMemo, memo, forwardRef, useCallback } from 'react';
 
 import {
-  useCommand, ICommand, CommandButtonType, ICommandHook, KeyCodes,
+  useCommand, ICommand, CommandButtonType, KeyCodes,
   CommandButtonRefAttribute, type CommandButtonProps, DynamicIcon
 } from '@sheetxl/utils-react';
 
@@ -32,8 +32,8 @@ export const CommandButton = memo(
   const refRippleSelf = useRef<boolean>(false);
   const rippleDuration = 180;
 
-  const commandHook:ICommandHook<any, any> = useMemo(() => {
-    const retValue:ICommandHook<any, any> = {
+  const commandHook:ICommand.Hook<any, any> = useMemo(() => {
+    const retValue:ICommand.Hook<any, any> = {
       onExecute(command: ICommand<any, any>, args: any): void {
         propCommandHook?.onExecute?.(command, args);
         if (!refRippleSelf.current) {
@@ -76,14 +76,14 @@ export const CommandButton = memo(
       return typeof propIcon === "function" ? propIcon(command) : propIcon ;
     }
     // If we are a menu and not selected we don't want the default checkmark icon
-    let commandIcon = command?.icon(context);
+    let commandIcon = command?.getIcon(context);
     if (commandIcon) {
       if (typeof commandIcon === "string") {
         commandIcon = <DynamicIcon iconKey={commandIcon}/>;
       }
       return commandIcon;
     }
-    if (variant !== CommandButtonType.Toolbar && !command?.state())
+    if (variant !== CommandButtonType.Toolbar && !command?.getState())
       return BLANK_ICON;
   }, [_, propIcon]);
 
@@ -91,8 +91,8 @@ export const CommandButton = memo(
     return {
       tabIndex: 0,
       ref: refForwarded,
-      selected: command?.state(),
-      icon: variant === CommandButtonType.Toolbar ? icon : <SelectedIcon selected={command?.state() ?? false}>{icon}</SelectedIcon>,
+      selected: command?.getState(),
+      icon: variant === CommandButtonType.Toolbar ? icon : <SelectedIcon selected={command?.getState() ?? false}>{icon}</SelectedIcon>,
       touchRippleRef: refRipple,
       disabled: propDisabled || !command || command.disabled(),
       onMouseDown,
@@ -106,10 +106,10 @@ export const CommandButton = memo(
     retValue = (
       <ExhibitMenuItem
         {...rest}
-        chips={command?.tags()}
+        chips={command?.getTags()}
         {...buttonProps}
       >
-        {propLabel as any ?? command?.label(scope, context)}
+        {propLabel as any ?? command?.getLabel(scope, context)}
       </ExhibitMenuItem>
     );
   } else {
@@ -122,7 +122,7 @@ export const CommandButton = memo(
   }
 
   // no tooltip then we are done
-  if (!propLabel && !command?.label()) // We don't contextualize the tooltip
+  if (!propLabel && !command?.getLabel()) // We don't contextualize the tooltip
     return retValue;
 
   // can't have a disabled component in a tooltip

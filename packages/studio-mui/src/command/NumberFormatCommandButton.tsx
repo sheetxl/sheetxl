@@ -5,19 +5,19 @@ import { Theme, useTheme } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 
 import { ICell, NumberFormat, IFont } from '@sheetxl/sdk';
 
 import { useCommands, KeyCodes, ICommands } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, CommandPopupButtonProps, defaultCreatePopupPanel, ExhibitPopupPanelProps,
-  ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, CommandPopupButton
+  CommandButton, defaultCreatePopupPanel,
+  ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, CommandPopupButton,
+  type CommandPopupButtonProps, type ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 import { SelectedIcon } from '@sheetxl/utils-mui';
-
 
 
 const NumberFormatMenuItem = memo((props: any) => { // TODO - type
@@ -112,7 +112,7 @@ export const NumberFormatCommandButton = memo(
   ];
   const resolvedCommands = useCommands<string, () => ICell>(propCommands, commandKeys);
   const command = resolvedCommands[0];
-  const currentFormatType = command?.state() ? NumberFormat.Styles.lookupStyle(command?.state()).formatType : NumberFormat.Type.General;
+  const currentFormatType = command?.getState() ? NumberFormat.Styles.lookupStyle(command?.getState()).formatType : NumberFormat.Type.General;
 
   const commandHookNoBefore = useMemo(() => {
     if (!propCommandHook) return null;
@@ -124,12 +124,12 @@ export const NumberFormatCommandButton = memo(
   const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
     const handleSetFormat = (newValue: string) => {
       // TODO - - these should really be command buttons since they handle ripple and avoid duplicate code
-      propCommandHook?.beforeExecute?.(command, command?.state());
+      propCommandHook?.beforeExecute?.(command, command?.getState());
       command.execute(newValue, propCommandHook);
-      propCommandHook?.onExecute?.(command, command?.state());
+      propCommandHook?.onExecute?.(command, command?.getState());
     }
 
-    const currentCell:ICell = command?.context()();
+    const currentCell:ICell = command?.getContext()();
 
     const formats = NumberFormat.Styles.lookupPrimary();
     const formatOptions = [];
@@ -171,9 +171,9 @@ export const NumberFormatCommandButton = memo(
         formattedValue={isCustom ? currentCell.getNumberFormat().displayText : ''}
         handleSetFormat={() => {
           // TODO - - these should really be command buttons since they handle ripple and avoid duplicate code
-          propCommandHook?.beforeExecute?.(command, command?.state());
-          commands.getCommand('formatNumberDialog')?.execute(command?.state());
-          propCommandHook?.onExecute?.(command, command?.state());
+          propCommandHook?.beforeExecute?.(command, command?.getState());
+          commands.getCommand('formatNumberDialog')?.execute(command?.getState());
+          propCommandHook?.onExecute?.(command, command?.getState());
         }}
         format={customFormatStyle}
         sx={{
@@ -249,7 +249,7 @@ export const NumberFormatCommandButton = memo(
     );
 
     return defaultCreatePopupPanel({ ...props, children});
-  }, [command?.context(), command?.state(), propCommandHook, scope]);
+  }, [command?.getContext(), command?.getState(), propCommandHook, scope]);
 
 
   const appTheme = useTheme();
@@ -270,8 +270,8 @@ export const NumberFormatCommandButton = memo(
       createTooltip={({children}: TooltipProps, disabled: boolean) => {
         return (
           <ExhibitTooltip
-            label={command?.label()}
-            description={command?.description()}
+            label={command?.getLabel()}
+            description={command?.getDescription()}
             disabled={disabled}
           >
             {children}

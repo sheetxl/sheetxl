@@ -93,7 +93,7 @@ export const LabelIcon = (props: LabelIconProps) => {
           fontSize: 'inherit'
         }}
       >
-        {command?.label(scope) || label}
+        {command?.getLabel(scope) || label}
       </Typography>
     </Box>
   );

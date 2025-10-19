@@ -2,11 +2,10 @@ import React, { useCallback, useState, useEffect, memo, forwardRef } from 'react
 
 import { IColor, IScript } from '@sheetxl/sdk';
 
-import { useCommands, Command } from '@sheetxl/utils-react';
+import { useCommands, Command, type CommandButtonProps } from '@sheetxl/utils-react';
 
 import {
-  CommandContext, DefaultTaskPaneRegistry, useTaskPaneArea,
-  type CommandButtonProps, type IScriptEditor
+  CommandContext, DefaultTaskPaneRegistry, useTaskPaneArea, type IScriptEditor
 } from '@sheetxl/react';
 
 import {
@@ -60,7 +59,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
   /* Scripts button is on the view toolbar but if there are scripts we move to home for convenience */
   const [showRunScript, setShowRunScript] = useState<boolean>(false);
   const resolvedCommands = useCommands(commands, ['executeScript', 'showScriptEditor']);
-  const contextScript:IScriptEditor.Context = resolvedCommands[0]?.context?.() as unknown as IScriptEditor.Context;
+  const contextScript:IScriptEditor.Context = resolvedCommands[0]?.getContext() as unknown as IScriptEditor.Context;
 
   useEffect(() => {
     const scripts:IScript = contextScript?.getScripts();
@@ -68,7 +67,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
     const showScriptEditorCommand = resolvedCommands[1];
     const checkScripts = async () => {
       if (!showScriptEditorCommand) return;
-      const isOpen: boolean = !!showScriptEditorCommand.state();
+      const isOpen: boolean = !!showScriptEditorCommand.getState();
       let hasMacros: boolean = false;
       if (!isOpen) {
         const macros = await scripts.searchFunctions({ type: 'macro' });
@@ -77,7 +76,7 @@ export const HomeToolbar = memo(forwardRef<ICommandToolbarElement, HomeToolbarPr
           hasMacros = true; // must be a script
         }
       }
-      setShowRunScript(hasMacros || !!showScriptEditorCommand.state());
+      setShowRunScript(hasMacros || !!showScriptEditorCommand.getState());
     }
     checkScripts();
     const commandListenerRemove = showScriptEditorCommand.addPropertyListener(() => {

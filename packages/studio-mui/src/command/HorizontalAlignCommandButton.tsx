@@ -37,7 +37,7 @@ export const HorizontalAlignCommandButton = memo(
 
   const activeCommand = useMemo(() => {
     for (let i=0; i<resolvedCommands.length; i++) {
-      if ((resolvedCommands[i] as Command<boolean>)?.state()) {
+      if ((resolvedCommands[i] as Command<boolean>)?.getState()) {
         return resolvedCommands[i];
       }
     }
@@ -150,9 +150,9 @@ export const HorizontalAlignCommandButton = memo(
       createPopupPanel={createPopupPanel}
       label="Horizontal Alignment"
       tooltip="Configure how text is placed in the horizontal direction of the cell."
-      quickCommand={activeCommand?.key()}
+      quickCommand={activeCommand?.getKey()}
       // selected={isSelected}
-      icon={activeCommand?.icon() ?? 'FormatAlignLeft'}
+      icon={activeCommand?.getIcon() ?? 'FormatAlignLeft'}
       {...rest}
     />
   )

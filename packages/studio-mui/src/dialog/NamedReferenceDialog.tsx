@@ -8,9 +8,9 @@ import { INamed, ICellRanges } from '@sheetxl/sdk';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
 
-import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
+import { OptionsDialog, type InputDialogProps } from '@sheetxl/utils-mui';
 
 import { RangeInput, NamedInput } from '../components/form';
 

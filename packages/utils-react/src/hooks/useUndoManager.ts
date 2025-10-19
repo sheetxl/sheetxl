@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 
 import { UndoManager, RemoveListener } from '@sheetxl/utils';
 
-import { Command, ICommands } from '../command';
+import { Command, ICommand, ICommands } from '../command';
 import { useNotifier, type IReactNotifier, useCallbackRef } from '../hooks';
 import { KeyModifiers } from '../types';
 
@@ -71,7 +71,7 @@ export const useUndoManager = ({
   useMemo(() => {
     if (!commandsParent) return;
     // TODO - get this from param ultimately from sheet
-    const commandTarget:ICommands.ITarget = {
+    const commandTarget:ICommand.ITarget = {
       contains(_element: Node | null): boolean {
         return true;
       },

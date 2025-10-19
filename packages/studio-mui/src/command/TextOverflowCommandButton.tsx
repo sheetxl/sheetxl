@@ -37,7 +37,7 @@ export const TextOverflowCommandButton = memo(
     for (let i=0; i<resolvedCommandsLength; i++) {
       const command = (resolvedCommands[i] as Command<boolean>);
       if (command && !command.disabled()) {
-        if (!activeCommand && command?.state()) {
+        if (!activeCommand && command?.getState()) {
           activeCommand = command;
         }
         count++;
@@ -96,8 +96,8 @@ export const TextOverflowCommandButton = memo(
       tooltip="Configure how text behaves when it doesn't fit within a cell."
       createPopupPanel={createPopupPanel}
       // disabled={propDisabled || !activeCommand || activeCommand.disabled()}
-      // selected={!activeCommand || (activeCommand as Command<boolean>).state()}
-      icon={activeCommand?.icon() ?? 'TextHorizontalOverflow'}
+      // selected={!activeCommand || (activeCommand as Command<boolean>).getState()}
+      icon={activeCommand?.getIcon() ?? 'TextHorizontalOverflow'}
       {...rest}
     />
   )

@@ -6,7 +6,7 @@ import { IconButton } from '@mui/material'
 import { Input } from '@mui/material';
 
 import {
-  useCallbackRef, useCommand, ICommand, CommandButtonType, ICommandHook, KeyCodes,
+  useCallbackRef, useCommand, ICommand, CommandButtonType, KeyCodes,
   type CommandButtonProps, DynamicIcon
 } from '@sheetxl/utils-react';
 
@@ -47,8 +47,8 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
   const refRippleSelf = useRef<boolean>(false);
   const rippleDuration = 180;
 
-  const commandHook:ICommandHook<any, any> = useMemo(() => {
-    const retValue:ICommandHook<any, any> = {
+  const commandHook:ICommand.Hook<any, any> = useMemo(() => {
+    const retValue:ICommand.Hook<any, any> = {
       onExecute(command: ICommand<any, any>, args: any): void {
         propCommandHook?.onExecute?.(command, args);
         if (!refRippleSelf.current) {
@@ -71,7 +71,7 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
   const _ = useCommand(command, commandHook);
 
   const committedInputValue = () => {
-    return command?.state()?.toString() || '0';
+    return command?.getState()?.toString() || '0';
   }
 
   const [inputValue, setInputValue] = useState<string>(committedInputValue);
@@ -91,22 +91,22 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
 
   useEffect(() => {
     setInputValue(committedInputValue());
-  }, [command?.state()]);
+  }, [command?.getState()]);
 
   const icon = useMemo(() => {
     let retValue = typeof propIcon === "function" ? propIcon(command) : propIcon ;
     if (retValue) {
-      retValue = command?.icon();
+      retValue = command?.getIcon();
     }
     if (typeof retValue === 'string') {
       retValue = <DynamicIcon iconKey={retValue} />;
     }
     return retValue;
-  }, [_, propIcon, command?.icon]);
+  }, [_, propIcon, command?.getIcon]);
 
   const label = useMemo(() => {
     if (propLabel === undefined)
-      return command?.label(scope);
+      return command?.getLabel(scope);
     return typeof propLabel === "function" ? propLabel() : propLabel ;
   }, [_]);
 
@@ -128,7 +128,7 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
           disabled={propDisabled || !command || command.disabled()}
           inputProps={{
             tabIndex:0,
-            name: `input-${command.key()}`,
+            name: `input-${command.getKey()}`,
             autoComplete: "off",
             type:"number",
             maxLength: 4, // Not honored for inputType number so we manage in onchange and keypress
@@ -221,13 +221,13 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
       // Note - Input button is being called twice so we have this hack. Review toggle vs buttons vs menus.
       if (e.isDefaultPrevented()) return;
       e.preventDefault();
-      command?.execute(!command?.state?.(), commandHook);
+      command?.execute(!command?.getState(), commandHook);
     },
     onKeyDown: (e: React.KeyboardEvent) => {
       // button prevents space so we don't check it
       // if (e.isDefaultPrevented()) return;
       if (e.keyCode === KeyCodes.Enter || e.keyCode === KeyCodes.Space) {
-        command?.execute(!command?.state?.(), commandHook);
+        command?.execute(!command?.getState(), commandHook);
       }
     }
   }
@@ -237,7 +237,7 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
     retValue = (
       <ExhibitMenuItem
         {...rest as any}
-        chips={command?.tags()}
+        chips={command?.getTags()}
         {...buttonProps}
       >
         {label}
@@ -254,7 +254,7 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
   }
 
   // no tooltip then we are done
-  if (!command?.label())
+  if (!command?.getLabel())
     return retValue;
 
   // can't have a disabled component in a tooltip

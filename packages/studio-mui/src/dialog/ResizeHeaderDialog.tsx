@@ -14,9 +14,9 @@ import { IRange } from '@sheetxl/sdk';
 
 import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
 
-import { OptionsDialog, InputDialogProps } from '@sheetxl/utils-mui';
+import { OptionsDialog, type InputDialogProps } from '@sheetxl/utils-mui';
 
 export interface ResizeHeaderDialogProps extends InputDialogProps<CommandContext.ResizeHeaderOptions, CommandContext.ResizeHeaderContext> {};
 

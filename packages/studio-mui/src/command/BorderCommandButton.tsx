@@ -1,17 +1,17 @@
 import React, { memo, forwardRef, useCallback } from 'react';
 
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 
 import { IBorder } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, useCommands, ICommand, ICommands, CommandButtonType, ICommandHook
+  useCallbackRef, useCommands, ICommand, ICommands, CommandButtonType
 } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
 import { CommandTooltip } from '@sheetxl/utils-mui';
 
-import { BorderPopupButton, BorderPopupButtonProps } from '../components/border';
+import { BorderPopupButton, type BorderPopupButtonProps } from '../components/border';
 
 export interface BorderCommandButtonProps extends Omit<Partial<BorderPopupButtonProps>, "icon" | "label"> {
   commands?: ICommands.IGroup;
@@ -28,7 +28,7 @@ export interface BorderCommandButtonProps extends Omit<Partial<BorderPopupButton
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
   /**
    * Styling
@@ -67,7 +67,7 @@ export const BorderCommandButton = memo(
 
   const commands = useCommands<Partial<IBorder.Properties>, CommandContext.Border>(propCommands, ['formatBorder']);
   const command = propCommand ?? commands[0];
-  const context:CommandContext.Border = command?.context() ?? null;
+  const context:CommandContext.Border = command?.getContext() ?? null;
 
   const autoColor = context?.autoColor ?? propAutoColor;
   const autoStyle = context?.autoStyle ?? propAutoStrokeStyle;
@@ -94,7 +94,7 @@ export const BorderCommandButton = memo(
 
     let retValue = props.children;
     // no tooltip then we are done
-    // if (!command?.label())
+    // if (!command?.getLabel())
     //   return retValue;
 
     // can't have a disabled component in a tooltip
