@@ -216,7 +216,7 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>(
       return;
     }
     undoManager.setRepeatableOperation({
-      description: command.label(),
+      description: command.getLabel(),
       repeat: async () => {
         return command.execute();
       }
@@ -235,7 +235,7 @@ export const EagerStudio = memo(forwardRef<IWorkbookElement, StudioProps>(
   const [viewportDOM, setViewportDOM] = useState(null);
 
   const commandsApplication = useMemo(() => {
-    const target:() => ICommands.ITarget = () => {
+    const target:() => ICommand.ITarget = () => {
       return {
         contains(_element: Node | null): boolean {
           return true;

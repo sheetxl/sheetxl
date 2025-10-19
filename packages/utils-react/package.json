@@ -28,6 +28,7 @@
     "build:node": "cross-env BUILD_ENV=node vite build",
     "build:browser": "vite build",
     "build": "pnpm run build:node && pnpm run build:browser",
+    "build:tsdocs:json": "typedoc --json ../../build/docs/utils-react.json --excludeInternal --tsconfig ./tsconfig.build.json",
     "clean": "rimraf ./build",
     "clean:all": "git clean -fdX .",
     "release:package": "cd build && pnpm publish --no-git-checks --access public",

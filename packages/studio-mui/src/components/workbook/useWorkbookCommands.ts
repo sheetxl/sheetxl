@@ -31,7 +31,7 @@ export interface useWorkbookCommandsOptions {
    */
   workbookElement: IWorkbookElement;
 
-  target: ICommands.ITarget | (() => ICommands.ITarget);
+  target: ICommand.ITarget | (() => ICommand.ITarget);
 
   commands: ICommands.IGroup;
 
@@ -705,7 +705,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
 
       notifier.showInput({
         initialValue: defaultStyleName(),
-        title: commands.getCommand('newCellStyle')?.label('cellStyle'),
+        title: commands.getCommand('newCellStyle')?.getLabel('cellStyle'),
         description: `Enter a name for the new cell style.`,
         inputLabel: 'Style Name',
         propsInput: {
@@ -921,7 +921,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         initialValue,
         context: () => {
           // TODO - this is a bit of a hack. Type this.
-          return onFindOrReplace//command.context() as () => ICell,
+          return onFindOrReplace//command.getContext() as () => ICell,
         },
         onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
           // Note - when we get the context correct this should be removed
@@ -964,7 +964,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         //     e.preventDefault();
         //   }
         // },
-        title: commands.getCommand('activateTask')?.label(),
+        title: commands.getCommand('activateTask')?.getLabel(),
         inputLabel: 'Task Name',
         options: ['Activate']
       }
@@ -988,7 +988,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         //     e.preventDefault();
         //   }
         // },
-        title: commands.getCommand('goto')?.label(),
+        title: commands.getCommand('goto')?.getLabel(),
         inputLabel: 'Location',
         options: ['Go To']
       }

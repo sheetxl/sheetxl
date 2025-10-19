@@ -59,7 +59,7 @@ export const FreezeCommandButton = memo(
       quickCommand={'freezeToggle'}
       label="Freeze Panes"
       tooltip="Freeze a portion of the sheet to keep it visible while you scroll through the rest of the sheet.\n\nUseful for viewing data in other parts of your worksheet without losing your headers or labels."
-      // selected={commandPrimaryToggle?.state()}
+      // selected={commandPrimaryToggle?.getState()}
       icon={'Freeze'}
       {...rest}
     />

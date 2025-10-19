@@ -32,7 +32,7 @@ export const RunScriptPopupPanel = memo(forwardRef<any, RunScriptPopupPanelProps
   const resolvedCommands = useCommands(propCommands, ['executeScript', 'showScriptEditor']);
   const [macros, setMacros] = useState<IFunction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const contextScript:IScriptEditor.Context = resolvedCommands[0]?.context?.() as unknown as IScriptEditor.Context;
+  const contextScript:IScriptEditor.Context = resolvedCommands[0]?.getContext() as unknown as IScriptEditor.Context;
 
   useEffect(() => {
     const scripts:IScript = contextScript?.getScripts();

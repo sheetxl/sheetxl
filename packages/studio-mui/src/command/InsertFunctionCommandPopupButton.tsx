@@ -6,14 +6,14 @@ import { Typography } from '@mui/material';
 import { IFunction } from '@sheetxl/sdk';
 
 import {
-  ICommand, ICommands, useCommands, ICommandHook, KeyCodes
+  ICommand, ICommands, useCommands, KeyCodes
 } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import type { CommandContext } from '@sheetxl/react';
 
 import {
-  CommandPopupButtonProps, defaultCreatePopupPanel, ExhibitPopupPanelProps,
-  ExhibitMenuItem, CommandPopupButton
+  ExhibitMenuItem, CommandPopupButton, defaultCreatePopupPanel,
+  type ExhibitPopupPanelProps, type CommandPopupButtonProps
 } from '@sheetxl/utils-mui';
 
 export interface InsertFunctionCommandButtonProps extends CommandPopupButtonProps {
@@ -30,7 +30,7 @@ export interface InsertFunctionCommandButtonProps extends CommandPopupButtonProp
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
 }
 
@@ -248,7 +248,7 @@ const InsertFormulaPopupPanel = memo(forwardRef<any, InsertFormulaPopupPanelProp
   useEffect(() => {
     const checkScripts = async () => {
       setIsLoading(true);
-      const context: CommandContext.FormulaFunction = resolvedCommands[0]?.context() as any;
+      const context: CommandContext.FormulaFunction = resolvedCommands[0]?.getContext() as any;
       const functionsResolved = await context.searchByCategory(category);
       setFunctions(functionsResolved);
       setIsLoading(false);
@@ -261,9 +261,9 @@ const InsertFormulaPopupPanel = memo(forwardRef<any, InsertFormulaPopupPanelProp
   const command = propCommands.getCommand('insertFunction') as ICommand<any>
   const handleInsert = (newValue: IFunction) => {
     // TODO - - these should really be command buttons since they handle ripple and avoid duplicate code
-    propCommandHook?.beforeExecute?.(command, command?.state());
+    propCommandHook?.beforeExecute?.(command, command?.getState());
     command.execute(newValue);
-    propCommandHook?.onExecute?.(command, command?.state());
+    propCommandHook?.onExecute?.(command, command?.getState());
   }
   for (let i=0; i<functionsLength; i++) {
     const formulaFunction = functions[i];

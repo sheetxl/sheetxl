@@ -4,18 +4,16 @@ import { Theme, useTheme } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 
 import { IFont } from '@sheetxl/sdk';
 import { IFontCollection } from '@sheetxl/sdk';
 
-import {
-  Command, useCommand, ICommand, ICommandHook, KeyCodes
-} from '@sheetxl/utils-react';
+import { Command, useCommand, ICommand, KeyCodes } from '@sheetxl/utils-react';
 
 import {
-  defaultCreatePopupPanel, ExhibitMenuItem, ExhibitTooltip, ExhibitPopupIconButton,
-  ExhibitPopupIconButtonProps, ExhibitPopupPanelProps, SelectedIcon
+  SelectedIcon, defaultCreatePopupPanel, ExhibitMenuItem, ExhibitTooltip, ExhibitPopupIconButton,
+  type ExhibitPopupIconButtonProps, type ExhibitPopupPanelProps
  } from '@sheetxl/utils-mui';
 
 export interface FontFamilyCommandButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" |"createPopupPanel"> {
@@ -31,7 +29,7 @@ export interface FontFamilyCommandButtonProps extends Omit<ExhibitPopupIconButto
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 }
 
 const fontsRegistered = IFontCollection.getFontList();
@@ -53,7 +51,7 @@ export const FontFamilyCommandButton = memo(
   } = props;
 
   const _ = useCommand(command);
-  const currentFontFamily = command?.state();
+  const currentFontFamily = command?.getState();
 
   const appTheme = useTheme();
   const defaultWidth = useMemo(() => {
@@ -153,7 +151,7 @@ export const FontFamilyCommandButton = memo(
 
     return defaultCreatePopupPanel({...props, children});
 
-  }, [propDisabled, command?.state()]);
+  }, [propDisabled, command?.getState()]);
 
   return (
     <ExhibitPopupIconButton
@@ -190,8 +188,8 @@ export const FontFamilyCommandButton = memo(
       createTooltip={({children}: TooltipProps, disabled: boolean) => {
         return (
           <ExhibitTooltip
-            label={command?.label()}
-            description={command?.description()}
+            label={command?.getLabel()}
+            description={command?.getDescription()}
             disabled={disabled}
           >
             {children}

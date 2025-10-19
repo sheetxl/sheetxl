@@ -1,142 +1,38 @@
 import { RemoveListener  } from '@sheetxl/utils';
 import { IKeyStroke } from '../types';
 
-import { ICommands } from './ICommands';
-/*
- * A command represents an action performed by the UI.
- * It is either done via a keyboard shortcut or through a
- * UI widget (usually a button or menu item).
- */
+import { ICommand } from './ICommand';
 
-/*
- * TODO - add type (Useful for CommandButton factory)
- */
-export interface ICommandCallback<STATE extends any=void> {
-  (args?: STATE, command?: ICommand<STATE, unknown>): void | boolean | Promise<boolean> | Promise<void>;
-}
-
-type DynamicContext<CONTEXT> = CONTEXT | (() => CONTEXT);
-type DynamicValue<T, CONTEXT> = T | ((context?: DynamicContext<CONTEXT>) => T);
-
-export interface ICommandProperties<STATE extends any=void, CONTEXT extends any=void> {
-  // TODO - move non-dynamic properties out of the update properties option
-  // TODO - .disable(reason: string, add: boolean = true)
-  disabled?: boolean | (() => boolean);
-  state?: STATE;
-  context?: DynamicContext<CONTEXT>;
-
-  shortcut?: IKeyStroke | IKeyStroke[] | (() => IKeyStroke);
-
-  label?: DynamicValue<string, CONTEXT>;
-  tags?: DynamicValue<string[], CONTEXT>;
-
-  /**
-   * The ability to override labels for specific context. Useful for content menus
-   * For example 'Rename Sheet' command might only want to be displayed as 'Rename' in the content menu.
-   */
-  scopedLabels?: Record<string, DynamicValue<string, CONTEXT>>;
-  description?: DynamicValue<string, CONTEXT>;
-  icon?: DynamicValue<React.ReactNode, CONTEXT>;
-}
-
-export interface ICommandPropertyListener<STATE extends any, CONTEXT extends any> {
-  /**
-   * Called when command properties have changed.
-   */
-  (props: ICommandProperties<STATE, CONTEXT>, command: ICommand<STATE, CONTEXT>): void;
-}
 
 /**
- * A hook that can be passed to a command execute function.
+ * A default implementation of ICommand
  */
-export interface ICommandHook<STATE extends any, CONTEXT extends any=void> {
-  /**
-   * If implemented will be called when execute is called. If a promise is return if will wait until
-   * this is completed.
-   *
-   * @param command
-   * @param args
-   */
-  beforeExecute?(command: ICommand<STATE, CONTEXT>, args: STATE): Promise<boolean | void> | boolean | void;
-  /**
-   * Called when a command has been executed successful.
-   */
-  onExecute?(command: ICommand<STATE, CONTEXT>, args: STATE): void;
-  /**
-   * Called when a command failed to executed successfully.
-   */
-  onError?(command: ICommand<STATE, CONTEXT>, error: any, args: STATE): void;
-}
-
-export interface ICommand<STATE extends any=any, CONTEXT extends any=void> {
-  /**
-   * A unique key for the command. This is how the command is identified
-   * within the CommandTree
-   *
-   * @remarks
-   * Immutable
-   */
-  key(): string; // the key is immutable
-  target(): ICommands.ITarget;
-
-  disabled(): boolean;
-  execute(args?: STATE, hook?:ICommandHook<STATE, CONTEXT>): Promise<boolean>;
-
-  /**
-   * Represents the current state of the value that can also be set
-   */
-  state(): STATE;
-
-  context(): CONTEXT;
-
-  /**
-   * Additional information that may be needed to render or make decisions about setting state.
-   */
-  update(props: ICommandProperties<STATE, CONTEXT>): ICommand<STATE, CONTEXT>;
-
-  updateCallback(callback: ICommandCallback<STATE>): ICommand<STATE, CONTEXT>;
-
-  /**
-   * This is call when any command properties are changed but not when the callback is changed
-  */
-  addPropertyListener(listener: ICommandPropertyListener<STATE, CONTEXT>, fireOnListen?: boolean): RemoveListener;
-
-  addExecuteListener(listener: ICommandHook<STATE, CONTEXT>): RemoveListener;
-
-  shortcut(): IKeyStroke | IKeyStroke[];
-
-  label(scope?: string, context?: DynamicContext<CONTEXT>): string;
-  tags(context?: DynamicContext<CONTEXT>): string[];
-  description(context?: DynamicContext<CONTEXT>): string;
-  icon(context?: DynamicContext<CONTEXT>): React.ReactElement | string;
-}
-
 export class Command<STATE extends any=void, CONTEXT extends any=void> implements ICommand<STATE, CONTEXT> {
   protected _key: string; // the key is immutable
-  protected _target: ICommands.ITarget | (() => ICommands.ITarget);
+  protected _target: ICommand.ITarget | (() => ICommand.ITarget);
 
-  protected _label: DynamicValue<string, CONTEXT>;
-  protected _scopedLabels?: Record<string, DynamicValue<string, CONTEXT>>;
-  protected _description?: DynamicValue<string, CONTEXT>;
-  protected _icon: DynamicValue<React.ReactElement | string, CONTEXT>;
-  protected _tags: DynamicValue<string[], CONTEXT>;
+  protected _label: ICommand.DynamicValue<string, CONTEXT>;
+  protected _scopedLabels?: Record<string, ICommand.DynamicValue<string, CONTEXT>>;
+  protected _description?: ICommand.DynamicValue<string, CONTEXT>;
+  protected _icon: ICommand.DynamicValue<React.ReactElement | string, CONTEXT>;
+  protected _tags: ICommand.DynamicValue<string[], CONTEXT>;
 
-  protected _shortcut: DynamicValue<IKeyStroke | IKeyStroke[] | null, CONTEXT>;
-  protected _disabled: DynamicValue<boolean, CONTEXT>;
+  protected _shortcut: ICommand.DynamicValue<IKeyStroke | IKeyStroke[] | null, CONTEXT>;
+  protected _disabled: ICommand.DynamicValue<boolean, CONTEXT>;
 
   protected _state: STATE;
   protected _context: CONTEXT;
 
-  protected _callback: ICommandCallback<STATE>;
+  protected _callback: ICommand.Callback<STATE>;
 
-  protected _listenersProperties = new Set<ICommandPropertyListener<STATE, CONTEXT>>(); //WeakSet();
-  protected _listenersExecute = new Set<ICommandHook<STATE, CONTEXT>>(); //WeakSet();
+  protected _listenersProperties = new Set<ICommand.PropertyListener<STATE, CONTEXT>>(); //WeakSet();
+  protected _listenersExecute = new Set<ICommand.Hook<STATE, CONTEXT>>(); //WeakSet();
 
   constructor(
     key: string,
-    target: ICommands.ITarget | (() => ICommands.ITarget) | null,
-    props?: ICommandProperties<STATE, CONTEXT>,
-    callback?: ICommandCallback<STATE>
+    target: ICommand.ITarget | (() => ICommand.ITarget) | null,
+    props?: ICommand.Properties<STATE, CONTEXT>,
+    callback?: ICommand.Callback<STATE>
   ) {
     this._key = key;
     this._target = target;
@@ -147,14 +43,15 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
     this._callback = callback;
     if (callback === undefined) { // null work
       this._callback = () => {
-        console.log(`implement: ${this.label()} : ${this.description()}`);
+        console.log(`implement: ${this.getLabel()} : ${this.getDescription()}`);
       }
     }
   }
 
-  key() { return this._key };
+  /** @inheritdoc ICommand.getKey */
+  getKey() { return this._key };
 
-  protected _resolve<T=any>(value: DynamicValue<T, CONTEXT>, scopedContext?: CONTEXT | (() => CONTEXT)): T {
+  protected _resolve<T=any>(value: ICommand.DynamicValue<T, CONTEXT>, scopedContext?: CONTEXT | (() => CONTEXT)): T {
     if (typeof value === "function") {
       const _context = scopedContext ?? this._context;
       const context = (typeof _context === "function") ? (_context as any)() : _context;
@@ -163,8 +60,11 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
       return value;
   }
 
-  target() { return (typeof this._target === "function") ? this._target() : this._target };
-  label(scope?: string, scopedContext?: CONTEXT): string {
+  /** @inheritdoc ICommand.getTarget */
+  getTarget() { return (typeof this._target === "function") ? this._target() : this._target };
+
+  /** @inheritdoc ICommand.getLabel */
+  getLabel(scope?: string, scopedContext?: CONTEXT): string {
     const _label = this._scopedLabels?.[scope] || this._label;
     let label: string = null;
     if (typeof _label === "function") {
@@ -176,17 +76,30 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
     }
     return label;
   };
-  description(context?: DynamicContext<CONTEXT>): string { return this._resolve<string>(this._description, context) };
-  tags(context?: DynamicContext<CONTEXT>): string[] { return this._resolve<string[]>(this._tags, context) };
-  icon(context?: DynamicContext<CONTEXT>): React.ReactElement | string { return this._resolve<React.ReactElement | string>(this._icon, context) };
 
-  shortcut() { return this._resolve<IKeyStroke | IKeyStroke[] | null>(this._shortcut) };
-  disabled() { return this._resolve<boolean>(this._disabled) || !this._callback };
-  state() { return this._resolve<STATE>(this._state) };
+  /** @inheritdoc ICommand.getDescription */
+  getDescription(context?: ICommand.DynamicContext<CONTEXT>): string { return this._resolve<string>(this._description, context) };
 
-  context() { return (typeof this._context === "function") ? this._context() : this._context };
+  /** @inheritdoc ICommand.getTags */
+  getTags(context?: ICommand.DynamicContext<CONTEXT>): string[] { return this._resolve<string[]>(this._tags, context) };
 
-  async execute(args: STATE, hook?: ICommandHook<STATE, CONTEXT>): Promise<boolean> {
+  /** @inheritdoc ICommand.getIcon */
+  getIcon(context?: ICommand.DynamicContext<CONTEXT>): React.ReactElement | string { return this._resolve<React.ReactElement | string>(this._icon, context) };
+
+  /** @inheritdoc ICommand.getShortcut */
+  getShortcut(): IKeyStroke | readonly IKeyStroke[] { return this._resolve<IKeyStroke | IKeyStroke[] | null>(this._shortcut) };
+
+  /** @inheritdoc ICommand.disabled */
+  disabled(): boolean { return this._resolve<boolean>(this._disabled) || !this._callback };
+
+  /** @inheritdoc ICommand.getState */
+  getState(): STATE { return this._resolve<STATE>(this._state) };
+
+  /** @inheritdoc ICommand.getContext */
+  getContext(): CONTEXT { return (typeof this._context === "function") ? this._context() : this._context };
+
+  /** @inheritdoc ICommand.execute */
+  async execute(args: STATE, hook?: ICommand.Hook<STATE, CONTEXT>): Promise<boolean> {
     if (this.disabled() || !this._callback) return;
     try {
       let shouldExecute:any = true;
@@ -214,10 +127,8 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
     return true;
   }
 
-  /**
-   * This is call when any command properties are changed but not when the callback is changed
-   */
-  addPropertyListener(listener: ICommandPropertyListener<STATE, CONTEXT>, fireOnListen:boolean=false): RemoveListener {
+  /** @inheritdoc ICommand.addPropertyListener */
+  addPropertyListener(listener: ICommand.PropertyListener<STATE, CONTEXT>, fireOnListen:boolean=false): RemoveListener {
     if (!listener)
       throw new Error('listener must be specified');
     // This function takes a function that is called when a value is updated
@@ -231,7 +142,8 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
     return removeListener;
   }
 
-  addExecuteListener(listener: ICommandHook<STATE, CONTEXT>): RemoveListener {
+  /** @inheritdoc ICommand.addExecuteListener */
+  addExecuteListener(listener: ICommand.Hook<STATE, CONTEXT>): RemoveListener {
     if (!listener)
       throw new Error('listener must be specified');
     // This function takes a function that is called when a value is updated
@@ -245,45 +157,47 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
 
   protected _notifyExecute(args: STATE): void {
     const _this = this; // closure
-    this._listenersExecute.forEach((listener: ICommandHook<STATE, CONTEXT>) => {
+    this._listenersExecute.forEach((listener: ICommand.Hook<STATE, CONTEXT>) => {
       listener.onExecute(_this, args);
     });
   }
 
   protected _notifyError(error: any, args: STATE): void {
     const _this = this; // closure
-    this._listenersExecute.forEach((listener: ICommandHook<STATE, CONTEXT>) => {
+    this._listenersExecute.forEach((listener: ICommand.Hook<STATE, CONTEXT>) => {
       listener.onError?.(_this, error, args);
     });
   }
 
-  updateCallback(callback: ICommandCallback<STATE>):ICommand<STATE, CONTEXT> {
+  /** @inheritdoc ICommand.updateCallback */
+  updateCallback(callback: ICommand.Callback<STATE>):ICommand<STATE, CONTEXT> {
     this._callback = callback || null;
     return this;
   }
 
-  update(props: ICommandProperties<STATE, CONTEXT>): ICommand<STATE, CONTEXT> {
+  /** @inheritdoc ICommand.update */
+  update(props: ICommand.Properties<STATE, CONTEXT>): ICommand<STATE, CONTEXT> {
     if (!props)
       return;
 
     const appliedProps = this._applyProps(props);
     if (Object.keys(appliedProps).length > 0) {
       // useful for debugging changes
-      // console.log('propChanged', this.key(), appliedProps);
+      // console.log('propChanged', this.getKey(), appliedProps);
       this._notifyPropertyChange(appliedProps);
     }
     return this;
   }
 
-  protected _notifyPropertyChange(props: ICommandProperties<STATE, CONTEXT>): void {
+  protected _notifyPropertyChange(props: ICommand.Properties<STATE, CONTEXT>): void {
     const _this = this; // closure
-    this._listenersProperties.forEach((listener: ICommandPropertyListener<STATE, CONTEXT>) => {
+    this._listenersProperties.forEach((listener: ICommand.PropertyListener<STATE, CONTEXT>) => {
       listener(props, _this);
     });
   }
 
-  protected _applyProps(props: ICommandProperties<STATE, CONTEXT>):ICommandProperties<STATE, CONTEXT> {
-    let propsChanged:ICommandProperties<STATE, CONTEXT> = {};
+  protected _applyProps(props: ICommand.Properties<STATE, CONTEXT>):ICommand.Properties<STATE, CONTEXT> {
+    let propsChanged:ICommand.Properties<STATE, CONTEXT> = {};
     let _this = this;
     Object.keys(props).forEach((key) => {
       let value = props[key];
@@ -294,5 +208,8 @@ export class Command<STATE extends any=void, CONTEXT extends any=void> implement
     return propsChanged;
   }
 }
+/**
+ * A simple command that does not maintain state or context.
+ */
 export class SimpleCommand extends Command<void, void> {
 }

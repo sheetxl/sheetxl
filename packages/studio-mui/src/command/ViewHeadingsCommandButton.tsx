@@ -65,7 +65,7 @@ export const ViewHeadingsCommandButton = memo(
     <CommandPopupButton
       ref={refForwarded}
       parentFloat={parentFloat}
-      quickCommand={resolvedCommands[0]?.key()}
+      quickCommand={resolvedCommands[0]?.getKey()}
       commands={propCommands}
       commandHook={propCommandHook}
       createPopupPanel={createPopupPanel}

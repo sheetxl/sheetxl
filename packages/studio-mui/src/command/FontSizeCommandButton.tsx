@@ -7,17 +7,17 @@ import clsx from 'clsx';
 import { Theme, useTheme } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 import { IconButton } from '@mui/material'
 import { Input } from '@mui/material';
 
 import {
-  Command, ICommand, ICommands, useCommand, useCommands, ICommandHook, useCallbackRef, KeyCodes
+  Command, ICommand, ICommands, useCommand, useCommands, useCallbackRef, KeyCodes
 } from '@sheetxl/utils-react';
 
 import {
-  defaultCreatePopupPanel, ExhibitDivider, ExhibitMenuItem, ExhibitTooltip,
-  ExhibitPopupIconButton, ExhibitPopupIconButtonProps, ExhibitQuickButtonProps, ExhibitPopupPanelProps
+  defaultCreatePopupPanel, ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, ExhibitPopupIconButton,
+  type ExhibitPopupIconButtonProps, type ExhibitQuickButtonProps, type ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 import { CommandButton, SelectedIcon } from '@sheetxl/utils-mui';
@@ -38,7 +38,7 @@ export interface FontSizeCommandButtonProps extends Omit<ExhibitPopupIconButtonP
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
   /**
    * defaults the the Excel fontSizes
@@ -78,7 +78,7 @@ export const FontSizeCommandButton = memo(
   const _ = useCommand(command);
 
   const committedFontSize = () => {
-    return command?.state()?.toString() || '11';
+    return command?.getState()?.toString() || '11';
   }
 
   const [fontSize, setFontSize] = useState<string>(committedFontSize);
@@ -98,7 +98,7 @@ export const FontSizeCommandButton = memo(
 
   useEffect(() => {
     setFontSize(committedFontSize());
-  }, [command?.state()]);
+  }, [command?.getState()]);
 
   const commandHookNoBefore = useMemo(() => {
     if (!propCommandHook) return null;
@@ -269,7 +269,7 @@ export const FontSizeCommandButton = memo(
       command?.execute(newValue, propCommandHook);
     }
 
-    const currentFontSize = command?.state();
+    const currentFontSize = command?.getState();
 
     const menus = [];
     for (let i=0; i<fontSizes.length; i++) {
@@ -329,7 +329,7 @@ export const FontSizeCommandButton = memo(
       </Box>
     );
     return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, command?.state(), propCommandHook]);
+  }, [propDisabled, command?.getState(), propCommandHook]);
 
   return (
     <ExhibitPopupIconButton
@@ -345,8 +345,8 @@ export const FontSizeCommandButton = memo(
       createTooltip={({children}: TooltipProps, disabled: boolean) => {
         return (
           <ExhibitTooltip
-            label={command?.label()}
-            description={command?.description()}
+            label={command?.getLabel()}
+            description={command?.getDescription()}
             disabled={disabled || command?.disabled()}
           >
             {children}

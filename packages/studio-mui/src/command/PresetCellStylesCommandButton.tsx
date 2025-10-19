@@ -7,29 +7,27 @@ import React, {
 // import { useMeasure } from 'react-use';
 
 import { Theme } from '@mui/material/styles';
-import { Box, BoxProps } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import { Box, type BoxProps } from '@mui/material';
+import { type TooltipProps } from '@mui/material';
 
 import {
   IStyle, IStyleCollection, ICell, ITextFrame, IFont
 } from '@sheetxl/sdk';
 
-import { GridSurfaceStyle } from '@sheetxl/grid-react';
+import { type GridSurfaceStyle } from '@sheetxl/grid-react';
 
 import {
-  useCommand, ICommand, useCallbackRef, ICommandHook, CommandButtonType, ICommands
+  useCommand, ICommand, useCallbackRef, CommandButtonType, ICommands
 } from '@sheetxl/utils-react';
 
 import {
-  StaticBorderRenderer, StaticBorderRendererProps,
-  CommandContext
-  // SheetCellRenderer
+  StaticBorderRenderer, type StaticBorderRendererProps, type CommandContext
 } from '@sheetxl/react';
 
 import {
-  CommandButton, ExhibitPopupPanelProps,
-  ExhibitMenuHeader, ExhibitTooltip, ExhibitDivider, CommandPopupButton, CommandPopupButtonProps,
-  ExhibitIconButton, ExhibitIconButtonProps, ContextMenu, defaultCreatePopupPanel
+  CommandButton, ExhibitMenuHeader, ExhibitTooltip, ExhibitDivider, CommandPopupButton,
+  ExhibitIconButton, ContextMenu, defaultCreatePopupPanel,
+  type ExhibitPopupPanelProps, type CommandPopupButtonProps, type  ExhibitIconButtonProps
 } from '@sheetxl/utils-mui';
 
 export interface PresetCellStylesCommandButtonProps extends CommandPopupButtonProps {
@@ -43,7 +41,7 @@ export interface PresetCellStylesCommandButtonProps extends CommandPopupButtonPr
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
   selectedNamed?: IStyle.INamed;
   onSelectNamed?: (style: IStyle.INamed) => void;
@@ -215,7 +213,7 @@ interface PresetStyleIconButtonProps extends ExhibitIconButtonProps {
   onSelectNamed?: (named: IStyle.INamed) => void;
 
   commands: ICommands.IGroup;
-  commandHook: ICommandHook<any, any>;
+  commandHook: ICommand.Hook<any, any>;
 }
 
 const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
@@ -368,7 +366,7 @@ export const PresetCellStylesCommandButton = memo(
   } = props;
 
   const _ = useCommand(command);
-  const context:CommandContext.NamedStyle = command?.context();
+  const context:CommandContext.NamedStyle = command?.getContext();
   const getStyles = context?.styles;
   const named = propSelectedNamed ?? context?.named();
   const bodyStyle = propBodyStyle ?? context?.bodyStyle();
@@ -625,7 +623,7 @@ export const PresetCellStylesCommandButton = memo(
   const isDisabled = propDisabled || !command || command.disabled();
   const icon = useMemo(() => {
     if (!context || !usePreviewIcon) {
-      return command?.icon();
+      return command?.getIcon();
     }
     return (
       <StaticCellRenderer
@@ -662,8 +660,8 @@ export const PresetCellStylesCommandButton = memo(
       createTooltip={({children}: TooltipProps, disabled: boolean) => {
         return (
           <ExhibitTooltip
-            label={command?.label()}
-            description={command?.description()}
+            label={command?.getLabel()}
+            description={command?.getDescription()}
             disabled={disabled}
           >
             {children}
@@ -674,7 +672,7 @@ export const PresetCellStylesCommandButton = memo(
       //onQuickClick={() => { activeCommand?.execute() }}
       selected={false}
       disabled={isDisabled}
-      label={command?.label()}
+      label={command?.getLabel()}
       icon={icon}
       {...rest}
     />

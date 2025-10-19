@@ -4,26 +4,24 @@ import React, {
 
 import { Theme } from '@mui/material/styles';
 import { Box } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 
 import {
   ITable, Table, ITableStyle, IStyleCollection
 } from '@sheetxl/sdk';
 
-import { GridSurfaceStyle } from '@sheetxl/grid-react';
+import { type GridSurfaceStyle } from '@sheetxl/grid-react';
 
 import {
-  useCommand, ICommand, useCallbackRef, ICommandHook, CommandButtonType,
-  ICommands
+  useCommand, ICommand, useCallbackRef, CommandButtonType, ICommands
 } from '@sheetxl/utils-react';
 
-import { CommandContext } from '@sheetxl/react';
+import { type CommandContext } from '@sheetxl/react';
 
 import {
-  CommandButton, CommandPopupButtonProps, ExhibitPopupPanelProps,
-  ExhibitMenuHeader, ExhibitTooltip, CommandPopupButton,
-  ExhibitIconButton, ExhibitIconButtonProps, ContextMenu, defaultCreatePopupPanel,
-  ExhibitDivider,
+  CommandButton, ExhibitMenuHeader, ExhibitTooltip, CommandPopupButton,
+  ExhibitIconButton, ContextMenu, defaultCreatePopupPanel, ExhibitDivider,
+  type ExhibitIconButtonProps, type CommandPopupButtonProps, type ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 import { TableStylePreview, TableStyleCanvasPreview } from '../components/table';
@@ -39,7 +37,7 @@ export interface PresetTableStylesCommandButtonProps extends CommandPopupButtonP
    * Useful when knowing the specific button that executed a command is required.
    * (For example when closing menus or restoring focus)
    */
-  commandHook?: ICommandHook<any, any>;
+  commandHook?: ICommand.Hook<any, any>;
 
   selectedTable?: ITable;
   onSelectTableStyleName?: (styleName: string) => void;
@@ -70,7 +68,7 @@ interface PresetTableStyleIconButtonProps extends ExhibitIconButtonProps {
   onSelectTableStyleName?: (styleName: string) => void;
 
   commands: ICommands.IGroup;
-  commandHook: ICommandHook<any, any>;
+  commandHook: ICommand.Hook<any, any>;
   /**
    * If true uses a simple but 'faster' preview based on canvas.
    * @remarks
@@ -285,7 +283,7 @@ export const PresetTableStylesCommandButton = memo(
   } = props;
 
   const _ = useCommand(command);
-  const context:CommandContext.Table = command?.context();
+  const context:CommandContext.Table = command?.getContext();
   const styles = context?.styles;
 
   const tableActive:ITable = propSelectedTable ?? context?.table?.();
@@ -456,7 +454,7 @@ export const PresetTableStylesCommandButton = memo(
   const isDisabled = propDisabled || !command || command.disabled();
   const icon = useMemo(() => {
     if (!context || !usePreviewIcon) {
-      return command?.icon();
+      return command?.getIcon();
     }
     // return (
     //   <TableFormatPreview
@@ -484,7 +482,7 @@ export const PresetTableStylesCommandButton = memo(
       quickCommand={disabledQuickKey ? undefined : quickCommandKey}
       createPopupPanel={createPopupPanel}
       commands={propCommands}
-      label={command?.label()}
+      label={command?.getLabel()}
       commandState={tableActive}
       commandHook={commandHook}
       selected={tableActive !== null}
@@ -492,8 +490,8 @@ export const PresetTableStylesCommandButton = memo(
       createTooltip={({children}: TooltipProps, disabled: boolean) => {
         return (
           <ExhibitTooltip
-            label={command?.label()}
-            description={command?.description()}
+            label={command?.getLabel()}
+            description={command?.getDescription()}
             disabled={disabled}
           >
             {children}

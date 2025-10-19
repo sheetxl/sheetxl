@@ -35,7 +35,7 @@ export const TextEffectsCommandButton = memo(
     const resolvedCommandsLength = resolvedCommands.length;
     for (let i=0; i<resolvedCommandsLength; i++) {
       const command = resolvedCommands[i];
-      if ((command as Command<boolean>)?.state()) {
+      if ((command as Command<boolean>)?.getState()) {
         return command;
       }
     }
@@ -71,13 +71,13 @@ export const TextEffectsCommandButton = memo(
   return (
     <CommandPopupButton
       ref={refForwarded}
-      quickCommand={activeCommand?.key()}
+      quickCommand={activeCommand?.getKey()}
       commands={propCommands}
       commandHook={propCommandHook}
       createPopupPanel={createPopupPanel}
       label="Text Effects"
       tooltip="Style your text to differentiate it."
-      icon={activeCommand?.icon() ?? 'TextStrike'}
+      icon={activeCommand?.getIcon() ?? 'TextStrike'}
       {...rest}
     />
   )

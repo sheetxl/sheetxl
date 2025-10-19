@@ -33,7 +33,7 @@ export const UnderlineCommandButton = memo(
   const activeCommand = useMemo(() => {
     const resolvedCommandsLength = resolvedCommands.length;
     for (let i=0; i<resolvedCommandsLength; i++) {
-      if ((resolvedCommands[i] as Command<boolean>)?.state()) {
+      if ((resolvedCommands[i] as Command<boolean>)?.getState()) {
         return resolvedCommands[i];
       }
     }
@@ -74,13 +74,13 @@ export const UnderlineCommandButton = memo(
   return (
     <CommandPopupButton
       ref={refForwarded}
-      quickCommand={activeCommand?.key()}
+      quickCommand={activeCommand?.getKey()}
       commands={propCommands}
       commandHook={propCommandHook}
       label="Underline"
       tooltip="All underline stylings."
       createPopupPanel={createPopupPanel}
-      icon={activeCommand?.icon() ?? 'TextUnderline'}
+      icon={activeCommand?.getIcon() ?? 'TextUnderline'}
       {...rest}
     />
   )

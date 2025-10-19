@@ -36,7 +36,7 @@ export const TextRotateCommandButton = memo(
     const resolvedCommandsLength = resolvedCommands.length
     for (let i=0; i<resolvedCommandsLength; i++) {
       const command = resolvedCommands[i] as Command<boolean>;
-      if (command?.state()) {
+      if (command?.getState()) {
         return command;
       }
     }
@@ -90,7 +90,7 @@ export const TextRotateCommandButton = memo(
   }, [propDisabled, propCommandHook, scope, propCommands]);
 
   const isSelected = useMemo(() => {
-    return (propCommands.getCommand('formatTextRotateCustom')?.state() ?? 0) !== 0
+    return (propCommands.getCommand('formatTextRotateCustom')?.getState() ?? 0) !== 0
   }, [resolvedCommands]);
 
   return (
@@ -105,8 +105,8 @@ export const TextRotateCommandButton = memo(
       tooltip="Rotate your text diagonally or vertically. This is a great way to label narrow columns."
       createPopupPanel={createPopupPanel}
       quickCommand={isSelected ? 'formatTextRotate0' : 'formatTextRotate315' }
-      icon={activeCommand?.icon() ?? 'TextRotation315'}
-      {...rest}
+        icon={activeCommand?.getIcon() ?? 'TextRotation315'}
+        {...rest}
     />
   )
 }));

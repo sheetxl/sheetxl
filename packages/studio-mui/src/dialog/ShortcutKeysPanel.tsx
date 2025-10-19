@@ -263,13 +263,13 @@ export function ShortcutKeysPanel(props) {
     let commandArray:{ command: ICommand<any, any>, groupKey: string}[] = asCommands.getAllCommands();
     if (!showAll) {
       commandArray = commandArray.filter((record: { command: ICommand<any, any>, groupKey: string }) => {
-        return record.command.shortcut();
+        return record.command.getShortcut();
       });
     }
 
     // sort by group (doesn't exist yet)
     commandArray.sort((a: { command: ICommand<any, any>, groupKey: string}, b: { command: ICommand<any, any>, groupKey: string}) => {
-      return a.command.label().localeCompare(b.command.label());
+      return a.command.getLabel().localeCompare(b.command.getLabel());
     });
     // we want multiple shortcuts to be their own line.
     const retValue = [];
@@ -282,24 +282,24 @@ export function ShortcutKeysPanel(props) {
     for (let i=0;i<commandArrayLength; i++) {
       const record = commandArray[i];
       const command = record.command;
-      const shortcut = command.shortcut();
+      const shortcut = command.getShortcut();
       if (Array.isArray(shortcut)) {
         const shortcuts = shortcut as any[];
         const shortcutsLength = shortcuts.length;
         for (let j=0; j<shortcutsLength; j++) {
           retValue.push({
-            label: command.label(),
-            icon: command.icon(),
-            description: replaceDoubleNewLines(command.description()),
+            label: command.getLabel(),
+            icon: command.getIcon(),
+            description: replaceDoubleNewLines(command.getDescription()),
             shortcut: shortcuts[j]
           });
         }
       } else {
         retValue.push({
-          label: command.label(),
-          icon: command.icon(),
-          description: replaceDoubleNewLines(command.description()),
-          shortcut: command.shortcut()
+          label: command.getLabel(),
+          icon: command.getIcon(),
+          description: replaceDoubleNewLines(command.getDescription()),
+          shortcut: command.getShortcut()
         });
       }
     }

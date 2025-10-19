@@ -7,7 +7,7 @@ import { mergeRefs } from 'react-merge-refs';
 import { Theme, alpha, getOverlayAlpha } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
-import { TooltipProps } from '@mui/material';
+import type { TooltipProps } from '@mui/material';
 import { IconButton } from '@mui/material'
 import { Input } from '@mui/material';
 
