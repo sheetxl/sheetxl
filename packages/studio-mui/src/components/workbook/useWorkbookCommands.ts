@@ -921,7 +921,7 @@ export const useWorkbookCommands = (props: useWorkbookCommandsOptions): ICommand
         initialValue,
         context: () => {
           // TODO - this is a bit of a hack. Type this.
-          return onFindOrReplace//command.getContext() as () => ICell,
+          return onFindOrReplace//command.getContext() as ICell,
         },
         onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>): void => {
           // Note - when we get the context correct this should be removed
