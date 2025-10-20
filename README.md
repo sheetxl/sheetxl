@@ -47,7 +47,7 @@ import React from 'react';
 import { Studio } from '@sheetxl/studio-mui';
 
 function App() {
-  // SheetXL will fill it's parent container.
+  // Studio will fill it's parent container.
   return (
     <div style={{ height: '600px', width: '100%' }}>
       <Studio />
