@@ -224,10 +224,10 @@ importers:
         version: 7.3.3(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@types/react@19.2.2)(react@19.2.0))(@types/react@19.2.2)(react@19.2.0)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: '*'
-        version: 0.7.24(12791d5da30ff7aff9c03d4641a260ae)
+        version: 0.7.25(12791d5da30ff7aff9c03d4641a260ae)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -285,16 +285,16 @@ importers:
         version: 7.3.3(@types/react@19.2.2)(react@19.2.0)
       '@sheetxl/grid-react':
         specifier: '*'
-        version: 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@sheetxl/io':
         specifier: workspace:*
         version: link:../../packages/io
       '@sheetxl/react':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: workspace:*
         version: link:../../packages/studio-mui
@@ -382,7 +382,7 @@ importers:
         version: 7.3.3(@types/react@19.2.2)(react@19.2.0)
       '@sheetxl/grid-react':
         specifier: '*'
-        version: 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@sheetxl/io':
         specifier: workspace:*
         version: link:../../packages/io
@@ -391,13 +391,13 @@ importers:
         version: link:../../packages/primitives
       '@sheetxl/react':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@sheetxl/scripting':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: workspace:*
         version: link:../../packages/studio-mui
@@ -461,10 +461,10 @@ importers:
         version: link:../primitives
       '@sheetxl/scripting':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/utils':
         specifier: workspace:*
         version: link:../utils
@@ -514,7 +514,7 @@ importers:
     dependencies:
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/utils':
         specifier: workspace:*
         version: link:../utils
@@ -571,16 +571,16 @@ importers:
         version: 7.3.3(@types/react@19.2.2)(react@19.2.0)
       '@sheetxl/grid-react':
         specifier: '*'
-        version: 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@sheetxl/io':
         specifier: workspace:*
         version: link:../io
       '@sheetxl/react':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/utils':
         specifier: workspace:*
         version: link:../utils
@@ -683,7 +683,7 @@ importers:
         version: 7.3.3(@types/react@19.2.2)(react@19.2.0)
       '@sheetxl/sdk':
         specifier: '*'
-        version: 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
+        version: 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
       '@sheetxl/studio-mui':
         specifier: workspace:*
         version: link:../studio-mui
@@ -2894,39 +2894,39 @@ packages:
     peerDependencies:
       semantic-release: '>=20.1.0'
 
-  '@sheetxl/grid-react@0.7.24':
-    resolution: {integrity: sha512-3nQqOn20bRxYLjjNklxSXQfqSoD4tzBkb39HU1LOuvIdsy6ck/b5lKeX3KPl1U6W9ikBeVqoA5CuVSh4N74Qvw==}
+  '@sheetxl/grid-react@0.7.25':
+    resolution: {integrity: sha512-XDd+dOqKQOnT/ee/STm/AFyuaUETdfdiBDx97fUNQsBaJkXtvqbTWTMm+nuMQTC2hX+PiUhvJ0oxwCZsba/eYA==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@sheetxl/io@0.7.24':
-    resolution: {integrity: sha512-l2DojUixRvHjTsDLbN4RItAeTdjxzuyk6mwWtla4uMebuAQ+T3q7PcbsWzWQs6ESn4yUDMmgZV23dXRXayY5gg==}
+  '@sheetxl/io@0.7.25':
+    resolution: {integrity: sha512-r+CN5R4f48db1FmIxKe4iWhEyWs2f2imlw1D5mjfkYAHi1gYngv/wYIi7cIv8+p/1jme1OGf2Urb/3fYruTGqw==}
     engines: {node: '>=20 <21 || >=22'}
 
-  '@sheetxl/primitives@0.7.24':
-    resolution: {integrity: sha512-6yJi8S3JF/avVWjyPpUlJvgQKqvKv6LVTF9pXl4MbBjPAulwwcvlAkmfWzpIUoNE0Y/PUOc+VJ/MWQqHE7+JEQ==}
+  '@sheetxl/primitives@0.7.25':
+    resolution: {integrity: sha512-E7FVos9PTH6PpKkZSTcS7Gz4F1mgJPFOGPS8G+lASC98iqCcYXYrBwROeaD35tiwo7Uk7OYRli4cfH+scE9Mew==}
     engines: {node: '>=22'}
 
-  '@sheetxl/react@0.7.24':
-    resolution: {integrity: sha512-ExB10FANhx5lqVebmUby3LLFITOVC2cSyNavuNjluhZpmmE/OSdTzg7g/vHhIQF88AR9C+eiw5WvE9ysr9t7Zw==}
+  '@sheetxl/react@0.7.25':
+    resolution: {integrity: sha512-jdSs+uVRjMWA33Ea+iNehEi3NYuker1953b1Lb9lEOiAhZS2ds1ZjXYJkmRCE/E+19LZ8h3u3bAGpHtwEuslTQ==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@sheetxl/scripting@0.7.24':
-    resolution: {integrity: sha512-rREz7aV2jiHowKfecwD2OfQm8Uxjpn0udpD+AsqVd9vTiYA0cNkdwy+3K28pI/HvRgyELIVVqA8DTkKDGhWHBA==}
+  '@sheetxl/scripting@0.7.25':
+    resolution: {integrity: sha512-8s53ZckwVblgFKKbC2Zhq/2b7cOUYXYPpLij8MWBmgs8jvwLfD1+tEdVVOacfFmmwflH1+jFQsY2ENG1kLKyow==}
     engines: {node: '>=20 <21 || >=22'}
     peerDependencies:
       esbuild-wasm: ^0.25.7
       typescript: ^5.9.0
 
-  '@sheetxl/sdk@0.7.24':
-    resolution: {integrity: sha512-qd87x23nkYRzdbAAk2CCFaZljcUA3JSrGlPigcFKg1IpVEe0fiEDuyRKbWVIvrvlWIdKrsEu2sDb1cERYwBFIw==}
+  '@sheetxl/sdk@0.7.25':
+    resolution: {integrity: sha512-KRRKQI5SzRzFp2gvV0pIhlJSzwY7ACwGX8FZOH1tJvLlH4TR+rB/cOlW2MgP9pBFicUEfZkzRYhuLIWs1LPBcA==}
     engines: {node: '>=20 <21 || >=22'}
 
-  '@sheetxl/studio-mui@0.7.24':
-    resolution: {integrity: sha512-8rc5xwPRjbdwIORFVgLJg3552cDE8p4v35CEVglYjS/PRe0cvJNbfNDCN82/6tCYKUSfEgntEab6uHBt3bhEQg==}
+  '@sheetxl/studio-mui@0.7.25':
+    resolution: {integrity: sha512-ZAHRFZ2XoSyfXsxGkp+CJiVb6ZV4knQnZ/nlYCrZ1NrGB2kv7GlFOrOky187Zp8rZMeuUV0YRa+d5OgFjMObpg==}
     peerDependencies:
       '@emotion/cache': ^11.14.0
       '@emotion/react': ^11.14.0
@@ -2938,8 +2938,8 @@ packages:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@sheetxl/utils-mui@0.7.24':
-    resolution: {integrity: sha512-/uv/EMp2jNmTx2nOGWJI7xLEOrYiERc0J1YZ0X3j+t0jzL0SizEcUjMiAIwSHfewcGn2k0wnZKJAn+gRYYHmbA==}
+  '@sheetxl/utils-mui@0.7.25':
+    resolution: {integrity: sha512-BJ01VxrdaXYNaayG/PDBKmEG553QUFWlKQYICzpZiPx1QRXeX73o2goBlOhD3P6GNc+8IMOyQrS202e+BmjC6A==}
     peerDependencies:
       '@emotion/cache': ^11.14.0
       '@emotion/react': ^11.14.0
@@ -2951,14 +2951,14 @@ packages:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@sheetxl/utils-react@0.7.24':
-    resolution: {integrity: sha512-+66fQ/JUilUiDChYGVKuSBVTUKXWRn2ofHJSN7gPE0nJ8a84KJs7MU2yhrqPqZVQTi6LBf3kKEfTNMhgnUWjHQ==}
+  '@sheetxl/utils-react@0.7.25':
+    resolution: {integrity: sha512-mXVeM9R+R8RbrkfOxAOo3rOlUDI7G8NU/4tXOg1hTm1z1pX1NCFVQYmRPqjlMGzIvrIYpllA35/Pz7AAeu49nQ==}
     peerDependencies:
       react: ^19.2.0
       react-dom: ^19.2.0
 
-  '@sheetxl/utils@0.7.24':
-    resolution: {integrity: sha512-0V5aBbZHvF2gu1+MxNXR3HSXm2fKD8OWbZhXEYvyFThWdRG30ZlxV0HBlCCNdz5sw3XV0y8KjZ6uepVR35rcQg==}
+  '@sheetxl/utils@0.7.25':
+    resolution: {integrity: sha512-axqruBmMROS6K6924t2J6DfcYf45QN+rCohojFFoGx95Jkbal+BfxMh26D7yCwytaiM6h0Od3mngf8nMzPB0Hw==}
     engines: {node: '>=20 <21 || >=22'}
 
   '@shikijs/engine-oniguruma@3.13.0':
@@ -12705,10 +12705,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@sheetxl/grid-react@0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@sheetxl/grid-react@0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@sheetxl/utils': 0.7.24
-      '@sheetxl/utils-react': 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/utils': 0.7.25
+      '@sheetxl/utils-react': 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
@@ -12716,10 +12716,10 @@ snapshots:
       react-use: 17.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       tiny-invariant: 1.3.3
 
-  '@sheetxl/io@0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)':
+  '@sheetxl/io@0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)':
     dependencies:
-      '@sheetxl/sdk': 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.24
+      '@sheetxl/sdk': 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.25
       '@xmldom/xmldom': 0.9.8
       papaparse: 5.5.3
       path-browserify: 1.0.1
@@ -12730,19 +12730,19 @@ snapshots:
       - esbuild-wasm
       - typescript
 
-  '@sheetxl/primitives@0.7.24': {}
+  '@sheetxl/primitives@0.7.25': {}
 
-  '@sheetxl/react@0.7.24(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
+  '@sheetxl/react@0.7.25(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
     dependencies:
       '@dnd-kit/core': 6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@dnd-kit/modifiers': 9.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@dnd-kit/sortable': 10.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@dnd-kit/utilities': 3.2.2(react@19.2.0)
       '@monaco-editor/react': 4.7.0(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@sheetxl/grid-react': 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@sheetxl/sdk': 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.24
-      '@sheetxl/utils-react': 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/grid-react': 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/sdk': 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.25
+      '@sheetxl/utils-react': 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       monaco-editor-auto-typings: 0.4.6(monaco-editor@0.54.0)
       react: 19.2.0
@@ -12756,19 +12756,19 @@ snapshots:
       - monaco-editor
       - typescript
 
-  '@sheetxl/scripting@0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)':
+  '@sheetxl/scripting@0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)':
     dependencies:
-      '@sheetxl/primitives': 0.7.24
-      '@sheetxl/utils': 0.7.24
+      '@sheetxl/primitives': 0.7.25
+      '@sheetxl/utils': 0.7.25
       esbuild-wasm: 0.25.11
       path-browserify: 1.0.1
       typescript: 5.9.3
 
-  '@sheetxl/sdk@0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)':
+  '@sheetxl/sdk@0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)':
     dependencies:
-      '@sheetxl/primitives': 0.7.24
-      '@sheetxl/scripting': 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.24
+      '@sheetxl/primitives': 0.7.25
+      '@sheetxl/scripting': 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.25
       bahttext: 2.3.3
       bessel: 1.0.2
       chalk: 5.6.2
@@ -12785,7 +12785,7 @@ snapshots:
       - esbuild-wasm
       - typescript
 
-  '@sheetxl/studio-mui@0.7.24(12791d5da30ff7aff9c03d4641a260ae)':
+  '@sheetxl/studio-mui@0.7.25(12791d5da30ff7aff9c03d4641a260ae)':
     dependencies:
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@19.2.2)(react@19.2.0)
@@ -12794,13 +12794,13 @@ snapshots:
       '@mui/styled-engine': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@types/react@19.2.2)(react@19.2.0))(react@19.2.0)
       '@mui/system': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@types/react@19.2.2)(react@19.2.0))(@types/react@19.2.2)(react@19.2.0)
       '@mui/utils': 7.3.3(@types/react@19.2.2)(react@19.2.0)
-      '@sheetxl/grid-react': 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@sheetxl/io': 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
-      '@sheetxl/react': 0.7.24(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
-      '@sheetxl/sdk': 0.7.24(esbuild-wasm@0.25.11)(typescript@5.9.3)
-      '@sheetxl/utils': 0.7.24
-      '@sheetxl/utils-mui': 0.7.24(739e0b2096eada8d96d859d8063db561)
-      '@sheetxl/utils-react': 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/grid-react': 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/io': 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
+      '@sheetxl/react': 0.7.25(esbuild-wasm@0.25.11)(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      '@sheetxl/sdk': 0.7.25(esbuild-wasm@0.25.11)(typescript@5.9.3)
+      '@sheetxl/utils': 0.7.25
+      '@sheetxl/utils-mui': 0.7.25(739e0b2096eada8d96d859d8063db561)
+      '@sheetxl/utils-react': 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       csstype: 3.1.3
       file-saver: 2.0.5
@@ -12824,7 +12824,7 @@ snapshots:
       - prop-types
       - typescript
 
-  '@sheetxl/utils-mui@0.7.24(739e0b2096eada8d96d859d8063db561)':
+  '@sheetxl/utils-mui@0.7.25(739e0b2096eada8d96d859d8063db561)':
     dependencies:
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@19.2.2)(react@19.2.0)
@@ -12834,8 +12834,8 @@ snapshots:
       '@mui/system': 7.3.3(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.0))(@types/react@19.2.2)(react@19.2.0))(@types/react@19.2.2)(react@19.2.0)
       '@mui/utils': 7.3.3(@types/react@19.2.2)(react@19.2.0)
       '@popperjs/core': 2.11.8
-      '@sheetxl/utils': 0.7.24
-      '@sheetxl/utils-react': 0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@sheetxl/utils': 0.7.25
+      '@sheetxl/utils-react': 0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
       detect-it: 4.0.1
       focus-trap-react: 10.3.1(prop-types@15.8.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -12851,9 +12851,9 @@ snapshots:
       - '@types/react'
       - prop-types
 
-  '@sheetxl/utils-react@0.7.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@sheetxl/utils-react@0.7.25(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@sheetxl/utils': 0.7.24
+      '@sheetxl/utils': 0.7.25
       clsx: 2.1.1
       detect-it: 4.0.1
       react: 19.2.0
@@ -12862,7 +12862,7 @@ snapshots:
       react-use: 17.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       tiny-invariant: 1.3.3
 
-  '@sheetxl/utils@0.7.24': {}
+  '@sheetxl/utils@0.7.25': {}
 
   '@shikijs/engine-oniguruma@3.13.0':
     dependencies:

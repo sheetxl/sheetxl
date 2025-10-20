@@ -51,6 +51,7 @@ async function myPlugin(_context, _opts) {
       fallback['os'] = false;
       fallback['fs'] = false;
       fallback['fs/promises'] = false;
+      fallback['buffer'] = false;
       if (!isServer) {
         // These may still be needed for client-side MUI dependencies
         fallback['path'] = require.resolve('path-browserify');
