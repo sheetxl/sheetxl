@@ -60,7 +60,7 @@ export const RunScriptPopupPanel = memo(forwardRef<any, RunScriptPopupPanelProps
   // await scripting.save();
   // scripting.searchFunctions({ scope: scope });
   const scriptsElements = [];
-  const macrosLength = macros.length;
+  const macrosLength = macros ? macros.length : 0;
   for (let i=0; i<macrosLength; i++) {
     const udf = macros[i];
     scriptsElements.push(

@@ -17,10 +17,11 @@
 
 If you like SheetXL **[give us a star ⭐](https://github.com/sheetxl/sheetxl)** and help others find us!
 
-Whether you're building a custom UI, adding live scripting, or integrating spreadsheet logic into your app, SheetXL gives you full control with zero platform lock-in.
+Whether you're building a custom UI, adding live scripting, or integrating spreadsheet logic into your app, SheetXL
+gives you full control with zero platform lock-in.
 
 ![SheetXL Animated Demo Link](./static/img/sheetxl-animated-preview.gif)
-*Headless API. Live Scripting. Built for developers.*
+*Headless API. Live Scripting. CLI Tools. Built for developers.*
 
 ### Try it now — Complete Excel-compatible App
 
@@ -132,6 +133,28 @@ SheetXL is built on four core pillars: extreme performance, deep Excel compatibi
 * **Modern, Open Architecture**
 
   Built with TypeScript and a flexible plugin model, including a fully open-sourced MIT-licensed MUI design system.
+
+## 🔥 Power Features
+
+### Live Scripting Engine
+
+Write and execute TypeScript/JavaScript directly inside your spreadsheet. Perfect for complex data transformations, custom validation, and real-time calculations.
+
+![Live Scripting Demo](./static/img/live-scripting-demo.gif)
+
+### Command-Line Interface
+
+Automate spreadsheet operations, run batch processes, and integrate SheetXL into your build pipeline with our full-featured CLI.
+
+![CLI Demo](./static/img/cli-demo.gif)
+
+```bash
+# Extract data from any Excel file
+sheetxl extract data.xlsx A1:Z100
+
+# Run custom scripts
+sheetxl run process-data.ts --workbook sales.xlsx
+```
 
 ### 🏷️ User Features
 
