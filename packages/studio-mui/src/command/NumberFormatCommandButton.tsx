@@ -36,7 +36,7 @@ const NumberFormatMenuItem = memo((props: any) => { // TODO - type
         maxWidth: '360px', // TODO - make this the width of text for long date plus a bit
         display: 'flex',
         '*': {
-          lineHeight: '1.2'
+          lineHeight: '1.4'
         },
         ...propSx
       }}
@@ -110,7 +110,7 @@ export const NumberFormatCommandButton = memo(
   const commandKeys:string[] = [
     'formatNumberFormat'
   ];
-  const resolvedCommands = useCommands<string, () => ICell>(propCommands, commandKeys);
+  const resolvedCommands = useCommands<string, ICell>(propCommands, commandKeys);
   const command = resolvedCommands[0];
   const currentFormatType = command?.getState() ? NumberFormat.Styles.lookupStyle(command?.getState()).formatType : NumberFormat.Type.General;
 
@@ -129,7 +129,7 @@ export const NumberFormatCommandButton = memo(
       propCommandHook?.onExecute?.(command, command?.getState());
     }
 
-    const currentCell:ICell = command?.getContext()();
+    const currentCell:ICell = command?.getContext();
 
     const formats = NumberFormat.Styles.lookupPrimary();
     const formatOptions = [];
