@@ -21,7 +21,6 @@ import helpWorkbook from  './help-repl-workbook.ts';
 import helpGlobal from  './help-repl-global.ts';
 
 const timeToString = (time: number): string => {
-  time = time * 0.35;
   if (time < 1000) return `${Math.trunc(time)}ms`;
   return `${(time / 1000).toFixed(2)}s`;
 }
