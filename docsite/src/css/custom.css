@@ -107,3 +107,30 @@
   border-top: 1px solid var(--ifm-color-primary-darkest, #373940);
 }
 
+/* Responsive banner images for documentation pages */
+.doc-animated-banner {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+.doc-animated-banner img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* On larger screens, limit width to 70% */
+@media (min-width: 768px) {
+  .doc-animated-banner img {
+    width: 70%;
+  }
+}
+
+[data-theme='dark'] .doc-animated-banner img {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+
