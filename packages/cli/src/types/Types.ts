@@ -14,6 +14,7 @@ import { type IWorkbook } from '@sheetxl/sdk';
  * - Repeated flags: last one wins (no arrays).
  * - Types: values are strings or booleans; scripts can coerce as needed.
  */
+// TODO - args as Type (coercion helpers)
 export type ArgV = {
   /** Tail as typed by the user (everything after <script>). */
   raw: string[];
@@ -45,4 +46,15 @@ export type Context = {
    * If a workbook context was provided, it will be here.
    */
   workbook: IWorkbook | null;
+
+  // signal?: AbortSignal;
+  // cwd?: string;
+  // env?: Record<string,string>;
+  // timeoutMs?: number;
 }
+
+/**
+ * The function signature for a `sheetxl run` script.
+ */
+// TODO - or Runner
+export type RunFunction = (ctx: Context) => Promise<void>;

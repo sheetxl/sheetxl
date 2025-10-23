@@ -268,9 +268,11 @@ export const isEqualObjectKeys = <T=any>(a: T, b: T): boolean => {
   if (a === b) return true;
   if ((a && !b) || (b && !a)) return false;
   const keysA = Object.keys(a);
-  if (keysA.length !== Object.keys(b).length) return false;
-  for (let k=0; k<keysA.length; k++) {
-    if (a[keysA[k]] !== b[keysA[k]])
+  const keysALength = keysA.length;
+  if (keysALength !== Object.keys(b).length) return false;
+  for (let k=0; k<keysALength; k++) {
+    const keyA = keysA[k];
+    if (a[keyA] !== b[keyA])
       return false;
   }
   return true;
@@ -339,11 +341,11 @@ export const transpose = (matrix: number[][]): number[][] => {
   const rows = matrix.length,
   cols = matrix[0].length;
   const transposed = [];
-  for (let j = 0; j < cols; j++) {
+  for (let j=0; j<cols; j++) {
     transposed[j] = Array(rows);
   }
   for (let i=0; i<rows; i++) {
-    for (let j = 0; j < cols; j++) {
+    for (let j=0; j<cols; j++) {
       transposed[j][i] = matrix[i][j];
     }
   }
@@ -376,9 +378,10 @@ export const removeEqualValues = (update: any, original: any, isEqual:(update: a
     return isEqual(update, original) ? null : update;
   }
   const keys = Object.keys(update);
-  if (keys.length === 0) return null;
+  const keysLength = keys.length;
+  if (keysLength === 0) return null;
   let hasDelete = false;
-  for (let k=0;k<keys.length;k++) {
+  for (let k=0; k<keysLength; k++) {
     const key = keys[k];
     let value = removeEqualValues(update[key], original?.[key], isEqual);
     if (value === null) {
@@ -842,7 +845,8 @@ export const subtractRect = (rectOuter: Rectangle, rectInner: Rectangle, vertica
 export const getFromPath = (obj: Record<string, any>, path: string): Record<string, any> => {
   const segments: string[] = path.split(".");
   let currentObject = obj;
-  for (let i=0; i<segments.length; i++) {
+  const segmentsLength = segments.length;
+  for (let i=0; i<segmentsLength; i++) {
     const seg = segments[i];
     if (!currentObject)
       return null;
@@ -866,7 +870,8 @@ export const setToPath = (obj: Record<string, any>, path: string, value: Record<
   if (!currentObject) {
     throw new Error(`Can not set path to a null path.`);
   }
-  for (let i=0; currentObject && i<segments.length - 1; i++) {
+  const segmentsLength = segments.length;
+  for (let i=0; currentObject && i<segmentsLength - 1; i++) {
     const seg:string = segments[i];
     let child:any = currentObject[seg];
     if (child === null || child === undefined) {
@@ -882,7 +887,7 @@ export const setToPath = (obj: Record<string, any>, path: string, value: Record<
       typeof value === "boolean" ||
       typeof value === "string" ||
       isObject(value)) {
-    currentObject[segments[segments.length-1]] = value;
+    currentObject[segments[segmentsLength-1]] = value;
   } else {
     throw new Error(`Can not set path to ${value} that is not a a supported primitive.`);
   }

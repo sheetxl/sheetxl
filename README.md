@@ -149,9 +149,6 @@ Automate spreadsheet operations, run batch processes, and integrate SheetXL into
 ![CLI Demo](./static/img/cli-demo.gif)
 
 ```bash
-# Extract data from any Excel file
-sheetxl extract data.xlsx A1:Z100
-
 # Run custom scripts
 sheetxl run process-data.ts --workbook sales.xlsx
 ```
