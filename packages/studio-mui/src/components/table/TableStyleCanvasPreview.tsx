@@ -118,11 +118,11 @@ export const TableStyleCanvasPreview = memo(forwardRef<HTMLDivElement, TableStyl
         const fill = style.getFill();
         let color = bodyStyle?.fill; // default background
         if (fill.getType() === IFill.Type.Solid) {
-          color = (fill as IFill.ISolid).getColor().toCSS(darkMode, false);
+          color = (fill as IFill.ISolid).getColor().toCSS(darkMode);
         } else if (fill.getType() === IFill.Type.Gradient) {
-          color = (fill as IFill.IGradient).getStops[0]?.color.toCSS(darkMode, false);
+          color = (fill as IFill.IGradient).getStops[0]?.color.toCSS(darkMode);
         } else if (fill.getType() === IFill.Type.Pattern) {
-          color = (fill as IFill.IPattern).getForeground().toCSS(darkMode, false);
+          color = (fill as IFill.IPattern).getForeground().toCSS(darkMode);
         }
         ctx.fillStyle = color;
 
@@ -143,28 +143,28 @@ export const TableStyleCanvasPreview = memo(forwardRef<HTMLDivElement, TableStyl
         if (!border.isEmpty()) {
           const left = border.getLeft();
           if (!left.isNone()) {
-            ctx.strokeStyle = left.getColor().toCSS(darkMode, false);
+            ctx.strokeStyle = left.getColor().toCSS(darkMode);
             line(ctx, x, y, x, y + height);
           }
           const top = border.getTop();
           if (!top.isNone()) {
-            ctx.strokeStyle = top.getColor().toCSS(darkMode, false);
+            ctx.strokeStyle = top.getColor().toCSS(darkMode);
             line(ctx, x, y, x + width, rowIndex * height);
           }
           const right = border.getRight();
           if (!right.isNone()) {
-            ctx.strokeStyle = right.getColor().toCSS(darkMode, false);
+            ctx.strokeStyle = right.getColor().toCSS(darkMode);
             line(ctx, x + width, y, x + width, y + height);
           }
           const bottom = border.getBottom();
           if (!bottom.isNone()) {
-            ctx.strokeStyle = bottom.getColor().toCSS(darkMode, false);
+            ctx.strokeStyle = bottom.getColor().toCSS(darkMode);
             line(ctx, x, y + height, x + width, y + height);
           }
         }
 
         // text
-        ctx.strokeStyle = style.getFont().getFill().toCSS(darkMode, false);
+        ctx.strokeStyle = style.getFont().getFill().toCSS(darkMode);
         const textTop = (height - textHeight) / 2;
         const textLeft = (width - textWidth) / 2;
         line(

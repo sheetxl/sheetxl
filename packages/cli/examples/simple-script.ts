@@ -4,9 +4,9 @@ type ModuleSDK = typeof import('@sheetxl/sdk');
 type ModuleIO = typeof import('@sheetxl/io');
 type Notifier = typeof import('@sheetxl/sdk').Notifier;
 
-type ArgV = { raw: string[]; kv: Record<string, string|boolean>; _: string[] };
+type RunArgs = { raw: string[]; kv: Record<string, string|boolean>; _: string[] };
 
-type Context = {
+type RunContext = {
   /**
    * SDK module
    */
@@ -22,7 +22,7 @@ type Context = {
   /**
    * All tail args after the script
    */
-  args: ArgV;
+  args: RunArgs;
   /**
    * If a workbook context was provided, it will be here.
    */
@@ -30,13 +30,12 @@ type Context = {
 }
 
 // TODO - this is not yet published
-// import type { Context } from '@sheetxl/cli';
+// import type { Context } from '@sheetxl/runner';
 
 /**
  * Example script for testing the `sheetxl run` command
  */
-
-export default async function main(ctx: Context): Promise<void> {
+export default async function main(ctx: RunContext): Promise<void> {
   const { sdk, notifier } = ctx;
 
   notifier.log(`✓ Started with SDK ${sdk.VERSION}`);

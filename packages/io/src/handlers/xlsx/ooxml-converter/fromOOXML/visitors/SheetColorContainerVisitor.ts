@@ -218,6 +218,7 @@ export class SheetColorContainerVisitor implements Visitor {
   processPatternFill(context: ExecutionContext, elem: Element, jsonParent: IFill.PatternProperties<string>): any/*JSON*/ {
     if (!elem) return;
     const isProcessingDXFs = context.getVisitorParamsState().get("processingDXFs");
+    // the default pattern depends on if we are processing dxf or xf
     const patternType = elem.getAttribute("patternType") || (isProcessingDXFs ? IFill.BuiltInSheetPattern.Solid : IFill.BuiltInSheetPattern.None);
     if (patternType === IFill.BuiltInSheetPattern.None) {
       return {
@@ -229,25 +230,32 @@ export class SheetColorContainerVisitor implements Visitor {
     if (patternType)
       jsonParent.patternType = patternType as IFill.BuiltInSheetPattern;
 
-    let foreground = "foreground";
-    let background = "background";
-    let autoColor = undefined;
     /**
      * For reasons I don't understand Excel inverts the colors for solid fills for dfx records (only?)
+     * We do this in importer as we don't want to 'inverted' behavior in the sdk.
      */
+    let foreground = "foreground";
+    let background = "background";
     const invertColors = jsonParent.patternType === IFill.BuiltInSheetPattern.Solid && isProcessingDXFs;
+    let autoColorFg = invertColors ? 'dk1' : 'lt1';
+    let autoColorBg = invertColors ? 'lt1' : 'dk1';
     if (invertColors) { // invert
-      autoColor = 'lt1';
       const temp = foreground;
       foreground = background;
       background = temp;
     }
     const elemFgColor:Element = context.evaluate("fgColor", elem) as Element;
-    this.processDataBarColor(context, elemFgColor, jsonParent, foreground, autoColor);
+    this.processDataBarColor(context, elemFgColor, jsonParent, foreground, autoColorFg);
     const elemBgColor:Element = context.evaluate("bgColor", elem) as Element;
-    this.processDataBarColor(context, elemBgColor, jsonParent, background, autoColor);
-    if (invertColors && !jsonParent.foreground) {
-      jsonParent.foreground = autoColor;
+    this.processDataBarColor(context, elemBgColor, jsonParent, background, autoColorBg);
+    // we need to default the colors if they are missing as the non inverted colors are incorrect.
+    if (invertColors) {
+       if (!jsonParent.foreground) {
+         jsonParent.foreground = 'lt1'; // defaults to Tx1 in sdk.
+       }
+       if (!jsonParent.background) {
+         jsonParent.background = 'dk1'; // defaults to Tx2 in sdk.
+       }
     }
 
     return jsonParent;

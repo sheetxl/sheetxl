@@ -1272,7 +1272,7 @@ export const createSheetDataSaxVisitor = (
           lastStyledRow = {
             min: currentRow,
             max: currentRow,
-            sz: !csz || (aHt === undefined) ? -1 : parseFloat(aHt), // we want this to be monomorphic
+            sz: aHt === undefined ? -1 : parseFloat(aHt), // we want this to be monomorphic
             csz,
             h: aHidden !== undefined && (aHidden === '1' || aHidden === 'true'),
             s: currentRowStyle === null ? undefined : (currentRowStyle === '0' ? 0 : parseInt(currentRowStyle)),

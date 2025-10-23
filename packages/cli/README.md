@@ -14,7 +14,7 @@ This is also an entry point for debugging node functionality.
 
 ``` shell
 pnpm build
-pnpm sheetxl extract assets/simple
+pnpm sheetxl run examples/simple-script.ts
 ```
 
 ::: note

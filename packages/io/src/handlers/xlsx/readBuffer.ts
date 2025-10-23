@@ -380,35 +380,37 @@ export const readBuffer = async (
     let jsonStyles:IStyleCollection.JSON = jsonStylesEntries.entries().next()?.value[1];
     if (jsonStyles) {
       // Note - json styles objects are shared. So changing an object may cause the source to change.
-        // We clone to avoid this.
-        jsonStyles = JSON.parse(JSONStableStringify(jsonStyles));
+      // We clone to avoid this.
+      jsonStyles = JSON.parse(JSONStableStringify(jsonStyles));
 
       // TODO - determine preference for this
-      const normalize = false;
-      if (normalize) {
-        // TODO - Should we move this normalization logic into Styles.fromJSON?
-        const styles = new StyleCollection(theme, jsonStyles.indexedColors);
-        const jsonNamed = jsonStyles.named;
-        if (jsonNamed) {
-          for (let i=0; i<jsonNamed.length; i++) {
-            const named = jsonNamed[i];
-            // because normalize works against shared styles we add our name as a namedStyle and then remove it.
-            const normalizedStyled = styles.normalize(named.style);
-            const normalized:IStyle.NamedJSON = {
-              ...named,
-              style: normalizedStyled as any
-            }
-            jsonNamed[i] = normalized;
-            styles.setNamed(normalized);
-          }
-        }
-        const jsonDirect = jsonStyles?.direct;
-        if (jsonDirect) {
-          for (let i=0; i<jsonDirect.length;i++) {
-            jsonDirect[i] = styles.normalize(jsonDirect[i]) as any;
-          }
-        }
-      }
+      // const normalize = false;
+      // if (normalize) {
+      //   // TODO - Should we move this normalization logic into Styles.fromJSON?
+      //   const styles = new StyleCollection(theme, jsonStyles.indexedColors);
+      //   const jsonNamed = jsonStyles.named;
+      //   if (jsonNamed) {
+      //     const jsonNamedLength = jsonNamed.length;
+      //     for (let i=0; i<jsonNamedLength; i++) {
+      //       const named = jsonNamed[i];
+      //       // because normalize works against shared styles we add our name as a namedStyle and then remove it.
+      //       const normalizedStyled = styles.normalize(named.style);
+      //       const normalized:IStyle.NamedJSON = {
+      //         ...named,
+      //         style: normalizedStyled as any
+      //       }
+      //       jsonNamed[i] = normalized;
+      //       styles.setNamed(normalized);
+      //     }
+      //   }
+      //   const jsonDirect = jsonStyles?.direct;
+      //   if (jsonDirect) {
+      //     const jsonDirectLength = jsonDirect.length;
+      //     for (let i=0; i<jsonDirectLength;i++) {
+      //       jsonDirect[i] = styles.normalize(jsonDirect[i]) as any;
+      //     }
+      //   }
+      // }
     }
 
     const jsonWorkbooks = readAsJSONs('workbooks', xlsxWB, domParser, fromOOXMLConverter, optionsConvert);

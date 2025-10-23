@@ -1,5 +1,5 @@
 import {
-  IStyle, ITableStyle, ICellProtection, ITextFrame, IFill, IStyleCollection
+  IStyle, ITableStyle, ICellProtection, ITextFrame, IFill, IStyleCollection, IBorder
 } from '@sheetxl/sdk';
 
 import type { Visitor } from '../Visitor';
@@ -25,23 +25,20 @@ export class SheetStylesVisitor extends SheetColorContainerVisitor implements Vi
     this.processBorders(context, context.evaluate("borders", elem) as Element, denormalized.borders, true);
 
     /*
-     * Note - Excel also reads the first 2 fills and the first border
+     * Note - Excel also hardcodes the first 2 fills and the first border.
      */
     denormalized.fills[0] = { // None
       type: IFill.Type.None
-
-      // type: IFill.Type.Pattern,
-      // patternType: IFill.BuiltInSheetPattern.None,
     };
     denormalized.fills[1] = {
       type: IFill.Type.Pattern,
       patternType: IFill.BuiltInSheetPattern.Gray125,
     };
     denormalized.borders[0] = {
-      // bottom: { style: IBorder.StrokeStyle.None },
-      // left : { style: IBorder.StrokeStyle.None },
-      // right : { style: IBorder.StrokeStyle.None },
-      // top : { style: IBorder.StrokeStyle.None }
+      bottom: { style: IBorder.StrokeStyle.None },
+      left: { style: IBorder.StrokeStyle.None },
+      right: { style: IBorder.StrokeStyle.None },
+      top: { style: IBorder.StrokeStyle.None }
     };
 
     // Process named styles
@@ -135,7 +132,7 @@ export class SheetStylesVisitor extends SheetColorContainerVisitor implements Vi
   processXFs(context: ExecutionContext, elem: Element, jsonParent: IStyle.JSON[]/*JSON*/,
     denormalized: any/*map*/,
     namedIds: Map<number, string>=null,
-    ignoreApplys:boolean=true): any/*JSON*/ {
+    ignoreApplys: boolean=true): any/*JSON*/ {
     if (!elem) return;
     const childNodes:NodeList = elem.childNodes;
     for (let i=0; i<childNodes.length; i++) {
@@ -171,29 +168,31 @@ export class SheetStylesVisitor extends SheetColorContainerVisitor implements Vi
     */
     const isApplyAttribute = (name: string): boolean => {
       if (ignoreApplys || !elem.hasAttribute(name)) return true;
-      return NumberUtils.parseAsBoolean(elem.getAttribute("applyFont"));
+      return NumberUtils.parseAsBoolean(elem.getAttribute(name));
     }
 
+    const defaultIndex: string|undefined = ignoreApplys ? '0' : undefined;
     if (isApplyAttribute("applyFont")) {
-      const font = denormalized.fonts[elem.getAttribute("fontId")];
-      if (font)
+      const font = denormalized.fonts[elem.getAttribute("fontId") ?? defaultIndex];
+      if (font !== undefined)
         jsonParent.font = font;
     }
     if (isApplyAttribute("applyFill")) {
-      const fill = denormalized.fills[elem.getAttribute("fillId")];
-      if (fill && Object.keys(fill).length > 0)
+      const fill = denormalized.fills[elem.getAttribute("fillId") ?? defaultIndex];
+      if (fill !== undefined && Object.keys(fill).length > 0)
         jsonParent.fill = fill;
     }
 
     if (isApplyAttribute("applyBorder")) {
-      const border = denormalized.borders[elem.getAttribute("borderId")];
-      if (border && Object.keys(border).length > 0)
+      const border = denormalized.borders[elem.getAttribute("borderId") ?? defaultIndex];
+      if (border !== undefined) { //} && Object.keys(border).length > 0)
         jsonParent.border = border;
+      }
     }
 
     if (isApplyAttribute("applyNumberFormat")) {
-      const numFmtId = elem.getAttribute("numFmtId");
-      if (numFmtId) {
+      const numFmtId = elem.getAttribute("numFmtId") ?? defaultIndex;
+      if (numFmtId !== undefined) {
         const fmtId = parseInt(numFmtId);
         let fmt:string;
         /* see if it's a custom format */
