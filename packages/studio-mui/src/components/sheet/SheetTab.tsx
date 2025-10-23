@@ -3,6 +3,7 @@ import React, { useState, memo, forwardRef } from 'react';
 import clsx from 'clsx';
 
 import { ThemeProvider, Theme, useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/system';
 import { Button } from '@mui/material';
 import { Box } from '@mui/material';
 import { TabProps } from '@sheetxl/react';
@@ -81,13 +82,19 @@ export const SheetTab = memo(forwardRef<HTMLElement, TabProps>(
   let contrastTextColor = null;
   if (tabColor || dragging) {
     let background = propBackground;
+    let backgroundGradient1 = background;
+    let backgroundGradient2 = background;
     if (tabColor) {
       contrastTextColor = tabColor.toBlackOrWhite().toCSS();
       background = tabColor?.toCSS();
+      backgroundGradient1 = alpha(background, .75);
+      backgroundGradient2 = alpha(background, .10);
     } else if (!isSelected) {
       // TODO - make this configurable
       background = appTheme.palette.background.paper;
     }
+
+    const linearGradient = `linear-gradient(0deg, ${background} 0%, ${backgroundGradient1} 60%, ${backgroundGradient2} 90%, transparent 100%)`;
 
     // TODO - use invertedColor for icons
     coloredBackground = (
@@ -103,7 +110,7 @@ export const SheetTab = memo(forwardRef<HTMLElement, TabProps>(
           opacity: (isSelected ? '50%': '100%'),
           borderRadius: '4px',
           border: (theme: Theme) => isSelected ? `${propBackground} solid 1px` : `${theme.palette.divider} solid 1px`,
-          background: (isSelected && tabColor) ? `linear-gradient(0deg, ${background} 0%, transparent)`: background
+          background: (isSelected && tabColor) ? linearGradient : background
         }}
       />
     );
