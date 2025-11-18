@@ -17,8 +17,8 @@ export const DefaultWriteTypes: WriteFormatType[] = [
   },
   { key: 'Excel', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', description: 'Excel Workbook', ext: 'xlsx', tags: ['SheetJS Pro'],
     async handler(workbook: IWorkbook, options?: WriteWorkbookOptions): Promise<ArrayBufferLike> {
-      const handlers = await import('../handlers/xlsx');
-      return handlers.toBufferXLSX(workbook, options);
+      const handlers = await import('@sheetxl/io-xlsx');
+      return handlers.toBuffer(workbook, options);
     }
    }
 ];

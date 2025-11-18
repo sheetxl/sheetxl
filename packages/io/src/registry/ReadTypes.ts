@@ -40,8 +40,8 @@ export const DefaultReadTypes: ReadFormatType[] = [
       // 'xltm' // Excel Macro-Enabled Template
     ],
     async handler(arrayBuffer: ArrayBuffer, options?: any): Promise<IWorkbook> {
-      const handlers = await import('../handlers/xlsx');
-      return handlers.fromBufferXLSX(arrayBuffer, options);
+      const handlers = await import('@sheetxl/io-xlsx');
+      return handlers.fromBuffer(arrayBuffer, options);
     }
   }
 ];
