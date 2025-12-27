@@ -1,7 +1,6 @@
 import type { IWorkbook } from '@sheetxl/sdk';
 
-// import type { WriteXLSXOptions } from '@sheetxl/io-xlsx';
-import type { WriteJSONOptions, WriteCSVOptions } from '../handlers';
+import type { WriteJSONOptions, WriteCSVOptions, WriteXLSXOptions } from '../handlers';
 import type { WriteFormatType } from '../types';
 
 export const BuiltinWriteFormats: WriteFormatType[] = [
@@ -37,9 +36,10 @@ export const BuiltinWriteFormats: WriteFormatType[] = [
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     description: 'Excel Workbook',
     exts: ['xlsx'],
+    tags: ['SheetJS Pro'],
     async handler(workbook: IWorkbook, options?: WriteXLSXOptions): Promise<ArrayBufferLike> {
-      const handlers = await import('@sheetxl/io-xlsx');
-      return handlers.writeBuffer(workbook, options);
+      const handlers = await import('../handlers/xlsx/Handler');
+      return handlers.writeBufferXLSX(workbook, options);
     }
    }
 ];
