@@ -1,8 +1,6 @@
 import type { IWorkbook } from '@sheetxl/sdk';
 
-// import type { ReadXLSXOptions } from '@sheetxl/io-xlsx';
-
-import type { ReadCSVOptions } from '../handlers';
+import type { ReadCSVOptions, ReadXLSXOptions } from '../handlers';
 import type { ReadFormatType, ReadWorkbookOptions } from '../types';
 
 // Note - Chrome open dialog doesn't give all extensions or a nice drop down for windows like native applications.
@@ -42,8 +40,8 @@ export const BuiltinReadFormats: ReadFormatType[] = [
       // 'xltm' // Excel Macro-Enabled Template
     ],
     async handler(arrayBuffer: ArrayBuffer, options?: ReadXLSXOptions): Promise<IWorkbook> {
-      const handlers = await import('@sheetxl/io-xlsx');
-      return handlers.readBuffer(arrayBuffer, options);
+      const handlers = await import('../handlers/xlsx/Handler');
+      return handlers.readBufferXLSX(arrayBuffer, options);
     }
   }
 ];

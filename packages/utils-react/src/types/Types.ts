@@ -1,6 +1,6 @@
-import { TopLeft, Direction, CellCoords } from '@sheetxl/utils';
+import { Direction, type TopLeft, type CellCoords } from '@sheetxl/utils';
 
-// TODO - duplicate with core - move to common
+// TODO - duplicate with sdk - review and move to utils
 export const HorizontalAlignment = {
   /**
    * Aligned based on the data value.
@@ -53,7 +53,7 @@ export interface Style {
   strokeStyle?: string;
 }
 
-export interface CellLayout {
+export interface ICellLayout {
   /**
    * Returns the offset given an index.
    */
@@ -154,6 +154,8 @@ export const KeyCodes = {
   Slash: 191,
   BracketRight: 221,
   BracketLeft: 219,
+  /** Android/IME composition key - used when virtual keyboards send composite input */
+  Composition: 229,
   // Semicolon: 186,
   // Quote: 222,
 } as const;
