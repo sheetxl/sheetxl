@@ -1,0 +1,82 @@
+/*
+ * Scrollbar theming. Colors derive from the `--sxl-color-*` tokens via `color-mix`, so they follow the
+ * surface and mode with no JS: `base-content` flips light/dark, so one block covers both.
+ *
+ * `.scrollbar-colors` is on every custom `Scrollbar`, so its colors resolve against the surface it sits on.
+ * `scrollbarThemedClassName` themes the native (webkit) scrollbars of an element and its descendants.
+ * The `--scrollbar-*` variables are internal; a client themes scrollbars through the tokens.
+ */
+.scrollbar-themed,
+.scrollbar-colors {
+  --scrollbar-track-color: color-mix(in srgb, var(--sxl-color-base-content) 4%, transparent);
+  --scrollbar-thumb-color: color-mix(in srgb, var(--sxl-color-base-content) 26%, transparent);
+  --scrollbar-button-color: color-mix(in srgb, var(--sxl-color-base-content) 26%, transparent);
+  --scrollbar-active-color: var(--sxl-color-primary);
+  --scrollbar-corner-color: var(--sxl-color-base-100);
+  --scrollbar-border-color: color-mix(in srgb, var(--sxl-color-base-content) 5%, transparent);
+}
+
+.scrollbar-themed {
+  --scrollbar-width: 13px;
+  --scrollbar-height: 13px;
+  --scrollbar-border-radius: 9999px;
+  --scrollbar-border-width: 2px;
+  --scrollbar-min-thumb-size: 24px;
+}
+
+.scrollbar-themed::-webkit-scrollbar,
+.scrollbar-themed *::-webkit-scrollbar {
+  background-color: var(--scrollbar-track-color);
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+}
+
+.scrollbar-themed::-webkit-scrollbar-button {
+  display: none;
+}
+
+.scrollbar-themed .scrollbar-button {
+  fill: var(--scrollbar-thumb-color);
+  background-color: transparent;
+  transition: fill opacity 260ms ease;
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+}
+
+.scrollbar-themed .scrollbar-button:hover:not([disabled]) {
+  fill: var(--scrollbar-active-color);
+}
+
+.scrollbar-themed .scrollbar-button:disabled {
+  opacity: 0.8;
+}
+
+.scrollbar-themed::-webkit-scrollbar-thumb,
+.scrollbar-themed *::-webkit-scrollbar-thumb {
+  border-radius: var(--scrollbar-border-radius);
+  background-color: var(--scrollbar-thumb-color);
+  min-height: var(--scrollbar-min-thumb-size);
+  min-width: var(--scrollbar-min-thumb-size);
+  border: var(--scrollbar-border-width) solid var(--scrollbar-border-color);
+}
+
+.scrollbar-themed::-webkit-scrollbar-thumb:active,
+.scrollbar-themed *::-webkit-scrollbar-thumb:active,
+.scrollbar-themed::-webkit-scrollbar-thumb:hover,
+.scrollbar-themed *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-active-color);
+}
+
+.scrollbar-themed::-webkit-scrollbar-corner,
+.scrollbar-themed *::-webkit-scrollbar-corner {
+  background-color: var(--scrollbar-corner-color);
+}
+
+/* Firefox */
+.scrollbar-themed .pseudo-scrollbar {
+  scrollbar-color: var(--scrollbar-thumb-color) transparent;
+}
+
+.scrollbar-themed .pseudo-scrollbar:hover:not([disabled]) {
+  scrollbar-color: var(--scrollbar-active-color) transparent;
+}

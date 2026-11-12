@@ -1,0 +1,38 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "paths": {
+      "@sheetxl/primitives": [
+        "../primitives/src"
+      ],
+      "@sheetxl/utils": [
+        "../utils/src"
+      ],
+      "@sheetxl/io": [
+        "../io/src"
+      ],
+      "@sheetxl/utils-react": [
+        "../utils-react/src"
+      ],
+      "@sheetxl/utils-mui": [
+        "../utils-mui/src"
+      ],
+      "@sheetxl/studio-mui": [
+        "../studio-mui/src"
+      ]
+    },
+    "tsBuildInfoFile": "./build/.tsbuildinfo.scripting-mui",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src",
+    "../primitives/src",
+    "../utils/src",
+    "../io/src",
+    "../utils-react/src",
+    "../utils-react/src/icons/packs/*.json",
+    "../utils-mui/src",
+    "../studio-mui/src"
+  ]
+}

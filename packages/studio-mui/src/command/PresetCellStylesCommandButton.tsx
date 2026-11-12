@@ -1,241 +1,83 @@
-import React, {
-  useMemo, memo, forwardRef, useCallback
-} from 'react';
+import type React from 'react';
+import { useMemo, memo, forwardRef, useCallback } from 'react';
 
 // import clsx from 'clsx';
 
-// import { useMeasure } from 'react-use';
+import { type Theme, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
 
-import { Theme } from '@mui/material/styles';
-import { Box, type BoxProps } from '@mui/material';
-import { type TooltipProps } from '@mui/material';
+import { DefaultLanguagePackService } from '@sheetxl/utils';
 
 import {
-  IStyle, IStyleCollection, ICell, ITextFrame, IFont
+  IFont, ICellStyle, ITextFrame, builtInStyleNameDisplay, type ICell
 } from '@sheetxl/sdk';
 
-import { type GridSurfaceStyle } from '@sheetxl/grid-react';
-
 import {
-  useCommand, ICommand, useCallbackRef, CommandButtonType, ICommands
+  useCommands, useCallbackRef, useTranslator, type TranslateFn, CommandButtonType, DynamicIcon
 } from '@sheetxl/utils-react';
 
-import {
-  StaticBorderRenderer, type StaticBorderRendererProps, type CommandContext
-} from '@sheetxl/react';
+import { StaticCellRenderer, useGridColorScheme, type CommandContext } from '@sheetxl/react';
 
 import {
   CommandButton, ExhibitMenuHeader, ExhibitTooltip, ExhibitDivider, CommandPopupButton,
-  ExhibitIconButton, ContextMenu, defaultCreatePopupPanel,
-  type ExhibitPopupPanelProps, type CommandPopupButtonProps, type  ExhibitIconButtonProps
+  ExhibitIconButton, ContextMenu, defaultRenderPopupPanel,
+  type ExhibitPopupPanelProps, type CommandPopupButtonProps, type  ExhibitIconButtonProps, type ButtonTooltipRenderProps
 } from '@sheetxl/utils-mui';
+
+/**
+ * The localized DISPLAY name for a style. Built-in names resolve through the
+ * catalog ('Good' -> 'Gut'); custom names pass through unchanged. The canonical
+ * `getName()` stays the identity (keys, `cellStyle.named`, selection compares).
+ */
+const localizeStyleName = (name: string, t: TranslateFn): string => {
+  const display = builtInStyleNameDisplay(name);
+  return display ? t(display.key, display.params) : name;
+};
+
+/**
+ * Sort style names by their LOCALIZED display name, collated in the active UI
+ * language (Excel orders the gallery by the shown name: en `Bad, Good, Neutral`
+ * → de `Gut, Neutral, Schlecht`). `numeric` keeps `Heading 2` before `Heading 10`.
+ */
+const sortByLocalizedName = (names: readonly string[], t: TranslateFn): string[] => {
+  const collator = new Intl.Collator(DefaultLanguagePackService.getActive(), { numeric: true });
+  return [...names].sort((a, b) => collator.compare(localizeStyleName(a, t), localizeStyleName(b, t)));
+};
 
 export interface PresetCellStylesCommandButtonProps extends CommandPopupButtonProps {
 
-  command: ICommand<IStyle.INamed, CommandContext.NamedStyle>;
+  commandKey: string; // ICommand<ICellStyle.INamed, CommandContext.NamedStyle>;
 
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
-
-  selectedNamed?: IStyle.INamed;
-  onSelectNamed?: (style: IStyle.INamed) => void;
-
-  bodyStyle?: GridSurfaceStyle;
+  selectedNamed?: ICellStyle.INamed;
+  onSelectNamed?: (style: ICellStyle.INamed) => void;
 
   usePreviewIcon?: boolean;
 }
 
-interface StaticCellRendererProps extends BoxProps {
-  value: string;
-  cellStyle: IStyle.Update;
-  styles: IStyleCollection;
-  createTemporaryCell(update: ICell.Update): ICell;
-  bodyStyle: GridSurfaceStyle;
-  propsBorder?: StaticBorderRendererProps
-  disabled?: boolean;
-}
-
-// TODO - make this a more generalized component. A StaticCellRender and have use this as an HOC
-const StaticCellRenderer = memo(forwardRef<HTMLElement, StaticCellRendererProps>(
-  (props: StaticCellRendererProps, refForwarded) => {
-  const {
-    value,
-    cellStyle: propCellStyle,
-    styles,
-    createTemporaryCell,
-    bodyStyle,
-    sx: propSx,
-    propsBorder,
-    disabled: propDisabled,
-    ...rest
-  } = props;
-
-  // const [refMeasure, { width: measureWidth=0, height: measureHeight=0 }] = useMeasure<HTMLDivElement>();
-
-  const cellTemplate = useMemo(() => {
-    return createTemporaryCell({ value, style: propCellStyle });
-  }, [value, propCellStyle, createTemporaryCell]);
-
-  const style = useMemo(() => {
-    return cellTemplate.getStyle();
-  }, [cellTemplate, bodyStyle]);
-
-  const fill = useMemo(() => {
-    return style.getFill().toCSS(bodyStyle?.darkMode ?? false);
-  }, [style]);
-
-  const insets = style.getInsets();
-  const font = style.getFont();
-
-  const getBorderAt = useCallback(() => {
-    return style.getBorder();
-  }, [style]);
-
-  return (
-    <Box
-      ref={refForwarded}
-      // className={clsx({
-      //     ['Mui-disabled']: propDisabled,
-      //   }, "static-cell-renderer")
-      // }
-      sx={{
-        width: '100px',
-        height: '100%',
-        textOverflow: 'ellipsis',
-        display: 'flex',
-        alignItems: 'stretch',
-        background: bodyStyle?.fill,
-        filter: propDisabled ? 'grayscale(0.4) opacity(0.8);' : 'none', // move this to StaticCellRenderer as a disabled prop
-        '& .fill': {
-          flex: '1 1 100%',
-          overflow: 'hidden',
-          ...fill
-        },
-        '& .text': {
-          // lineHeight: `${editorPlacedFrame?.lines[0]?.bounds.height ?? 0}px`,
-          // height: editorPlacedFrame?.bounds.height ?? 0,
-          flex: '1 1 100%',
-          ...font.toCSS(bodyStyle?.darkMode ?? false, 1),
-          boxSizing: "border-box",
-          padding: `${insets.top}px ${insets.right}px ${insets.bottom}px ${insets.left}px`,
-          margin: '0px',
-          // borderWidth: 0,
-          outline: 'none',
-          resize: 'none',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          verticalAlign: 'baseline', // doesn't work
-          textDecoration: font.toCSS().textDecoration,
-          textAlign: ITextFrame.toCSSHorizontalTextAlign(cellTemplate.getRenderHorizontalAlignment()),
-          background: 'transparent', // We let the editorContainer paint the background
-          maxHeight: '100%',
-          whiteSpace: 'pre', // Never allow wrap in preview(cellStyle.alignment.overflow === 'wrap' ? 'normal' : 'pre'),
-          wordWrap: 'break-word' // TODO - implement
-        },
-        ...propSx
-      }}
-      {...rest}
-    >
-      <StaticBorderRenderer
-        getBorderAt={getBorderAt}
-        darkMode={bodyStyle?.darkMode ?? false}
-        rowCount={1}
-        columnCount={1}
-        style={{
-          height: '100%',
-          width: '100%',
-          ...propsBorder?.style
-        }}
-        {...propsBorder}
-      >
-        {/* <SheetCellRenderer
-          style={{
-            width: measureWidth,
-            height: measureHeight,
-            overflow: 'hidden',
-            position: 'absolute',
-            paddingLeft: '4px',
-            paddingRight: '4px',
-            marginLeft: '-1px', // render render fills extend 1px in all directions
-            marginTop: '-1px',
-            marginRight: '-1px',
-            marginBottom: '-1px',
-          }}
-          // theme={model.getStyle().getTheme()}
-          value={cellTemplate}
-          bodyStyle={bodyStyle}
-          bounds={{
-            x: 0,
-            y: 0,
-            width: measureWidth,
-            height: measureHeight
-          }}
-        /> */}
-        <Box
-          className="fill"
-          // ref={refMeasure}
-          sx={{
-            // opacity: 0,
-            paddingLeft: '4px',
-            paddingRight: '4px',
-            marginLeft: '-1px', // render render fills extend 1px in all directions
-            marginTop: '-1px',
-            marginRight: '-2px', // to account for -1 left
-            marginBottom: '-2px', // to account for -1 top
-            // overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <Box className="text">
-            {value}
-          </Box>
-        </Box>
-      </StaticBorderRenderer>
-    </Box>
-  );
-}));
-
 interface PresetStyleIconButtonProps extends ExhibitIconButtonProps {
   hasContextMenu?: boolean;
-  createTemporaryCell(update: ICell.Update): ICell | null;
-  bodyStyle?: GridSurfaceStyle;
-  styles: IStyleCollection;
+  createCell(update: ICell.Update): ICell | null;
 
-  namedStyle: IStyle.INamed;
-  selectedNamed?: IStyle.INamed;
-  onSelectNamed?: (named: IStyle.INamed) => void;
-
-  commands: ICommands.IGroup;
-  commandHook: ICommand.Hook<any, any>;
+  namedStyle: ICellStyle.INamed;
+  selectedNamed?: ICellStyle.INamed;
+  onSelectNamed?: (named: ICellStyle.INamed) => void;
 }
 
 const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
   const {
-    styles,
     namedStyle,
     selectedNamed,
     hasContextMenu = true,
-    bodyStyle,
     onSelectNamed,
-    createTemporaryCell,
-    parentFloat,
-    commands,
+    createCell,
     disabled,
-    commandHook,
     ...rest
   } = props;
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
+  const t = useTranslator();
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const commandButtonProps = {
       variant: CommandButtonType.Menuitem,
-      commandHook: commandHook,
       context: 'cellStyle',
       // disabled: propDisabled
     }
@@ -245,37 +87,21 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
         style={{ // We want to indicate that this is the default action.
           fontWeight: 550
         }}
-        command={commands.getCommand('formatCellStyle')}
+        commandKey={'formatCellStyle'}
         commandState={namedStyle}
         disabled={disabled}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('modifyCellStyle')}
-        // TODO - we want to disable closing the parent menu.
-        // Think through the best way to do this.
-        // commandHook={{
-        //   ...commandHook,
-        //   onExecute: (command: ICommand): void => {
-        //     console.log('modifyCellStyle', command);
-        //   }
-        // }}
+        commandKey={'modifyCellStyle'}
         commandState={{ named: namedStyle }}
       />
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('deleteCellStyle')}
-        // TODO - we want to disable closing the parent menu.
-        // Think through the best way to do this.
-        // commandHook={{
-        //   ...commandHook,
-        //   onExecute: (command: ICommand): void => {
-        //     console.log('deleteCellStyle', command);
-        //   }
-        // }}
+        commandKey={'deleteCellStyle'}
         commandState={namedStyle}
-        disabled={disabled || namedStyle?.getName() === IStyle.BuiltInName.Normal}
+        disabled={disabled || namedStyle?.getName() === ICellStyle.BuiltInName.Normal}
       />
     </>
     );
@@ -298,7 +124,7 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
         </Box>
       </Box>
     );
-    return defaultCreatePopupPanel({...props, children});
+    return defaultRenderPopupPanel({...props, children});
   }, []);
 
   const isSelected = namedStyle?.getName() === selectedNamed?.getName();
@@ -316,7 +142,7 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
       }}
       key={namedStyle.getName()}
       propsTooltip={{
-        label: namedStyle.getName(),
+        label: localizeStyleName(namedStyle.getName(), t),
         placement: 'bottom-start', //'right-end'
       }}
       disabled={disabled}
@@ -327,11 +153,9 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
       {...rest}
     >
       <StaticCellRenderer
-        value={namedStyle.getName()}
+        value={localizeStyleName(namedStyle.getName(), t)}
         cellStyle={{ named: namedStyle.getName() }}
-        styles={styles}
-        createTemporaryCell={createTemporaryCell}
-        bodyStyle={bodyStyle}
+        createCell={createCell}
       />
     </ExhibitIconButton>
   );
@@ -339,9 +163,8 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
   if (hasContextMenu) {
     retValue = (
       <ContextMenu
-        label={namedStyle.getName()}
-        parentFloat={parentFloat}
-        createPopupPanel={createPopupPanel}
+        label={localizeStyleName(namedStyle.getName(), t)}
+        renderPopupPanel={renderPopupPanel}
       >
         { retValue}
       </ContextMenu>
@@ -354,50 +177,54 @@ const PresetStyleIconButton = memo((props: PresetStyleIconButtonProps) => {
 export const PresetCellStylesCommandButton = memo(
   forwardRef<HTMLElement, PresetCellStylesCommandButtonProps>((props, refForwarded) => {
   const {
-    commands: propCommands,
-    command,
-    commandHook,
+    commandKey,
     selectedNamed: propSelectedNamed,
     onSelectNamed: propOnSelectNamed,
-    disabled: propDisabled = false,
-    bodyStyle: propBodyStyle,
+    disabled: propDisabled,
     usePreviewIcon = true,
+    groupKey,
     ...rest
   } = props;
 
-  const _ = useCommand(command);
+  const t = useTranslator();
+  const [command] = useCommands([commandKey]);
   const context:CommandContext.NamedStyle = command?.getContext();
   const getStyles = context?.styles;
   const named = propSelectedNamed ?? context?.named();
-  const bodyStyle = propBodyStyle ?? context?.bodyStyle();
+  // The swatch renders plain DOM (`StaticCellRenderer` is UI-kit-free), so the one themed value it
+  // needs — the hover outline — is resolved here rather than through an `sx` callback.
+  const theme = useTheme();
+  // Self-source the grid's light/dark intent; the portaled preview + popup adopt the grid surface via
+  // `data-sxl-theme-*` below (replacing the removed `context.systemColors`).
+  const gridColorScheme = useGridColorScheme();
 
-  const handleOnSelectNamed = useCallbackRef((named: IStyle.INamed) => {
+  const handleOnSelectNamed = useCallbackRef((named: ICellStyle.INamed) => {
     propOnSelectNamed?.(named);
-    command?.execute(named, commandHook);
-  }, [command, propOnSelectNamed, commandHook]);
+    command?.execute(named);
+  }, [command, propOnSelectNamed]);
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
+    const styles = getStyles?.();
     const propsStyleButton = {
-      onSelectNamed: handleOnSelectNamed,
-      styles: getStyles(),
-      parentFloat: props.floatReference,
+      onSelectNamed: handleOnSelectNamed
     }
 
-    const customStyles:IStyle.INamed[] = getStyles().getCustomNamed();
+    const customStyles:ICellStyle.INamed[] = styles?.getNamedStyles().getItems({ type: 'custom' });
     // because customStyles also include customized built ins
-    const customStylesMap:Map<string, IStyle.INamed> = new Map();
+    const customStylesMap:Map<string, ICellStyle.INamed> = new Map();
     const customUniqueNames:string[] = [];
-    for (let i=0; i<customStyles.length; i++) {
+    const customStylesLength = customStyles ? customStyles.length ?? 0 : 0;
+    for (let i=0; i<customStylesLength; i++) {
       customStylesMap.set(customStyles[i].getName(), customStyles[i]);
-      if (getStyles().getNamed(customStyles[i].getName()).getBuiltInID() === null) {
+      if (styles?.getNamedStyles().getByName(customStyles[i].getName())?.getBuiltInID() === null) {
         customUniqueNames.push(customStyles[i].getName());
       }
     }
 
     const generateStyleButton = (styleName: string) => {
-      let namedStyle:IStyle.INamed = customStylesMap.get(styleName);
+      let namedStyle:ICellStyle.INamed | null | undefined = customStylesMap.get(styleName);
       if (!namedStyle)
-        namedStyle = getStyles().getNamed(styleName);
+        namedStyle = styles?.getNamedStyles().getByName(styleName);
       if (!namedStyle || namedStyle.isHidden()) return null;
 
       return (
@@ -405,10 +232,7 @@ export const PresetCellStylesCommandButton = memo(
           key={styleName}
           namedStyle={namedStyle}
           selectedNamed={named}
-          bodyStyle={context.bodyStyle()}
-          createTemporaryCell={context.createTemporaryCell}
-          commands={propCommands}
-          commandHook={commandHook}
+          createCell={context.createCell}
           {...propsStyleButton}
         />
       );
@@ -475,7 +299,7 @@ export const PresetCellStylesCommandButton = memo(
     }
 
 
-    const generateStyleGroupCategory = (categoryName: string, styleGroups: React.ReactElement[]) => {
+    const generateStyleGroupCategory = (categoryName: string, styleGroups: (React.ReactElement | null)[]) => {
       return (
         <Box
           key={categoryName}
@@ -501,82 +325,90 @@ export const PresetCellStylesCommandButton = memo(
     }
 
     const presets = [];
-    presets.push(generateStyleCategory('Custom', customUniqueNames, false));
-    presets.push(generateStyleCategory('Good, Bad and Neutral', [
-      IStyle.BuiltInName.Normal,
-      IStyle.BuiltInName.Bad,
-      IStyle.BuiltInName.Good,
-      IStyle.BuiltInName.Neutral
+    presets.push(generateStyleCategory(t('cellStyle.category.custom'), customUniqueNames, false));
+    // Excel orders each text category by the LOCALIZED name; `Normal` is pinned
+    // first (the reset/default), the rest collate in the active language.
+    presets.push(generateStyleCategory(t('cellStyle.category.goodBadNeutral'), [
+      ICellStyle.BuiltInName.Normal,
+      ...sortByLocalizedName([
+        ICellStyle.BuiltInName.Bad,
+        ICellStyle.BuiltInName.Good,
+        ICellStyle.BuiltInName.Neutral
+      ], t)
     ], customUniqueNames.length > 0));
-    presets.push(generateStyleCategory('Data and Model', [
-      IStyle.BuiltInName.Calculation,
-      IStyle.BuiltInName.CheckCell,
-      IStyle.BuiltInName.ExplanatoryText,
-      IStyle.BuiltInName.FollowedHyperlink,
-      IStyle.BuiltInName.Hyperlink,
-      IStyle.BuiltInName.Input,
-      IStyle.BuiltInName.LinkedCell,
-      IStyle.BuiltInName.Note,
-      IStyle.BuiltInName.Output,
-      IStyle.BuiltInName.WarningText
-    ]));
-    presets.push(generateStyleCategory('Titles and Headings', [
-      IStyle.BuiltInName.Heading1,
-      IStyle.BuiltInName.Heading2,
-      IStyle.BuiltInName.Heading3,
-      IStyle.BuiltInName.Heading4,
-      IStyle.BuiltInName.Title,
-      IStyle.BuiltInName.Total
-    ]));
+    presets.push(generateStyleCategory(t('cellStyle.category.dataModel'), sortByLocalizedName([
+      ICellStyle.BuiltInName.Calculation,
+      ICellStyle.BuiltInName.CheckCell,
+      ICellStyle.BuiltInName.ExplanatoryText,
+      ICellStyle.BuiltInName.FollowedHyperlink,
+      ICellStyle.BuiltInName.Hyperlink,
+      ICellStyle.BuiltInName.Input,
+      ICellStyle.BuiltInName.LinkedCell,
+      ICellStyle.BuiltInName.Note,
+      ICellStyle.BuiltInName.Output,
+      ICellStyle.BuiltInName.WarningText
+    ], t)));
+    presets.push(generateStyleCategory(t('cellStyle.category.titlesHeadings'), sortByLocalizedName([
+      ICellStyle.BuiltInName.Heading1,
+      ICellStyle.BuiltInName.Heading2,
+      ICellStyle.BuiltInName.Heading3,
+      ICellStyle.BuiltInName.Heading4,
+      ICellStyle.BuiltInName.Title,
+      ICellStyle.BuiltInName.Total
+    ], t)));
 
     let stylesGroup = [];
     stylesGroup.push(generateStyleGroup('Accent 1', [
-      IStyle.BuiltInName.Accent1_20,
-      IStyle.BuiltInName.Accent1_40,
-      IStyle.BuiltInName.Accent1_60,
-      IStyle.BuiltInName.Accent1
+      ICellStyle.BuiltInName.Accent1_20,
+      ICellStyle.BuiltInName.Accent1_40,
+      ICellStyle.BuiltInName.Accent1_60,
+      ICellStyle.BuiltInName.Accent1
     ]));
     stylesGroup.push(generateStyleGroup('Accent 2', [
-      IStyle.BuiltInName.Accent2_20,
-      IStyle.BuiltInName.Accent2_40,
-      IStyle.BuiltInName.Accent2_60,
-      IStyle.BuiltInName.Accent2
+      ICellStyle.BuiltInName.Accent2_20,
+      ICellStyle.BuiltInName.Accent2_40,
+      ICellStyle.BuiltInName.Accent2_60,
+      ICellStyle.BuiltInName.Accent2
     ]));
     stylesGroup.push(generateStyleGroup('Accent 3', [
-      IStyle.BuiltInName.Accent3_20,
-      IStyle.BuiltInName.Accent3_40,
-      IStyle.BuiltInName.Accent3_60,
-      IStyle.BuiltInName.Accent3
+      ICellStyle.BuiltInName.Accent3_20,
+      ICellStyle.BuiltInName.Accent3_40,
+      ICellStyle.BuiltInName.Accent3_60,
+      ICellStyle.BuiltInName.Accent3
     ]));
     stylesGroup.push(generateStyleGroup('Accent 4', [
-      IStyle.BuiltInName.Accent4_20,
-      IStyle.BuiltInName.Accent4_40,
-      IStyle.BuiltInName.Accent4_60,
-      IStyle.BuiltInName.Accent4
+      ICellStyle.BuiltInName.Accent4_20,
+      ICellStyle.BuiltInName.Accent4_40,
+      ICellStyle.BuiltInName.Accent4_60,
+      ICellStyle.BuiltInName.Accent4
     ]));
     stylesGroup.push(generateStyleGroup('Accent 5', [
-      IStyle.BuiltInName.Accent5_20,
-      IStyle.BuiltInName.Accent5_40,
-      IStyle.BuiltInName.Accent5_60,
-      IStyle.BuiltInName.Accent5
+      ICellStyle.BuiltInName.Accent5_20,
+      ICellStyle.BuiltInName.Accent5_40,
+      ICellStyle.BuiltInName.Accent5_60,
+      ICellStyle.BuiltInName.Accent5
     ]));
     stylesGroup.push(generateStyleGroup('Accent 6', [
-      IStyle.BuiltInName.Accent6_20,
-      IStyle.BuiltInName.Accent6_40,
-      IStyle.BuiltInName.Accent6_60,
-      IStyle.BuiltInName.Accent6
+      ICellStyle.BuiltInName.Accent6_20,
+      ICellStyle.BuiltInName.Accent6_40,
+      ICellStyle.BuiltInName.Accent6_60,
+      ICellStyle.BuiltInName.Accent6
     ]));
-    presets.push(generateStyleGroupCategory('Themed Cell Styles', stylesGroup));
+    presets.push(generateStyleGroupCategory(t('cellStyle.category.themed'), stylesGroup));
 
-    presets.push(generateStyleCategory('Number Format', [
-      IStyle.BuiltInName.Comma,
-      IStyle.BuiltInName.Comma0,
-      IStyle.BuiltInName.Currency,
-      IStyle.BuiltInName.Currency0,
-      IStyle.BuiltInName.Percent
+    presets.push(generateStyleCategory(t('cellStyle.category.numberFormat'), [
+      ICellStyle.BuiltInName.Comma,
+      ICellStyle.BuiltInName.Comma0,
+      ICellStyle.BuiltInName.Currency,
+      ICellStyle.BuiltInName.Currency0,
+      ICellStyle.BuiltInName.Percent
     ]));
     return (
       <Box
+        // Popup is portaled outside the grid subtree; adopt the grid surface so the `auto` colors in the
+        // preview swatches (var(--sxl-sys-color-*)) resolve against the grid via the float-carried scope class.
+        data-sxl-theme-surface="grid"
+        data-sxl-theme-mode={gridColorScheme}
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -603,43 +435,52 @@ export const PresetCellStylesCommandButton = memo(
         <CommandButton
           variant={CommandButtonType.Menuitem}
           commandState={named}
-          command={commands.getCommand('newCellStyle')}
-          context={'styles'} // Note - not a single style
-          commandHook={commandHook}
+          commandKey={'newCellStyle'}
+          groupKey={'cellStyle'} // the styles-gallery group (groupLabels.cellStyle)
           disabled={propDisabled}
         />
       </Box>
     );
-  }, [named, getStyles?.().getTheme(), bodyStyle]);
+  }, [gridColorScheme, named, getStyles?.().getTheme(), t]);
 
-  const createBoundedCellTemplate = useCallbackRef((update: ICell.Update): ICell => {
+  const createBoundedCellTemplate = useCallbackRef((update: ICell.Update): ICell | null => {
+    if (!context) return null;
     const maxFontSize = 18 / IFont.getDeviceScale();
-    const cellTemplate:ICell = context?.createTemporaryCell(update);
+    const cellTemplate:ICell = context.createCell(update);
+    // The swatch is a toolbar-sized box, not a row, so center rather than honor the style's vertical alignment.
+    const alignment = { vertical: ITextFrame.VerticalAlignment.Center };
     if (cellTemplate.getStyle().getFont().getSize() <= maxFontSize)
-      return cellTemplate;
-    return cellTemplate.createTemporaryCell({ style: { font: { size: maxFontSize } }});
-  }, [context?.createTemporaryCell]);
+      return cellTemplate.createCell({ style: { alignment }});
+    return cellTemplate.createCell({ style: { alignment, font: { size: maxFontSize } }});
+  }, [context?.createCell]);
 
-  const isDisabled = propDisabled || !command || command.disabled();
+  const isDisabled = propDisabled ?? (!command || command.disabled());
   const icon = useMemo(() => {
-    if (!context || !usePreviewIcon) {
-      return command?.getIcon();
+    if (!usePreviewIcon) {
+      return command?.getIcon() ?? <DynamicIcon/>;
     }
     return (
       <StaticCellRenderer
-        value={named?.getName() ?? 'Custom'}
-        cellStyle={named ? { named: named.getName() } : undefined }
-        styles={context.styles()}
-        createTemporaryCell={createBoundedCellTemplate}
-        bodyStyle={context.bodyStyle()}
+        value={named ? localizeStyleName(named.getName(), t) : ''} // blank
+        cellStyle={named ? { named: named.getName() } : {} }
+        createCell={createBoundedCellTemplate}
         className={"outline-hover"}
         disabled={isDisabled}
-        sx={{
+        // `StaticCellRenderer` already adopts the grid surface on its own root (`data-sxl-theme-surface`),
+        // so `auto` colors (var(--sxl-sys-color-*)) resolve against the grid — no `context.systemColors` needed.
+        style={{
           marginRight: '4px',
           borderRadius: '2px',
-          minHeight: `calc(100% - 2px)`,
+          // The ribbon row is content-sized (`CommandToolbar` uses alignItems center / height unset),
+          // so `height: 100%` on the swatch collapses to `auto` and a large-font style (Title, Heading)
+          // would grow the swatch → grow the toolbar. Pin the swatch to the toolbar's own `--icon-size`
+          // token (the height every sibling icon uses, density-aware), and clip — the preview font is
+          // already capped in `createBoundedCellTemplate`, so switching styles never resizes the toolbar.
+          height: 'var(--icon-size)',
+          maxHeight: 'var(--icon-size)',
           overflow: 'hidden',
-          outline:(theme: Theme) => `1px solid ${theme.palette.action.hover}`
+          lineHeight: 1.2,
+          outline: `1px solid ${theme.palette.action.hover}`
         }}
         propsBorder={{
           style: {
@@ -649,15 +490,14 @@ export const PresetCellStylesCommandButton = memo(
         }}
       />
     );
-  }, [named, bodyStyle, isDisabled, command]);
+  }, [named, isDisabled, command, t, theme]);
 
   return (
     <CommandPopupButton
       ref={refForwarded}
-      createPopupPanel={createPopupPanel}
+      renderPopupPanel={renderPopupPanel}
       outlined={usePreviewIcon}
-      commands={propCommands}
-      createTooltip={({children}: TooltipProps, disabled: boolean) => {
+      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
         return (
           <ExhibitTooltip
             label={command?.getLabel()}
@@ -672,7 +512,8 @@ export const PresetCellStylesCommandButton = memo(
       //onQuickClick={() => { activeCommand?.execute() }}
       selected={false}
       disabled={isDisabled}
-      label={command?.getLabel()}
+      label={command?.getLabel(groupKey)}
+      groupKey={groupKey}
       icon={icon}
       {...rest}
     />

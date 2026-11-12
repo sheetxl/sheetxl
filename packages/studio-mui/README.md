@@ -12,9 +12,9 @@
 
 ## SheetXL Studio
 
-SheetXL Studio is a complete, professional-grade spreadsheet application delivered as a React component. This package [@sheetxl/studio-mui](./_sheetxl_studio-mui.html)
+SheetXL Studio is a complete, professional-grade spreadsheet application delivered as a React component. This package [@sheetxl/studio-mui](https://api.sheetxl.com/modules/_sheetxl_studio-mui.html)
 provides the official, feature-rich Material-UI interface for the SheetXL ecosystem,
-bringing the full power of the [@sheetxl/sdk](./_sheetxl_sdk.html) engine to your users out-of-the-box.
+bringing the full power of the [@sheetxl/sdk](https://api.sheetxl.com/modules/_sheetxl_sdk.html) engine to your users out-of-the-box.
 
 ---
 

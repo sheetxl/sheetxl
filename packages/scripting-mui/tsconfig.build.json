@@ -1,0 +1,41 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    {
+      "path": "../primitives"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../formulas"
+    },
+    {
+      "path": "../io"
+    },
+    {
+      "path": "../utils-react"
+    },
+    {
+      "path": "../utils-mui"
+    },
+    {
+      "path": "../studio-mui"
+    }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./build/.tsbuildinfo.scripting-mui",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

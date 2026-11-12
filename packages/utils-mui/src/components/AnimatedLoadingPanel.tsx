@@ -1,20 +1,19 @@
-import React, { useRef, useMemo, memo, forwardRef, useEffect } from 'react';
+import type React from 'react';
+import { useRef, useMemo, memo, forwardRef, useEffect } from 'react';
 
 //import test from 'react/jsx-runtime'
 
 import clsx from 'clsx';
 import { alpha } from '@mui/system';
-import { mergeRefs } from 'react-merge-refs';
-import { useIsomorphicLayoutEffect } from 'react-use';
+import { useMergeRefs } from 'react-merge-refs';
 
-// import { SxProps } from '@mui/system';
-import { Theme } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Paper } from '@mui/material';
-import { Box, BoxProps } from '@mui/material';
+import { Box, type BoxProps } from '@mui/material';
 import { Typography } from '@mui/material';
+import { LinearProgress } from '@mui/material';
 
-import { type LoadingPanelProps } from '@sheetxl/utils-react';
+import { useIsomorphicLayoutEffect, type LoadingPanelProps } from '@sheetxl/utils-react';
 
 import styles from './Loading.module.css';
 
@@ -286,18 +285,115 @@ export const AnimatedTraversingEllipsisIcon: React.FC<AnimatedTraversingEllipsis
 
 
 
-export interface AnimatedLoadingPanelProps extends LoadingPanelProps, Omit<BoxProps, 'label' | 'color' | 'ref'> {
+export interface AnimatedLoadingPanelProps extends LoadingPanelProps, Omit<BoxProps, 'label' | 'color' | 'ref' | 'children'> {
 
   icon?: React.ReactNode;
 
   label?: string | React.ReactNode;
   /**
+   * Determinate progress as a fraction in `[0, 1]`. When a number, a determinate progress bar and
+   * percentage are shown in place of the animated `icon`; when `null`/`undefined` the indeterminate
+   * `icon` is shown.
+   */
+  progress?: number | null;
+  /**
    * Wrap the icon and label in a paper panel.
    */
   panel?: boolean;
+  /**
+   * Begin the fade-in as soon as the panel mounts. @defaultValue `true` — mount it when work starts
+   * and it shows itself; unmount it when the work ends.
+   *
+   * Pass `false` to keep the panel mounted but idle and drive it with {@link showLoadingPanel} /
+   * {@link hideLoadingPanel}. Both modes obey the same rule — the fade must be COMMITTED before the
+   * caller blocks the main thread — but a panel mounted at the moment work begins has never been
+   * painted, so committing it costs a mount, a first paint of a full-screen layer, and the wait for
+   * `transitionrun` below. An already-mounted panel is already painted: one frame and it is armed.
+   */
+  autoStart?: boolean;
 }
 
 const SHARED_ANIMATED_CIRCLE = <AnimatedCircleIcon/>;
+
+/**
+ * Arm a driven ({@link AnimatedLoadingPanelProps.autoStart} `false`) panel's fade-in, resolving once
+ * the browser has COMMITTED it. Only then may the caller seize the main thread: a class change
+ * reaches the compositor through a rendering frame, and a blocked thread never yields one, so
+ * arm-and-go would animate nothing for exactly the work worth announcing.
+ *
+ * Whether anything is ever SEEN is the panel's `transition-delay` (1.2s by default), which is CSS
+ * rather than a timer for the same reason — a `setTimeout` cannot fire while the thread is blocked,
+ * so a JS-scheduled reveal would appear for every operation EXCEPT the long ones. Work that finishes
+ * inside the delay disarms before a pixel changes.
+ *
+ * @param element The panel's root.
+ * @param label Replaces the panel's text (for a panel rendered with a string or absent label). Set
+ *              directly rather than through a render, which could not land before blocking work.
+ * @returns A promise that settles once the fade is committed, or `null` when there is nothing to wait
+ *          for — no element, or already armed (a second concurrent operation rides the first).
+ */
+export const showLoadingPanel = (
+  element: HTMLElement | null | undefined,
+  label?: string
+): Promise<void> | null => {
+  if (!element) return null;
+  if (label !== undefined) {
+    const labelElement = element.querySelector('[data-sxl-loading-label]');
+    if (labelElement) labelElement.textContent = label;
+  }
+  if (element.classList.contains('animating')) return null; // already armed — free
+
+  element.classList.remove('animating-idle'); // re-enable the transition
+  // Force a reflow so the starting opacity is committed before the class changes it: with no resolved
+  // starting value the browser coalesces both into one style and there is no transition to run at all
+  // (the workaround the auto-start path reaches for, and the one react-transition-group uses). This is
+  // the operation's only forced layout, and it happens BEFORE the work, while layout is still clean.
+  void element.offsetHeight;
+  element.classList.add('animating');
+
+  // Wait for the fade to START, not merely to exist: an animation's `ready` settles once the
+  // compositor is running it, and only then is blocking safe. The signals that look sooner are not:
+  // - `transitionrun` fires when the transition is CREATED, which any style read after the class
+  //   change does at once — before any frame. Work that blocks from there holds the fade back until
+  //   it yields, and the panel appears at the end of the operation instead of during it.
+  // - the task after the next frame's paint: that frame has committed the fade, but the compositor
+  //   may not have started it, and blocking then still left the panel unseen.
+  //
+  // `getAnimations()` resolves style itself, so the transition exists by the time it answers; none
+  // means there is no fade to wait for. Without Web Animations, two frames is the nearest stand-in.
+  // A hidden page starts no animations; the timer keeps it from waiting on one that never starts.
+  const animations = typeof element.getAnimations === 'function' ? element.getAnimations() : null;
+  if (animations?.length === 0) return null;
+  return new Promise<void>((resolve) => {
+    const fallback = setTimeout(resolve, 250);
+    const done = (): void => { clearTimeout(fallback); resolve(); };
+    if (animations) {
+      // A rejection is a cancelled fade (disarmed before it started): nothing left to wait for.
+      Promise.all(animations.map((animation) => animation.ready)).then(done, done);
+    } else {
+      requestAnimationFrame(() => requestAnimationFrame(done));
+    }
+  });
+};
+
+/**
+ * Disarm a driven panel — at once, and back to the state a fresh mount would be in. Both halves are
+ * what an unmount gave the auto-start panel for free:
+ * - **at once**: work that outlasted the reveal delay is on screen when it ends. Simply dropping the
+ *   class would transition BACK through that delay, leaving the panel up for another second after its
+ *   operation finished; parking it in `animating-idle` (no transition) snaps it away instead.
+ * - **fresh**: the next operation gets its own countdown. Without that, back-to-back operations
+ *   inherit an elapsed delay and the panel appears instantly on work that should have been silent.
+ *
+ * Costs no forced layout, so it is safe in the same task the work ended in — which it must be:
+ * anything that lets a frame paint first shows the panel after its operation.
+ */
+export const hideLoadingPanel = (element: HTMLElement | null | undefined): void => {
+  if (!element) return;
+  if (!element.classList.contains('animating')) return;
+  element.classList.add('animating-idle');
+  element.classList.remove('animating');
+};
 
 export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoadingPanelProps>((props: AnimatedLoadingPanelProps, refForwarded) => {
   const {
@@ -307,16 +403,21 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
     onUnmount,
     transitionDelay = '1200ms',
     panel = false,
+    autoStart = true,
     transparentBackground = true,
     icon = SHARED_ANIMATED_CIRCLE,
     label,
+    progress = null,
     ...rest
   } = props;
 
   const labelWrapped = useMemo(() => {
-    if (typeof label === 'string') {
+    // A driven panel keeps its (possibly empty) label node mounted: the text is written into it at
+    // arm time, since a render cannot land ahead of blocking work. Auto panels are unchanged.
+    if (typeof label === 'string' || (!autoStart && (label === null || label === undefined))) {
       return (
         <Typography
+          data-sxl-loading-label=""
           variant="caption"
           component="div"
           sx={{
@@ -325,14 +426,66 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
             letterSpacing: '0.01071em'
           }}
         >
-          {label}
+          {typeof label === 'string' ? label : ''}
         </Typography>
       );
     }
     return label;
-  }, [label]);
+  }, [label, autoStart]);
+
+  // When a determinate `progress` fraction is supplied, show a progress bar in place of the
+  // indeterminate animated icon. We deliberately omit a numeric percentage: a digit sprinting 1% at a
+  // time reads as busier (and less polished) than a single smoothly gliding bar. `color="inherit"` so
+  // it follows the panel's contrast color.
+  const indicator = useMemo(() => {
+    if (typeof progress !== 'number') return icon;
+    const percent = Math.max(0, Math.min(100, Math.round(progress * 100)));
+    // At 100% the producer's I/O is done but work may continue (e.g. a synchronous model build that
+    // blocks the main thread). Pulse the full bar to signal "still working" — opacity is a pure
+    // compositor animation, so it keeps breathing even while JS is busy, no spinner swap needed.
+    const isComplete = percent >= 100;
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          width: '180px'
+        }}
+      >
+        <LinearProgress
+          variant="determinate"
+          value={percent}
+          color="inherit"
+          sx={{
+            width: '100%',
+            borderRadius: '2px',
+            // Keyframes co-located with the rule that references them so emotion keeps the name in
+            // scope (defining them on a different element's style block silently breaks the link).
+            '@keyframes sxlProgressPulse': {
+              '0%, 100%': { opacity: 1 },
+              '50%': { opacity: 0.25 }
+            },
+            '& .MuiLinearProgress-bar': {
+              // Glide between the coarse (~5%) value steps instead of jumping, so the bar trails the
+              // true value slightly and reads as continuous motion. Linear matches the steady fill.
+              transition: 'transform 0.5s linear',
+              // Once full, breathe to show ongoing work. `will-change: opacity` promotes the bar to its
+              // own compositor layer so the animation keeps running even while the main thread is
+              // blocked by the synchronous model build (without it, opacity animates on the main thread
+              // and freezes during the block — exactly when we need it moving).
+              ...(isComplete && {
+                willChange: 'opacity',
+                animation: 'sxlProgressPulse 1s ease-in-out infinite'
+              })
+            }
+          }}
+        />
+      </Box>
+    );
+  }, [progress, icon]);
 
   const refLocal = useRef<HTMLDivElement>(null);
+  const refMerged = useMergeRefs([refLocal, refForwarded]);
   const retValue = useMemo(() => {
     let content = (
       <Box
@@ -344,7 +497,7 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
         }}
       >
         {labelWrapped}
-        {icon}
+        {indicator}
       </Box>
     );
     if (panel === true) {
@@ -393,7 +546,8 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
 
     return (
       <Box
-        ref={mergeRefs([refLocal, refForwarded]) as React.RefObject<HTMLDivElement>}
+        {...rest}
+        ref={refMerged as React.RefObject<HTMLDivElement>}
         className="animatable"
         sx={{
           cursor: 'wait',
@@ -403,6 +557,11 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
           display: 'flex',
           flexDirection: 'column',
           willChange: 'opacity',
+          // Idle (mounted, not armed): hold every animation still. A driven panel sits in the tree
+          // for the life of the app and an invisible spinner should not cost frames.
+          '&:not(.animating) *': {
+            animationPlayState: 'paused'
+          },
           opacity: transparentBackground ? 0.001 : 1,
           transitionProperty: 'opacity',
           transitionDelay,
@@ -418,6 +577,13 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
           '&.animating': {
             opacity: 1
           },
+          // Driven panels rest here between operations: no transition, so dropping `animating` snaps
+          // back instead of reverse-fading through the entry delay, and the NEXT arm starts a fresh
+          // countdown rather than inheriting an elapsed one. (Both are what unmounting used to give
+          // the auto-start panel for free.)
+          '&.animating-idle': {
+            transition: 'none'
+          },
           '&.animating-exit': {
             opacity: 0,
             transition: 'opacity 210ms'
@@ -425,7 +591,6 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
           ...propSx,
           ...propStyle as unknown as any
         }}
-        {...rest}
       >
         <Box className="center"
           sx={{
@@ -464,10 +629,9 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
         </Box>
       </Box>
     );
-  }, [propSx, panel]); // visible, , refForwarded
+  }, [propSx, panel, labelWrapped, indicator, refMerged]); // visible
 
   const isMounted = useRef(false);
-  const isMounting = useRef(false);
 
   /*
     Note - To create a nice loading panel we had to consider a few things.
@@ -480,74 +644,28 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
     will done on the compositor thread instead of the the ui thread.
     We have to make sure though that we have started the transition before we return the the blocking ui thread.
 
-
-    Note - There is a hack/bug workaround in implementation due to transitionrun even not firing reliably.
-
-    Note - adding a forcereflow may fix this.
+    The forced reflow is the load-bearing part: a panel that mounts and gains `animating` in the same
+    commit has no resolved starting opacity, so the browser coalesces both into one style, no
+    transition runs, and the panel appears AT ONCE — losing the anti-flicker delay entirely.
     @see https://github.com/reactjs/react-transition-group/blob/5007303e729a74be66a21c3e2205e4916821524b/src/CSSTransition.js#L208
+
+    Knowing exactly WHEN the fade began used to matter too, and cost a `transitionrun` listener plus a
+    timeout for the times it did not fire. Nothing needs that now: the caller that had to hold off
+    blocking the thread until the fade was committed drives the panel through `showLoadingPanel`
+    instead, which is mounted ahead of time and reports back by promise.
   */
   useIsomorphicLayoutEffect(() => {
-    if (!refLocal.current || isMounted.current || isMounting.current) return;
-    isMounting.current = true;
+    if (autoStart === false) return; // driven by showLoadingPanel / hideLoadingPanel
+    const element = refLocal.current;
+    if (!element || isMounted.current) return;
+    isMounted.current = true;
 
-    if (refLocal.current.classList.contains('animatable') && !refLocal.current.classList.contains('animating')) {
-      // console.log('add listener', refLocal.current?.classList);
-      let listenerCalled = false;
-      const started = () => {
-        // console.log('started', refLocal.current?.classList);
-        if (isMounting.current) { // double check as could have been remove during wait
-          isMounted.current = true;
-          isMounting.current = false;
-          listenerCalled = true;
-          // console.log('--- mount');
-            onMount?.();
-        }
-      };
-      if (refLocal.current)
-      refLocal.current.addEventListener("transitionrun", started, { once: true, capture: true, passive: true });
-      // refLocal.current.addEventListener("transitioncancel", (event) => {
-      //   console.log("Transition canceled", event, refLocal.current);
-      // }, { once: true, capture: true, passive: true });
-      // refLocal.current.addEventListener("transitionstarted", (event) => {
-      //   console.log("transitionstarted", event, refLocal.current);
-      // }, { once: true, capture: true, passive: true });
-      // refLocal.current.addEventListener("transitionend", (event) => {
-      //   console.log("transitionend", event, refLocal.current);
-      // }, { once: true, capture: true, passive: true });
-      // HACK WORKAROUND - Through observation and testing it seems that the transitionrun event is not always fired. Not sure why
-      if (isMounting.current && refLocal.current) {
-        // setTimeout(() => {
-          // console.log('set animating', refLocal.current?.classList, refLocal.current.style.transition);
-          // HACK WORKAROUND -
-          // Through observation and testing it seems that the transitionrun event is not fired if set immediately after listener.
-          // We noticed that if we explicity force the opacity to resolve then the transitionrun event is fired (but we have a timeout backup)
-          const opacity = window.getComputedStyle(refLocal.current, null).opacity;
-          if (opacity !== '0.001') {
-            // There is a 'race condition.
-            // The transitionrun event is not fired if set immediately after listener.
-            // It seems to be in chrome but it could be in react or even emotion styles.
-            // reset opacity. This should never occur but is so perhaps we should put back
-            // console.warn('opacity is not 0.001');
-          }
-          refLocal.current.classList.add('animating');
-        // }, 10);
-      }
-      setTimeout(() => {
-        if (!listenerCalled && isMounting.current && refLocal.current) {
-          // console.log('timeout', window.getComputedStyle(refLocal.current, null).opacity, window.getComputedStyle(refLocal.current, null).transition);
-          refLocal.current?.removeEventListener("transitionrun", started);
-          started();
-        }
-      }, 100);
-    } else {
-      isMounted.current = true;
-      isMounting.current = false;
-      onMount?.();
+    if (element.classList.contains('animatable') && !element.classList.contains('animating')) {
+      void element.offsetHeight; // resolve the starting opacity, or there is no transition to run
+      element.classList.add('animating');
     }
-    return () => {
-      // console.log('--- unmount1', refLocal.current?.classList);
-    }
-  }, [refLocal.current]);
+    onMount?.();
+  }, [refLocal.current, autoStart]);
 
   useEffect(() => {
     return () => {
@@ -555,7 +673,6 @@ export const AnimatedLoadingPanel = memo(forwardRef<HTMLDivElement, AnimatedLoad
         // console.log('--- unmount', refLocal.current?.classList);
         refLocal.current?.classList.remove('animating');
         isMounted.current = false;
-        isMounting.current = false;
         onUnmount?.();
       }
     }

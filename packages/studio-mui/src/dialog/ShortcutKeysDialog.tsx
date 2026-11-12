@@ -1,14 +1,14 @@
 import React from 'react';
 
-import { DialogContent, Paper } from '@mui/material';
+import { DialogContent } from '@mui/material';
 
-import { ICommands, KeyCodes } from '@sheetxl/utils-react';
+import { KeyCodes } from '@sheetxl/utils-react';
 
-import { InternalWindow, InternalWindowProps } from '@sheetxl/utils-mui';
-import { ShortcutKeysPanel } from './ShortcutKeysPanel';
+import { InternalWindow, type InternalWindowProps } from '@sheetxl/utils-mui';
+import { ShortcutKeysPanel, type ShortcutKeysCommandSource } from './ShortcutKeysPanel';
 
 export interface ShortcutKeysDialogProps extends InternalWindowProps {
-  commands: ICommands.IGroup;
+  commands: ShortcutKeysCommandSource;
 };
 
 const ShortcutKeysDialog: React.FC<ShortcutKeysDialogProps> = (props: ShortcutKeysDialogProps) => {

@@ -1,17 +1,19 @@
-import React, { forwardRef, memo, useRef, useMemo } from 'react';
+import type React from 'react';
+import { forwardRef, memo, useMemo } from 'react';
 
-import { type TooltipProps } from '@mui/material';
 
 import {
-  ICommand, ICommands, CommandButtonType, useCommands, useCallbackRef, DynamicIcon
+  CommandButtonType, useCommands, useCallbackRef, DynamicIcon, type Command, type UseCommandsListener,
+  type RenderSlotFn
 } from '@sheetxl/utils-react';
 
 import {
   ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitTooltip, type ExhibitPopupIconButtonProps
 } from '../button';
-import { type ExhibitPopupPanelProps } from '../float';
+import { type ExhibitPopupPanelProps, type ButtonTooltipRenderProps } from '../float';
 
 import { CommandTooltip } from './CommandTooltip';
+import { useManagedRipple } from './useManagedRipple';
 
 export type CommandPopupButtonRefAttribute = {
   ref?: React.Ref<HTMLDivElement>;
@@ -21,26 +23,17 @@ export type CommandPopupButtonRefAttribute = {
  * Attach a command to a popup.
  * Note
  */
-export interface CommandPopupButtonProps<STATE=any, CONTEXT=any> extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" | "createPopupPanel" > {
+export interface CommandPopupButtonProps<STATE=any, CONTEXT=any> extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" | "renderPopupPanel" > {
 
   quickCommand?: string;
 
-  commands: ICommands.IGroup;
+  icon?: React.ReactNode | ((command: Command.ResolvedCommand) => React.ReactNode) | string;
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode) | string;
-
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
+  label?: React.ReactNode | ((command: Command.ResolvedCommand) => React.ReactNode);
 
   disableHover?: boolean;
 
-  createPopupPanel?: (props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => React.ReactNode;
+  renderPopupPanel?: RenderSlotFn<ExhibitPopupPanelProps>;
 
   /**
    * Styling
@@ -54,99 +47,89 @@ export interface CommandPopupButtonProps<STATE=any, CONTEXT=any> extends Omit<Ex
    */
   commandState?: STATE;
 
-  context?: CONTEXT;
-
-  scope?: string
+  /** The panel/group this renders in — selects `groupLabels` variants (see `CommandButtonOptions.groupKey`). */
+  groupKey?: string;
 }
 
-const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = memo(
+export const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = memo(
     forwardRef<HTMLDivElement, CommandPopupButtonProps>((props, refForwarded) => {
   const {
     variant = CommandButtonType.Toolbar,
     quickCommand: quickCommandKey,
     onQuickClick: propOnQuickClick,
-    commands,
     commandState,
-    commandHook: propCommandHook,
     disabled: propDisabled,
     label: propLabel,
     icon: propIcon,
-    createPopupPanel: propCreatePopupPanel,
+    renderPopupPanel: propRenderPopupPanel,
     tooltip: propTooltip,
     selected: propSelected,
-    scope: propScope,
+    groupKey: propGroupKey,
     ...rest
   } = props;
 
-  const refRipple = useRef<any>(null);
-  const refRippleSelf = useRef<boolean>(false);
-  const rippleDuration = 180;
+  const { ripple, trigger: triggerRipple } = useManagedRipple();
 
-  const commandHook:ICommand.Hook<any, any> = useMemo(() => {
-    const retValue:ICommand.Hook<any, any> = {
-      onExecute(command: ICommand<any, any>, args: any): void {
-        propCommandHook?.onExecute?.(command, args);
-        if (!refRippleSelf.current) {
-          refRipple.current?.start({
-            center: false
-          })
-          setTimeout(() => refRipple.current?.stop({}), rippleDuration);
-        }
-        refRippleSelf.current = false;
-      },
-      onError(command: ICommand<any, any>, error: any, args: any): void {
-        propCommandHook?.onError(command, error, args);
-      }
+  const commandListener: UseCommandsListener<any, any> = useMemo(() => ({
+    // Fires for EVERY dispatch of the quick command (see `useCommands`); our always-mounted ripple
+    // flashes the button so remote executes (keystroke/sibling/programmatic) give feedback too.
+    onExecute(): void {
+      triggerRipple();
     }
-    if (propCommandHook?.beforeExecute)
-      retValue.beforeExecute = propCommandHook.beforeExecute;
-    return retValue;
-  }, [propCommandHook]);
+  }), [triggerRipple]);
 
-  // To listener for command update and changes to the quickCommandKey
-  const resolvedCommands = useCommands(commands, [quickCommandKey], null, [quickCommandKey]);
-  const quickCommand = resolvedCommands[0];
+  const [quickCommand] = useCommands(quickCommandKey ?? [], commandListener);
 
   const { label, icon } = useMemo(() => {
     let label = null;
     if (propLabel) {
       if (typeof propLabel === 'function') {
-        label = propLabel(quickCommand);
+        label = quickCommand ? propLabel(quickCommand) : null;
       } else {
         label = propLabel;
       }
     }
     if (!label) {
-      label = quickCommand?.getLabel?.(propScope);
+      label = quickCommand?.getLabel?.(propGroupKey);
     }
 
     let icon = propIcon;
     if (!icon) {
-      icon = quickCommand?.getIcon?.();
+      icon = quickCommand?.getIcon?.(propGroupKey);
     }
 
     if (typeof icon === 'string') {
       icon = <DynamicIcon iconKey={icon}/>;
     } else if (typeof icon === 'function') {
-      icon = icon(quickCommand);
+      icon = quickCommand ? icon(quickCommand) : undefined;
     }
 
-    return { label, icon }
-  }, [resolvedCommands, propLabel, propIcon]);
+    // fallback to icon that matches quick command key. This is a bit of a hack
+    // this give warnings
+    // if (!icon && quickCommandKey) {
+    //   icon = <DynamicIcon iconKey={quickCommandKey}/>;
+    // }
 
+    // Leave `icon`/`label` as resolved — the popup button composes the visible content: a real icon
+    // wins; otherwise the label renders as text, with the toggle checkmark prefixed for split (quick
+    // command) buttons, and an empty non-split button falls back to a blank spacer downstream.
+    return { label, icon }
+  }, [quickCommand, propLabel, propIcon]);
+
+  const resolved = quickCommand || !quickCommandKey // if quick commandKey but no resolve then it's invalid
   const propsCommand:any = {
-    disabled: propDisabled,
-    scope: propScope,
-    touchRippleRef: refRipple,
+    disabled: propDisabled || !resolved,
+    // NB: `groupKey` is NOT forwarded here — it's a command-layer concept consumed above (label/icon
+    // already resolved via getLabel(propGroupKey)). Spreading it reaches a DOM node → React warns.
+    ripple,
     onQuickClick: propOnQuickClick,
-    // commandHook,
     tooltip: propTooltip,
     label,
     icon
   }
 
   if (label || propTooltip) {
-    propsCommand.createTooltip = ({children}: TooltipProps, disabled: boolean) => {
+    propsCommand.renderTooltip = ({ children, disabled }: ButtonTooltipRenderProps) => {
       return (
         <ExhibitTooltip
           label={label}
@@ -159,22 +142,21 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
     }
   }
 
-  const createPopupPanel = useCallbackRef((props: ExhibitPopupPanelProps) => {
-    // we invalidate against resolvedCommands but pass commands
-    return propCreatePopupPanel?.(props, commands);
-  }, [propCreatePopupPanel, resolvedCommands]);
+  const renderPopupPanel = useCallbackRef((props: ExhibitPopupPanelProps) => {
+    return propRenderPopupPanel?.(props);
+  }, [propRenderPopupPanel]);
 
   const onQuickClick = useCallbackRef((_e: React.MouseEvent<any>) => {
-    return quickCommand?.execute(commandState, commandHook);
+    return quickCommand?.execute(commandState);
   }, [quickCommand]);
 
   // if we have a quick command then override the tooltip
   if (quickCommand) {
     propsCommand.propsQuickButton = {};
-    propsCommand.propsQuickButton.createTooltip = ({children, placement}: TooltipProps, disabled: boolean) => {
+    propsCommand.propsQuickButton.renderTooltip = ({ children, placement, disabled }: ButtonTooltipRenderProps) => {
       return (
         <CommandTooltip
-          command={quickCommand}
+          commandKey={quickCommandKey}
           placement={placement ?? variant === CommandButtonType.Toolbar? "bottom-start" : "right-start"}
           disabled={disabled}
         >
@@ -192,7 +174,7 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
   }
   propsCommand.selected = propSelected ?? quickCommand?.getState();
 
-  propsCommand.createPopupPanel = createPopupPanel;
+  propsCommand.renderPopupPanel = renderPopupPanel;
   return (variant === CommandButtonType.Toolbar ?
     <ExhibitPopupIconButton {...rest} {...propsCommand } ref={refForwarded}/> :
     <ExhibitPopupMenuItem {...rest} {...propsCommand} ref={refForwarded}/>
@@ -200,4 +182,3 @@ const CommandPopupButton: React.FC<CommandPopupButtonProps & { ref?: any }> = me
 }));
 
 CommandPopupButton.displayName = "CommandPopupButton";
-export { CommandPopupButton };

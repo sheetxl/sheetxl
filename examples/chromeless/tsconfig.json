@@ -1,0 +1,44 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "paths": {
+      "@sheetxl/primitives": [
+        "../../packages/primitives/src"
+      ],
+      "@sheetxl/utils": [
+        "../../packages/utils/src"
+      ],
+      "@sheetxl/io": [
+        "../../packages/io/src"
+      ],
+      "@sheetxl/utils-react": [
+        "../../packages/utils-react/src"
+      ]
+    },
+    "tsBuildInfoFile": "./build/.tsbuildinfo.chromeless",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src",
+    "../../packages/primitives/src",
+    "../../packages/utils/src",
+    "../../packages/sdk/src",
+    "../../packages/io/src",
+    "../../packages/io-xlsx/src",
+    "../../packages/utils-react/src",
+    "../../packages/utils-react/src/icons/packs/*.json",
+    "../../packages/grid-react/src",
+    "../../packages/react/src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "../../packages/**/*.test.*",
+    "../../packages/**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
+}

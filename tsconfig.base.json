@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
-    "strictNullChecks" : false, // TODO - remove this soon
-    "noImplicitAny": false,     /* Raise error on expressions and declarations with an implied 'any' type. */
-    "noImplicitThis": false,    /* Raise error on 'this' expressions with an implied 'any' type. */
-    "strict": false,
+    // A few demo apps under examples/ opt OUT with their own "strict": false.
+    "strict": true,
 
     "resolveJsonModule": true,
 
@@ -16,7 +14,16 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
 
-    "lib": ["es2022", "dom"], // for node and browser
+    // For node and browser. `esnext.disposable` is listed explicitly because `using`/`Symbol.dispose`
+    // is a language feature we use (collections/IteratorUtils);
+    "lib": ["es2022", "esnext.disposable", "dom"],
+
+    // No ambient `@types/*` package is included unless a tsconfig asks for it by name. TypeScript's
+    // default is to auto-include everything visible under `node_modules/@types`, which in a pnpm
+    // monorepo makes a program's ambient surface depend on which package happens to hoist what -
+    // `Buffer`/`process` type-checked in browser-only code purely because a transitive `@types`
+    // package carried a `/// <reference types="node" />`. Node packages opt in with `"types": ["node"]`.
+    "types": [],
 
     "esModuleInterop": true,
     "skipLibCheck": true,

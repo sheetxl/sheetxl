@@ -1,11 +1,11 @@
-import React, { useState, memo } from 'react';
+import type React from 'react';
+import { useState, memo } from 'react';
 
-import { type Theme } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Box, Typography, IconButton } from '@mui/material';
 
 import { ErrorUtils } from '@sheetxl/utils';
-import { DynamicIcon } from '@sheetxl/utils-react';
+import { DynamicIcon, useTranslator } from '@sheetxl/utils-react';
 
 export interface StackTraceProps {
   /**
@@ -85,6 +85,7 @@ export const StackTrace: React.FC<StackTraceProps> = memo(({
   maxLines = Number.MAX_SAFE_INTEGER,
   hideLineNumbers = false
 }) => {
+  const t = useTranslator();
   const [displayText, setDisplayText] = useState<string | null>(null);
 
   if (!error?.stack) {
@@ -156,7 +157,9 @@ export const StackTrace: React.FC<StackTraceProps> = memo(({
             opacity: 0.8
           }}
         >
-          Stack Trace({errorChain.length > 1 ? ` (${errorChain.length} frames)` : ''})
+          {errorChain.length > 1
+            ? t('stackTrace.headingFrames', { count: errorChain.length })
+            : t('stackTrace.heading')}
         </Typography>
         <Box sx={{ flex: 1 }} />
         {displayText && (
@@ -175,7 +178,7 @@ export const StackTrace: React.FC<StackTraceProps> = memo(({
           size="small"
           onClick={handleCopy}
           sx={{ color: 'inherit', opacity: 0.7, '&:hover': { opacity: 1 } }}
-          title="Copy stack trace"
+          title={t('stackTrace.copy')}
         >
           <DynamicIcon iconKey='ContentCopy' style={{ fontSize: '0.875rem' }} />
         </IconButton>
@@ -184,10 +187,10 @@ export const StackTrace: React.FC<StackTraceProps> = memo(({
           onClick={() => {
             setDisplayText(`Logged!`);
             setTimeout(() => setDisplayText(null), 2000);
-            console.log(error);
+            console.warn(error);
           }}
           sx={{ color: 'inherit', opacity: 0.7, '&:hover': { opacity: 1 } }}
-          title="Log error to console"
+          title={t('stackTrace.log')}
         >
           <DynamicIcon iconKey='BugReport' style={{ fontSize: '0.875rem' }} />
         </IconButton>
@@ -311,7 +314,7 @@ export const StackTrace: React.FC<StackTraceProps> = memo(({
               mt: 1
             }}
           >
-            ... and {frames.length - maxLines} more frames
+            {t('stackTrace.moreFrames', { count: frames.length - maxLines })}
           </Typography>
         )}
       </Box>

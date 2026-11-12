@@ -6,13 +6,5 @@
   },
   "include": [
     "./src"
-  ],
-  "exclude": [
-    "**.test.**",
-    "**/__tests__/**",
-    "**/.pnpm",
-    "**/build",
-    "**/dist",
-    "**/node_modules"
   ]
 }

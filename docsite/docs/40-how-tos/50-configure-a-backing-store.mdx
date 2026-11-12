@@ -1,0 +1,267 @@
+---
+sidebar_position: 50
+title: Configure a Backing Store
+---
+
+# Configure a Backing Store
+
+A **Backing Store** is the *destination* (and, optionally, the *source*) that [`WorkbookIO`](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbookIO.html) uses to persist and load workbooks. It is the single place to redirect **all** I/O — a browser download, the local file system, a VSCode host, a database, or a cloud service.
+
+SheetXL separates I/O into **two independent dimensions**:
+
+| Dimension | What it controls | Configured by |
+| --- | --- | --- |
+| **Format** | *How* the workbook is encoded (xlsx, csv, json, parquet…) | The registered IO plugins ([`@sheetxl/io`](https://www.npmjs.com/package/@sheetxl/io)) |
+| **Backing Store** | *Where* the bytes go / come from | `WorkbookIO.setBackingStore(...)` |
+
+Because the two are independent, a custom store never has to know about formats. It only moves **bytes** — `WorkbookIO` resolves the format, suggested name, and destination [`Origin`](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbookIO.Origin.html) *before* the store is called, and hands the store a small helper (`encode()` / `decode()`) to do the actual encoding.
+
+## The default stores
+
+You usually don't configure anything. `WorkbookIO` auto-selects a built-in store for the current platform:
+
+- In the **browser**: `BrowserBackingStore` — uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) (`showSaveFilePicker` / `showOpenFilePicker`) and falls back to a download / `<input type="file">`.
+- In **Node**: `FSBackingStore` — reads and writes local paths via `fs`.
+
+Neither class is exported; the SDK picks the right one for the platform. `WorkbookIO.getBackingStore()` returns whichever is active.
+
+## The `BackingStore` interface
+
+A store implements `write`, `read`, or both. Whichever you omit falls back to the built-in platform store, so a "write-only" store still loads files normally.
+
+```typescript
+namespace IWorkbookIO {
+  interface IBackingStore {
+    // Persist the workbook described by the request.
+    // Return the written Origin (`request.origin` when it was already bound,
+    // or a new one for a destination you resolved), or null to signal the
+    // user cancelled.
+    write?(request: WriteRequest): Promise<Origin | null>;
+
+    // Acquire bytes and decode them into a workbook.
+    // Return null if the store can't produce one (e.g. picker cancelled).
+    read?(request: ReadRequest): Promise<IWorkbook | null>;
+  }
+}
+```
+
+### The write request
+
+Everything format-related is already resolved for you. The store's job is to take `encode()`'s bytes and put them somewhere.
+
+```typescript
+interface WriteRequest {
+  workbook: IWorkbook;          // the workbook being written
+  format: FormatType;           // the resolved format (e.g. Excel) — key, exts, mimeType
+  origin: Origin;               // the destination handle (see below)
+  suggestedName: string;        // a good default name *with* extension, e.g. "report.xlsx"
+  encode(format?: string): Promise<ArrayBufferLike | null>;  // encode the workbook to bytes; null if declined
+}
+```
+
+The **destination is an [`Origin`](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbookIO.Origin.html)** — a virtual file handle. The store contract:
+
+- `origin.getPath()` set and `origin.canWrite()` true → **persist to it silently** (no dialog), and
+  return `request.origin`.
+- Otherwise (a brand-new workbook, or read-only provenance like a URL) → **resolve a destination
+  yourself** — a save picker, a fixed location, an API endpoint — using `suggestedName` for any
+  prompt or default. On success, return a **new** `WorkbookOrigin` for that destination with
+  `canWrite: true`. `WorkbookIO` moves the workbook onto the origin you return, so the next save is
+  silent. An origin's path is immutable; you never rewrite the one you were handed.
+
+### The read request
+
+For reads, the store's only job is **source acquisition** — turn `source` (or, when it's `null`, a location it resolves itself, like an open picker) into bytes, then call `decode()`, which handles format detection, provenance (the workbook's origin), and workbook construction.
+
+```typescript
+interface ReadRequest {
+  source: ReadOptions['source'] | null;   // what to read, or null to resolve one yourself
+  options: Omit<ReadOptions, 'source'>;
+  decode(bytes: ArrayBufferLike, info?: ReadInfo): Promise<IWorkbook>;
+}
+```
+
+Tell `decode` what you know about the source via `ReadInfo` — in particular `canWrite: true` when
+your store can silently write back to this source, so a plain `write(workbook)` re-saves in place.
+
+## Setting a store
+
+```typescript
+import { WorkbookIO } from '@sheetxl/sdk';
+
+WorkbookIO.setBackingStore(myStore);
+
+// Pass null to fall back to the built-in platform store:
+WorkbookIO.setBackingStore(null);
+```
+
+After this, **every** `WorkbookIO.write(...)` (including a Studio Ctrl-S) routes through your store — you don't have to touch any command or UI code.
+
+## Reference implementation
+
+The smallest possible store is `ArrayBackingStore` (exported from `@sheetxl/sdk`). It captures the encoded bytes in memory instead of persisting them — a good template to copy:
+
+```typescript
+import { type IWorkbookIO, type IWorkbook } from '@sheetxl/sdk';
+
+class ArrayBackingStore implements IWorkbookIO.IBackingStore {
+  private _buffer: ArrayBufferLike | null = null;
+  private _formatKey: string | null = null;
+
+  async write(request: IWorkbookIO.WriteRequest): Promise<IWorkbookIO.Origin | null> {
+    const buffer = await request.encode();           // encode to the resolved format
+    if (!buffer) return null;
+    this._buffer = buffer;
+    this._formatKey = request.format.key;
+    return request.origin;
+  }
+
+  async read(request: IWorkbookIO.ReadRequest): Promise<IWorkbook | null> {
+    if (!this._buffer) return null;
+    return request.decode(this._buffer, { format: this._formatKey ?? undefined });
+  }
+}
+```
+
+---
+
+## Example: a backend / database store
+
+A common case is saving to your own service rather than the user's disk. Encode the workbook, `PUT` the bytes, and return the origin the workbook now lives at:
+
+```typescript
+import { WorkbookIO, WorkbookOrigin, type IWorkbookIO } from '@sheetxl/sdk';
+
+class ApiBackingStore implements IWorkbookIO.IBackingStore {
+  constructor(private readonly endpoint: string) {}
+
+  async write(request: IWorkbookIO.WriteRequest): Promise<IWorkbookIO.Origin | null> {
+    const bytes = await request.encode();
+    if (!bytes) return null;
+    // A bound handle re-saves to the same record; otherwise resolve a destination.
+    const bound = request.origin.getPath();
+    const name = bound ?? request.suggestedName;
+
+    await fetch(`${this.endpoint}/${encodeURIComponent(name)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': request.format.mimeType },
+      body: bytes
+    });
+
+    if (bound) {
+      request.origin.update({ size: bytes.byteLength });
+      return request.origin;
+    }
+    // A new destination gets a new origin. WorkbookIO moves the workbook onto
+    // it, so the next write(workbook) saves back here silently.
+    return new WorkbookOrigin(name, { format: request.format.key, canWrite: true, size: bytes.byteLength });
+  }
+
+  async read(request: IWorkbookIO.ReadRequest): Promise<IWorkbook | null> {
+    // `source` is whatever you passed to WorkbookIO.read({ source }) — e.g. an id.
+    const id = String(request.source ?? '');
+    const res = await fetch(`${this.endpoint}/${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    const bytes = await res.arrayBuffer();
+    // Tell `decode` what it's looking at so it can pick the format — and that
+    // this store can write back to it (silent re-save on Ctrl-S).
+    return request.decode(bytes, { name: id, absolutePath: res.url, canWrite: true });
+  }
+}
+
+WorkbookIO.setBackingStore(new ApiBackingStore('https://api.example.com/workbooks'));
+```
+
+:::tip
+You only need `read` if you also load *through* the store. If your app loads workbooks the normal way (URL, `File`, drag-drop) and only the **save** target is custom, implement `write` alone.
+:::
+
+---
+
+## Example: a VSCode extension host
+
+In a VSCode extension the SheetXL UI typically runs in a **webview**, while the `vscode` API (including `vscode.workspace.fs`) is only available in the **extension host**. So the webview-side store doesn't touch the file system directly — it encodes the bytes and asks the host to write them over the message channel.
+
+**Webview side** — a store that delegates to the host:
+
+```typescript
+import { WorkbookIO, WorkbookOrigin, type IWorkbookIO } from '@sheetxl/sdk';
+
+declare const acquireVsCodeApi: () => { postMessage(msg: unknown): void };
+const vscodeApi = acquireVsCodeApi();
+
+class VSCodeBackingStore implements IWorkbookIO.IBackingStore {
+  async write(request: IWorkbookIO.WriteRequest): Promise<IWorkbookIO.Origin | null> {
+    const bytes = await request.encode();
+    if (!bytes) return null;
+    const bound = request.origin.getPath();
+    const name = bound ?? request.suggestedName;
+
+    // Round-trip to the extension host, which performs the actual write.
+    const ok = await postAndWait('sheetxl:write', {
+      name,
+      bytes: new Uint8Array(bytes)   // structured-cloned to the host
+    });
+    if (!ok) return null;            // host reported the user cancelled
+
+    if (bound) {
+      request.origin.update({ size: bytes.byteLength });
+      return request.origin;
+    }
+    return new WorkbookOrigin(name, { format: request.format.key, canWrite: true, size: bytes.byteLength });
+  }
+}
+
+// Minimal request/response helper over postMessage.
+function postAndWait(type: string, payload: unknown): Promise<any> {
+  return new Promise((resolve) => {
+    const id = crypto.randomUUID();
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.id !== id) return;
+      window.removeEventListener('message', onMessage);
+      resolve(e.data.result);
+    };
+    window.addEventListener('message', onMessage);
+    vscodeApi.postMessage({ id, type, payload });
+  });
+}
+
+WorkbookIO.setBackingStore(new VSCodeBackingStore());
+```
+
+**Extension host side** — receive the message and write with `vscode.workspace.fs`:
+
+```typescript
+import * as vscode from 'vscode';
+
+panel.webview.onDidReceiveMessage(async (msg) => {
+  if (msg.type !== 'sheetxl:write') return;
+
+  const uri = vscode.Uri.joinPath(workspaceFolder.uri, msg.payload.name);
+  try {
+    await vscode.workspace.fs.writeFile(uri, msg.payload.bytes);
+    panel.webview.postMessage({ id: msg.id, result: true });
+  } catch {
+    panel.webview.postMessage({ id: msg.id, result: false });
+  }
+});
+```
+
+:::note
+If your extension renders SheetXL directly in the extension host (rather than a webview) you can skip the message bridge and call `vscode.workspace.fs` straight from the store's `write`.
+:::
+
+## What you don't have to do
+
+`WorkbookIO.write` does all of this *before* your store runs, so your store stays small:
+
+- Resolves the write **format** (from the explicit `format`, then the destination's extension).
+- Resolves the **destination `Origin`** — every workbook carries its origin (where it was read
+  from or last saved), so a plain `write(workbook)` hands your store the right handle; an explicit
+  target (`write(workbook, 'copy.xlsx')`) hands you a handle for that target instead, and
+  `writeAs` handles the "Save As" retargeting.
+- Computes a clean **`suggestedName`** (e.g. a workbook read from `https://host/path/report.xlsx` suggests `report.xlsx`).
+
+:::tip
+Full API reference: [`IWorkbookIO`](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbookIO.html).
+:::

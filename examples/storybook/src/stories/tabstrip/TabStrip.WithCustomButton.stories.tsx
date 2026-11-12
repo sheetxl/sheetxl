@@ -2,9 +2,9 @@ import React, { useCallback, useState, memo, forwardRef } from 'react';
 
 import { CommonUtils } from '@sheetxl/utils';
 
-import { Color } from '@sheetxl/sdk';
-
 import { TabStrip, TabProps } from '@sheetxl/react';
+
+import { asStory } from '../../components';
 
 /**
  * Illustration of customizing tabs strip without using any component library.
@@ -133,7 +133,7 @@ const Template: React.FC = (props) => {
         renderTabButton={(props) => {
           return <CustomTab {...props}/>
         }}
-        activeColor={new Color('red')}
+        activeColor="red"
         propsEditLabel={{
           renderInput: (props) => {
             return (
@@ -153,7 +153,7 @@ const Template: React.FC = (props) => {
   );
 };
 
-export const TabStripWithCustomTabs = Template.bind({});
+export const TabStripWithCustomTabs = asStory(Template);
 TabStripWithCustomTabs.args = {
   disabled:false
 };

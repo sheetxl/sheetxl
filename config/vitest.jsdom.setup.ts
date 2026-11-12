@@ -1,10 +1,23 @@
+// Opt this jsdom environment into React's act() support. The mount tests drive React with the raw
+// `act()` from 'react' (not Testing Library); without this flag React warns "not configured to
+// support act(...)" AND does not deterministically flush updates inside `await act(...)`, so a
+// controlled round-trip can settle a tick late — which flaked ReferenceInput's F4 test in CI while
+// passing locally. Setting it makes act() flush synchronously, the behavior those tests assume.
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+// jsdom has no canvas: its getContext() already answers null, and the UI text measurers fall back to
+// an estimate on null. This answers the same without jsdom printing "Not implemented" for each file.
+HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext;
 
 async function setupSimpleFonts(): Promise<void> {
   try {
-    // we don't alias because we don't want canvas in the test environment.
-    const { IFont } = await import('../packages/sdk/src/font/index.js');
-    const { getInstance: getSimpleMeasurer } = await import('../packages/sdk/src/font/SimpleFontMeasurer.js');
-    IFont.setSharedMeasurer(getSimpleMeasurer());
+    // The text engine and the built-in faces before any test wraps: jsdom takes the browser's
+    // lazy wasm, and a wrap before it lands is an error, the one a browser host avoids by waiting
+    // for `whenReady()`; the hinted companions so a synchronous autofit measures the final table.
+    const { IFontCollection } = await import('../packages/sdk/src/font/index.js');
+    const fonts = IFontCollection.getShared();
+    await fonts.load(['Calibri', { family: 'Calibri', bold: true }, 'Arial', { family: 'Arial', bold: true }]);
+    await fonts.whenReady();
   } catch (error: any) {
     console.warn('⚠️ Could not configure font measurer:', error.message);
   }

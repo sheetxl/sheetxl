@@ -1,65 +1,172 @@
+/* Card grid on a soft band, as on the landing page's benefits section. */
+
 .section {
+  background: var(--sxl-light-bg);
+  padding: 4.5rem 0 5rem;
+}
+
+html[data-theme='dark'] .section {
+  background: #0c0a2e;
+}
+
+.intro {
+  max-width: 640px;
+  margin: 0 auto 3rem;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary);
+}
+
+.heading {
+  font-size: 2.25rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+}
+
+.lead {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--ifm-font-color-secondary);
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.card {
+  position: relative;
   display: flex;
-  align-items: center;
-  padding: 2rem 0;
+  flex-direction: column;
+  height: 100%;
+  padding: 2.5rem 2rem 2rem;
+  border-radius: 0.75rem;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid transparent;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ifm-global-shadow-md);
+  border-color: rgba(62, 125, 255, 0.35);
+}
+
+/* The last card sits alone on its row; center it like the landing does. */
+.grid > .card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  max-width: calc(50% - 1rem);
+  margin: 0 auto;
   width: 100%;
 }
 
-.svg {
-  height: 160px;
-  width: 160px;
-}
-
-.benefitRow {
-  display: flex;
-}
-
-.benefitRow.reversed {
-  flex-direction: row-reverse;
-}
-
-.benefitRow .col {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Image alignment classes */
-.imageContainer {
+.badge {
+  position: absolute;
+  top: -0.6rem;
+  left: -0.6rem;
+  width: 4.5rem;
+  height: 4.5rem;
   display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2px solid var(--ifm-color-primary);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 20px rgba(7, 16, 45, 0.12);
+  overflow: hidden;
+}
+
+html[data-theme='dark'] .badge {
+  background: rgba(19, 27, 77, 0.7);
+}
+
+.badge img {
+  width: 100%;
   height: 100%;
+  object-fit: cover;
+  border-radius: 999px;
 }
 
-/* On large screens, align images closer to text based on odd/even */
-.benefitRow.odd .imageContainer {
-  justify-content: flex-start; /* Right align - closer to text on left */
-  margin-left: 100px;
+.body {
+  padding-left: 2.75rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
-.benefitRow.even .imageContainer {
-  justify-content: flex-end; /* Left align - closer to text on right */
-  margin-right: 100px;
+.title {
+  font-size: 1.15rem;
+  margin-bottom: 0.4rem;
 }
 
-/* On small screens, center everything when stacked */
+.note {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ifm-font-color-base);
+  margin-bottom: 0.75rem;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: var(--ifm-font-color-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.description :global(.theme-code-block) {
+  margin: 0.25rem 0 0;
+}
+
+.description :global(.theme-code-block) code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+
+.link {
+  margin-top: auto;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.link:hover {
+  text-decoration: none;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-style: italic;
+  padding: 0 0.35rem;
+  border-radius: 0.3rem;
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-font-color-secondary);
+  vertical-align: middle;
+}
+
 @media (max-width: 996px) {
-  .benefitRow.reversed {
-    flex-direction: row;
+  .grid {
+    grid-template-columns: 1fr;
   }
 
-  .benefitRow.odd .imageContainer,
-  .benefitRow.even .imageContainer {
-    justify-content: center; /* Center on mobile */
+  .grid > .card:last-child:nth-child(odd) {
+    max-width: none;
   }
-}
 
-:global(.tight-code-block) code {
-  white-space: pre-wrap !important;
-  overflow-wrap: anywhere !important;
-  padding-right: 24px !important;
-}
-
-:global(.tight-code-block) :global(.theme-code-block) {
-  margin-bottom: 4px !important;
+  .heading {
+    font-size: 1.75rem;
+  }
 }

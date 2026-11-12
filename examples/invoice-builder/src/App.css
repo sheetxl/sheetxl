@@ -1,0 +1,128 @@
+.App {
+  display: flex;
+  height: 100%;
+}
+
+.App-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 460px;
+  flex-shrink: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: #fff;
+  border-right: 1px solid #d8dee4;
+}
+
+.App-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.App-total {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #1f4e79;
+  color: #fff;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.App-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.App-form fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #d8dee4;
+  border-radius: 6px;
+}
+
+.App-form legend {
+  font-weight: 600;
+}
+
+.App-form input {
+  min-width: 0;
+  padding: 6px 8px;
+  font: inherit;
+  font-weight: 400;
+  border: 1px solid #c3ccd5;
+  border-radius: 4px;
+}
+
+.App-item {
+  display: grid;
+  grid-template-columns: 1fr 64px 96px 32px;
+  gap: 6px;
+}
+
+.App-rates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.App-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.App-form button {
+  padding: 6px 12px;
+  font: inherit;
+  border: 1px solid #c3ccd5;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.App-actions button:first-child {
+  background: #1f4e79;
+  border-color: #1f4e79;
+  color: #fff;
+}
+
+.App-preview {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.Toasts {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.Toast {
+  max-width: 360px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #1f4e79;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.Toast-error {
+  background: #a4262c;
+}

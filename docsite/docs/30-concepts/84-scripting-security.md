@@ -13,7 +13,7 @@ draft: true
 
 ### The Challenge: Power and Security in Spreadsheet Scripting
 
-Spreadsheets demand powerful scripting for automation and complex modeling. Traditionally, this meant VBA, offering immense power but exposing users and organizations to significant security risks due to lack of a security model. Newer solutions like Office Script prioritize security by severely limiting features and the execution environment – a safer but often overly restrictive approach.
+Spreadsheets demand powerful scripting for automation and complex modeling. Traditionally, this meant VBA, offering immense power but exposing users and organizations to significant security risks due to lack of a security model. Newer solutions like Office Scripts prioritize security by severely limiting features and the execution environment – a safer but often overly restrictive approach.
 
 > SheetXL rejects the false choice that users have to pick **power** ***or*** **security**. Browsers have proven security and flexibility can coexist.
 
@@ -70,7 +70,7 @@ This strong baseline allows SheetXL to expose a more flexible and powerful API f
 
 >Designed for trusted internal workflows where system access is controlled.
 
-SheetXL's can also run server-side in Node.js. This mode is intended for trusted server environments, such as internal risk calculations, data pipelines, or back-office reporting systems. In these scenarios, the scripts are written and controlled by your team, and have access to files, databases, or internal APIs.
+SheetXL can also run server-side in Node.js. This mode is intended for trusted server environments, such as internal risk calculations, data pipelines, or back-office reporting systems. In these scenarios, the scripts are written and controlled by your team, and have access to files, databases, or internal APIs.
 
 This is not a “user scripting sandbox.” Instead, it’s an execution engine with full system access—comparable to using pandas in Python or calling shell scripts from R. It is powerful, but intended only for trusted code in trusted environments.
 
@@ -107,9 +107,9 @@ You can have both **safety** and **flexibility** in a spreadsheet engine.
 
 ### 🔐 Model Comparison
 
->Office Script achieves security by restricting capabilities. SheetXL achieves it by isolating them.
+>Office Scripts achieves security by restricting capabilities. SheetXL achieves it by isolating them.
 
-| Feature / Constraint                           | Excel VBA  | Office Script   | SheetXL (Sandboxed)        |
+| Feature / Constraint                           | Excel VBA  | Office Scripts  | SheetXL (Sandboxed)        |
 |------------------------------------------------|------------|-----------------|----------------------------|
 | ✅ Limited filesystem access                   | ❌        | ✅              | ✅                        |
 | ✅ Restricted network access (e.g. `fetch`)    | ❌        | ✅              | ✅ Configurable           |

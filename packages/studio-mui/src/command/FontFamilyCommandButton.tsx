@@ -1,77 +1,67 @@
-import React, { useMemo, memo, forwardRef, useCallback } from 'react';
+import type React from 'react';
+import { useMemo, memo, forwardRef, useCallback } from 'react';
 
-import { Theme, useTheme } from '@mui/material/styles';
-
+import { useTheme, type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
-import type { TooltipProps } from '@mui/material';
 
-import { IFont } from '@sheetxl/sdk';
 import { IFontCollection } from '@sheetxl/sdk';
 
-import { Command, useCommand, ICommand, KeyCodes } from '@sheetxl/utils-react';
+import { useCommands, KeyCodes, measureUIText } from '@sheetxl/utils-react';
 
 import {
-  SelectedIcon, defaultCreatePopupPanel, ExhibitMenuItem, ExhibitTooltip, ExhibitPopupIconButton,
-  type ExhibitPopupIconButtonProps, type ExhibitPopupPanelProps
- } from '@sheetxl/utils-mui';
+  SelectedIcon, defaultRenderPopupPanel, ExhibitMenuItem, ExhibitTooltip, ExhibitPopupIconButton,
+  type ExhibitPopupIconButtonProps, type ExhibitPopupPanelProps, type ButtonTooltipRenderProps
+} from '@sheetxl/utils-mui';
 
-export interface FontFamilyCommandButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" |"createPopupPanel"> {
-  command: Command<string>;
+export interface FontFamilyCommandButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" |"renderPopupPanel"> {
+  commandKey: string;
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
+  icon?: React.ReactNode | ((command: any) => React.ReactNode);
 
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-    /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
+  label?: React.ReactNode | ((command: any) => React.ReactNode);
 }
 
-const fontsRegistered = IFontCollection.getFontList();
-const mapFontsRegistered = new Map();
-for (let i=0; i<fontsRegistered.length; i++) {
-  mapFontsRegistered.set(fontsRegistered[i].fontRef.getFamily(), fontsRegistered[i]);
-}
 export const FontFamilyCommandButton = memo(
   forwardRef<HTMLElement, FontFamilyCommandButtonProps>((props, refForwarded) => {
   const {
-    command,
-    commandHook: propCommandHook,
+    commandKey,
     sx: propSx,
-    disabled: propDisabled = false,
-    parentFloat,
+    disabled: propDisabled,
     icon: propIcon,
     label: propLabel,
     ...rest
   } = props;
 
-  const _ = useCommand(command);
+  const [command] = useCommands([commandKey]);
   const currentFontFamily = command?.getState();
 
   const appTheme = useTheme();
   const defaultWidth = useMemo(() => {
     const templateString = 'Times New Roman';
-    return `${IFont.getSharedMeasurer()(templateString, Math.round(appTheme.typography.fontSize), appTheme.typography.fontFamily).width}px`;
+    return `${measureUIText(templateString, { size: Math.round(appTheme.typography.fontSize), family: appTheme.typography.fontFamily ?? '' })}px`;
   }, [appTheme]);
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
+  const isDisabled = propDisabled ?? (!command || command.disabled());
+
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const handleSetFont = (newValue: string) => {
-      command?.execute(newValue, propCommandHook);
+      command?.execute(newValue);
     }
 
+    // Read when the menu opens: the offered list changes as fonts are registered.
+    const fontsRegistered = IFontCollection.getShared().getFontList();
     const fonts = [];
     for (let i=0; i<fontsRegistered.length; i++) {
+      const fontRef = fontsRegistered[i].fontRef;
+      if (!fontRef) continue;
+      const family = fontRef.getFamily();
       fonts.push({
-        key: fontsRegistered[i].fontRef.getFamily(),
-        description: fontsRegistered[i].fontRef.getFamily()
+        key: family,
+        description: family
       });
     }
-    if (!mapFontsRegistered.get(currentFontFamily)) {
+    if (!fonts.some((font) => font.key === currentFontFamily)) {
       fonts.unshift({
           key: currentFontFamily,
           description: currentFontFamily
@@ -79,8 +69,12 @@ export const FontFamilyCommandButton = memo(
     }
 
     const menus = [];
-    for (let i=0; i<fonts.length; i++) {
-      const selected = fonts[i].key === currentFontFamily;
+    const fontsLength = fonts.length;
+    for (let i=0; i<fontsLength; i++) {
+      const font = fonts[i];
+      if (!font) continue;
+      const fontKey = font.key;
+      const selected = font.key === currentFontFamily;
       menus.push(
         <ExhibitMenuItem
           sx={{
@@ -90,15 +84,15 @@ export const FontFamilyCommandButton = memo(
           }}
           selected={selected}
           disabled={propDisabled || !command || command.disabled()}
-          key={i + '' + fonts[i].key}
+          key={i + '' + fontKey}
           icon={selected ? <SelectedIcon/> : undefined}
-          onMouseUp={(e) => { if (e.button !== 0) return; handleSetFont(fonts[i].key) }}
+          onMouseUp={(e) => { if (e.button !== 0) return; handleSetFont(fontKey) }}
           onMouseDown={(e: React.MouseEvent) => { if (e.button !== 0) return; e.preventDefault()}}
           onKeyDown={(e: React.KeyboardEvent) => {
             // button prevents space so we don't check it
             // if (e.isDefaultPrevented()) return;
             if (e.keyCode === KeyCodes.Enter || e.keyCode === KeyCodes.Space) {
-              handleSetFont(fonts[i].key);
+              handleSetFont(fontKey);
             }
           }}
         >
@@ -119,7 +113,7 @@ export const FontFamilyCommandButton = memo(
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 fontFamily: () => {
-                  return fonts[i]?.key;
+                  return fontKey;
                 }
               }}
             >
@@ -149,9 +143,9 @@ export const FontFamilyCommandButton = memo(
       </Box>
     );
 
-    return defaultCreatePopupPanel({...props, children});
+    return defaultRenderPopupPanel({...props, children});
 
-  }, [propDisabled, command?.getState()]);
+  }, [isDisabled, command, currentFontFamily]);
 
   return (
     <ExhibitPopupIconButton
@@ -160,9 +154,8 @@ export const FontFamilyCommandButton = memo(
         ...propSx
       }}
       outlined={true}
-      disabled={propDisabled}
-      parentFloat={parentFloat}
-      createPopupPanel={createPopupPanel}
+      disabled={isDisabled}
+      renderPopupPanel={renderPopupPanel}
       // onClick={async () => {
       //   try {
       //     console.log('trying to find local fonts');
@@ -185,7 +178,7 @@ export const FontFamilyCommandButton = memo(
       //     console.warn(`Local font access not available: ${e.message}`);
       //   }
       // }}
-      createTooltip={({children}: TooltipProps, disabled: boolean) => {
+      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
         return (
           <ExhibitTooltip
             label={command?.getLabel()}
@@ -205,8 +198,11 @@ export const FontFamilyCommandButton = memo(
             fontSize: (theme: Theme) => {
               return `${Math.round(theme.typography.fontSize)}px`;
             },
+            lineHeight: 1.2,
             fontFamily: (theme: Theme) => theme.typography.fontFamily,
             color: (theme: Theme) => theme.palette.text.secondary,
+            // Grows only when the host gives it room (the format pane's full-width field).
+            flex: '1 1 auto',
             width: defaultWidth
           }}
         >

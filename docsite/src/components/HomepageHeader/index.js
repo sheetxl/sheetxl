@@ -1,38 +1,51 @@
 import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-// import {useColorMode} from '@docusaurus/theme-common';
 
-// import Heading from '@theme/Heading';
 import styles from './styles.module.css';
-
-import { Container } from '@mui/material';
 
 export default function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
+  const isBeta = siteConfig.customFields?.channel === 'beta';
 
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
+    <header className={styles.hero}>
+      <div className={styles.glow} aria-hidden="true" />
+      <img
+        src={useBaseUrl('img/hero-shape-1.svg')}
+        alt=""
+        aria-hidden="true"
+        className={clsx(styles.shape, styles.shapeLeft)}
+      />
+      <img
+        src={useBaseUrl('img/hero-shape-2.svg')}
+        alt=""
+        aria-hidden="true"
+        className={clsx(styles.shape, styles.shapeRight)}
+      />
       <div className={clsx('container', styles.container)}>
-        <Container maxWidth="md" disableGutters >
-          {/* <Heading as="h1" className={clsx("hero__title", styles.heroTitle)}>
-            <img src="https://www.sheetxl.com/logo-text.svg" height="70" alt={`${siteConfig.title}`}/>
-          </Heading> */}
-          <h2 className={clsx('hero__subtitle', styles.heroSubTitle)}>{siteConfig.tagline}</h2>
-          <div className={styles.buttons}>
-            <Link
-              className="button button--secondary"
-              to="/docs/guides/category/getting-started">
-              Get Started
-            </Link>
-            <Link
-              className="button"
-              to="https://demo.sheetxl.com">
-              Visit Studio Demo
-            </Link>
-          </div>
-        </Container>
+        <span className={styles.eyebrow}>Developer Guides</span>
+        <h1 className={styles.title}>
+          Spreadsheet Power,<br />Excel Compatibility.
+        </h1>
+        <p className={styles.lead}>
+          Everything you need to put a spreadsheet engine in your app, on your server,
+          or next to your agent.
+        </p>
+        <div className={styles.buttons}>
+          <Link
+            className="button button--primary button--lg"
+            to="/guides/category/getting-started">
+            Get Started
+          </Link>
+          <Link
+            className="button button--outline button--lg"
+            to={isBeta ? 'https://demo.beta.sheetxl.com' : 'https://demo.sheetxl.com'}>
+            Studio Demo
+          </Link>
+        </div>
       </div>
     </header>
   );

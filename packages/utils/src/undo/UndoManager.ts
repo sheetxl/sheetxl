@@ -1,9 +1,8 @@
-import { RemoveListener } from '../types';
+import { type RemoveListener } from '../types';
 
 /*
  TODO -
   1. We should have the max be a function of size of operations
-  2. We need to have a 'key' so that we can corelate to commands.
 */
 
 /**
@@ -38,7 +37,26 @@ export interface IUndoOperation {
    *
    * @returns redo function or void if not re-doable
    */
-  undo(): () => void | void;
+  undo(): (() => void) | void;
+}
+
+/**
+ * One entry of the undo or redo stack, as a view shows it.
+ */
+export interface UndoEntry {
+  /**
+   * What the entry did. May be a message key; resolve it for display (`t()` passes plain text through).
+   */
+  readonly description: string;
+  /**
+   * Who made it, when the stack knows (`'user'`, `'agent'`, `'macro'`, or a collaborator). `null` when
+   * it does not.
+   */
+  readonly author: string | null;
+  /**
+   * What was recorded with the entry — `command` is the key of the command that made it, when one did.
+   */
+  readonly meta: Readonly<Record<string, string>>;
 }
 
 export interface IUndoManagerListener {
@@ -56,8 +74,8 @@ export interface IUndoManagerListener {
  */
 interface OperationHandler {
   description: string;
-  undo: () => () => void | void;
-  redo: () => void;
+  undo: () => (() => void) | void;
+  redo: (() => void) | void | null;
 }
 
 /**
@@ -71,10 +89,11 @@ export class UndoManager {
   private _undoStack: OperationHandler[];
   private _redoStack: OperationHandler[];
 
-  private _repeatOperation: IRepeatableOperation
+  /** protected so derived managers (e.g. log-backed ones) can honor repeat-when-no-redo */
+  protected _repeatOperation: IRepeatableOperation | null
 
-  private _undoDescriptions: readonly string[];
-  private _redoDescriptions: readonly string[];
+  private _undoDescriptions: readonly string[] | null = null;
+  private _redoDescriptions: readonly string[] | null = null;
 
   /**
    * Creates a new undo manager.
@@ -145,7 +164,8 @@ export class UndoManager {
       // for each item on the stack. Pop it off of the stack and
       for (let i=0;i<count && this._redoStack.length > 0 ;i++) {
         const handler = this._redoStack[this._redoStack.length-1];
-        handler.redo();
+        // only handlers whose undo returned a redo function are pushed onto the redo stack
+        (handler.redo as () => void)();
         this._redoStack.pop(); // after action incase of error
         this._undoStack.push(handler);
         notify = true;
@@ -165,7 +185,7 @@ export class UndoManager {
     return this._undoStack.length > 0;
   }
 
-  getTopUndoDescription(): string {
+  getTopUndoDescription(): string | null {
     if (this._undoStack.length === 0)
       return null;
 
@@ -182,7 +202,7 @@ export class UndoManager {
     return this._redoStack.length > 0 || this._repeatOperation !== null;
   }
 
-  getTopRedoDescription(): string {
+  getTopRedoDescription(): string | null {
     if (this._repeatOperation !== null)
       return this._repeatOperation.description;
 
@@ -219,6 +239,23 @@ export class UndoManager {
   }
 
   /**
+   * The undo stack, most recent first, with what is known about each entry. Parallel to
+   * {@link getUndoDescriptions}.
+   *
+   * @remarks
+   * This stack records descriptions only; a stack over a richer log overrides this to report who
+   * made each entry and what was recorded with it.
+   */
+  getUndoEntries(): readonly UndoEntry[] {
+    return this.getUndoDescriptions().map(toEntry);
+  }
+
+  /** The redo stack (or the repeatable action), next first. Parallel to {@link getRedoDescriptions}. */
+  getRedoEntries(): readonly UndoEntry[] {
+    return this.getRedoDescriptions().map(toEntry);
+  }
+
+  /**
    * Add an undo operation to the stack.
    */
   addUndoOperation(operation: IUndoOperation): void {
@@ -246,7 +283,7 @@ export class UndoManager {
    *
    * * Clears the redo stack and does NOT add this operation to the undo stack.
    */
-  setRepeatableOperation(operation: IRepeatableOperation): void {
+  setRepeatableOperation(operation: IRepeatableOperation | null): void {
     this._repeatOperation = operation ?? null;
     this._redoStack = [];
     this._notifyOnStackChange();
@@ -284,3 +321,6 @@ export class UndoManager {
     });
   }
 }
+
+const NO_META: Readonly<Record<string, string>> = Object.freeze({});
+const toEntry = (description: string): UndoEntry => ({ description, author: null, meta: NO_META });

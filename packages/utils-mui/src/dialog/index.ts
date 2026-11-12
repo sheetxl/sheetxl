@@ -1,13 +1,15 @@
 import ModalProvider from 'mui-modal-provider';
 
+export * from './lazyModal';
 export * from './useLazyWindow';
 
 export * from './InternalWindow';
 
-// Export both types and components
-// The dynamic imports in hooks will still work for code splitting when used via hooks
+// OptionsDialog is used directly by consumers, so it's a full re-export.
 export * from './OptionsDialog';
-export * from './InputDialog';
+
+// InputDialog's component is lazy loaded
+export type { InputDialogProps } from './InputDialog';
 
 export * from './useOptionsDialog';
 export * from './useInputDialog';

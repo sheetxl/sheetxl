@@ -1,0 +1,165 @@
+---
+sidebar_position: 55
+title: Drawing on the Grid
+---
+
+Want to highlight a row, put a marker in the margin, or add a button beside every row? You can draw
+anything you like on top of a sheet, and it scrolls, zooms and freezes along with the cells.
+
+Here's how it works. A sheet is drawn as a stack of **layers**: the cells, the gridlines, the selection, tables, comments
+and so on, each a React component on top of the one before. You can add layers of your own to that
+stack, and they behave just like the built-in ones. They even take the pointer only where you want
+them to, so the sheet underneath keeps working.
+
+## Declaring layers
+
+Declare layers as children of a `WorksheetElement`, inside a `SheetLayers`:
+
+```tsx title="An insert-row button beside every row"
+import { WorksheetElement, SheetLayers, CellInsertLayer } from '@sheetxl/react';
+
+<WorksheetElement sheet={sheet}>
+  <SheetLayers surface={['rowHeaders', 'cells']}>
+    <CellInsertLayer />
+  </SheetLayers>
+</WorksheetElement>
+```
+
+`SheetLayers` renders nothing where it is declared. It tells the sheet which layers to add, and the
+sheet renders them in place, so they can be wrapped, rendered conditionally and use hooks like any
+other component.
+
+| Prop | Description |
+|------------|------|
+| `sheets` | Which sheets get the layers: a sheet, a list of sheets, or a function `(sheet) => boolean`. Defaults to every sheet. |
+| `surface` | Which surfaces of the sheet get the layers (see below). Defaults to `'cells'`. |
+
+A `WorkbookElement` takes `SheetLayers` as children the same way, and applies them to whichever sheet
+it shows; use `sheets` to limit them to some sheets. Sheets are given as sheets, not names: a sheet can
+be renamed, and its name reused by another.
+
+## Surfaces
+
+A sheet is made of several grids, each with its own stack of layers:
+
+| Surface | What it is |
+|------------|------|
+| `cells` | The cells. |
+| `rowHeaders` | The row numbers down the left. |
+| `columnHeaders` | The column letters across the top. |
+
+Most layers belong on the cells, which is the default. A layer that also needs the headers is declared
+on several surfaces, `surface={['rowHeaders', 'cells']}`, or on all of them with `surface="all"`.
+Such a layer is mounted once on each surface, and draws the part that belongs there. It asks which
+surface it is on with `useGridSurface()`:
+
+```tsx title="A flagged row: a marker in the header, a band across the cells"
+import { Layer, VirtualDiv } from '@sheetxl/grid-react';
+import { useGridSurface } from '@sheetxl/react';
+
+const FlaggedRow: React.FC<{ row: number }> = ({ row }) => {
+  const surface = useGridSurface();
+  if (surface === 'rowHeaders') {
+    return (
+      <Layer>
+        <VirtualDiv
+          range={{ rowStart: row, colStart: 0, rowEnd: row, colEnd: 0 }}
+          style={{ pointerEvents: 'none', borderLeft: '4px solid #e8a33d' }}
+        />
+      </Layer>
+    );
+  }
+  if (surface === 'cells') {
+    return (
+      <Layer>
+        <VirtualDiv
+          range={{ rowStart: row, colStart: 0, rowEnd: row, colEnd: 25 }}
+          style={{ pointerEvents: 'none', background: 'rgba(232, 163, 61, 0.15)' }}
+        />
+      </Layer>
+    );
+  }
+  return null;
+};
+
+<WorksheetElement sheet={sheet}>
+  <SheetLayers surface={['rowHeaders', 'cells']}>
+    <FlaggedRow row={3} />
+  </SheetLayers>
+</WorksheetElement>
+```
+
+Ranges are always in the sheet's coordinates. On a header surface the other axis has a single
+index, `0`: a row header's column, or a column header's row.
+
+### Sharing state across surfaces
+
+The copies of a layer on different surfaces are separate components, and so are its copies on each
+pane of a sheet with frozen rows or columns. To share state among them, use `useSurfaceState` from
+`@sheetxl/grid-react` with a key of your own. It works like `useState`, but every copy that uses the
+same key reads and writes the same value, across all of the sheet's surfaces:
+
+```tsx
+const [hovered, setHovered] = useSurfaceState<number | null>('flagged-row:hover', null);
+```
+
+## Writing a layer
+
+A layer is a component whose root is a `Layer`. Inside it, place content on the sheet with
+`VirtualDiv` (a `div` at a range of cells) or the other range components in `@sheetxl/grid-react`.
+
+- **Pointer events.** A `Layer` never takes the pointer itself; its content does, as an ordinary
+  element would. Give content that only draws `pointerEvents: 'none'` so the sheet keeps the clicks.
+  The layer's own handlers (`onPointerMove`, `onPointerLeave`, ...) hear events over the whole surface.
+  A layer higher in the stack hears an event first, and `event.stopPropagation()` keeps it from the
+  layers below.
+- **Context.** A layer can use the sheet's hooks, such as `useWorksheet()` from `@sheetxl/react` and
+  `useGridPane()` from `@sheetxl/grid-react`, and they answer for the surface the layer is on.
+- **Order.** Declared layers sit on top of the built-in ones, in the order they are declared. Set
+  `zIndex` on a layer to place it differently.
+
+## CellInsertLayer
+
+`CellInsertLayer` is a prebuilt layer that shows an **insert** button on the headers' edge, on the
+border nearest the pointer, as Word does in the margin beside a table. Hovering the button shows a line
+across the cells where the insert will go; pressing it inserts. Hovering the cells shows nothing.
+
+Declare it on a header surface and the cells: `rowHeaders` for rows (the default `axis`), and
+`columnHeaders` with `axis="column"` for columns.
+
+Left alone it inserts entire rows (columns) wherever the sheet's protection allows inserting them.
+`resolve` narrows that: it is given the entire row (column) past the border and returns the cells to
+insert, or `null` for no button. To offer the button only beside a table's body, and insert only
+across the table:
+
+```tsx title="Insert rows into one table"
+const resolveTableRow = (row: ICellRange): ICellRange | null => {
+  const table = row.getWorksheet().getTables().getItems({ name: 'Fruit', address: row })[0];
+  // The border above the header row is outside the table.
+  if (!table || row.getCoords().rowStart === table.getRange().getCoords().rowStart) return null;
+  return row.getIntersect(table.getRange());
+};
+
+<WorksheetElement sheet={sheet}>
+  <SheetLayers surface={['rowHeaders', 'cells']}>
+    <CellInsertLayer resolve={resolveTableRow} />
+  </SheetLayers>
+</WorksheetElement>
+```
+
+| Prop | Description |
+|------------|------|
+| `axis` | `'row'` (default) or `'column'`. |
+| `resolve` | The cells to insert at a border, or `null` for no button. |
+| `onInsert` | Called with those cells when the button is pressed. Defaults to inserting them. |
+| `size` | The button's size in pixels, before zoom. Defaults to `16`. |
+| `renderButton` | Renders the button, in place of the default `CellInsertButton`. |
+
+The default button can also be restyled with CSS: it has the class `sxl-cell-insert-button`, and the line
+has `sxl-cell-insert-line`.
+
+## Examples
+
+The **Sheet / Sheet Layers** stories in Storybook show the insert buttons on rows and columns, the
+insert narrowed to a table, and a layer of your own across surfaces. The Invoice Builder demo uses
+`CellInsertLayer` to add line items from the preview.

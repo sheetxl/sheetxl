@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 /**
  * Special icon when DynamicIconService returns an invalid state.

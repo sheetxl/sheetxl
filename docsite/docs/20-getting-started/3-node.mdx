@@ -8,6 +8,7 @@ description: Quickly get started with SheetXL using Node.js.
 import CodeBlock from '@theme/CodeBlock';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import { AgentPromptCode } from '@site/src/components/AgentPrompt';
 
 
 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
@@ -22,16 +23,24 @@ SheetXL for Node lets you create, modify, and save spreadsheet workbooks entirel
 
 ## New Project
 
-The fastest way to get started with SheetXL is using our project wizard. It will create a new
-project with SheetXL pre-configured and ready to use.
+The fastest way to get started is to hand it to your agent, or to run our project wizard yourself.
+Either way you get a new project with SheetXL pre-configured and ready to use.
 
 <Tabs
-  defaultValue="pnpm"
+  defaultValue="agent"
   values={[
+    {label: 'agent', value: 'agent'},
     {label: 'pnpm', value: 'pnpm'},
     {label: 'yarn', value: 'yarn'},
     {label: 'npm', value: 'npm'}
   ]}>
+  <TabItem value="agent">
+
+Paste this into your agent (Claude Code, Codex, Cursor, …), in an empty folder or in your project:
+
+<AgentPromptCode id="automate" />
+
+  </TabItem>
   <TabItem value="pnpm">
 ```sh
 pnpm create sheetxl
@@ -49,7 +58,7 @@ npx create-sheetxl
   </TabItem>
 </Tabs>
 
-> ...and follow the interactive prompts.
+> ...and answer the questions. The agent asks what you want to build; the wizard asks which template.
 
 
 
@@ -83,31 +92,30 @@ npm install @sheetxl/sdk @sheetxl/io
   </TabItem>
 </Tabs>
 
-### Installation
+### First Script
+
+The example uses `import` and top-level `await`, so make sure your `package.json` has
+`"type": "module"` (or name the file `example.mjs`). Node 22 or later is required.
 
 Create a file called `example.js`:
 
 ```javascript title="example.js"
-import SheetXL from '@sheetxl/sdk';
-import WorkbookIO from '@sheetxl/io';
-import fs from 'node:fs';
+import { LicenseManager, Workbook, WorkbookIO } from '@sheetxl/sdk';
+import { IOPlugin } from '@sheetxl/io';
 
-// Set your license key or use CLI to install
-SheetXL.LicenseManager.setLicenseKey('visit https://my.sheetxl.com to generate a license key.');
+// Set your license key here, or run `npx sheetxl license activate <key>` once instead
+await LicenseManager.setLicenseKey('visit https://my.sheetxl.com after trial.');
+
+// Register the file format handlers (xlsx, csv, …) once at startup
+await WorkbookIO.install(IOPlugin);
 
 // Create a new workbook
-const workbook = new SheetXL.Workbook();
+const workbook = new Workbook();
 
 workbook.getRange('A1').setValues([['Hello World!']]);
 
-// Export the workbook to a buffer
-const buffer = await WorkbookIO.write({
-  workbook,
-  type: 'xlsx',
-});
-
-// Save to disk
-fs.writeFileSync('my-workbook.xlsx', buffer);
+// Write to disk. The extension drives the format.
+await WorkbookIO.write(workbook, 'my-workbook.xlsx');
 
 console.log('Workbook saved as my-workbook.xlsx');
 ```

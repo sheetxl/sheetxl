@@ -2,11 +2,12 @@
 sidebar_position: 20
 title: Quick Start (Vanilla)
 sidebar_label: Quick Start (Vanilla)
-description: Quickly get started with SheetXL in using Vanilla JavaScript.
+description: Quickly get started with SheetXL using vanilla JavaScript.
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import { AgentPromptCode } from '@site/src/components/AgentPrompt';
 
 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
   <img
@@ -23,16 +24,24 @@ import TabItem from '@theme/TabItem';
 
 ## New Project
 
-The fastest way to get started with SheetXL is using our project wizard. It will create a new
-project with SheetXL pre-configured and ready to use.
+The fastest way to get started is to hand it to your agent, or to run our project wizard yourself.
+Either way you get a new project with SheetXL pre-configured and ready to use.
 
 <Tabs
-  defaultValue="pnpm"
+  defaultValue="agent"
   values={[
+    {label: 'agent', value: 'agent'},
     {label: 'pnpm', value: 'pnpm'},
     {label: 'yarn', value: 'yarn'},
     {label: 'npm', value: 'npm'}
   ]}>
+  <TabItem value="agent">
+
+Paste this into your agent (Claude Code, Codex, Cursor, …), in an empty folder or in your project:
+
+<AgentPromptCode id="page" />
+
+  </TabItem>
   <TabItem value="pnpm">
 ```sh
 pnpm create sheetxl
@@ -50,7 +59,7 @@ npx create-sheetxl
   </TabItem>
 </Tabs>
 
-> ...and follow the interactive prompts.
+> ...and answer the questions. The agent asks what you want to build; the wizard asks which template.
 
 
 ## Existing Project
@@ -91,7 +100,7 @@ A `<div>` with an id and a `<script>`.
     <script
       src="https://cdn.jsdelivr.net/npm/@sheetxl/studio-vanilla@latest/cdn/loader.js"
       data-target="#sheetxl"
-      data-license-key="YOUR_LICENSE_KEY_HERE"
+      data-license-key="visit https://my.sheetxl.com after trial."
       defer>
     </script>
 </body>
@@ -104,31 +113,32 @@ Pass any option to the workbook by adding it as a `data-*` attribute to the `<sc
 
 * Naming: Attributes are written in kebab-case (`data-auto-focus`) and are automatically converted to the camelCase props (autoFocus) your component expects.
 * Example: To enable autoFocus, add `data-auto-focus="true"`.
+* Values arrive as strings. Any present value is truthy, so to turn a boolean option off, leave the attribute out rather than writing `"false"`.
 
-This method gives you precise control over when and how the workbook is created using JavaScript. It's useful if you need to wait for other events or pass complex props programmatically.
+`data-target` defaults to `#sheetxl`, so you only need it when your `<div>` has a different id.
 
 </TabItem>
 
-<TabItem value="cdn" label="ESM Script (Javascript options)" default>
+<TabItem value="cdn" label="ESM Script (JavaScript options)">
 
-This approach requires no install but gives you programmatic access to the workbook. To get started,
+This approach requires no install but gives you programmatic access to the workbook. It gives you precise control over when and how the workbook is created, which is useful if you need to wait for other events or pass complex props programmatically. To get started,
 just add a `<div>` container and our embed script to your HTML page.
 
 
-#### The Javascript
+#### The JavaScript
 
-This belongs inside of an `<script type="module">` tag in your html.
+This belongs inside a `<script type="module">` tag in your HTML.
 
 ```javascript title='<script type="module">'
 try {
-  // import the library from unpkg or your preferred CDN
+  // import the library from jsDelivr or your preferred CDN
   const module = await import('https://cdn.jsdelivr.net/npm/@sheetxl/studio-vanilla@latest/cdn/index.js');
   if (!module.SheetXL) {
     throw new Error('SheetXL module not found in the imported package');
   }
 
   // create a workbook element
-  const workbookElement await module.SheetXL.attachStudio('#sheetxl', {
+  const workbookElement = await module.SheetXL.attachStudio('#sheetxl-container', {
     licenseKey: 'visit https://my.sheetxl.com to generate a license key.',
     // pass any additional properties here
   });
@@ -173,8 +183,10 @@ If you're using a modern JavaScript bundler like Vite, Webpack, or Parcel, you c
 Open your project's terminal and run the installation command:
 
 ```bash
-npm install @sheetxl/studio-vanilla react react-dom
+npm install @sheetxl/studio-vanilla
 ```
+
+React is bundled as a dependency, so there is nothing else to add.
 
 #### Step 2: Import and Use
 
@@ -216,18 +228,4 @@ see the full API documentation:
 * **[Studio-MUI](https://api.sheetxl.com/modules/_sheetxl_studio-mui.html)**
 
 * **[SDK](https://api.sheetxl.com/modules/_sheetxl_sdk.html)**.
-:::
-
-
-
-## Example - CDN
-
-Sometimes starting with an example is the simplest way to start.
-
-The following code sandbox shows a single index.html page loading SheetXL from a CDN:
-
-[CodeSandbox-CDN](https://codesandbox.io/p/sandbox/sheetxl-cdn-dr94cs)
-
-:::tip
-Sandboxes can also be forked or downloaded to be run locally.
 :::

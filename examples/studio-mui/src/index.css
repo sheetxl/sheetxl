@@ -5,6 +5,10 @@ body {
   overflow: hidden; /* required because tooltips may cause scrolling */
 }
 
+html, body {
+  overscroll-behavior-x: none;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

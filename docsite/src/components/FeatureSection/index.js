@@ -28,7 +28,7 @@ const completed = [
       `Typescript`,
       `Headless spreadsheet library can be used in either browser or Node`,
       `Simple integration`,
-      `Free open-sourced Material-UI Application. MIT License`,
+      `Free open-sourced Material-UI Application. MIT Licensed`,
       `Customizable Rendering and Editing`,
       `Themeable using CSS, or CSS-in-JS`,
     ],
@@ -40,32 +40,46 @@ const completed = [
     // description: 'A description here',
     // descriptionTooltip: 'Tooltip for the description here',
     bullets: [
-      `17.1+ billion cells`,
-      `400+ built-in functions`,
-      `375+ shortcut key (All currently known)`,
+      `17.1+ billion cells (The same as Excel)`,
+      `545+ builtin functions — 120,000+ test fixtures`,
+      `475+ shortcut keys`,
+      `Full fidelity Excel import/export (Data, Formulas, Styles, Tables, etc)`,
+      `Live Scripting (Office Scripts like with UDF support)`,
+      `Fast. Autofill 1,048,576 rows with formulas in 0.7s (10M+ formulas/second)`,
       `Custom formula and macro functions`,
-      `Import/Export from/to Excel`,
       `Multiple Sheets`,
-      `Tables`,
-      `Office Theme (Color Picker, Theme Selector)`,
-      `Cell Styles (Themes and Formatting)`,
-      `Advances Copy/Paste (Formats, Formulas, Internal Clipboard)`,
+      `Tables (Filtering, Formatting, etc)`,
+      `Charts`,
+      `Sparklines`,
+      `Pivots Tables`,
+      `Conditional Formatting`,
+      `Data Validation`,
+      `Slicers`,
+      `Advanced Copy/Paste (Formats, Formulas, Internal Clipboard)`,
       `Row/Column Interaction - Resizable, Auto-fit, Hidden, Frozen, Reorder`,
-      `Mobile (Touch/Small screen accommodation)`,
-      `Autofill`,
+      `Grouping Rows/Headers`,
+      `Full Mobile Support (Multi touch handle/Small screen accommodation)`,
       `Undo/Redo`,
+      `Theming Support (Color Picker, Theme Selector)`,
+      `Cell Styles (Excel Parity + custom via CSS or Javascript)`,
+      `Preset Cell Style Selector`,
+      `Multi-language, Internationalization`,
+      `Number Formatting`,
+      `Text Overflow, Wordwrap, Rotation`,
+      `Autofill`,
       `Find/Replace`,
       `Images`,
       `Merged Cells`,
-      `Preset Cell Style Selector`,
-      `Number Formatting`,
-      `Text Overflow, Wordwrap`,
+      `Drawings`,
+      `Shapes`,
       `Borders`,
       `Multi-range selection`,
-      `Protected Workbooks, Sheets and Ranges`,
+      `Protected/Encrypted Workbooks, Sheets and Ranges`,
       `Sort`,
+      `Filter`,
       `Zoom`,
-      `Hyperlinks`
+      `Hyperlinks`,
+      `Custom Renderers/Editors`
     ]
   }
 ];
@@ -74,27 +88,17 @@ const roadmap = [
   {
     title: 'Roadmap Features',
     singleLine: true,
-    description: `Core features are expected to be completed in 2025.`,
+    description: `Excel feature parity is expected to be completed mid 2027.`,
     bullets: [
-      [`Formula Editor/Dropdown`, `In progress`],
-      [`Auto/Table Filters`, `In progress`],
-      [`Formatting Export to Excel`, `Q4 2025`],
-      [`Data Validation`, `Q4 2025`],
-      [`Conditional Formatting`, `Q4 2025`],
-      [`Charts`, `Early 2026`],
-      [`Sequence Alt-Key Shortcuts (Key-coords)`, `Early 2026`],
-      [`Accessibility https://www.w3.org/TR/WCAG21/`, `Early 2026`],
-      [`Grouping Rows/Headers`, `Early 2026`],
-      // [`Lambda Functions and Multithreaded Calc`, `Demand Driven`],
-      [`Encrypted Workbooks`, `Early 2026`],
-      [`Internationalization`, `Early 2026`],
-      // [`Custom Renderers/Editors`, `Demand Driven`],
-      [`Shapes / DrawingML`, `Demand Driven`],
-      [`Printing`, `Demand Driven`],
-      [`Pivot Tables`, `Demand Driven`],
-      [`Slicer/Timeline`, `Demand Driven`],
-      [`Sparklines`, `Demand Driven`],
-      [`Multi-user Collaboration`, `2026`],
+      [`Rich Text`, `In Progress`],
+      // [`Timeline`, `2026`],
+      [`Printing`, `In Progress`],
+      [`Ribbon/Sequence Alt-Key Shortcuts (Key-coords)`, `2026`],
+      [`Accessibility https://www.w3.org/TR/WCAG21/`, `2026`],
+      [`Multithreaded Calc`, `2027`],
+      [`Streaming Functions`, `2027`],
+      [`Multi-user Collaboration`, `2027`],
+      [`VBA & Macro Execution`, `2027`],
     ],
     // buttonText: 'Request',
     // buttonVariant: 'outlined',
@@ -118,17 +122,16 @@ export default function FeatureSection(props) {
       <Box
         {...rest}
       >
-        <Container maxWidth="lg" component="section" sx={{ flexGrow: 1, mt: 4, mb: 4 }}>
+        <Container maxWidth="lg" component="section" sx={{ flexGrow: 1, mt: 4, mb: 4, px: { xs: 0, sm: 3 } }}>
           <Grid container spacing={5} columns={12}>
             {cards.map((card) => (
               <Grid
-                item
                 key={card.title}
                 size={{ xs: 12, sm: card.singleLine ? 12 : 6 }}
               >
                 <Card
-                  sx={{flex: '1 1 0%', display: 'flex', flexDirection: 'column', borderRadius: 'var(--ifm-button-border-radius)'}}
-                  elevation={4}
+                  sx={{flex: '1 1 0%', display: 'flex', flexDirection: 'column', borderRadius: 'var(--ifm-card-border-radius)', border: '1px solid var(--sxl-line)'}}
+                  elevation={0}
                 >
                   {/* this isn't working. I wanted docusaurus to create a navigation on the right and allow links with hash to scroll to location */}
                   {/* <Heading style={{display:'none'}} as="h3" id={card.title.toLowerCase().replace(' ', '-')}>
@@ -143,8 +146,8 @@ export default function FeatureSection(props) {
                     sx={{
                       backgroundColor: (theme) =>
                         theme.palette.mode === 'light'
-                          ? theme.palette.grey[200]
-                          : theme.palette.grey[700],
+                          ? '#f5f8ff'
+                          : '#1b2459',
                     }}
                   />
 
@@ -195,33 +198,30 @@ export default function FeatureSection(props) {
                       {card.bullets.map((line, index) => {
                         if (Array.isArray(line)) {
                           return (
-                            <Grid key={'line-' + index} container spacing={0} rowSpacing={2.5} columns={2}
-                              sx={{
-                                display: 'flex',
-                                // flexDirection: 'row',
-                                // justifyContent: 'stretch',
-                                // border: 'red solid 1px'
-                                 mb: 0.25,
-                              }}
-                            >
+                            <Box key={'line-' + index} sx={{display: 'flex', flexDirection: 'row', columnGap: 0.5, mb: 0.25}}>
                               {line.map((segment, index) => {
                                 let icon = null;
                                 if (index === 0) {
                                   if (line[1].toLowerCase().includes('progress'))
-                                    icon = <PendingIcon color="primary" sx={{transform: 'scale(0.8)', mr: 1}}/>
+                                    icon = <PendingIcon color="primary" sx={{transform: 'scale(0.8)', mr: 1, flexShrink: 0}}/>
                                   else
-                                    icon = <RadioButtonUncheckedIcon color="primary" sx={{transform: 'scale(0.8)', mr: 1}}/>
+                                    icon = <RadioButtonUncheckedIcon color="primary" sx={{transform: 'scale(0.8)', mr: 1, flexShrink: 0}}/>
                                 }
                                 return (
-                                  <Grid
-                                  // item={true}
+                                  <Box
                                     key={'line-' + index}
-                                    xs={index % 2 === 0 ? 8 : 4}
-                                    container
-                                    columns={2}
                                     sx={{
                                       display: 'flex',
-                                      flex: '1 1 50%'
+                                      minWidth: 0,
+                                      // Even columns when there is room; on small screens the date only takes what it needs.
+                                      flex: {
+                                        xs: index === 0 ? '1 1 0%' : '0 0 auto',
+                                        sm: '1 1 50%'
+                                      },
+                                      ...(index === 0 ? null : {
+                                        maxWidth: { xs: '5.5em', sm: 'none' },
+                                        justifyContent: { xs: 'flex-end', sm: 'flex-start' },
+                                      })
                                     }}
                                   >
                                     {icon}
@@ -229,19 +229,21 @@ export default function FeatureSection(props) {
                                       key={'segment-' + index}
                                       component="span"
                                       variant="subtitle1"
-                                      align="left"
                                       color="text.secondary"
                                       sx={{
                                         paddingLeft: '4px',
                                         paddingRight: '0px',
+                                        minWidth: 0,
+                                        overflowWrap: 'anywhere',
+                                        textAlign: index === 0 ? 'left' : { xs: 'right', sm: 'left' },
                                       }}
                                     >
                                       {segment}
                                     </Typography>
-                                  </Grid>
+                                  </Box>
                                 )
                               })}
-                            </Grid>
+                            </Box>
                           );
                         } else {
                           return (

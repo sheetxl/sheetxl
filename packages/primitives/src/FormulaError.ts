@@ -1,3 +1,5 @@
+import { type IRange } from "./IRange";
+import { type IReferenceRange } from "./IReferenceRange";
 
 /**
  * An error returned from a formula calculation.
@@ -19,7 +21,7 @@
  *
  *  SpillErrorScalarSubType | "Unknown" | "Collision" | "IndeterminateSize" | "WorksheetEdge" | "OutOfMemoryWhileCalc" | "Table" | "MergedCell"
  * # Office 2023
- * 10. #CONNECT! This occurs when a data type is used that is not currently supported in this version of Excel.
+ * 10. #CONNECT! This occurs when a data type is used that is not currently supported.
  * 11. #BLOCKED! Indicates that an action or feature is blocked, possibly due to security settings, protected view, or other restrictions. Often related to online features, external links, or macros.
  * 12. #UNKNOWN! May be returned in the case of a protected workbook.
  * 13. #FIELD! Invalid field name for a data type.
@@ -33,7 +35,9 @@
 */
 
 export namespace FormulaError {
-
+  /**
+   * Standardized error codes for error types.
+   */
   export const Code = {
     Parse: 0, // Not ooxml
     Null: 1,
@@ -52,11 +56,15 @@ export namespace FormulaError {
     Calc: 14,
     // no 15
     Busy: 16,
-    // no 17, 18
-    Python: 19,
+    // no 17
+    // 18 is Unknown in OOXML file
+    Python: 19, // Timeout in OOXML file
     Timeout: 20,
   } as const;
 
+  /**
+   * Standardized error labels for error types.
+   */
   export const Label = {
     Parse: '#PARSE!',
     Null: '#NULL!',
@@ -79,8 +87,6 @@ export namespace FormulaError {
     Python: '#PYTHON!',
     Timeout: '#TIMEOUT!',
   } as const;
-
-
   export class Known extends Error {
     protected _label: string;
     protected _code: number;
@@ -121,13 +127,19 @@ export namespace FormulaError {
       return false;
     }
 
-    // TODO - make this type specific?
     get [Symbol.toStringTag](): string {
       return `[FormulaError]`;
     }
 
+    /**
+     * The canonical spreadsheet spelling — `#VALUE!`, `#N/A`.
+     *
+     * @remarks
+     * Localization is a display concern and belongs to the layer that has a language pack
+     * (`localizeErrorLabel`); this stays canonical.
+     */
     toString(): string {
-      return this.message || this._label;
+      return this._label;
     }
   }
 
@@ -343,10 +355,7 @@ export namespace FormulaError {
 
 }
 
-/**
- * Preset Cell Errors.
- */
-const BuiltinFormulaTypes = {};
+const BuiltinFormulaTypes: Record<string | number, ErrorClass> = {};
 BuiltinFormulaTypes[FormulaError.Code.Parse] = FormulaError.Parse;
 BuiltinFormulaTypes[FormulaError.Code.Null] = FormulaError.Null;
 BuiltinFormulaTypes[FormulaError.Code.Div0] = FormulaError.Div0;
@@ -369,64 +378,88 @@ BuiltinFormulaTypes[FormulaError.Code.Python] = FormulaError.Python;
 BuiltinFormulaTypes[FormulaError.Code.Timeout] = FormulaError.Timeout;
 
 const _errorInstanceByLabel: Map<string, FormulaError.Known> = new Map();
-const _errorInstanceById: Map<number, FormulaError.Known> = new Map();
+const _errorInstanceByCode: Map<number, FormulaError.Known> = new Map();
 
-type ErrorClass = new (message: string, details?: ErrorOptions) => FormulaError.Known;
+type ErrorClass = new (message?: string, details?: ErrorOptions) => FormulaError.Known;
 const _errorTypeByLabel: Map<string, ErrorClass> = new Map();
-const _errorTypeById: Map<number, ErrorClass> = new Map();
+const _errorTypeByCode: Map<number, ErrorClass> = new Map();
 
 
 const errorTypes = Object.keys(BuiltinFormulaTypes);
 for (let i=0; i<errorTypes.length;i++) {
   const typeId = errorTypes[i];
   const typed = BuiltinFormulaTypes[typeId];
-  _errorTypeByLabel.set(FormulaError.Label[typeId], typed);
-  _errorTypeById.set(FormulaError.Code[typeId], typed);
+  const instance: FormulaError.Known = new typed();
 
-  const instance:FormulaError.Known = new typed();
+  // Key the type maps off the instance: `typeId` is the numeric code as a string, so indexing
+  // Label/Code (which are keyed by NAME) with it yielded `undefined` — newTypedError could never
+  // find a type and always fell back to Unknown.
+  _errorTypeByLabel.set(instance.getLabel(), typed);
+  _errorTypeByCode.set(instance.getCode(), typed);
 
   _errorInstanceByLabel.set(instance.getLabel(), instance);
-  _errorInstanceById.set(instance.getCode(), instance);
+  _errorInstanceByCode.set(instance.getCode(), instance);
 }
 
-const FormulaErrorUnknown = _errorInstanceById.get(FormulaError.Code.Unknown);
+// const FormulaErrorUnknown = _errorInstanceByCode.get(FormulaError.Code.Unknown);
 
 export namespace FormulaError {
 
-  export const BuiltIn = {
-    Parse: new FormulaError.Parse(),
-    Null: new FormulaError.Null(),
-    Div0: new FormulaError.Div0(),
-    Value: new FormulaError.Value(),
-    Ref: new FormulaError.Ref(),
-    Name: new FormulaError.Name(),
-    Num: new FormulaError.Num(),
-    NA: new FormulaError.NA(),
-
-    GettingData: new FormulaError.GettingData(),
-    Spill: new FormulaError.Spill(),
-    Connect: new FormulaError.Connect(),
-    Blocked: new FormulaError.Blocked(),
-    Unknown: new FormulaError.Unknown(),
-    Field: new FormulaError.Field(),
-    Calc: new FormulaError.Calc(),
-
-    Busy: new FormulaError.Busy(),
-
-    Python: new FormulaError.Python(),
-    Timeout: new FormulaError.Timeout(),
-  } as const;
-
-  export const getBuiltInByLabel = (label: string): FormulaError.Known => {
-    return _errorInstanceByLabel.get(label);
+  /**
+   * Returns a built-in error instance based on the error code.
+   *
+   * @param code The error code corresponding to a built-in error type.
+   * @returns A built-in error instance.
+   */
+  export const getBuiltInByCode = (code: number): FormulaError.Known | undefined => {
+    return _errorInstanceByCode.get(code);
   };
 
+  /**
+   * Built-in errors instances for easy reference and comparison.
+   */
+  export const BuiltIn = {
+    Parse: getBuiltInByCode(FormulaError.Code.Parse) as FormulaError.Known,
+    Null: getBuiltInByCode(FormulaError.Code.Null) as FormulaError.Known,
+    Div0: getBuiltInByCode(FormulaError.Code.Div0) as FormulaError.Known,
+    Value: getBuiltInByCode(FormulaError.Code.Value) as FormulaError.Known,
+    Ref: getBuiltInByCode(FormulaError.Code.Ref) as FormulaError.Known,
+    Name: getBuiltInByCode(FormulaError.Code.Name) as FormulaError.Known,
+    Num: getBuiltInByCode(FormulaError.Code.Num) as FormulaError.Known,
+    NA: getBuiltInByCode(FormulaError.Code.NA) as FormulaError.Known,
+
+    GettingData: getBuiltInByCode(FormulaError.Code.GettingData) as FormulaError.Known,
+    Spill: getBuiltInByCode(FormulaError.Code.Spill) as FormulaError.Known,
+    Connect: getBuiltInByCode(FormulaError.Code.Connect) as FormulaError.Known,
+    Blocked: getBuiltInByCode(FormulaError.Code.Blocked) as FormulaError.Known,
+    Unknown: getBuiltInByCode(FormulaError.Code.Unknown) as FormulaError.Known,
+    Field: getBuiltInByCode(FormulaError.Code.Field) as FormulaError.Known,
+    Calc: getBuiltInByCode(FormulaError.Code.Calc) as FormulaError.Known,
+
+    Busy: getBuiltInByCode(FormulaError.Code.Busy) as FormulaError.Known,
+
+    Python: getBuiltInByCode(FormulaError.Code.Python) as FormulaError.Known,
+    Timeout: getBuiltInByCode(FormulaError.Code.Timeout) as FormulaError.Known,
+  } as const;
+
+  /**
+   * Creates a new error instance based on the provided label or code.
+   *
+   * @param label The error label or code corresponding to a built-in error type.
+   * @param message Optional custom error message.
+   * @param details Optional additional error details.
+   * @returns A new instance of the specified error type, or an Unknown error if the label/code is not recognized.
+   *
+   * @remarks
+   * * Useful when wanting to convey details beyond the standard error code.
+   * * This should be used sparingly as creating new objects can have a performance impact.
+   */
   export const newTypedError = (label: string | number, message?: string, details?: ErrorOptions): FormulaError.Known => {
-    let typedError: ErrorClass;
+    let typedError: ErrorClass | undefined;
     if (typeof label === 'string') {
       typedError = _errorTypeByLabel.get(label);
     } else {
-      typedError = _errorTypeById.get(label as number);
+      typedError = _errorTypeByCode.get(label as number);
     }
     if (!typedError) {
       typedError = FormulaError.Unknown;
@@ -434,8 +467,38 @@ export namespace FormulaError {
     return new typedError(message, details);
   };
 
-  export const getBuiltInById = (id: number): FormulaError.Known => {
-    return _errorInstanceById.get(id) || FormulaErrorUnknown;
+  /**
+   * Returns a built-in error instance based on the error label.
+   *
+   * @param label The error label corresponding to a built-in error type.
+   * @returns A built-in error instance.
+   */
+  export const getBuiltInByLabel = (label: string): FormulaError.Known | undefined => {
+    return _errorInstanceByLabel.get(label);
   };
 
+
+  /**
+   * Used to determine if a value is a FormulaError.Known.
+   *
+   * @param v The value to check.
+   * @param code If provided, also checks that the error code matches.
+   * @returns a boolean.
+   */
+  export function isError(v: unknown, code?: number): v is FormulaError.Known {
+    if (!v) return false;
+    if ((v as FormulaError.Known).isFormulaError !== true) return false; // not an error
+    if (code === undefined) return true;
+
+    return (v as FormulaError.Known).getCode() === code;
+  }
+
+  // Separate interface declaration — TS merges this into the class type
+  export interface Known extends IRange {}
+  export interface Known extends IReferenceRange {}
 }
+
+/**
+ * Indicates that the value can either be a valid value of type T or a FormulaError.Known.
+ */
+export type MaybeError<T> = T | FormulaError.Known;

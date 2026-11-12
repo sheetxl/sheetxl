@@ -12,6 +12,12 @@
 // @ts-check
 // /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 
+// Matches docusaurus.config.js: sibling SheetXL sites are per-channel.
+const siteChannel = process.env.DOCS_CHANNEL || 'stable';
+const siteHost = (name) => siteChannel === 'beta'
+  ? `https://${name}.beta.sheetxl.com`
+  : `https://${name}.sheetxl.com`;
+
 const sidebars = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   tutorialSidebar: [
@@ -21,12 +27,12 @@ const sidebars = {
     {
       type: 'link',
       label: 'Pricing', // The link label
-      href: '/docs/pricing'
+      href: `${siteHost('www')}/pricing`
     },
     {
       type: 'link',
       label: 'Support', // The link label
-      href: '/docs/support'
+      href: `${siteHost('www')}/support`
     },
     {
       type: 'link',
@@ -41,7 +47,7 @@ const sidebars = {
     {
       type: 'link',
       label: 'API Reference', // The link label
-      href: 'https://api.sheetxl.com', // The external URL
+      href: siteHost('api'), // The external URL
     },
     {
       type: 'link',
@@ -51,7 +57,7 @@ const sidebars = {
     {
       type: 'link',
       label: 'Changelog', // The link label
-      href: 'https://github.com/sheetxl/sheetxl/releases/latest', // The external URL
+      href: `${siteHost('www')}/changelog`, // The external URL
     }
   ]
 };

@@ -4,11 +4,11 @@
 
 export * from './Types';
 
-import type { ISheetXL, InitializationOptions, Attached } from './Types';
+import { type ISheetXL, type InitializationOptions, type Attached } from './Types';
 import { doAttach } from './Instance';
 
-import type { StudioElement, StudioProps } from './Types';
-import type { ResolvedDependencies } from './_Types'; // Import the Runtime interface
+import { type IStudioElement, type StudioProps } from './Types';
+import { type ResolvedDependencies } from './_Types'; // Import the Runtime interface
 
 import { resolveDependencies } from './StaticResolver';
 
@@ -21,7 +21,7 @@ const _initialize = async (options: string | InitializationOptions): Promise<Res
 }
 
 const SheetXLModule: ISheetXL = {
-  async attachStudio(selector: string | InitializationOptions, props?: StudioProps): Promise<StudioElement & Attached<StudioProps>> {
+  async attachStudio(selector: string | InitializationOptions, props?: StudioProps): Promise<IStudioElement & Attached<StudioProps>> {
     if (!_resolved) {
       _resolved = await _initialize(selector);
     }
@@ -35,5 +35,7 @@ const SheetXLModule: ISheetXL = {
 };
 
 const SheetXL = SheetXLModule;
+// Named export only. The documented static API is `import { SheetXL } from '@sheetxl/studio-vanilla'`;
+// pairing it with a default export triggers rolldown's MIXED_EXPORTS warning for no benefit. (Static
+// vs dynamic loading is determined by the resolver, not the export shape.)
 export { SheetXL };
-export default SheetXL;

@@ -1,4 +1,4 @@
-import { EditMode } from '../mode';
+import { type EditMode } from '../mode';
 
 /**
  * Extended clipboard that allows for writing non serializable objects
@@ -68,7 +68,7 @@ export namespace ReferenceableClipboard {
     /**
      * When adding an item to the clipboard an EditMode can be associated.
      */
-    // TODO - I don't think this belongs here. see if we can move this concern into ISheet.
+    // TODO - I don't think this belongs here. see if we can move this concern into IWorksheet.
     editMode?(): EditMode;
     /**
      * For runtime introspection.

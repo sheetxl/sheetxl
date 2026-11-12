@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../utils-react/command-catalog.schema.json",
+  "scope": "workbook",
+  "label": "Arbeitsmappe",
+  "tag": "de",
+  "version": 1,
+  "commands": {
+    "showAnomaliesPane": {
+      "label": "Anomalien",
+      "description": "Auflisten, wo das Blatt seine eigenen Muster bricht: eine Formel, die ihren Nachbarn nicht gleicht, ein eingegebener Wert zwischen Formeln, ein Format, das seine Reihe unterbricht.",
+      "icon": "Anomalies"
+    }
+  }
+}

@@ -1,45 +1,35 @@
-import React, {
+import type React from 'react';
+import {
   useEffect, useMemo, useState, memo, forwardRef, useCallback
 } from 'react';
 
 import clsx from 'clsx';
 
-import { Theme, useTheme } from '@mui/material/styles';
-
+import { useTheme, type Theme } from '@mui/material';
 import { Box } from '@mui/material';
-import type { TooltipProps } from '@mui/material';
 import { IconButton } from '@mui/material'
 import { Input } from '@mui/material';
 
 import {
-  Command, ICommand, ICommands, useCommand, useCommands, useCallbackRef, KeyCodes
+  useCommands, useCallbackRef, useTextSelectionDrag, KeyCodes, measureUIText
 } from '@sheetxl/utils-react';
 
 import {
-  defaultCreatePopupPanel, ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, ExhibitPopupIconButton,
-  type ExhibitPopupIconButtonProps, type ExhibitQuickButtonProps, type ExhibitPopupPanelProps
+  defaultRenderPopupPanel, ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, ExhibitPopupIconButton,
+  type ExhibitPopupIconButtonProps, type ExhibitQuickButtonProps, type ExhibitPopupPanelProps, type ButtonTooltipRenderProps
 } from '@sheetxl/utils-mui';
 
 import { CommandButton, SelectedIcon } from '@sheetxl/utils-mui';
 
-import { IFont, FontUtils } from '@sheetxl/sdk';
+import { FontUtils } from '@sheetxl/sdk';
 
 
-export interface FontSizeCommandButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" | "createPopupPanel"> {
-  command?: Command<number>;
+export interface FontSizeCommandButtonProps extends Omit<ExhibitPopupIconButtonProps, "color" | "icon" | "label" | "renderPopupPanel"> {
+  commandKey?: string;
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
+  icon?: React.ReactNode | ((command: any) => React.ReactNode);
 
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
-
+  label?: React.ReactNode | ((command: any) => React.ReactNode);
   /**
    * defaults the the Excel fontSizes
    */
@@ -50,8 +40,6 @@ export interface FontSizeCommandButtonProps extends Omit<ExhibitPopupIconButtonP
    * @defaultValue false
    */
   showQuickButtons?: boolean;
-
-  commands?: ICommands.IGroup;
 }
 
 /**
@@ -60,13 +48,10 @@ export interface FontSizeCommandButtonProps extends Omit<ExhibitPopupIconButtonP
 export const FontSizeCommandButton = memo(
   forwardRef<HTMLElement, FontSizeCommandButtonProps>((props, refForwarded) => {
   const {
-    command,
-    commandHook: propCommandHook,
-    showQuickButtons: _showQuickButtons = !!props.commands,
-    commands: propCommands,
+    commandKey,
+    showQuickButtons: _showQuickButtons,
     fontSizes = FontUtils.DefaultFontSizes,
-    disabled: propDisabled = false,
-    parentFloat,
+    disabled: propDisabled,
     icon: propIcon,
     label: propLabel,
     sx: propSx,
@@ -75,7 +60,7 @@ export const FontSizeCommandButton = memo(
 
   // const variant = CommandButtonType.Menuitem;
 
-  const _ = useCommand(command);
+  const [command] = useCommands([commandKey ?? '']);
 
   const committedFontSize = () => {
     return command?.getState()?.toString() || '11';
@@ -93,27 +78,20 @@ export const FontSizeCommandButton = memo(
     if (parseFloat(committedFontSize()) === asNumber)
       return;
 
-    command.execute(asNumber, propCommandHook);
-  }, [committedFontSize, command, fontSize, propCommandHook]);
+    command?.execute(asNumber);
+  }, [committedFontSize, command, fontSize]);
 
   useEffect(() => {
     setFontSize(committedFontSize());
   }, [command?.getState()]);
 
-  const commandHookNoBefore = useMemo(() => {
-    if (!propCommandHook) return null;
-    const retValue = {...propCommandHook};
-    delete retValue.beforeExecute;
-    return retValue;
-  }, [propCommandHook]);
-
   const commandKeys:string[] = [
     'formatFontSizeIncrease',
     'formatFontSizeDecrease'
   ];
-  const commands = useCommands(propCommands, commandKeys);
+
   const quickFormats = useMemo(() => {
-    if (!commands)
+    if (!commandKeys)
       return null;
     return (
       <Box
@@ -126,26 +104,27 @@ export const FontSizeCommandButton = memo(
           alignItems: 'center',
           justifyContent: 'center'
         }}
-        onClick={(e) => e.stopPropagation() } // Prevent the quick buttons from closing the menu
       >
         <CommandButton
-          command={commands[0]}
-          commandHook={commandHookNoBefore}
+          commandKey={commandKeys[0]}
         />
         <CommandButton
           // {...buttonProps}
-          command={commands[1]}
-          commandHook={commandHookNoBefore}
+          commandKey={commandKeys[1]}
         />
       </Box>
     );
-  }, [commands]);
+  }, [commandKeys]);
 
   const appTheme = useTheme();
   const defaultWidth = useMemo(() => {
     const templateString = '12.3';
-    return `${IFont.getSharedMeasurer()(templateString, Math.round(appTheme.typography.fontSize), appTheme.typography.fontFamily).width}px`;
+    return `${measureUIText(templateString, { size: Math.round(appTheme.typography.fontSize), family: appTheme.typography.fontFamily ?? '' })}px`;
   }, [appTheme]);
+
+  const isDisabled = propDisabled ?? (!command || command.disabled());
+
+  const textDrag = useTextSelectionDrag();
 
   const renderInputQuickButton = useCallback((props: ExhibitQuickButtonProps) => {
     const {
@@ -166,6 +145,10 @@ export const FontSizeCommandButton = memo(
           inputProps={{
             name: "font-input",
             autoComplete: "off",
+            // The toolbar around the field is `user-select: none`, which a browser reads as a veto on a
+            // drag-select the moment the pointer leaves the field. Suspended for the length of the press.
+            onPointerDown: textDrag.onPointerDown,
+            onDragStart: textDrag.onDragStart,
             tabIndex: 0,
             type: "number",
             maxLength: 4, // Not honored for inputType number so we manage in onchange and keypress
@@ -262,11 +245,11 @@ export const FontSizeCommandButton = memo(
         />
       </IconButton>
       );
-  }, [fontSize, propDisabled, command]);
+  }, [fontSize, isDisabled, command, textDrag]);
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const handleSetFont = (newValue: number) => {
-      command?.execute(newValue, propCommandHook);
+      command?.execute(newValue);
     }
 
     const currentFontSize = command?.getState();
@@ -328,8 +311,8 @@ export const FontSizeCommandButton = memo(
         </Box>
       </Box>
     );
-    return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, command?.getState(), propCommandHook]);
+    return defaultRenderPopupPanel({...props, children});
+  }, [isDisabled, command]);
 
   return (
     <ExhibitPopupIconButton
@@ -339,10 +322,9 @@ export const FontSizeCommandButton = memo(
       }}
       tabIndex={-1}
       outlined={true}
-      disabled={propDisabled}
-      parentFloat={parentFloat}
-      createPopupPanel={createPopupPanel}
-      createTooltip={({children}: TooltipProps, disabled: boolean) => {
+      disabled={isDisabled}
+      renderPopupPanel={renderPopupPanel}
+      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
         return (
           <ExhibitTooltip
             label={command?.getLabel()}

@@ -1,7 +1,17 @@
 /**
- * Used for fullscreen portals.
+ * Shared mount point for portaled overlays (popups, tooltips, dialogs, touch handles).
+ *
+ * The base wrapper is ALWAYS present — parented under `document.body` normally and moved under the
+ * fullscreen element while the Fullscreen API is active. It is a `pointer-events: none` layer (its
+ * children re-enable events) so it never eats clicks meant for the page beneath.
+ *
+ * Deliberately NO `z-index` on the base: `position: absolute` without a z-index does NOT create a
+ * stacking context, so overlays keep the exact document-level stacking they had when they portaled
+ * straight into `body` (e.g. a FloatPopper at 1300 still competes at the root, not under a 1200 cap).
+ * Only fullscreen adds the stacking context + z-index (below), where the overlays must sit above the
+ * fullscreen surface and there is no competing page content to out-stack.
  */
-.fullscreen-portal-root {
+.portal-root {
   pointer-events: none;
   position: absolute;
   top: 0;
@@ -13,6 +23,11 @@
   z-index: 1200;
 }
 
-.fullscreen-portal-root > * {
+.portal-root > * {
   pointer-events: auto;
+}
+
+/* Fullscreen-only: establish the overlay stacking context above the fullscreen surface. */
+.fullscreen {
+  z-index: 1200;
 }

@@ -1,34 +1,24 @@
-import React, { memo, forwardRef, useCallback } from 'react';
+import type React from 'react';
+import { memo, forwardRef, useCallback } from 'react';
 
-import type { TooltipProps } from '@mui/material';
 
-import { IBorder } from '@sheetxl/sdk';
+import { type IBorders } from '@sheetxl/sdk';
 
 import {
-  useCallbackRef, useCommands, ICommand, ICommands, CommandButtonType
+  useCallbackRef, useCommands, CommandButtonType
 } from '@sheetxl/utils-react';
 
-import type { CommandContext } from '@sheetxl/react';
-import { CommandTooltip } from '@sheetxl/utils-mui';
+import { type CommandContext, useGridColorScheme } from '@sheetxl/react';
+import { CommandTooltip, type ButtonTooltipRenderProps } from '@sheetxl/utils-mui';
 
-import { BorderPopupButton, type BorderPopupButtonProps } from '../components/border';
+import { BorderPopupButton, type BorderPopupButtonProps } from '../border';
 
 export interface BorderCommandButtonProps extends Omit<Partial<BorderPopupButtonProps>, "icon" | "label"> {
-  commands?: ICommands.IGroup;
+  commandKey?: string;
 
-  command?: ICommand<Partial<IBorder.Properties>, CommandContext.Border>;
+  icon?: React.ReactNode | ((command: any) => React.ReactNode);
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
+  label?: React.ReactNode | ((command: any) => React.ReactNode);
 
   /**
    * Styling
@@ -46,17 +36,15 @@ export interface BorderCommandButtonProps extends Omit<Partial<BorderPopupButton
 export const BorderCommandButton = memo(
   forwardRef<HTMLElement, BorderCommandButtonProps>((props, refForwarded) => {
   const {
-    commands: propCommands,
-    command: propCommand,
-    commandHook: propCommandHook,
+    commandKey,
     variant = CommandButtonType.Toolbar,
-    disabled: propDisabled = false,
+    disabled: propDisabled,
 
     autoColor: propAutoColor,
     autoStrokeStyle: propAutoStrokeStyle,
 
     schemeLookup: propSchemeLookup,
-    createTemporaryBorder: propCreateTemporaryBorder,
+    createBorder: propCreateTemporaryBorder,
     selectedBorder: propSelectedBorder,
     onSelectBorder: propOnSelectBorder,
     darkMode: propDarkMode,
@@ -65,28 +53,31 @@ export const BorderCommandButton = memo(
     ...rest
   } = props;
 
-  const commands = useCommands<Partial<IBorder.Properties>, CommandContext.Border>(propCommands, ['formatBorder']);
-  const command = propCommand ?? commands[0];
-  const context:CommandContext.Border = command?.getContext() ?? null;
+  const commands = useCommands<Partial<IBorders.Properties>, CommandContext.Border>([commandKey ?? 'formatBorder']);
+  const command = commands[0];
+  const context:CommandContext.Border | null = command?.getContext() ?? null;
 
   const autoColor = context?.autoColor ?? propAutoColor;
   const autoStyle = context?.autoStyle ?? propAutoStrokeStyle;
 
   const selectedBorder = propSelectedBorder ?? context?.quickBorder;
-  const darkMode = propDarkMode ?? context?.darkMode;
+  // Self-source the grid's light/dark intent (same value the grid resolves — no `context.darkMode`).
+  const gridColorScheme = useGridColorScheme();
+  const darkMode = propDarkMode ?? (gridColorScheme === 'dark');
 
-  const createTemporaryBorder = propCreateTemporaryBorder ?? context?.createTemporaryBorder;
+  const createBorder = propCreateTemporaryBorder ?? context?.createBorder;
   const schemeLookup = propSchemeLookup ?? context?.schemeLookup;
 
-  const handleOnSelectBorder = useCallbackRef((border: Partial<IBorder.Properties> | null) => {
+  const handleOnSelectBorder = useCallbackRef((border: Partial<IBorders.Properties> | null) => {
     if (context?.onBorderSelect)
-      context.onBorderSelect(border);
+      context.onBorderSelect(border as Partial<IBorders.Properties>);
     propOnSelectBorder?.(border);
-    command?.execute(border, propCommandHook);
-  }, [command, propOnSelectBorder, propCommandHook]);
+    command?.execute(border);
+  }, [command, propOnSelectBorder]);
 
-  const createTooltip = useCallback((props: TooltipProps, disabled: boolean): React.JSX.Element => {
+  const renderTooltip = useCallback((props: ButtonTooltipRenderProps): React.JSX.Element => {
     const {
+      disabled,
       children,
       title, // remove default title
        ...rest
@@ -108,7 +99,7 @@ export const BorderCommandButton = memo(
 
     return (
       <CommandTooltip
-        command={command as ICommand<any, any>}
+        commandKey={commandKey}
         placement={variant === CommandButtonType.Toolbar? "bottom-start" : "right-start"}
         disabled={disabled}
         {...rest}
@@ -124,12 +115,12 @@ export const BorderCommandButton = memo(
       autoColor={autoColor}
       darkMode={darkMode}
       autoStrokeStyle={autoStyle}
-      createTemporaryBorder={createTemporaryBorder}
-      schemeLookup={schemeLookup}
-      selectedBorder={selectedBorder}
+      createBorder={createBorder!}
+      schemeLookup={schemeLookup!}
+      selectedBorder={selectedBorder!}
       onSelectBorder={handleOnSelectBorder}
       // variant={variant === CommandButtonType.Menuitem ? PopupButtonType.Menuitem : PopupButtonType.Toolbar } // TODO - clean this up
-      createTooltip={createTooltip}
+      renderTooltip={renderTooltip}
       disabled={propDisabled || !command || command.disabled()}
       {...rest}
     />

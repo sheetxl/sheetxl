@@ -1,6 +1,6 @@
 import { type Dependencies } from './Types';
 
-import { ResolvedDependencies } from './_Types'; // Import the Runtime interface
+import { type ResolvedDependencies } from './_Types'; // Import the Runtime interface
 
 // A single, module-level variable to hold the promise for our dependencies.
 // It starts as null.
@@ -18,9 +18,10 @@ const DefaultReactUrls19 = {
  * It's lazy: it only does the work the first time it's called.
  */
 export const resolveDependencies = (dependencies?: Dependencies): Promise<ResolvedDependencies> => {
+  // Defaults first so caller-supplied URLs override them (not the other way around).
   dependencies = {
-    ...dependencies,
-    ...DefaultReactUrls19
+    ...DefaultReactUrls19,
+    ...dependencies
   }
 
   // If the promise already exists, just return it.
@@ -82,6 +83,10 @@ export const resolveDependencies = (dependencies?: Dependencies): Promise<Resolv
       StudioMUI: asArray[4],
     }
   })();
+  // A failed load is not kept, so the next call tries again.
+  dependenciesPromise.catch(() => {
+    dependenciesPromise = null;
+  });
 
   return dependenciesPromise;
 };

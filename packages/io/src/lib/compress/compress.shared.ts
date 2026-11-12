@@ -18,7 +18,7 @@ export function isLikelyCompressedByMagicNumber(arrayBuffer: ArrayBuffer | Share
 
   const formats = Object.keys(magicNumbers);
   for (let i=0; i<formats.length; i++) {
-    const format = formats[i];
+    const format = formats[i] as keyof typeof magicNumbers;
     const magic = magicNumbers[format];
     let match = true;
     for (let i = 0; i < magic.length; i++) {

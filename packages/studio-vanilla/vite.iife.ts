@@ -15,10 +15,19 @@ export default createLibraryConfig({
       lib: {
         entry: 'src/loader.ts',
         formats: ['umd'],
-        name: 'SheetXL',
-        fileName: () => 'loader.js'
+        name: 'SheetXL'
       },
-      rollupOptions: {}
+      // Provide an explicit single UMD output. Without an `output` here the base config injects its
+      // default ES+CJS *array*, which silently overrides `lib.formats: ['umd']` (Vite warns
+      // "build.lib.formats will be ignored...") and the loader ends up as ESM/CJS instead of UMD.
+      rollupOptions: {
+        output: {
+          name: 'SheetXL',
+          entryFileNames: 'loader.js'
+          // No inlineDynamicImports: UMD can't code-split, so Vite already forces codeSplitting:false
+          // (which inlines dynamic imports). Setting it explicitly is redundant and warns.
+        }
+      }
     },
     server: {}
   },

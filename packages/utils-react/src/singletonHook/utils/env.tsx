@@ -1,17 +1,13 @@
-import React from 'react';
+import type React from 'react';
 import { createRoot } from 'react-dom/client';
 import { unstable_batchedUpdates } from 'react-dom';
 import { warning } from './warning';
 
-// from https://github.com/purposeindustries/window-or-global/blob/master/lib/index.js
-// avoid direct usage of 'window' because `window is not defined` error might happen in babel-node
-const globalObject = (typeof self === 'object' && self.self === self && self)
-  || (typeof global === 'object' && global.global === global && global)
-  || this;
+// `globalThis` (ES2020) is defined in every environment (avoids `window is not defined` under babel-node/SSR).
+const globalObject: any = globalThis;
 
-
-export const batch = cb => unstable_batchedUpdates(cb);
-export const mount = C => {
+export const batch = (cb: () => void) => unstable_batchedUpdates(cb);
+export const mount = (C: React.ComponentType<any>) => {
   if (globalObject.document && globalObject.document.createElement) {
     const container = globalObject.document.createElement('div');
     const root = createRoot(container);

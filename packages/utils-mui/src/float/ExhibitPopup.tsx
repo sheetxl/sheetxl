@@ -2,7 +2,7 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import { Box, type BoxProps } from '@mui/material';
+import { Box, type BoxProps, type Theme } from '@mui/material';
 import { type TooltipProps } from '@mui/material';
 import { type IconButtonProps } from '@mui/material';
 
@@ -10,21 +10,18 @@ import { type IconButtonProps } from '@mui/material';
 // import { ButtonBaseProps } from '@mui/material'
 import { ArrowDownIcon } from '../theme';
 
+import { type FloatReference, type FloatPopupPanelProps, type RenderSlotFn } from '@sheetxl/utils-react';
+
 import { type ExhibitFloatPanelProps } from './ExhibitFloatPanel';
-import { FloatReference } from './useFloatStack';
 
-export interface ExhibitPopupPanelProps extends BoxProps {
-  popupContainer: HTMLElement;
-
-  floatReference?: FloatReference;
-
-  /**
-   * When the popup panel initiates a close
-   */
-  closeFloat?: () => void;
-
-  closeFloatAll?: () => void;
-}
+/**
+ * The {@link FloatPopupPanelProps} content fields on the MUI {@link BoxProps}
+ * surface (so the default MUI panel can read `sx`/`className`/etc.). We drop the
+ * neutral HTML base from `FloatPopupPanelProps` (BoxProps supplies the element
+ * props, with incompatible types e.g. `color`) and keep just its content fields.
+ */
+export type ExhibitPopupPanelProps =
+  Omit<FloatPopupPanelProps, keyof React.HTMLAttributes<HTMLDivElement>> & BoxProps;
 
 export interface ExhibitQuickButtonProps extends IconButtonProps {
   /**
@@ -33,9 +30,18 @@ export interface ExhibitQuickButtonProps extends IconButtonProps {
    tooltip?: NonNullable<React.ReactNode>;
 
    /**
-    * Allows for custom tooltip creation
+    * Wrap the button in a custom tooltip.
     */
-   createTooltip?: (props: TooltipProps, disabled: boolean) => React.JSX.Element;
+   renderTooltip?: (props: ButtonTooltipRenderProps) => React.ReactNode;
+}
+
+/**
+ * What a button's `renderTooltip` is handed: the MUI {@link TooltipProps} to wrap `children` in, and
+ * whether the tip is suppressed.
+ */
+export interface ButtonTooltipRenderProps extends TooltipProps {
+  /** Show no tip: the button's popup is open. Not a prop of the button itself. */
+  disabled: boolean;
 }
 
 export const PopupAutoFocus = {
@@ -72,13 +78,21 @@ export interface ExhibitPopupButtonProps extends BoxProps {
   label?: React.ReactNode;
 
   /**
+   * Render the `label` as visible button content (alongside any icon / split-toggle checkmark) rather
+   * than as tooltip-only. Toolbar (icon) buttons are icon-only by default. Menu items always show the
+   * label regardless.
+   * @defaultValue false
+   */
+  showLabel?: boolean;
+
+  /**
    * Render as selected,
    */
   selected?: boolean;
 
   parentFloat?: FloatReference;
 
-  createPopupPanel?: (props: ExhibitPopupPanelProps) => React.ReactElement<any>;
+  renderPopupPanel?: RenderSlotFn<ExhibitPopupPanelProps> | null;
 
   onPopupOpen?: () => void;
 
@@ -92,9 +106,9 @@ export interface ExhibitPopupButtonProps extends BoxProps {
   tooltip?: NonNullable<React.ReactNode>;
 
   /**
-   * Allows for custom tooltip creation
+   * Wrap the button in a custom tooltip.
    */
-  createTooltip?: (props: TooltipProps, disabled: boolean) => React.JSX.Element;
+  renderTooltip?: (props: ButtonTooltipRenderProps) => React.ReactNode;
 
   /**
    * If this set then the popup becomes a split button.
@@ -114,17 +128,15 @@ export interface ExhibitPopupButtonProps extends BoxProps {
   primary?: boolean;
 
   /**
-   * Props applied to the `TouchRipple` element.
+   * A ripple surface rendered inside the executing (quick) button. Supplied by `CommandPopupButton`
+   * via `useManagedRipple` — an always-mounted `TouchRipple` that can flash on any command dispatch
+   * (MUI's built-in ripple is lazy-mounted and can't fire for remote executes). When set, the quick
+   * button disables its own ripple and hosts this one instead.
    */
-  propsTouchRipple?: Partial<any>;//TouchRippleProps>;
-
-  /**
-  * A ref that points to the `TouchRipple` element.
-  */
-  touchRippleRef?: React.Ref<any>;//TouchRippleActions>;
+  ripple?: React.ReactNode;
 }
 
-export const defaultCreatePopupPanel = (props: ExhibitPopupPanelProps): React.ReactElement<any> => {
+export const defaultRenderPopupPanel = (props: ExhibitPopupPanelProps): React.ReactElement<any> => {
   const {
     closeFloat,
     closeFloatAll,
@@ -139,14 +151,15 @@ export const defaultCreatePopupPanel = (props: ExhibitPopupPanelProps): React.Re
     <Box
       className={clsx('menu', propClassName)}
       sx={{
-        // paddingTop: (theme: Theme) => {
-        //   return `${theme.shape.borderRadius}px`;
-        // },
-        // paddingBottom: (theme: Theme) => {
-        //   return `${theme.shape.borderRadius}px`;
-        // },
         display:'flex',
         flexDirection: 'column',
+        // Vertical padding lives on the scrollable *content* (here), not the
+        // scroll container (Paper): a scroll container's padding-bottom is
+        // dropped by flex/older engines, so the bottom inset would vanish after
+        // the last item. On content it scrolls with the items and both ends show
+        // — matching how MUI's own MenuList pads the list, not the viewport.
+        paddingTop: (theme: Theme) => `${theme.shape.borderRadius}px`,
+        paddingBottom: (theme: Theme) => `${theme.shape.borderRadius}px`,
         ...propSx
       }}
       {...rest}
@@ -157,7 +170,7 @@ export const defaultCreatePopupPanel = (props: ExhibitPopupPanelProps): React.Re
 }
 
 export const createDownArrow = (isSplit: boolean, dense: boolean, rotate: boolean) => {
-  let transform: string;
+  let transform: string = '';
   // if (isSplit)
   //   retValue = 'translateX(-7px)';
   // if (dense) {

@@ -1,12 +1,12 @@
-import React, { useMemo, memo, forwardRef } from 'react';
+import type React from 'react';
+import { isValidElement, useMemo, memo, forwardRef } from 'react';
 
-import { Theme } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Paper } from '@mui/material';
-import { Box, BoxProps } from '@mui/material';
+import { Box, type BoxProps } from '@mui/material';
 import { Typography } from '@mui/material';
 
-import { DynamicIcon, type ErrorPanelProps } from '@sheetxl/utils-react';
+import { DynamicIcon, useTranslator, type TranslateFn, type ErrorPanelProps } from '@sheetxl/utils-react';
 
 import { StackTrace } from './StackTrace';
 
@@ -49,9 +49,11 @@ export const StackTraceErrorPanel =
     ...rest
   } = props;
 
+  const t = useTranslator();
+
   const errorWrapped = useMemo(() => {
-    return wrapErrorAsComponent(error, hideStackTrace, stackTraceExpanded, fullscreen);
-  }, [error, hideStackTrace, stackTraceExpanded, fullscreen]);
+    return wrapErrorAsComponent(error, hideStackTrace, stackTraceExpanded, fullscreen, t);
+  }, [error, hideStackTrace, stackTraceExpanded, fullscreen, t]);
 
   const retValue = useMemo(() => {
     return (
@@ -109,27 +111,17 @@ export const StackTraceErrorPanel =
               rowGap: '8px',
               alignSelf: 'center',
               marginBottom: '5%',
-              backgroundColor:  (theme: Theme) => {
-                return theme.palette.error.light; // '#2196f3'; // nice blue
-              },
-              color: (theme: Theme) => {
-                return theme.palette.error.contrastText; // '#fff'; // white
-              },
-              paddingLeft: (theme: Theme) => theme.spacing(2),
-              paddingRight: (theme: Theme) => theme.spacing(2),
-              paddingTop: (theme: Theme) => theme.spacing(2),
-              paddingBottom: (theme: Theme) => theme.spacing(2),
+              // A neutral surface (not an error-colored fill) — a clean message card with a red icon
+              // accent reads far better than a pink panel, and works in any theme.
+              backgroundColor: (theme: Theme) => theme.palette.background.paper,
+              color: (theme: Theme) => theme.palette.text.primary,
+              border: (theme: Theme) => `1px solid ${theme.palette.divider}`,
+              padding: (theme: Theme) => theme.spacing(3),
               borderRadius: (theme: Theme) => {
                 return `${theme.shape.borderRadius}px`;
               },
               boxShadow: (theme: Theme) => {
-                return theme.shadows[2];
-              },
-              '& .primary': {
-                background: (theme: Theme) => {
-                  return `${theme.palette.error.contrastText} !important`; // '#fff'; // white
-                },
-                border: 'solid transparent',
+                return theme.shadows[3];
               },
               zIndex: 1
             }}
@@ -152,7 +144,10 @@ export const StackTraceErrorPanel =
                   gap: (theme: Theme) => theme.spacing(2)
                 }}
               >
-                {typeof icon === 'string' ? <DynamicIcon iconKey={icon} style={{ fontSize: 48 }} /> : icon}
+                {/* Red accent for the error glyph (inherits via currentColor). */}
+                <Box sx={{ display: 'flex', color: (theme: Theme) => theme.palette.error.main }}>
+                  {typeof icon === 'string' ? <DynamicIcon iconKey={icon} style={{ fontSize: 48 }} /> : icon}
+                </Box>
                 {errorWrapped}
               </Box>
             </Box>
@@ -160,7 +155,7 @@ export const StackTraceErrorPanel =
         </Box>
       </Box>
     );
-  }, [propSx, icon]);
+  }, [propSx, icon, errorWrapped]);
 
   return retValue;
 }));
@@ -172,9 +167,11 @@ const wrapErrorAsComponent = (
   error: any,
   hideStackTrace: boolean = false,
   stackTraceExpanded: boolean = false,
-  fullscreen: boolean = false
+  fullscreen: boolean = false,
+  /** The caller's bound translator — a plain function returning JSX cannot call the hook itself. */
+  t: TranslateFn = (key) => key
 ): React.ReactNode => {
-  if (React.isValidElement(error)) {
+  if (isValidElement(error)) {
     return error;
   }
   if (error instanceof Error) {
@@ -211,7 +208,7 @@ const wrapErrorAsComponent = (
               opacity: 0.8
             }}
           >
-            Caused by: {error.cause instanceof Error ? error.cause.message : String(error.cause)}
+            {t('stackTrace.causedBy', { cause: error.cause instanceof Error ? error.cause.message : String(error.cause) })}
           </Typography>
         ): null}
         {!hideStackTrace && (

@@ -1,0 +1,9 @@
+# The same gate CI runs as `pnpm i18n:ci` (scripts/run-checks.mjs --check-extract): stale en
+# catalogs, rotted/unsorted locale packs, chord collisions, and the catalog/chrome lints. The whole
+# suite is ~3s, so it runs on every commit rather than guessing relevance from staged paths.
+#
+# The catalogs are generated, so first regenerate them (`pnpm i18n:fix`: extract + catalog --sync)
+# and stage any tracked locale file that changed — what remains failing needs a source edit.
+pnpm i18n:fix > /dev/null || exit 1
+git add -u -- ':(glob)packages/*/resources/locales/**'
+pnpm i18n:ci

@@ -1,8 +1,9 @@
-import React, { useCallback, useRef, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useCallback, useRef, memo, forwardRef } from 'react';
 
-import { mergeRefs } from 'react-merge-refs';
+import { useMergeRefs } from 'react-merge-refs';
 
-import { Direction } from '@sheetxl/utils';
+import { type Direction } from '@sheetxl/utils';
 
 export interface FocusKeyNavigationProps extends React.HTMLAttributes<HTMLDivElement> {
   refFocusStart?: React.RefObject<HTMLElement>;
@@ -40,7 +41,9 @@ export const FocusKeyNavigation: React.FC<FocusKeyNavigationProps> = memo(
       refFocusStart?.current?.focus();
       return;
     }
-    const children = refLocal.current.parentElement.children;
+    const parent = refLocal.current?.parentElement;
+    if (!parent) return;
+    const children = parent.children;
     let found = [];
     // TODO - add all children then sort. For now we just grab the first one.
     const childrenLength = children.length;
@@ -67,10 +70,11 @@ export const FocusKeyNavigation: React.FC<FocusKeyNavigationProps> = memo(
     found[0].child.focus();
   }, [refFocusStart]);
 
+  const refMerged = useMergeRefs([refLocal, refForwarded]);
   return (
     <div
       tabIndex={0}
-      ref={mergeRefs([refLocal, refForwarded])}
+      ref={refMerged as React.Ref<HTMLDivElement>}
       onFocus={handleFocus}
       {...rest}
     >

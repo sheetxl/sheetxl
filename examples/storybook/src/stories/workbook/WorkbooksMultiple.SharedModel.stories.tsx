@@ -2,7 +2,9 @@ import React from 'react';
 
 import { Workbook } from '@sheetxl/sdk';
 
-import { WorkbookElement } from '@sheetxl/studio-mui';
+import { WorkbookElement } from '@sheetxl/react';
+
+import { asStory } from '../../components';
 
 const Template: React.FC = (props) => {
   const {
@@ -47,7 +49,7 @@ const Template: React.FC = (props) => {
   return <App />;
 };
 
-export const multipleWorkbooksSharedModel = Template.bind({});
+export const multipleWorkbooksSharedModel = asStory(Template);
 multipleWorkbooksSharedModel.storyName = "Shared Models";
 
 const Story = {

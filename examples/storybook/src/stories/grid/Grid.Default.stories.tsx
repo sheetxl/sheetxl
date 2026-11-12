@@ -2,44 +2,33 @@ import React from 'react';
 
 import { Grid } from '@sheetxl/grid-react';
 
-import { sharedCellRenderer } from '../../components';
+import { asStory, sharedCellRenderer } from '../../components';
 
 const Template: React.FC = (props) => {
   const {
     ...rest
   } = props as any;
 
+  // The Grid needs no size of its own — it fills its container. `.storybook-container` is just a
+  // full-height flex box (see .storybook/preview-head.html); for a client this is any sized element.
   return (
-    <div
-      style={{ // For Canvas view we want to take full area
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        border: "green solid 1px"
-      }}
-    >
+    <div className="storybook-container">
       <Grid
         {...rest}
-        style={{ // For Docs view we are 400px by 'full width'
-          minHeight: "400px",
-          position: "relative",
-          flex: "1",
-          border: "blue solid 1px"
-        }}
-        renderCell={sharedCellRenderer}
+        renderCells={sharedCellRenderer}
       />
     </div>
   );
 
 };
 
-export const DefaultGrid = Template.bind({});
+export const DefaultGrid = asStory(Template);
 DefaultGrid.args = {
-  columnCount: 200,
-  rowCount: 200
+  columnCount: 8,
+  rowCount: 15
 };
 
-DefaultGrid.storyName = "Default";
+DefaultGrid.storyName = "Grid";
 
 const Story = {
   title: 'Grid',

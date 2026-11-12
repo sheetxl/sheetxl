@@ -6,4 +6,5 @@ export * from './CommandPopupButton';
 export * from './CommandTooltip';
 export * from './CommandToolbar';
 
-export * from './SimpleCommandPopupButton';
+export * from './CommandGroup';
+export * from './ToggleGroupButton';

@@ -1,13 +1,16 @@
-import React, { memo, forwardRef } from 'react';
+import type React from 'react';
+import { memo, forwardRef } from 'react';
 
 import { type TooltipProps } from '@mui/material';
 
-import { useCommand, ICommand, IKeyStroke } from '@sheetxl/utils-react';
+import { useCommands, type IKeyStroke, type ResolvedCommand } from '@sheetxl/utils-react';
 
 import { ExhibitTooltip } from '../button';
 
 export interface CommandTooltipProps extends Omit<TooltipProps, "title"> {
-  command: ICommand<any, any>;
+  commandKey?: string;
+  command?: ResolvedCommand;
+
   /**
    * The shortcut to display.
    * @remarks
@@ -24,23 +27,25 @@ export interface CommandTooltipProps extends Omit<TooltipProps, "title"> {
 export const CommandTooltip: React.FC<CommandTooltipProps & { ref?: any }> = memo(
   forwardRef<React.ReactElement<any, any>, CommandTooltipProps>((props, refForwarded) => {
   const {
-    command,
-    disabled: propDisabled = false,
+    commandKey: propCommandKey,
+    command: propCommand,
+    disabled: propDisabled,
     shortcut: propShortcut,
     children,
     ...rest
   } = props;
 
-  const _ = useCommand(command);
+  const [commandLookup] = useCommands(propCommandKey ?? []);
+  const command = propCommand ?? commandLookup;
 
+  const commandShortcut = command?.getShortcut();
   return (
     <ExhibitTooltip
       ref={refForwarded}
       label={propDisabled !== undefined ? command?.getLabel() : ''}
-      shortcut={propShortcut !== undefined ? propShortcut : Array.isArray(command?.getShortcut()) ? command?.getShortcut()[0]: command?.getShortcut()}
+      shortcut={propShortcut !== undefined ? propShortcut : (Array.isArray(commandShortcut) ? commandShortcut[0] : commandShortcut)}
       description={command?.getDescription()}
       disabled={propDisabled}
-      chips={command?.getTags()}
       componentDisabled={command?.disabled()}
       {...rest}
     >

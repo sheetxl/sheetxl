@@ -1,15 +1,12 @@
 
 async function setupFonts(): Promise<void> {
   try {
-    // we don't alias because we don't want canvas in the test environment.
-    const { IFont } = await import('../packages/sdk/src/font/index.js');
-    const { getInstance: getSimpleMeasurer } = await import('../packages/sdk/src/font/SimpleFontMeasurer.js');
-    IFont.setSharedMeasurer(getSimpleMeasurer());
-
-    // const { IFont } = await import('../packages/sdk/src/font/index.js');
-    // const { FontKitFontMeasurer } = await import('../packages/sdk/src/font/FontKitFontMeasurer.js');
-    // IFont.setSharedMeasurer(FontKitFontMeasurer);
-    // console.log('🔤 Font measurer configured successfully');
+    // The built-in faces with their hinted widths, before any test measures: an autofit is
+    // synchronous, and one that ran while the widths were loading would measure the unhinted table.
+    const { IFontCollection } = await import('../packages/sdk/src/font/index.js');
+    const fonts = IFontCollection.getShared();
+    await fonts.load(['Calibri', { family: 'Calibri', bold: true }, 'Arial', { family: 'Arial', bold: true }]);
+    await fonts.whenReady();
   } catch (error: any) {
     console.warn('⚠️  Could not configure font measurer:', error.message);
   }

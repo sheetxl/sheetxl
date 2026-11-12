@@ -10,8 +10,8 @@
   "bugs": {
     "url": "https://github.com/sheetxl/sheetxl/issues"
   },
-  "license": "SEE LICENSE IN <LICENSE>",
-  "private": false,
+  "license": "MIT",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -22,11 +22,6 @@
         "node": "./build/browser/esm/index.mjs",
         "browser": "./build/browser/esm/index.mjs",
         "default": "./build/browser/esm/index.mjs"
-      },
-      "require": {
-        "node": "./build/browser/cjs/index.cjs",
-        "browser": "./build/browser/cjs/index.cjs",
-        "default": "./build/browser/cjs/index.cjs"
       }
     },
     "./cdn": {
@@ -35,8 +30,8 @@
     "./loader.js": "./build/browser/loader.js"
   },
   "types": "./build/types/index.d.ts",
-  "main": "./build/cjs/index.cjs",
-  "module": "./build/esm/index.mjs",
+  "main": "./build/browser/esm/index.mjs",
+  "module": "./build/browser/esm/index.mjs",
   "unpkg": "./build/cdn/index.js",
   "jsdelivr": "./dist/cdn/index.js",
   "scripts": {
@@ -47,7 +42,7 @@
     "build:lib": "vite build --config vite.config.ts",
     "build:es": "vite build --config vite.es.ts",
     "build:iife": "vite build --config vite.iife.ts",
-    "build:tsdocs:json": "typedoc --json ../../build/docs/studio-vanilla.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "build:tsdocs:json": "pnpm -w exec typedoc --options packages/studio-vanilla/typedoc.json --json build/docs-json/studio-vanilla.json --tsconfig packages/studio-vanilla/tsconfig.build.json",
     "preview": "http-server build -p 4000 --cors",
     "clean": "rimraf ./build",
     "clean:all": "git clean -fdX .",
@@ -60,21 +55,21 @@
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/material": "^7.3.2",
-    "@mui/styled-engine": "^7.3.2",
-    "@mui/system": "^7.3.2",
-    "@mui/utils": "^7.3.2",
-    "@sheetxl/sdk": "*",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.5.0",
+    "@mui/styled-engine": "^9.5.0",
+    "@mui/system": "^9.5.0",
+    "@mui/utils": "^9.5.0",
+    "@sheetxl/sdk": "^1.0.0",
     "@sheetxl/studio-mui": "workspace:*",
-    "csstype": "^3.1.3",
+    "csstype": "^3.2.3",
     "http-server": "^14.1.1",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
   },
   "sideEffects": [
     "*.css",
@@ -95,5 +90,6 @@
     "office",
     "automation",
     "charting"
-  ]
+  ],
+  "privateRepo": false
 }

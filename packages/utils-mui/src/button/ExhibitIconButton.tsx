@@ -1,9 +1,10 @@
-import React, { useState, memo, forwardRef, useMemo } from 'react';
+import type React from 'react';
+import { useState, memo, forwardRef, useMemo } from 'react';
 
 import clsx from 'clsx';
 
 import { alpha } from '@mui/system';
-import { Theme } from '@mui/material/styles';
+import { type Theme } from '@mui/material';
 import { IconButton, type IconButtonProps } from '@mui/material';
 import { Box } from '@mui/material';
 
@@ -12,8 +13,6 @@ import { CommonUtils } from '@sheetxl/utils';
 import { DynamicIcon } from '@sheetxl/utils-react';
 
 import { ExhibitTooltip, type ExhibitTooltipProps } from './ExhibitTooltip';
-
-import { FloatReference } from '../float/useFloatStack';
 import { SimpleTooltip } from '../components';
 
 const BLANK_ICON = <DynamicIcon/>;
@@ -39,8 +38,6 @@ export interface ExhibitIconButtonProps extends IconButtonProps {
    * Do not provide a child as this component will be the child.
    */
   propsTooltip?: Omit<ExhibitTooltipProps, 'children'>;
-
-  parentFloat?: FloatReference;
 }
 
 /**
@@ -52,7 +49,6 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
     dense=true,
     outlined=false,
     disableHover=false,
-    parentFloat,
     selected = undefined,
     icon: propIcon,
     propsTooltip,
@@ -112,22 +108,28 @@ export const ExhibitIconButton: React.FC<ExhibitIconButtonProps & { ref?: any }>
   };
 
   const hoverStyling = {
-    "&:hover:not(.Mui-disabled, [disabled])": {
-      color: (theme: Theme) => theme.palette.text.primary,
-      border: (theme: Theme) => {
-        return `solid ${(outlined ? theme.palette.text?.primary : theme.palette.divider)} 1px`
-      },
-      '&.Mui-selected': {
-        backgroundColor: (theme: Theme) => {
-          return alpha(theme.palette.text.primary, theme.palette.action.selectedOpacity + theme.palette.action.hoverOpacity);
-        }
-      },
-      '> .outline-hover': {
-        outline: (theme: Theme) => {
+    // A touch tap leaves `:hover` stuck on the button until the next tap elsewhere, so hover styling
+    // only applies where the pointer can hover.
+    '@media (hover: hover)': {
+      "&:hover:not(.Mui-disabled, [disabled])": {
+        color: (theme: Theme) => theme.palette.text.primary,
+        border: (theme: Theme) => {
           return `solid ${(outlined ? theme.palette.text?.primary : theme.palette.divider)} 1px`
-        }
+        },
+        '&.Mui-selected': {
+          backgroundColor: (theme: Theme) => {
+            return alpha(theme.palette.text.primary, theme.palette.action.selectedOpacity + theme.palette.action.hoverOpacity);
+          }
+        },
+        '> .outline-hover': {
+          outline: (theme: Theme) => {
+            return `solid ${(outlined ? theme.palette.text?.primary : theme.palette.divider)} 1px`
+          }
+        },
+        // MUI gives an IconButton its hover fill only while its own ripple is enabled; command buttons
+        // disable it to host the managed ripple, so the fill is stated here.
+        backgroundColor: (theme: Theme) => alpha(theme.palette.action.active, theme.palette.action.hoverOpacity)
       },
-      backgroundColor: null
     },
 
     '&.Mui-focusVisible': {

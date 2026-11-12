@@ -5,13 +5,18 @@
       "types": "./types/index.d.ts",
       "browser": "./browser/esm/index.mjs",
       "node": "./node/esm/index.mjs",
-      "import": "./browser/esm/index.mjs",
-      "require": "./browser/cjs/index.cjs"
+      "default": "./browser/esm/index.mjs"
+    },
+    "./declarations": {
+      "types": "./types/declarations.d.ts",
+      "browser": "./browser/esm/declarations.mjs",
+      "node": "./node/esm/declarations.mjs",
+      "default": "./browser/esm/declarations.mjs"
     }
   },
   "types": "./types/index.d.ts",
   "module": "./browser/esm/index.mjs",
-  "main": "./browser/cjs/index.cjs",
+  "main": "./browser/esm/index.mjs",
   "sideEffects": false,
   "engineStrict": true
 }

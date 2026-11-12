@@ -1,14 +1,16 @@
+import type React from 'react';
+import {
+  memo, forwardRef, useMemo, useEffect, useState, cloneElement, isValidElement
+} from 'react';
 
-import invariant from 'tiny-invariant';
-
-import React, { memo, forwardRef, useMemo, useEffect } from 'react';
-
-import { Theme, type SxProps } from '@mui/system';
-
-import { useCallbackRef } from '@sheetxl/utils-react';
+import { type Theme, type SxProps } from '@mui/system';
 
 import {
-  FloatReference, useFloatStack, type ExhibitPopupPanelProps, type ExhibitPopperProps
+  useCallbackRef, useFloatStack, type FloatReference, type FloatPopperProps, type RenderSlotFn
+} from '@sheetxl/utils-react';
+
+import {
+  type ExhibitPopupPanelProps
 } from '../float';
 
 export interface ContextMenuAttributes {
@@ -24,12 +26,12 @@ export interface ContextMenuProps extends React.HTMLAttributes<HTMLElement> {
 
   parentFloat?: FloatReference;
 
-  createPopupPanel?: (props: ExhibitPopupPanelProps) => React.ReactElement<any>;
+  renderPopupPanel?: RenderSlotFn<ExhibitPopupPanelProps>;
 
   /**
    * Passed to the underlying popup panel
    */
-  propsPopper?: Partial<ExhibitPopperProps>;
+  propsPopper?: Partial<FloatPopperProps>;
 
   /**
    * Use for float reference
@@ -42,7 +44,7 @@ export interface ContextMenuProps extends React.HTMLAttributes<HTMLElement> {
 export interface ContextMenuElement extends HTMLDivElement, ContextMenuAttributes {};
 
 
-const DEFAULT_POPPER_PROPS: Partial<ExhibitPopperProps> = {
+const DEFAULT_POPPER_PROPS: Partial<FloatPopperProps> = {
   placement: "right-start"
 }
 
@@ -57,13 +59,13 @@ export const ContextMenu = memo(forwardRef<ContextMenuElement, ContextMenuProps>
     children,
     sx: propSx,
     parentFloat,
-    createPopupPanel: propCreatePopupPanel,
+    renderPopupPanel: propRenderPopupPanel,
     propsPopper = DEFAULT_POPPER_PROPS,
     label,
     ...rest
   } = props;
 
-  invariant(React.isValidElement(children), `Must supply a child component to enable a context menu.`);
+  if (!isValidElement(children)) throw new Error(`Must supply a child component to enable a context menu.`);
   const childrenTyped = children as React.ReactElement<any>;
 
   // add on context menu here
@@ -83,8 +85,8 @@ export const ContextMenu = memo(forwardRef<ContextMenuElement, ContextMenuProps>
   }, [rest, childrenTyped?.props]);
 
 
-  const createPopupPanel = useCallbackRef(propCreatePopupPanel, [propCreatePopupPanel]);
-  const [contextMenuEvent, setContextMenuEvent] = React.useState<React.MouseEvent<HTMLElement>>(null);
+  const renderPopupPanel = useCallbackRef(propRenderPopupPanel ?? (() => undefined), [propRenderPopupPanel]);
+  const [contextMenuEvent, setContextMenuEvent] = useState<React.MouseEvent<HTMLElement> | null>(null);
 
   const {
     reference: contentMenuReference,
@@ -104,7 +106,7 @@ export const ContextMenu = memo(forwardRef<ContextMenuElement, ContextMenuProps>
       }
     },
     onClose: () => setContextMenuEvent(null),
-    createPopupPanel
+    renderPopupPanel
   });
 
   useEffect(() => {
@@ -117,7 +119,7 @@ export const ContextMenu = memo(forwardRef<ContextMenuElement, ContextMenuProps>
 
   return (
     <>
-      {React.cloneElement(children, localPropsChildren)}
+      {cloneElement(children, localPropsChildren)}
       {contextMenuComponent}
     </>
   );

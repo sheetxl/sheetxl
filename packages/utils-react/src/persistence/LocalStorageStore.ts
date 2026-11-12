@@ -1,21 +1,21 @@
-import { PersistenceStore } from "./Types";
+import { type PersistenceStore } from "./Types";
 
 /** LocalStorage state with cross-tab sync */
 export class LocalStorageStore implements PersistenceStore {
   constructor(private storage: Storage = window.localStorage) {}
 
   /** {@inheritDoc PersistenceStore.getItem} */
-  async getItem(k: string) {
+  getItem(k: string) {
     try { return this.storage.getItem(k); } catch { return null; }
   }
 
   /** {@inheritDoc PersistenceStore.setItem} */
-  async setItem(k: string, v: string) {
+  setItem(k: string, v: string) {
     try { this.storage.setItem(k, v); } catch { /* quota/full */ }
   }
 
   /** {@inheritDoc PersistenceStore.removeItem} */
-  async removeItem(k: string) {
+  removeItem(k: string) {
     try { this.storage.removeItem(k); } catch {}
   }
 

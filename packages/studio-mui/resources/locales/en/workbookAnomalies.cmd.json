@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../utils-react/command-catalog.schema.json",
+  "scope": "workbook",
+  "label": "Workbook",
+  "tag": "en",
+  "version": 1,
+  "commands": {
+    "showAnomaliesPane": {
+      "label": "Anomalies",
+      "description": "List where the sheet breaks its own patterns: a formula unlike its neighbors, a typed value among formulas, a format that breaks its run.",
+      "icon": "Anomalies"
+    }
+  }
+}

@@ -7,6 +7,8 @@ storybook-static
 # dependencies
 **/node_modules
 
+/examples/*/output/
+
 # v5 build files
 /packages/*/cjs/
 /packages/*/esm/
@@ -64,3 +66,10 @@ yarn-error.log*
 **/scenarios/out/
 **/tmp/
 **/.tmp/
+
+# SXL_ARTIFACT_DIR output (test emitters write here; nothing generated is committed)
+/artifacts/
+
+# Rust build output (native and wasm); each package's wasm-bindgen output lands in src/.generated/wasm/, covered by *.generated (crates/README.md)
+/target/
+/target-wasm/

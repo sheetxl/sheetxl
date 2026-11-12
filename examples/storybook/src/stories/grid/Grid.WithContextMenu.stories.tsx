@@ -1,12 +1,19 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 
 import {
-  ScrollableGrid as Grid, useSelection, IGridElement
+  SelectionLayer, DefaultSelection, type IGrid
 } from '@sheetxl/grid-react';
 
-import { sharedCellRenderer } from '../../components';
+import { sharedCellRenderer, ScrollableGrid as Grid, asStory } from '../../components';
 
-const ContextMenu = ({ left, top, rowIndex, colIndex }) => {
+interface ContextMenuPosition {
+  left: number;
+  top: number;
+  rowIndex: number;
+  colIndex: number;
+}
+
+const ContextMenu = ({ left, top, rowIndex, colIndex }: ContextMenuPosition) => {
   return (
     <div
       style={{
@@ -30,64 +37,63 @@ const ContextMenu = ({ left, top, rowIndex, colIndex }) => {
 
 const Template: React.FC = (props) => {
   const {
+    columnCount = 200,
+    rowCount = 200,
     ...rest
   } = props as any;
 
-  const gridRef = useRef<IGridElement>(null);
-  const [contextMenuPosition, setContextMenuPosition] = useState(null);
+  const gridRef = useRef<IGrid>(null);
+  const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition | null>(null);
 
-  const {
-    // commands: commandsSelection,
-    renderOverlay: renderSelection,
-    selection,
-    ...selectionProps // used for callbacks
-  } = useSelection({
-    gridRef
-  });
+  const selection = useMemo(() => new DefaultSelection({
+    getBounds: () => ({ rowStart: 0, colStart: 0, rowEnd: rowCount - 1, colEnd: columnCount - 1 })
+  }), [rowCount, columnCount]);
+
   return (
     <div className="storybook-container">
       <Grid
         {...rest}
         ref={gridRef}
-        renderCell={sharedCellRenderer}
+        columnCount={columnCount}
+        rowCount={rowCount}
+        renderCells={sharedCellRenderer}
         // context menu here
         onContextMenu={(e) => {
           // We get the view
-          const view = gridRef.current.getViewFromClient(e.clientX, e.clientY);
-          // now we get the offset since we are adding menu as absolute
-          const relativePoint = gridRef.current.getRelativePointFromClient(e.clientX, e.clientY);
+          const view = gridRef.current!.getPaneFromClient(e.clientX, e.clientY);
           if (!view) return;
           // get the coords to display
-          const { rowIndex, colIndex, } = view.getCellCoordsFromClient(e.clientX, e.clientY);
+          const cell = view.getCellFromPointer(e.clientX, e.clientY);
+          if (!cell) return;
+          const { rowIndex, colIndex } = cell;
+          // the menu is positioned absolutely, so convert client → grid-relative pixels off the element
+          const rect = gridRef.current!.getBoundingClientRect();
           setContextMenuPosition({
-            left: relativePoint.x + 3, // offset by our current border
-            top: relativePoint.y + 3,
+            left: e.clientX - rect.x + 3, // offset by our current border
+            top: e.clientY - rect.y + 3,
             rowIndex,
             colIndex,
           });
           e.preventDefault();
         }}
-        // onKeyDown={(e: React.KeyboardEvent<any>) => {
-        //   commandsSelection.onKeyDown(e);
-        // }}
-        onPointerDown={(e: React.PointerEvent<any>) => {
-          setContextMenuPosition(null); // context menu here, notice it's before we pass to selection
-          selectionProps.onPointerDown(e);
+        onPointerDown={(_e: React.PointerEvent<any>) => {
+          setContextMenuPosition(null); // dismiss the context menu; SelectionLayer handles selection itself
         }}
-        renderOverlays={[renderSelection]}
-      />
+      >
+        <SelectionLayer key="selection" selection={selection} />
+      </Grid>
       {contextMenuPosition && <ContextMenu {...contextMenuPosition} /> /* note - that this sits outsize of grid */}
     </div>
   );
 };
 
-export const GridWithContextMenu = Template.bind({});
+export const GridWithContextMenu = asStory(Template);
 GridWithContextMenu.args = {
   columnCount: 200,
   rowCount: 200
 };
 
-GridWithContextMenu.storyName = "with Context Menu";
+GridWithContextMenu.storyName = "Context Menu";
 
 const Story = {
   title: 'Grid',

@@ -1,23 +1,29 @@
-import React, { useMemo, memo, forwardRef, useCallback } from 'react';
+import type React from 'react';
+import { useMemo, memo, forwardRef, useCallback } from 'react';
 
-import { alpha } from '@mui/system';
-import { Theme, useTheme } from '@mui/material/styles';
-
+import { useTheme, type Theme } from '@mui/material';
 import { Box } from '@mui/material';
-import { Typography } from '@mui/material';
-import type { TooltipProps } from '@mui/material';
 
-import { ICell, NumberFormat, IFont } from '@sheetxl/sdk';
+import { NumberFormat, type ICell } from '@sheetxl/sdk';
 
-import { useCommands, KeyCodes, ICommands } from '@sheetxl/utils-react';
+import { useCommands, useTranslator, KeyCodes, measureUIText } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, defaultCreatePopupPanel,
+  defaultRenderPopupPanel,
   ExhibitDivider, ExhibitMenuItem, ExhibitTooltip, CommandPopupButton,
-  type CommandPopupButtonProps, type ExhibitPopupPanelProps
+  type CommandPopupButtonProps, type ExhibitPopupPanelProps, type ButtonTooltipRenderProps
 } from '@sheetxl/utils-mui';
 
 import { SelectedIcon } from '@sheetxl/utils-mui';
+
+// The row body this popup shares with the format pane's category dropdown. A value import is safe
+// here: the module is a leaf (MUI + sdk only), unlike the pane itself.
+import { NumberFormatOption, numberFormatTypeLabel } from '../format/NumberFormatOption';
+// Type only: the format pane imports back into this folder (its Font/Fill panels use the color and
+// font buttons), so a value import here would close a module cycle for one string.
+import { type FormatTab } from '../format/FormatTaskPane';
+
+import { NumberFormatQuickButtons, NUMBER_FORMAT_GROUP_KEY } from './NumberFormatQuickButtons';
 
 
 const NumberFormatMenuItem = memo((props: any) => { // TODO - type
@@ -27,9 +33,11 @@ const NumberFormatMenuItem = memo((props: any) => { // TODO - type
     formattedValue,
     handleSetFormat,
     format,
+    label: propLabel,
     sx: propSx,
     ...rest
   } = props;
+  const t = useTranslator();
   return (
     <ExhibitMenuItem
       sx={{
@@ -46,7 +54,8 @@ const NumberFormatMenuItem = memo((props: any) => { // TODO - type
       //   description: (<><div>Set format to:</div><div style={{}}>{format.formatCode}</div></>),
       //   maxWidth: 1000
       // }}
-      icon={selected ? <SelectedIcon/> : undefined}
+      // Unselected rows keep SelectedIcon's (transparent) border so every label starts in one column.
+      icon={<SelectedIcon selected={!!selected}>{selected ? undefined : null}</SelectedIcon>}
       onMouseDown={(e: React.MouseEvent) => { if (e.button !== 0) return; e.preventDefault()}}
       onMouseUp={(e) => { if (e.button !== 0) return; handleSetFormat(format.numberFormat) }}
       onKeyDown={(e: React.KeyboardEvent) => {
@@ -58,39 +67,14 @@ const NumberFormatMenuItem = memo((props: any) => { // TODO - type
       }}
       {...rest}
     >
-      <Box
-        sx={{
-        // bold and larger
-          display: 'flex',
-          flex: '1 1 100%',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
-      >
-        <Typography
-          component="div"
-        >
-          {format.formatType}{format.formatType === NumberFormat.Type.Custom ? '\u2026' : ''}
-        </Typography>
-        <Typography
-          variant="caption"
-          component="div"
-          sx={{
-            // whiteSpace: 'pre-wrap', {/* uncomment if we want to preserve height */}
-            color: (theme: Theme) => {
-              return alpha(theme.palette.text.primary, .6)
-            },
-            paddingTop: formattedValue && formattedValue.length > 0 ? '1px' : undefined,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
-          {formattedValue && formattedValue.length > 0 ? formattedValue : ' '}
-        </Typography>
-      </Box>
+      <NumberFormatOption
+        label={propLabel ?? numberFormatTypeLabel(t, format.formatType)}
+        sample={formattedValue}
+      />
     </ExhibitMenuItem>
   )
 });
+NumberFormatMenuItem.displayName = 'NumberFormatMenuItem';
 
 export interface NumberFormatCommandButtonProps extends CommandPopupButtonProps {
 }
@@ -98,38 +82,42 @@ export interface NumberFormatCommandButtonProps extends CommandPopupButtonProps 
 export const NumberFormatCommandButton = memo(
   forwardRef<HTMLElement, NumberFormatCommandButtonProps>((props, refForwarded) => {
   const {
-    commands: propCommands,
-    commandHook: propCommandHook,
-    scope,
+    groupKey,
     sx: propSx,
-    disabled: propDisabled = false,
-    parentFloat,
+    disabled: propDisabled,
     ...rest
   } = props;
 
   const commandKeys:string[] = [
-    'formatNumberFormat'
+    'formatNumberFormat',
+    'formatCells'
   ];
-  const resolvedCommands = useCommands<string, ICell>(propCommands, commandKeys);
+  const resolvedCommands = useCommands<string, ICell>(commandKeys);
   const command = resolvedCommands[0];
-  const currentFormatType = command?.getState() ? NumberFormat.Styles.lookupStyle(command?.getState()).formatType : NumberFormat.Type.General;
+  const commandNumberDialog = resolvedCommands[1];
+  const state = command?.getState();
+  const currentFormatType = state ? NumberFormat.Styles.lookupStyle(state).formatType : undefined;
 
-  const commandHookNoBefore = useMemo(() => {
-    if (!propCommandHook) return null;
-    const retValue = {...propCommandHook};
-    delete retValue.beforeExecute;
-    return retValue;
-  }, [propCommandHook]);
+  const t = useTranslator();
+  const appTheme = useTheme();
+  const defaultWidth = useMemo(() => {
+    // Size to the localized 'General' label. `t` is in the deps because until the
+    // language pack loads it returns the (much longer) raw KEY, so the measurement
+    // MUST recompute once the real string arrives — otherwise the button freezes
+    // at the key's width.
+    const templateString = numberFormatTypeLabel(t, NumberFormat.Type.General);
+    const width = measureUIText(templateString ?? '', { size: Math.round(appTheme.typography.fontSize), family: appTheme.typography.fontFamily ?? '' });
+    return `${width * 2}px`;
+  }, [appTheme, t]);
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
+
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const handleSetFormat = (newValue: string) => {
       // TODO - - these should really be command buttons since they handle ripple and avoid duplicate code
-      propCommandHook?.beforeExecute?.(command, command?.getState());
-      command.execute(newValue, propCommandHook);
-      propCommandHook?.onExecute?.(command, command?.getState());
+      command?.execute(newValue);
     }
 
-    const currentCell:ICell = command?.getContext();
+    const currentCell:ICell | undefined = command?.getContext();
 
     const formats = NumberFormat.Styles.lookupPrimary();
     const formatOptions = [];
@@ -144,7 +132,7 @@ export const NumberFormatCommandButton = memo(
         };
       }
       if (formattedValue === '' && formats[i].formatType === NumberFormat.Type.General)
-        formattedValue = 'No specific format';
+        formattedValue = t('numberFormat.noSpecificFormat');
       const selected = formats[i].formatType === currentFormatType;
       formatOptions.push(
         <NumberFormatMenuItem
@@ -168,12 +156,14 @@ export const NumberFormatCommandButton = memo(
         key={NumberFormat.Type.Custom}
         selected={isCustom}
         disabled={propDisabled || !command || command.disabled()}
-        formattedValue={isCustom ? currentCell.getNumberFormat().displayText : ''}
+        // The command's own label, scoped to this popup ("More Number Formats…"). It is the same
+        // Format Cells command the menus and Ctrl+1 run, so the wording lives in the language pack
+        // rather than being rebuilt here from the Custom category name.
+        label={commandNumberDialog?.getLabel(NUMBER_FORMAT_GROUP_KEY)}
+        formattedValue={isCustom && currentCell ? currentCell.getNumberFormat().displayText : ''}
         handleSetFormat={() => {
           // TODO - - these should really be command buttons since they handle ripple and avoid duplicate code
-          propCommandHook?.beforeExecute?.(command, command?.getState());
-          commands.getCommand('formatNumberDialog')?.execute(command?.getState());
-          propCommandHook?.onExecute?.(command, command?.getState());
+          commandNumberDialog?.execute('number' satisfies FormatTab);
         }}
         format={customFormatStyle}
         sx={{
@@ -183,46 +173,9 @@ export const NumberFormatCommandButton = memo(
       />
     );
     const quickFormats = (
-      <Box
-        className="quick-buttons"
-        sx={{
-          display:'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-        onClick={(e) => e.stopPropagation() } // Prevent the quick buttons from closing the menu
-      >
-        <CommandButton
-          // {...buttonProps}
-          command={commands.getCommand('formatNumberFormatAccountingStyle')}
-          commandHook={commandHookNoBefore}
-          scope={scope}
-        />
-        <CommandButton
-          // {...buttonProps}
-          command={commands.getCommand('formatNumberFormatPercentStyle')}
-          commandHook={commandHookNoBefore}
-          scope={scope}
-        />
-        <CommandButton
-          // {...buttonProps}
-          command={commands.getCommand('formatNumberFormatCommaStyle')}
-          commandHook={commandHookNoBefore}
-          scope={scope}
-        />
-        <CommandButton
-          // {...buttonProps}
-          command={commands.getCommand('formatNumberFormatIncreaseDecimal')}
-          commandHook={commandHookNoBefore}
-          scope={scope}
-        />
-        <CommandButton
-          // {...buttonProps}
-          command={commands.getCommand('formatNumberFormatDecreaseDecimal')}
-          commandHook={commandHookNoBefore}
-          scope={scope}
-        />
-      </Box>
+      <NumberFormatQuickButtons
+        groupKey={groupKey}
+      />
     );
     const children = (
       <Box
@@ -232,7 +185,6 @@ export const NumberFormatCommandButton = memo(
           flex: '1 1 100%',
           overflow: 'hidden'
         }}
-        {...rest}
       >
         {quickFormats}
         <ExhibitDivider orientation="horizontal"/>
@@ -248,26 +200,17 @@ export const NumberFormatCommandButton = memo(
       </Box>
     );
 
-    return defaultCreatePopupPanel({ ...props, children});
-  }, [command?.getContext(), command?.getState(), propCommandHook, scope]);
-
-
-  const appTheme = useTheme();
-  const defaultWidth = useMemo(() => {
-    const templateString = NumberFormat.Type.MediumTime;
-    return `${IFont.getSharedMeasurer()(templateString, Math.round(appTheme.typography.fontSize), appTheme.typography.fontFamily).width}px`;
-  }, [appTheme]);
+    return defaultRenderPopupPanel({ ...props, children});
+  }, [command?.getContext(), state, propDisabled, groupKey, t]);
 
   return (
     <CommandPopupButton
       ref={refForwarded}
-      commands={propCommands}
       sx={propSx}
       outlined={true}
-      disabled={propDisabled}
-      parentFloat={parentFloat}
-      createPopupPanel={createPopupPanel}
-      createTooltip={({children}: TooltipProps, disabled: boolean) => {
+      disabled={propDisabled ?? (!command || command.disabled())}
+      renderPopupPanel={renderPopupPanel}
+      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
         return (
           <ExhibitTooltip
             label={command?.getLabel()}
@@ -287,6 +230,7 @@ export const NumberFormatCommandButton = memo(
             fontSize: (theme: Theme) => {
               return `${Math.round(theme.typography.fontSize)}px`;
             },
+            lineHeight: 1.2,
             color: (theme: Theme) => theme.palette.text.secondary,
             fontFamily: (theme: Theme) => theme.typography.fontFamily,
             width: defaultWidth
@@ -299,7 +243,7 @@ export const NumberFormatCommandButton = memo(
               whiteSpace: 'pre'
             }}
           >
-            {currentFormatType}
+            {currentFormatType ? numberFormatTypeLabel(t, currentFormatType) : ''}
           </Box>
         </Box>
       } // <NumbersIcon/>
@@ -307,3 +251,4 @@ export const NumberFormatCommandButton = memo(
     />
   )
 }));
+NumberFormatCommandButton.displayName = 'NumberFormatCommandButton';

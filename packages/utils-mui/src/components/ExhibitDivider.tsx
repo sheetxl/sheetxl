@@ -1,8 +1,8 @@
-import React, { memo, forwardRef } from 'react';
+import type React from 'react';
+import { memo, forwardRef } from 'react';
 
-import { Theme } from '@mui/material/styles';
-
-import { Divider, DividerProps } from '@mui/material';
+import { type Theme } from '@mui/material';
+import { Divider, type DividerProps } from '@mui/material';
 
 export interface ExhibitDividerProps extends DividerProps {
 }

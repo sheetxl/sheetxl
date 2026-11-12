@@ -10,18 +10,12 @@ export interface CellCoords {
    * The row index of the cell.
    */
   rowIndex: number;
-
-  // TODO - review this again
-  sheetName?: string;
+  /**
+   * Optional scope of the container for the ranges.
+   */
+  scope?: string | null;
 }
 
-// TODO - make RangeCoords interface into this one
-/*
-export interface RangeCoord {
-  from: CellCoord,
-  to: CellCoord
-}
-*/
 /**
  * The coordinates of a cell range in a 2D space.
  * The rowStart and colStart must be less than or equal to rowEnd and colEnd respectively.
@@ -44,31 +38,11 @@ export interface RangeCoords {
    * Bottom row
    */
   rowEnd: number;
-
-  // TODO - review this again
-  sheetName?: string;
+  /**
+   * Optional scope of the container for the ranges.
+   */
+  scope?: string | null;
 }
-
-export const RangeOrientation = {
-  Column: 'column',
-  Row: 'row'
-} as const;
-export type RangeOrientation = typeof RangeOrientation[keyof typeof RangeOrientation];
-
-/**
- * Allows for either direction or both. (But not none).
- */
-export const RangeOrientations = {
-  ...RangeOrientation,
-  Both: 'both'
-} as const;
-export type RangeOrientations = typeof RangeOrientations[keyof typeof RangeOrientations];
-
-
-// /**
-//  * Used when a true or false feels more natural.
-//  */
-// export type BooleanOrOrientation = boolean | RangeOrientation;
 
 /**
  * Represents a selection of ranges with an active range and an active cell.
@@ -119,22 +93,39 @@ export interface RunCoords {
 }
 
 /**
- * Extends RangeCoords to include a value.
+ * Associate a value with a {@link RangeCoords}.
  */
-export interface RangedValue<T=any> extends RangeCoords {
+export interface RangeCoordValue<T=any> extends RangeCoords {
   /**
    * The value of the range.
-   *
-   * @remarks
-   * This is optional because it may be used to represent a range of cells that are not yet set.
    */
   value?: T;
 }
 
 /**
- * Used to toggle an action on either rows or columns.
+ * Associate an option value with a {@link RunCoords}.
  */
-// export interface RangeOrientationFlags {
-//   [RangeOrientation.Column]?: boolean;
-//   [RangeOrientation.Row]?: boolean;
-// }
+export interface RunCoordValue<T> extends RunCoords {
+  /**
+   * The value of the run.
+   */
+  value?: T;
+}
+
+/**
+ * The axis of a range, either column or row.
+ */
+export const RangeAxis = {
+  Column: 'column',
+  Row: 'row'
+} as const;
+export type RangeAxis = typeof RangeAxis[keyof typeof RangeAxis];
+
+/**
+ * Allows for either direction or both. (But not none).
+ */
+export const AxisSelection = {
+  ...RangeAxis,
+  Both: 'both'
+} as const;
+export type AxisSelection = typeof AxisSelection[keyof typeof AxisSelection];

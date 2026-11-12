@@ -1,4 +1,15 @@
 import * as animate from './animate';
+
+/**
+ * Flip to `true` to trace the scroller's touch state (initial enable/dragging flags, the lazy
+ * no-drag -> drag transition, and each published scroll position) in the console. Pairs with
+ * `DEBUG_TOUCH_SCROLL` in scroll/ScrollPane.tsx, which traces the surrounding wiring. Off in production.
+ */
+const DEBUG_TOUCH = false;
+const logScroller = (...args: unknown[]): void => {
+  if (DEBUG_TOUCH) console.log('[scroller]', ...args);
+};
+
 /*
  * Scroller
  * http://github.com/zynga/scroller
@@ -34,6 +45,20 @@ const easeInOutCubic = function (pos: number): number {
 export interface ScrollerCallback {
   (left: number, top: number, zoom: number): void;
 }
+
+/**
+ * Wheel-to-zoom gain: `level *= exp(-deltaY * K)`. Tuned so one mouse notch (`deltaY` = 100 in
+ * Chrome on Windows) is ≈ 15 % — the step `IWorksheetView.zoomIn` takes — and a touchpad pinch's
+ * fractional deltas ramp smoothly.
+ */
+export const WHEEL_ZOOM_K = Math.log(1.15) / 100;
+
+/** Distance between the first two touches, in page px. */
+const touchDistance = (touches: TouchList): number => {
+  const dx = touches[1].pageX - touches[0].pageX;
+  const dy = touches[1].pageY - touches[0].pageY;
+  return Math.sqrt(dx * dx + dy * dy);
+};
 
 export interface ScrollerOptions {
   /** Enable scrolling on x-axis */
@@ -102,6 +127,28 @@ export class Scroller {
    * a gestureStart event happens. This has higher priority than dragging.
    */
   __isGesturing: boolean = false;
+
+  /**
+   * {Boolean} True for the duration of a zoom publish (`zoomTo` / `zoomBy` / `doMouseZoom`), so an
+   * owner that otherwise admits only live touch publishes (tracking / decelerating) can tell a zoom
+   * from a re-clamp echo (`setDimensions`) and let it through.
+   */
+  __isZooming: boolean = false;
+
+  /**
+   * {Number} Distance between the two fingers at `doTouchStart` (0 with one finger). The pinch level is
+   * `__zoomLevelStart × (current distance / this)`.
+   */
+  __pinchStartDistance: number = 0;
+
+  /**
+   * {Number} The pan of the LAST published touch move — how far the finger (or the two-finger midpoint)
+   * moved on screen since the previous move, in px, positive toward the right/bottom. `0` for any publish
+   * that is not a touch move (a wheel zoom, a sync). An owner that applies a pinch to its own model
+   * reads these so the pan that rode along with the zoom is not lost.
+   */
+  __gestureMoveX: number = 0;
+  __gestureMoveY: number = 0;
 
   /**
    * {Boolean} Whether the user has moved by such a distance that we have enabled
@@ -209,25 +256,25 @@ export class Scroller {
   */
 
   /** {Integer} Minimum left scroll position during deceleration */
-  __minDecelerationScrollLeft: number = null;
+  __minDecelerationScrollLeft: number = 0;
 
   /** {Integer} Minimum top scroll position during deceleration */
-  __minDecelerationScrollTop: number = null;
+  __minDecelerationScrollTop: number = 0;
 
   /** {Integer} Maximum left scroll position during deceleration */
-  __maxDecelerationScrollLeft: number = null;
+  __maxDecelerationScrollLeft: number = 0;
 
   /** {Integer} Maximum top scroll position during deceleration */
-  __maxDecelerationScrollTop: number = null;
+  __maxDecelerationScrollTop: number = 0;
 
   /** {Number} Current factor to modify horizontal scroll position with on every step */
-  __decelerationVelocityX: number = null;
+  __decelerationVelocityX: number = 0;
 
   /** {Number} Current factor to modify vertical scroll position with on every step */
   __decelerationVelocityY: number = 0;
 
   __callback: ScrollerCallback;
-  __zoomComplete?: () => void;
+  __zoomComplete: (() => void) | null = null;
   options: ScrollerOptions;
 
   constructor(
@@ -379,6 +426,7 @@ export class Scroller {
     callback?: () => void
   ): void {
     if (!this.options.zooming) {
+      // i18n-exempt: developer invariant, never surfaced to a user.
       throw new Error("Zooming is not enabled!");
     }
 
@@ -405,7 +453,7 @@ export class Scroller {
     }
 
     // Limit level according to configuration
-    level = Math.max(Math.min(level, this.options.maxZoom), this.options.minZoom);
+    level = Math.max(Math.min(level, this.options.maxZoom!), this.options.minZoom!);
 
     // Recompute maximum values while temporary tweaking maximum scroll ranges
     this.__computeScrollMax(level);
@@ -449,8 +497,28 @@ export class Scroller {
       top = 0;
     }
 
-    // Push values out
-    this.__publish(left, top, level, isAnimated);
+    // Push values out. Not a touch move: no pan rides along.
+    this.__gestureMoveX = 0;
+    this.__gestureMoveY = 0;
+    this.__isZooming = true;
+    try {
+      this.__publish(left, top, level, isAnimated);
+    } finally {
+      this.__isZooming = false;
+    }
+  }
+
+  /**
+   * Sets the zoom level WITHOUT publishing — the owner is telling the scroller where the zoom
+   * already is (the sync direction, the mirror of `scrollTo(left, top, false)` for position), so the
+   * next gesture starts from the right level and the scroll maximums are right for it.
+   */
+  setZoomLevel(level: number): void {
+    level = Math.max(Math.min(level, this.options.maxZoom!), this.options.minZoom!);
+    if (level === this.__zoomLevel) return;
+    this.__zoomLevel = level;
+    this.__scheduledZoom = level;
+    this.__computeScrollMax();
   }
 
 
@@ -480,9 +548,10 @@ export class Scroller {
    * @param left {Number?null} Horizontal scroll position, keeps current if value is <code>null</code>
    * @param top {Number?null} Vertical scroll position, keeps current if value is <code>null</code>
    * @param isAnimated {Boolean?false} Whether the scrolling should happen using an animation
-   * @param zoom {Number} [1.0] Zoom level to go to
+   * @param zoom {Number?} Zoom level to go to; `left`/`top` are then content (base, zoom-independent) px. Keeps the
+   *   current level when omitted.
    */
-  scrollTo(left: number, top: number, isAnimated: boolean = false, zoom: number = 1.0): void {
+  scrollTo(left: number, top: number, isAnimated: boolean = false, zoom?: number): void {
     // Stop deceleration
     if (this.__isDecelerating) {
       animate.stop(this.__isDecelerating);
@@ -492,6 +561,7 @@ export class Scroller {
     // Correct coordinates based on new zoom level
     if (zoom !== undefined && zoom !== this.__zoomLevel) {
       if (!this.options.zooming) {
+        // i18n-exempt: developer invariant, never surfaced to a user.
         throw new Error("Zooming is not enabled!");
       }
 
@@ -566,10 +636,16 @@ export class Scroller {
   */
 
   /**
-   * Mouse wheel handler for zooming support
+   * Mouse wheel handler for zooming support. Proportional: the level is multiplied by
+   * `exp(-wheelDelta * WHEEL_ZOOM_K)`, so a mouse notch (`deltaY` ≈ 100) is one zoom step and a
+   * touchpad pinch (many small fractional deltas, delivered as ctrl+wheel) is a smooth ramp instead
+   * of a burst of steps. Positive delta (wheel toward the user) zooms out.
+   *
+   * @param wheelDelta `deltaY` in PIXELS (the caller normalizes `deltaMode`), accumulated per frame.
+   * @param pageX Focal point, in the same client space as `setPosition`.
    */
   doMouseZoom(wheelDelta: number, timeStamp: number, pageX: number, pageY: number): void {
-    const change = wheelDelta > 0 ? 0.97 : 1.03;
+    const change = Math.exp(-wheelDelta * WHEEL_ZOOM_K);
 
     return this.zoomTo(this.__zoomLevel * change, false, pageX - this.__clientLeft, pageY - this.__clientTop);
   }
@@ -581,6 +657,7 @@ export class Scroller {
   doTouchStart(touches: TouchList, timeStamp: number|Date): void {
     // Array-like check is enough here
     if (touches.length === undefined) {
+      // i18n-exempt: developer invariant, never surfaced to a user.
       throw new Error("Invalid touch list: " + touches);
     }
 
@@ -588,6 +665,7 @@ export class Scroller {
       timeStamp = timeStamp.valueOf();
     }
     if (typeof timeStamp !== "number") {
+      // i18n-exempt: developer invariant, never surfaced to a user.
       throw new Error("Invalid timestamp value: " + timeStamp);
     }
 
@@ -627,6 +705,12 @@ export class Scroller {
     // Store current zoom level
     this.__zoomLevelStart = this.__zoomLevel;
 
+    // Two fingers: the pinch is measured against this distance. One finger: no pinch.
+    this.__pinchStartDistance = isSingleTouch ? 0 : touchDistance(touches);
+    this.__isGesturing = !isSingleTouch && !!this.options.zooming;
+    this.__gestureMoveX = 0;
+    this.__gestureMoveY = 0;
+
     // Store initial touch positions
     this.__lastTouchLeft = currentTouchLeft;
     this.__lastTouchTop = currentTouchTop;
@@ -638,8 +722,8 @@ export class Scroller {
     this.__lastScale = 1;
 
     // Reset locking flags
-    this.__enableScrollX = !isSingleTouch && this.options.scrollingX;
-    this.__enableScrollY = !isSingleTouch && this.options.scrollingY;
+    this.__enableScrollX = !isSingleTouch && !!this.options.scrollingX;
+    this.__enableScrollY = !isSingleTouch && !!this.options.scrollingY;
 
     // Reset tracking flag
     this.__isTracking = true;
@@ -655,16 +739,27 @@ export class Scroller {
 
     // Clearing data structure
     this.__positions = [];
+
+    logScroller('doTouchStart', {
+      isSingleTouch,
+      enableScrollX: this.__enableScrollX,
+      enableScrollY: this.__enableScrollY,
+      isDragging: this.__isDragging,
+      maxScrollLeft: this.__maxScrollLeft,
+      maxScrollTop: this.__maxScrollTop
+    });
   }
 
 
   /**
-   * Touch move handler for scrolling support
-   * @param {Number} [1.0] scale - ....
+   * Touch move handler for scrolling and pinch-zoom support. With two fingers the pinch scale is
+   * measured here (current distance over the `doTouchStart` distance) and the midpoint pan rides along
+   * in the same move; see `__gestureMoveX`.
    */
-  doTouchMove(touches: TouchList, timeStamp: number|Date, scale: number = 1.0): void {
+  doTouchMove(touches: TouchList, timeStamp: number|Date): void {
     // Array-like check is enough here
     if (touches.length === undefined) {
+      // i18n-exempt: developer invariant, never surfaced to a user.
       throw new Error("Invalid touch list: " + touches);
     }
 
@@ -672,6 +767,7 @@ export class Scroller {
       timeStamp = timeStamp.valueOf();
     }
     if (typeof timeStamp !== "number") {
+      // i18n-exempt: developer invariant, never surfaced to a user.
       throw new Error("Invalid timestamp value: " + timeStamp);
     }
 
@@ -694,11 +790,19 @@ export class Scroller {
 
     let positions = this.__positions;
 
+    // The pinch scale: the finger distance over the start distance (1 = no pinch). Absolute, so the
+    // incremental math below (`level / lastScale * scale`) is exact across moves.
+    const scale = (touches.length === 2 && this.__pinchStartDistance > 0)
+      ? touchDistance(touches) / this.__pinchStartDistance
+      : 1;
+
     // Are we already is dragging mode?
     if (this.__isDragging) {
       // Compute move distance
       let moveX = currentTouchLeft - this.__lastTouchLeft;
       let moveY = currentTouchTop - this.__lastTouchTop;
+      this.__gestureMoveX = moveX;
+      this.__gestureMoveY = moveY;
 
       // Read previous scroll position and zooming
       let scrollLeft = this.__scrollLeft;
@@ -713,7 +817,7 @@ export class Scroller {
         level = level / this.__lastScale * scale;
 
         // Limit level according to configuration
-        level = Math.max(Math.min(level, this.options.maxZoom), this.options.minZoom);
+        level = Math.max(Math.min(level, this.options.maxZoom!), this.options.minZoom!);
 
         // Only do further computation when change happened
         if (oldLevel !== level) {
@@ -731,13 +835,13 @@ export class Scroller {
       }
 
       if (this.__enableScrollX) {
-        scrollLeft -= moveX * this.options.speedMultiplier;
+        scrollLeft -= moveX * this.options.speedMultiplier!;
         let maxScrollLeft = this.__maxScrollLeft;
 
         if (scrollLeft > maxScrollLeft || scrollLeft < 0) {
           // Slow down on the edges
           if (this.options.bouncing) {
-            scrollLeft += (moveX / 2 * this.options.speedMultiplier);
+            scrollLeft += (moveX / 2 * this.options.speedMultiplier!);
           } else if (scrollLeft > maxScrollLeft) {
             scrollLeft = maxScrollLeft;
           } else {
@@ -748,13 +852,13 @@ export class Scroller {
 
       // Compute new vertical scroll position
       if (this.__enableScrollY) {
-        scrollTop -= moveY * this.options.speedMultiplier;
+        scrollTop -= moveY * this.options.speedMultiplier!;
         const maxScrollTop = this.__maxScrollTop;
 
         if (scrollTop > maxScrollTop || scrollTop < 0) {
           // Slow down on the edges
           if (this.options.bouncing) {
-            scrollTop += (moveY / 2 * this.options.speedMultiplier);
+            scrollTop += (moveY / 2 * this.options.speedMultiplier!);
           } else if (scrollTop > maxScrollTop) {
             scrollTop = maxScrollTop;
           } else {
@@ -772,6 +876,7 @@ export class Scroller {
       positions.push(scrollLeft, scrollTop, timeStamp);
 
       // Sync scroll position
+      logScroller('doTouchMove -> publish', { scrollLeft, scrollTop, moveX, moveY, enableScrollX: this.__enableScrollX, enableScrollY: this.__enableScrollY });
       this.__publish(scrollLeft, scrollTop, level);
 
       // Otherwise figure out whether we are switching into dragging mode now.
@@ -782,8 +887,8 @@ export class Scroller {
       let distanceX = Math.abs(currentTouchLeft - this.__initialTouchLeft);
       let distanceY = Math.abs(currentTouchTop - this.__initialTouchTop);
 
-      this.__enableScrollX = this.options.scrollingX && distanceX >= minimumTrackingForScroll;
-      this.__enableScrollY = this.options.scrollingY && distanceY >= minimumTrackingForScroll;
+      this.__enableScrollX = !!this.options.scrollingX && distanceX >= minimumTrackingForScroll;
+      this.__enableScrollY = !!this.options.scrollingY && distanceY >= minimumTrackingForScroll;
 
       positions.push(this.__scrollLeft, this.__scrollTop, timeStamp);
 
@@ -791,6 +896,7 @@ export class Scroller {
       if (this.__isDragging) {
         this.__interruptedAnimation = false;
       }
+      logScroller('doTouchMove (pre-drag)', { distanceX, distanceY, enableScrollX: this.__enableScrollX, enableScrollY: this.__enableScrollY, becameDragging: this.__isDragging });
     }
 
     // Update last touch positions and time stamp for next event
@@ -809,6 +915,7 @@ export class Scroller {
       timeStamp = timeStamp.valueOf();
     }
     if (typeof timeStamp !== "number") {
+      // i18n-exempt: developer invariant, never surfaced to a user.
       throw new Error("Invalid timestamp value: " + timeStamp);
     }
 
@@ -820,6 +927,10 @@ export class Scroller {
 
     // Not touching anymore (when two finger hit the screen there are two touch end events)
     this.__isTracking = false;
+    this.__isGesturing = false;
+    this.__pinchStartDistance = 0;
+    this.__gestureMoveX = 0;
+    this.__gestureMoveY = 0;
 
     // Be sure to reset the dragging flag now. Here we also detect whether
     // the finger has moved fast enough to switch into a deceleration animation.
@@ -920,7 +1031,7 @@ export class Scroller {
       const diffTop = top - oldTop;
       const diffZoom = zoom - oldZoom;
 
-      const step = function (percent: number, now: number, render: boolean): void {
+      const step = (percent: number, now: number, render: boolean = false): void => {
         if (render) {
           this.__scrollLeft = oldLeft + (diffLeft * percent);
           this.__scrollTop = oldTop + (diffTop * percent);
@@ -931,19 +1042,19 @@ export class Scroller {
             this.__callback(this.__scrollLeft, this.__scrollTop, this.__zoomLevel);
           }
         }
-      }.bind(this);
+      };
 
-      const verify = function (id: number): boolean {
+      const verify = (id: number): boolean => {
         return this.__isAnimating === id;
-      }.bind(this);
+      };
 
-      const completed = function (
+      const completed = (
         renderedFramesPerSecond: number,
         animationId: number,
-        wasFinished: boolean
-      ): void {
+        wasFinished: boolean = false
+      ): void => {
         if (animationId === this.__isAnimating) {
-          this.__isAnimating = false;
+          this.__isAnimating = 0;
         }
         if (this.__didDecelerationComplete || wasFinished) {
           this.options.scrollingComplete?.();
@@ -956,7 +1067,7 @@ export class Scroller {
             this.__zoomComplete = null;
           }
         }
-      }.bind(this);
+      };
 
       // When continuing based on previous animation we choose an ease-out animation instead of ease-in-out
       this.__isAnimating = animate.start(step, verify, completed, this.options.animationDuration, wasAnimating ? easeOutCubic : easeInOutCubic);
@@ -1023,24 +1134,24 @@ export class Scroller {
     }
 
     // Wrap class method
-    const step = function (percent: number, now: number, render: boolean): void {
+    const step = (percent: number, now: number, render: boolean = false): void => {
       this.__stepThroughDeceleration(render);
-    }.bind(this);
+    };
 
     // How much velocity is required to keep the deceleration running
     const minVelocityToKeepDecelerating = this.options.snapping ? 4 : 0.1;
 
     // Detect whether it's still worth to continue animating steps
     // If we are already slow enough to not being user perceivable anymore, we stop the whole process here.
-    const verify = function (): boolean {
+    const verify = (): boolean => {
       const shouldContinue = Math.abs(this.__decelerationVelocityX) >= minVelocityToKeepDecelerating || Math.abs(this.__decelerationVelocityY) >= minVelocityToKeepDecelerating;
       if (!shouldContinue) {
         this.__didDecelerationComplete = true;
       }
       return shouldContinue;
-    }.bind(this);
+    };
 
-    const completed = function (renderedFramesPerSecond: number, animationId: number, wasFinished: boolean): void {
+    const completed = (renderedFramesPerSecond: number, animationId: number, wasFinished: boolean = false): void => {
       this.__isDecelerating = 0;
       if (this.__didDecelerationComplete) {
         this.options.scrollingComplete?.();
@@ -1048,7 +1159,7 @@ export class Scroller {
 
       // Animate to grid when snapping is active, otherwise just fix out-of-boundary positions
       this.scrollTo(this.__scrollLeft, this.__scrollTop, this.options.snapping);
-    }.bind(this);
+    };
 
     // Start animation and switch on flag
     this.__isDecelerating = animate.start(step, verify, completed);
@@ -1121,8 +1232,8 @@ export class Scroller {
       let scrollOutsideY = 0;
 
       // This configures the amount of change applied to deceleration/acceleration when reaching boundaries
-      let penetrationDeceleration = this.options.penetrationDeceleration;
-      let penetrationAcceleration = this.options.penetrationAcceleration;
+      let penetrationDeceleration = this.options.penetrationDeceleration!;
+      let penetrationAcceleration = this.options.penetrationAcceleration!;
 
       // Check limits
       if (scrollLeft < this.__minDecelerationScrollLeft) {

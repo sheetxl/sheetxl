@@ -25,7 +25,7 @@ Each `<path>` should have **one paint** plus **optional tone/semantics/modifiers
 ### Semantics (optional tint)
 
 - `accent` — highlighted action area (e.g., brush head)
-- `success` | `info` | `warn` | `error` — status-tinted layer (use only if you need status colors on icons)
+- `success` | `info` | `warning` | `error` — status-tinted layer (use only if you need status colors on icons)
 
 ### Modifiers (optional)
 
@@ -44,8 +44,19 @@ Precedence (per-path): **defaults → tone → semantics → paint**.
 
 - Any path starts as **main tone**.
 - `secondary`/`tertiary` override color/opacity via CSS variables.
-- `accent`/`success`/`info`/`warn`/`error` override **color only** (opacity stays from tone).
+- `accent`/`success`/`info`/`warning`/`error` override **color only** (opacity stays from tone).
 - `fill`/`line` consume the variables and actually paint the shape.
+
+An **authored value on the path wins over the theme** — a path carrying its own `fill` (or `stroke`
+for a `line`) keeps that color, and one carrying its own `opacity` keeps that opacity. Each opts out
+independently, so a path can take the themed color at a fixed opacity:
+
+```ts
+{ d: "M…band…", className: "fill primary", opacity: "0.5" }   // themed hue, authored dimming
+```
+
+Use it for a layer whose dimming is part of the drawing (a tinted band behind a glyph), not for
+per-theme dimming — that belongs in the `--icon-*-opacity` variables.
 
 ---
 
@@ -57,7 +68,7 @@ At the `.icon` wrapper:
 - `--icon-color` — main tone color (defaults to `currentColor`)
 - `--icon-secondary-color` / `--icon-tertiary-color` — duotone colors
 - `--icon-line-color` — default stroke color
-- `--icon-accent` / `--icon-success` / `--icon-info` / `--icon-warn` / `--icon-error` — semantic colors
+- `--icon-primary` / `--icon-accent` / `--icon-success` / `--icon-info` / `--icon-warning` / `--icon-error` — per-layer override hooks; each defaults to the matching `--sxl-color-*` token (e.g. WalkingIcon sets `--icon-primary` to retint the walkable stroke)
 - `--icon-main-opacity` / `--icon-secondary-opacity` / `--icon-tertiary-opacity` / `--icon-line-opacity`
 - `--icon-stroke-em` — stroke width in `em` (scales with size)
 - `--icon-filter` — optional global filter hook (e.g., glow/contrast)

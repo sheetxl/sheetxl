@@ -1,10 +1,11 @@
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo, useEffect, useState } from 'react';
 
 import { CommonUtils } from '@sheetxl/utils';
 
-import { DefaultDynamicIconService } from './DynamicIconService';
-import type {
-  IconGlyphKey, IconPath, IconPackKey, IconGlyphPackPair, SvgGlyph
+import { DefaultIconService } from './DynamicIconService';
+import {
+  type IconGlyphKey, type IconPath, type IconPackKey, type IconGlyphPackPair, type SvgGlyph
 } from './Types';
 
 import { ErrorIcon } from './ErrorIcon';
@@ -44,21 +45,21 @@ export const DynamicIcon = memo((props: DynamicIconProps) => {
     ...rest
   } = props;
 
-  const [pair, setPair] = React.useState<IconGlyphPackPair | null>(null);
+  const [pair, setPair] = useState<Partial<IconGlyphPackPair> | null>(null);
 
   // Resolve glyph (namespaced "pack:key" or local)
-  React.useEffect(() => {
+  useEffect(() => {
     let alive = true;
     let resolvedPackKey = propPackKey;
     let resolveGlyphKey = propGlyphKey;
 
     if (!resolveGlyphKey) {
       // render an empty wrapper that still carries sizing from pack (if available)
-      const packBlank = DefaultDynamicIconService.getPack(resolvedPackKey);
+      const packBlank = DefaultIconService.getPack(resolvedPackKey);
       setPair({
         glyph: packBlank ? ({ svg: CommonUtils.EmptyArray } as SvgGlyph) : undefined,
         pack: packBlank ?? undefined,
-        packKey: resolvedPackKey ?? DefaultDynamicIconService.getActive()
+        packKey: resolvedPackKey ?? DefaultIconService.getActive()
       });
       return;
     }
@@ -69,9 +70,11 @@ export const DynamicIcon = memo((props: DynamicIconProps) => {
       resolveGlyphKey = keyOnly as IconGlyphKey;
     }
 
-    DefaultDynamicIconService
+    DefaultIconService
       .resolve(resolveGlyphKey, { packKey: resolvedPackKey })
-      .then(r => { if (alive) setPair(r); });
+      .then(r => { if (alive) setPair(r); })
+      // A pack that fails to load leaves the icon empty; the service loads it again on the next resolve.
+      .catch(() => {});
 
     return () => { alive = false; };
   }, [propGlyphKey, propPackKey]);

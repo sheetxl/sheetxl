@@ -1,6 +1,6 @@
 import React, { useState, memo, useEffect } from 'react';
 
-import { TextField, TextFieldProps } from '@mui/material';
+import { TextField, type TextFieldProps } from '@mui/material';
 
 import { KeyCodes } from '@sheetxl/utils-react';
 
@@ -16,7 +16,7 @@ export const RelaxedChangeTextField = memo((props: TextFieldProps) => {
     ...rest
   } = props;
 
-  const [lastChangeEvent, setLastChangeEvent] = useState<React.ChangeEvent<HTMLInputElement>>(null);
+  const [lastChangeEvent, setLastChangeEvent] = useState<React.ChangeEvent<HTMLInputElement> | null>(null);
   useEffect(() => {
     setLastChangeEvent(null);
   }, [propValue]);

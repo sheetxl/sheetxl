@@ -1,6 +1,8 @@
 import {
-  CellCoords, RangeCoords, RangeOrientation, SelectionCoords, RangedValue
+  RangeAxis, type CellCoords, type RangeCoords, type SelectionCoords, type RangeCoordValue
 } from './Types';
+// tree shake
+import { EmptyArray } from '../utils/CommonUtils'
 
 /**
  * Frozen CellCoords for easy comparisons.
@@ -21,9 +23,23 @@ export const EmptyRange: RangeCoords = Object.freeze({
 });
 
 /**
+ * Alias for EmptyRanges
+ */
+export const EmptyRanges: readonly RangeCoords[] = EmptyArray;
+
+/**
+ * Frozen SelectionCoords for easy comparisons.
+ */
+export const EmptySelection: SelectionCoords = Object.freeze({
+  cell: EmptyCell,
+  ranges: EmptyArray,
+  rangeIndex: -1
+});
+
+/**
  * Comparator that sorts ranges by column then row.
  */
-export const columnFirstRangeComparator = (a: RangeCoords, b: RangeCoords): number => {
+export function columnFirstRangeComparator(a: RangeCoords, b: RangeCoords): number {
   if (a.colStart === b.colStart)
     return a.rowStart - b.rowStart;
   return a.colStart - b.colStart;
@@ -32,19 +48,19 @@ export const columnFirstRangeComparator = (a: RangeCoords, b: RangeCoords): numb
 /**
  * Comparator that sorts ranges by row then column.
  */
-export const rowFirstRangeComparator = (a: RangeCoords, b: RangeCoords): number => {
+export function rowFirstRangeComparator(a: RangeCoords, b: RangeCoords): number {
   if (a.rowStart === b.rowStart)
     return a.colStart - b.colStart;
   return a.rowStart - b.rowStart;
 }
 
-const reverseRowFirstRangeComparator = (a: RangeCoords, b: RangeCoords): number => {
+export function reverseRowFirstRangeComparator(a: RangeCoords, b: RangeCoords): number {
   if (a.rowEnd === b.rowEnd)
     return b.colEnd - a.colEnd;
   return b.rowEnd - a.rowEnd;
 }
 
-const reverseColumnFirstRangeComparator = (a: RangeCoords, b: RangeCoords): number => {
+export function reverseColumnFirstRangeComparator(a: RangeCoords, b: RangeCoords): number {
   if (a.colEnd === b.colEnd)
     return b.rowEnd - a.rowEnd;
   return b.colEnd - a.colEnd;
@@ -54,7 +70,7 @@ const reverseColumnFirstRangeComparator = (a: RangeCoords, b: RangeCoords): numb
  * Comparator that sorts coords by column then row.
  * Returns > 1 if a is before b.
  */
-export const columnFirstCellComparator = (a: CellCoords, b: CellCoords): number => {
+export function columnFirstCellComparator(a: CellCoords, b: CellCoords): number {
   if (a.colIndex === b.colIndex)
     return a.rowIndex - b.rowIndex;
   return a.colIndex - b.colIndex;
@@ -63,7 +79,7 @@ export const columnFirstCellComparator = (a: CellCoords, b: CellCoords): number 
 /**
  * Comparator that sorts coords by row then column.
  */
-export const rowFirstCellComparator = (a: CellCoords, b: CellCoords): number => {
+export function rowFirstCellComparator(a: CellCoords, b: CellCoords): number {
   if (a.rowIndex === b.rowIndex)
     return a.colIndex - b.colIndex;
   return a.rowIndex - b.rowIndex;
@@ -72,7 +88,7 @@ export const rowFirstCellComparator = (a: CellCoords, b: CellCoords): number => 
 /**
  * Comparator that sorts coords by row then column reversed
  */
-export const reverseRowFirstCellComparator = (a: CellCoords, b: CellCoords): number => {
+export function reverseRowFirstCellComparator(a: CellCoords, b: CellCoords): number {
   if (a.rowIndex === b.rowIndex)
     return b.colIndex - a.colIndex;
   return b.rowIndex - a.rowIndex;
@@ -81,48 +97,49 @@ export const reverseRowFirstCellComparator = (a: CellCoords, b: CellCoords): num
 /**
  * Comparator that sorts coords by column then row reversed
  */
-export const reverseColumnFirstCellComparator = (a: CellCoords, b: CellCoords): number => {
+export function reverseColumnFirstCellComparator(a: CellCoords, b: CellCoords): number {
   if (a.colIndex === b.colIndex)
     return b.rowIndex - a.rowIndex;
   return b.colIndex - a.colIndex;
 }
 
 /**
- * Returns a Comparator for ranges with support for range orientation and reverse.
+ * Returns a Comparator for ranges with support for range axis and reverse.
  */
-export const createRangeComparator = (
-  orientation: RangeOrientation=RangeOrientation.Row,
+export function createRangeComparator(
+  axis: RangeAxis=RangeAxis.Row,
   reverse: boolean=false
-): ((a: RangeCoords, b: RangeCoords) => number) => {
+): (a: RangeCoords, b: RangeCoords) => number {
   if (!reverse) {
-    if (orientation !== RangeOrientation.Column) {
+    if (axis !== RangeAxis.Column) {
       return rowFirstRangeComparator;
     } else {
       return columnFirstRangeComparator
     }
   }
 
-  if (orientation !== RangeOrientation.Column) {
+  if (axis !== RangeAxis.Column) {
     return reverseRowFirstRangeComparator;
   } else {
     return reverseColumnFirstRangeComparator
   }
 }
 
-
-
 /**
- * Returns a Comparator for cells with support for range orientation and reverse.
+ * Returns a Comparator for cells with support for range axis and reverse.
  */
-export const createCellComparator = (orientation: RangeOrientation=RangeOrientation.Row, reverse: boolean=false): ((a: CellCoords, b: CellCoords) => number) => {
+export function createCellComparator(
+  axis: RangeAxis=RangeAxis.Row,
+  reverse: boolean=false
+): (a: CellCoords, b: CellCoords) => number {
   if (!reverse) {
-    if (orientation !== RangeOrientation.Column)
+    if (axis !== RangeAxis.Column)
       return rowFirstCellComparator;
     else
       return columnFirstCellComparator
   }
 
-  if (orientation !== RangeOrientation.Column) {
+  if (axis !== RangeAxis.Column) {
     return reverseRowFirstCellComparator;
   } else {
     return reverseColumnFirstCellComparator;
@@ -131,14 +148,24 @@ export const createCellComparator = (orientation: RangeOrientation=RangeOrientat
 
 /**
  * Check if two coords are equal.
+ *
  * @param a First CellCoords
  * @param b Second CellCoords
+ *
+ * @remarks
+ * {@link CellCoords.scope} (the sheet a coord lives on) is part of a coord's identity: the same row/col
+ * on two different sheets are NOT equal. Backward compatible — a coord with no `scope` compares unchanged
+ * against another with no `scope` (`undefined === undefined`).
  */
-export const isEqualCells = (a: CellCoords | null, b: CellCoords | null): boolean => {
+export function isEqualCells(
+  a: CellCoords | null,
+  b: CellCoords | null
+): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.rowIndex !== b.rowIndex) return false;
   if (a.colIndex !== b.colIndex) return false;
+  if (a.scope !== b.scope) return false;
   return true;
 };
 
@@ -149,15 +176,21 @@ export const isEqualCells = (a: CellCoords | null, b: CellCoords | null): boolea
  * @param b Second RangeCoords
  *
  * @remarks
- * Null safe
+ * Null safe. {@link RangeCoords.scope} (the sheet the range lives on) is part of identity — see
+ * {@link isEqualCells}; a range with no `scope` compares unchanged.
  */
-export const isEqualRanges = (a?: RangeCoords, b?: RangeCoords): boolean => {
+export function isEqualRanges(
+  a?: RangeCoords | null,
+  b?: RangeCoords | null
+): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
 
   if (a.rowStart !== b.rowStart || a.rowEnd !== b.rowEnd)
     return false;
   if (a.colStart !== b.colStart || a.colEnd !== b.colEnd)
+    return false;
+  if (a.scope !== b.scope)
     return false;
 
   return true;
@@ -172,7 +205,10 @@ export const isEqualRanges = (a?: RangeCoords, b?: RangeCoords): boolean => {
  * @remarks
  * Null safe
  */
-export const isCellWithinRange = (cell: CellCoords, range: RangeCoords): boolean => {
+export function isCellWithinRange(
+  cell: CellCoords,
+  range: RangeCoords
+): boolean {
   if (!cell || !range) return false;
   const rowIndex = cell.rowIndex;
   if (rowIndex < range.rowStart || rowIndex > range.rowEnd) {
@@ -187,10 +223,15 @@ export const isCellWithinRange = (cell: CellCoords, range: RangeCoords): boolean
 
 /**
  * Returns true `inner` range is completely contained within 'outer' range.
+ *
  * @param inner Inner range.
  * @param outer Outer range.
  */
-export const isRangeWithinRange = (inner: RangeCoords, outer: RangeCoords): boolean => {
+export function isRangeWithinRange(
+  inner: RangeCoords,
+  outer: RangeCoords
+): boolean {
+  if (!inner || !outer) return false;
   if (inner.rowStart < outer.rowStart || inner.rowEnd > outer.rowEnd) {
     return false;
   }
@@ -206,7 +247,10 @@ export const isRangeWithinRange = (inner: RangeCoords, outer: RangeCoords): bool
  * @param a First RangeCoords
  * @param b Second RangeCoords
  */
-export const isRangesIntersect = (a: RangeCoords, b: RangeCoords): boolean => {
+export function isRangesIntersect(
+  a: RangeCoords,
+  b: RangeCoords
+): boolean {
   if (!a || !b) return false;
   if (a.colStart > b.colEnd || b.colStart > a.colEnd) {
     return false;
@@ -219,10 +263,14 @@ export const isRangesIntersect = (a: RangeCoords, b: RangeCoords): boolean => {
 
 /**
  * Check if two ranges arrays are equal
+ *
  * @param a First Range Array.
  * @param b Second Range Array.
  */
-export const isEqualRangesArrays = (a?: readonly RangeCoords[], b?: readonly RangeCoords[]): boolean => {
+export function isEqualRangesArrays(
+  a?: readonly RangeCoords[],
+  b?: readonly RangeCoords[]
+): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.length !== b.length) return false;
@@ -237,12 +285,12 @@ export const isEqualRangesArrays = (a?: readonly RangeCoords[], b?: readonly Ran
  * Returns a flag indicating if the range is valid && colStart === colEnd && rowStart === rowEnd.
  * @param range A RangeCoord to check.
  */
-export const isSingleCell = (range: RangeCoords | undefined): boolean => {
+export function isSingleCell(range: RangeCoords | undefined): boolean {
   if (!range) return false;
   if (range.rowEnd !== range.rowStart || range.colStart !== range.colEnd)
     return false;
   return true;
-};
+}
 
 /**
  * Create a 1x1 dimension RangeCoord from a CellCoords.
@@ -253,16 +301,18 @@ export const isSingleCell = (range: RangeCoords | undefined): boolean => {
  * @remarks
  * Returns null if null is passed in.
  */
-export const cellToRange = (coords: CellCoords, reused?: RangeCoords): RangeCoords => {
-  if (!coords)
-    return null;
+export function cellToRange(
+  coords: CellCoords | null,
+  reused?: RangeCoords
+): RangeCoords | null {
+  if (!coords) return null;
   let asRange = reused;
   if (!asRange) {
     asRange = {
       ...coords, // We want to capture any additional info (like sheetName).
     } as unknown as RangeCoords;
-    delete (asRange as unknown as CellCoords).colIndex;
-    delete (asRange as unknown as CellCoords).rowIndex;
+    delete (asRange as any).colIndex;
+    delete (asRange as any).rowIndex;
   };
 
   asRange.colStart = coords.colIndex ?? 0;
@@ -277,8 +327,12 @@ export const cellToRange = (coords: CellCoords, reused?: RangeCoords): RangeCoor
  *
  * @returns `null` if no intersection.
  */
-export const intersectRanges = (a: RangeCoords, b: RangeCoords, reuse?: RangeCoords): RangeCoords => {
-  if (!a) return reuse ? b : {...b}; // should intersect null return null?
+export function intersectRanges(
+  a: RangeCoords | null,
+  b: RangeCoords | null,
+  reuse?: RangeCoords
+): RangeCoords | null {
+  if (!a) return reuse ? b : {...b} as RangeCoords; // should intersect null return null?
   if (!b) return reuse ? a : {...a}; // should intersect null return null?
   if (!a && !b) return null;
   if (a.rowStart > b.rowEnd || a.rowEnd < b.rowStart || a.colStart > b.colEnd || a.colEnd < b.colStart)
@@ -288,7 +342,7 @@ export const intersectRanges = (a: RangeCoords, b: RangeCoords, reuse?: RangeCoo
   const colEnd = Math.min(a.colEnd, b.colEnd);
   const rowEnd = Math.min(a.rowEnd, b.rowEnd);
 
-  let retValue:RangeCoords = reuse;
+  let retValue:RangeCoords | undefined = reuse;
   if (retValue) {
     retValue.colStart = colStart;
     retValue.rowStart = rowStart;
@@ -302,7 +356,7 @@ export const intersectRanges = (a: RangeCoords, b: RangeCoords, reuse?: RangeCoo
       rowEnd
     }
   }
-  return retValue
+  return retValue;
 };
 
 /**
@@ -311,9 +365,13 @@ export const intersectRanges = (a: RangeCoords, b: RangeCoords, reuse?: RangeCoo
  * @remarks
  * This is `null` safe.
  */
-export const unionRanges = (a: RangeCoords, b: RangeCoords, reuse?: RangeCoords): RangeCoords => {
+export function unionRanges(
+  a: RangeCoords | null,
+  b: RangeCoords | null,
+  reuse?: RangeCoords
+): RangeCoords | null {
   if (!a && !b) return null;
-  if (!a) return reuse ? b : {...b};
+  if (!a) return reuse ? b : {...b} as RangeCoords;
   if (!b) return reuse ? a : {...a};
 
   const colStart = Math.min(a.colStart, b.colStart);
@@ -321,7 +379,7 @@ export const unionRanges = (a: RangeCoords, b: RangeCoords, reuse?: RangeCoords)
   const colEnd = Math.max(a.colEnd, b.colEnd);
   const rowEnd = Math.max(a.rowEnd, b.rowEnd);
 
-  let retValue:RangeCoords = reuse;
+  let retValue:RangeCoords | undefined = reuse;
   if (retValue) {
     retValue.colStart = colStart;
     retValue.rowStart = rowStart;
@@ -335,34 +393,20 @@ export const unionRanges = (a: RangeCoords, b: RangeCoords, reuse?: RangeCoords)
       rowEnd
     }
   }
-  return retValue
-};
-
-
-/**
- * Returns an index for the first range that the coord is contained within or -1 if not found.
- */
-export const indexOfCoords = (coords: CellCoords, ranges: readonly RangeCoords[]): number => {
-  const cellAsRange = {
-    colStart: coords.colIndex,
-    rowStart: coords.rowIndex,
-    colEnd: coords.colIndex,
-    rowEnd: coords.rowIndex
-  }
-  for (let i=ranges.length-1; i>=0; i--)
-    if (isRangesIntersect(cellAsRange, ranges[i]))
-      return i;
-  return -1;
+  return retValue;
 };
 
 /**
  * Compares two SelectionCoords.
+ *
  * @param a First SelectionCoords
  * @param b Second SelectionCoords
  * @returns A flag indicating the values are logically the same.
  */
-// TODO - Sheet is using this but shouldn't be required.
-export const isEqualSelectionCoords = (a: SelectionCoords, b: SelectionCoords): boolean => {
+export function isEqualSelectionCoords(
+  a: SelectionCoords,
+  b: SelectionCoords
+): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
 
@@ -385,12 +429,16 @@ export interface CoordValidator {
  *
  * @param ranges An array of ranges to union.
  */
-export const unionRangesArrays = (ranges: readonly RangeCoords[], range?: RangeCoords, reuse?: RangeCoords): RangeCoords => {
+export function unionRangesArrays(
+  ranges: readonly RangeCoords[],
+  range?: RangeCoords,
+  reuse?: RangeCoords
+): RangeCoords | null {
   if (!ranges|| ranges.length === 0)
     return null;
   if (ranges.length === 1 && !range)
     return ranges[0];
-  let union = ranges[0];
+  let union: RangeCoords | null = ranges[0];
   for (let i=1; i<ranges.length;i++) {
     union = unionRanges(union, ranges[i], reuse);
   }
@@ -404,7 +452,7 @@ export const unionRangesArrays = (ranges: readonly RangeCoords[], range?: RangeC
 //  * Validate a CellCoords.
 //  * @param cell The cell to validate.
 //  */
-// export const isValidCell = (cell: CellCoords): boolean => {
+// export function isValidCell(cell: CellCoords): boolean {
 //   if (!cell) return false;
 //   if (typeof cell.colIndex !== 'number' || cell.colIndex < 0) return false;
 //   if (typeof cell.rowIndex !== 'number' || cell.rowIndex < 0) return false;
@@ -413,9 +461,10 @@ export const unionRangesArrays = (ranges: readonly RangeCoords[], range?: RangeC
 
 /**
  * Validate a RangeCoords.
+ *
  * @param range The range to validate.
  */
-export const isValidRange = (range: RangeCoords): boolean => {
+export function isValidRange(range: RangeCoords): boolean {
   if (!range) return false;
   if (typeof range.colStart !== 'number' || range.colStart < 0) return false;
   if (typeof range.colEnd !== 'number' || range.colEnd < range.colStart) return false;
@@ -432,11 +481,14 @@ export const isValidRange = (range: RangeCoords): boolean => {
  * @param ranges Surrounding ranges.
  */
 // TODO - only used by selection for merge logic.
-export const extendRangeToUnionRanges = (range: Readonly<RangeCoords>, ranges: Readonly<RangeCoords[]>): RangeCoords => {
+export function extendRangeToUnionRanges(
+  range: Readonly<RangeCoords>,
+  ranges: Readonly<RangeCoords[]>
+): RangeCoords {
   if (!ranges || ranges.length === 0) return range;
   // We want to return a unioned merged. ranges may only return the intersection.
   let lastRange:RangeCoords = range;
-  let currentRange:RangeCoords = null;
+  let currentRange:RangeCoords | null = null;
   while (!isEqualRanges(lastRange, currentRange)) {
     currentRange = lastRange;
     lastRange = extendRangeToIntersectingRanges(currentRange, ranges);
@@ -450,7 +502,10 @@ export const extendRangeToUnionRanges = (range: Readonly<RangeCoords>, ranges: R
  * @param range The range to extends
  * @param ranges Surrounding ranges.
  */
-export const extendRangeToIntersectingRanges = (range: Readonly<RangeCoords>, ranges: Readonly<RangeCoords[]>): RangeCoords => {
+export function extendRangeToIntersectingRanges(
+  range: Readonly<RangeCoords>,
+  ranges: Readonly<RangeCoords[]>
+): RangeCoords {
   if (!ranges || ranges.length === 0) return range;
   const extendedRange = { ...range };
 
@@ -470,7 +525,12 @@ export const extendRangeToIntersectingRanges = (range: Readonly<RangeCoords>, ra
 /**
  * Translate a range by a specified row and column index.
  */
-export const translateRange = (range: RangeCoords, rowIndex: number=-range.rowStart, colIndex: number=-range.colStart, reuseRange?: RangeCoords): RangeCoords => {
+export function translateRange(
+  range: RangeCoords,
+  rowIndex: number = -range.rowStart,
+  colIndex: number = -range.colStart,
+  reuseRange?: RangeCoords
+): RangeCoords {
   if (!reuseRange) {
     return {
       colStart: range.colStart + colIndex,
@@ -492,21 +552,59 @@ export const translateRange = (range: RangeCoords, rowIndex: number=-range.rowSt
  * @param rangeOrCoords
  * @returns a new object that has only the values of a RangeCoords.
  */
-export const sanitizeRange = (rangeOrCoords: RangeCoords | CellCoords): RangeCoords => {
+export function sanitizeRange(
+  rangeOrCoords: RangeCoords | CellCoords | null,
+  entireRange?: Readonly<RangeCoords>
+): RangeCoords | null {
   if (!rangeOrCoords)
     return null;
+  if (rangeOrCoords.scope) {
+    return {
+      colStart: (rangeOrCoords as CellCoords).colIndex ?? (rangeOrCoords as RangeCoords).colStart ?? entireRange?.colStart ?? 0,
+      rowStart: (rangeOrCoords as CellCoords).rowIndex ?? (rangeOrCoords as RangeCoords).rowStart ?? entireRange?.rowStart ?? 0,
+      colEnd: (rangeOrCoords as CellCoords).colIndex ?? (rangeOrCoords as RangeCoords).colEnd ?? entireRange?.colEnd ?? 0,
+      rowEnd: (rangeOrCoords as CellCoords).rowIndex ?? (rangeOrCoords as RangeCoords).rowEnd ?? entireRange?.rowEnd ?? 0,
+      scope: rangeOrCoords.scope
+    }
+  }
   return {
-    colStart: (rangeOrCoords as CellCoords).colIndex ?? (rangeOrCoords as RangeCoords).colStart ?? 0,
-    rowStart: (rangeOrCoords as CellCoords).rowIndex ?? (rangeOrCoords as RangeCoords).rowStart ?? 0,
-    colEnd: (rangeOrCoords as CellCoords).colIndex ?? (rangeOrCoords as RangeCoords).colEnd ?? 0,
-    rowEnd: (rangeOrCoords as CellCoords).rowIndex ?? (rangeOrCoords as RangeCoords).rowEnd ?? 0
+    colStart: (rangeOrCoords as CellCoords).colIndex ?? (rangeOrCoords as RangeCoords).colStart ?? entireRange?.colStart ?? 0,
+    rowStart: (rangeOrCoords as CellCoords).rowIndex ?? (rangeOrCoords as RangeCoords).rowStart ?? entireRange?.rowStart ?? 0,
+    colEnd: (rangeOrCoords as CellCoords).colIndex ?? (rangeOrCoords as RangeCoords).colEnd ?? entireRange?.colEnd ?? 0,
+    rowEnd: (rangeOrCoords as CellCoords).rowIndex ?? (rangeOrCoords as RangeCoords).rowEnd ?? entireRange?.rowEnd ?? 0
   }
 }
 
 /**
- * Ensure a partial range has default values
+ * Returns an array of RangeCoords from a shape that has either RangeCoord properties or CellCoord properties.
  */
-export const defaultRange = (range: Partial<RangeCoords>, defaultPartialRange: RangeCoords, reuseRange?: RangeCoords): RangeCoords => {
+export function sanitizeRangeArray(
+  rangeOrCoords: readonly (RangeCoords | CellCoords)[],
+  entireRange?: Readonly<RangeCoords>
+): RangeCoords[] | null {
+  if (!rangeOrCoords)
+    return null;
+  const rangesOrCoordsLength = rangeOrCoords.length;
+  const result: RangeCoords[] = new Array(rangesOrCoordsLength);
+  for (let i=0; i<rangesOrCoordsLength; i++) {
+    result[i] = sanitizeRange(rangeOrCoords[i], entireRange)!;
+  }
+  return result;
+}
+
+
+/**
+ * Ensure a partial range has default values
+ *
+ * @param range The range to default.
+ * @param defaultPartialRange The default values for the range.
+ * @param reuseRange An optional range to reuse for the result.
+ */
+export function defaultRange(
+  range: Partial<RangeCoords>,
+  defaultPartialRange: RangeCoords,
+  reuseRange?: RangeCoords
+): RangeCoords {
   if (!range) return defaultPartialRange;
   if (!reuseRange) {
     return {
@@ -523,13 +621,13 @@ export const defaultRange = (range: Partial<RangeCoords>, defaultPartialRange: R
   return reuseRange;
 }
 
-const _reuseEntryMergeArray: [null, null] = [null, null];
+const _reuseEntryMergeArray: [RangeCoordValue | null, RangeCoordValue | null] = [null, null];
 
 // const defaultCanMerge = <T>(a: T, b: T, _isColumn: boolean): T => {
 //   if (a === b) return b;
 // }
 
-const defaultEntryMerge = (from: [RangedValue, b: RangedValue], destination: RangeCoords, orientation: RangeOrientation): RangeCoords | null | undefined => {
+const defaultEntryMerge = (from: [RangeCoordValue, b: RangeCoordValue], destination: RangeCoords, axis: RangeAxis): RangeCoords | null | undefined => {
   if (from[0].value === from[1].value) return destination;
   return undefined;
 }
@@ -541,33 +639,33 @@ const defaultEntryMerge = (from: [RangedValue, b: RangedValue], destination: Ran
  *
  * @remarks
  * * Setting to '0' will remove overlaps but not attempt to merge.
- * * Setting to '1' will remove overlaps in the initial orientation.
+ * * Setting to '1' will remove overlaps in the initial axis.
  * * Setting to '2' will remove most overlaps but may miss overlaps that resulted from the previous iterations.
  * * Setting to 'Number.MAX_SAFE_INTEGER' will run until no more ranges can be merged.
  */
-export function mergeRangedValues(
-  ranges: RangedValue[],
+export function mergeRangeCoordValues(
+  ranges: RangeCoordValue[],
   iterations: number=2,
-  getMerge?: (from: [RangedValue, b: RangedValue], destination: RangedValue, orientation: RangeOrientation) => RangedValue | null | undefined,
-  orientation: RangeOrientation=RangeOrientation.Row,
-  reuseArray?: [null, null]
-): RangedValue[] {
-  let merged:RangedValue[] = [...ranges]; // for sort. what's a better way?
+  getMerge?: (from: [a: RangeCoordValue, b: RangeCoordValue], destination: RangeCoordValue, axis: RangeAxis) => RangeCoordValue | null | undefined,
+  axis: RangeAxis=RangeAxis.Row,
+  reuseArray?: [RangeCoordValue | null, RangeCoordValue | null]
+): RangeCoordValue[] {
+  let merged:RangeCoordValue[] = [...ranges]; // for sort. what's a better way?
   if (iterations <= 0 || ranges.length <= 1) return merged;
 
-  let isColumn = orientation === RangeOrientation.Column;
+  let isColumn = axis === RangeAxis.Column;
 
   let count = 0;
   let didMerge = false;
   do {
-    const toMerge = merged.sort(createRangeComparator(isColumn ? RangeOrientation.Row : RangeOrientation.Column));
+    const toMerge = merged.sort(createRangeComparator(isColumn ? RangeAxis.Row : RangeAxis.Column));
     // TODO - further optimize but not creating a new array. instead just slice away the merge ranges.(we could also set merge value to null and splice or sort depending on merged counted)
     merged = [];
 
     merged.push(toMerge[0]);
     const toMergeLength = toMerge.length;
     let mergedIndex = 0;
-    let lastRange:RangedValue = toMerge[0];
+    let lastRange:RangeCoordValue = toMerge[0];
     let lastRangeColStart = lastRange.colStart;
     let lastRangeRowStart = lastRange.rowStart;
     let lastRangeColEnd = lastRange.colEnd;
@@ -591,7 +689,7 @@ export function mergeRangedValues(
 
       // TODO - we should make ths faster by not cloning
       if (mergeCandidate) {
-        let destination:RangedValue = {
+        let destination:RangeCoordValue | null | undefined = {
           colStart: lastRangeColStart,
           rowStart: lastRangeRowStart,
           colEnd: isColumn ? range.colEnd : lastRangeColEnd,
@@ -602,10 +700,10 @@ export function mergeRangedValues(
         }
 
         if (getMerge) {
-          const array = reuseArray ?? [null, null];
+          const array: [RangeCoordValue | null, RangeCoordValue | null] = reuseArray ?? [null, null];
           array[0] = lastRange;
           array[1] = range;
-          destination = getMerge(array, destination, orientation);
+          destination = getMerge(array as [RangeCoordValue, RangeCoordValue], destination, axis);
         }
         if (destination) {
           merged[mergedIndex] = destination;
@@ -627,7 +725,7 @@ export function mergeRangedValues(
       // merged.push(range); // not merged
     }
     count++;
-    isColumn = !isColumn; // swap orientation
+    isColumn = !isColumn; // swap axis
     // we set the first didMerge to true so that we try at least 2
     if (count === 1) {
       didMerge = true;
@@ -637,9 +735,12 @@ export function mergeRangedValues(
   return merged;
 }
 
+/**
+ * Interface for incrementally building ranges against minor and optionally major.
+ */
 export interface IConflatingRanges<T=any> {
   append: (major: number, minor: number, value?: T) => void;
-  done: (merge?: boolean | ((from: [RangedValue, b: RangedValue], destination: RangeCoords, orientation: RangeOrientation) => RangeCoords | null | undefined)) => RangedValue<T>[];
+  done: (merge?: boolean | ((from: [RangeCoordValue, b: RangeCoordValue], destination: RangeCoords, axis: RangeAxis) => RangeCoords | null | undefined)) => RangeCoordValue<T>[];
 }
 
 /**
@@ -650,20 +751,20 @@ export interface IConflatingRanges<T=any> {
  * @remarks
  * Assumes ordered writes.
  */
-export const createConflatingRanges = <T=any>(
+export function createConflatingRanges<T=any>(
   canMerge?: (a: T, b: T, isColumn: boolean) => T,
   isColumn: boolean=false
-): IConflatingRanges => {
-  const ranges:RangedValue<T>[] = [];
-  let lastRange:RangedValue<T>;
-  let lastValue:T;
+): IConflatingRanges<T> {
+  const ranges:RangeCoordValue<T>[] = [];
+  let lastRange:RangeCoordValue<T> | null = null;
+  let lastValue:T | undefined;
   let lastMajor:number = Number.MIN_SAFE_INTEGER;
   let lastMinor:number = Number.MIN_SAFE_INTEGER;
   const append = (major: number, minor: number, value?: T): void => {
     let merge:boolean = true;
     const isValueDefined = value !== undefined;
     if (isValueDefined) {
-      const mergeValue:T = canMerge ? canMerge(lastValue, value, isColumn) : ((lastValue === value) ? value : undefined);
+      const mergeValue:T | undefined = canMerge ? canMerge(lastValue as T, value!, isColumn) : ((lastValue === value) ? value : undefined);
       if (mergeValue === undefined) {
         merge = false;
       } else {
@@ -673,9 +774,9 @@ export const createConflatingRanges = <T=any>(
 
     if (merge && minor === lastMinor + 1 && major === lastMajor) {
       if (isColumn)
-        lastRange.rowEnd = minor;
+        lastRange!.rowEnd = minor;
       else
-      lastRange.colEnd = minor;
+      lastRange!.colEnd = minor;
       lastMinor = minor;
       lastValue = value;
       return;
@@ -701,18 +802,82 @@ export const createConflatingRanges = <T=any>(
   }
 
   const done = (
-    merge?: boolean | ((from: [RangedValue, b: RangedValue], destination: RangeCoords, orientation: RangeOrientation) => RangeCoords | null | undefined)
-  ): RangedValue<T>[] => {
+    merge?: boolean | ((from: [RangeCoordValue, b: RangeCoordValue], destination: RangeCoords, axis: RangeAxis) => RangeCoords | null | undefined)
+  ): RangeCoordValue<T>[] => {
     if (lastRange) {
       ranges.push(lastRange);
       lastRange = null;
     }
     if (!merge) return ranges;
     const mergeFn = merge === true ? defaultEntryMerge : merge;
-    return mergeRangedValues(ranges, 3, mergeFn, isColumn ? RangeOrientation.Column : RangeOrientation.Row, _reuseEntryMergeArray);
+    return mergeRangeCoordValues(ranges, 3, mergeFn, isColumn ? RangeAxis.Column : RangeAxis.Row, _reuseEntryMergeArray);
   }
   return {
     append,
     done
   }
+}
+
+/**
+ * What becomes of the space a CUT range vacates when its block is INSERTED elsewhere - the
+ * Shift-drag drop, and the `insertFrom({ isCut: true })` behind it.
+ *
+ * @remarks
+ * Both ends of that operation classify here so they can never disagree: the model, which performs
+ * the shift, and the drag preview, which has to say whether a release will be refused before the
+ * model is ever called. Applies to a cut and destination on the SAME sheet; a cut lifted from
+ * another sheet is always {@link InsertCutShift.Blank}, its gap having nothing to close into.
+ */
+export const InsertCutShift = {
+  /**
+   * The gap closes: cells behind the cut slide back along the axis. That closure carries the
+   * destination with it when the destination sits after the cut, so the block still lands on the
+   * line it was dropped on.
+   */
+  Close: 'close',
+  /** The gap stays open - the source is blanked where it sits and the block lands exactly where drawn. */
+  Blank: 'blank',
+  /** Refused: the insert line falls inside the very block being cut. */
+  Inside: 'inside',
+  /** Refused: the insert would shift only PART of the cut, which no rectangle describes. */
+  Tear: 'tear'
+} as const;
+export type InsertCutShift = typeof InsertCutShift[keyof typeof InsertCutShift];
+
+/**
+ * Which of the four {@link InsertCutShift} outcomes inserting `insert` while cutting `cut` produces.
+ *
+ * The gap closes only when the two share a band across `axis` - the cut then shifts as a whole, and
+ * a whole shift is the only kind a rectangle can express. Off that band the source is simply blanked
+ * unless the insert would drag part of the cut along with it, which is refused. Excel draws the
+ * same four lines.
+ *
+ * @param cut The range being cut.
+ * @param insert Where the block lands, sized as dropped - its LEADING edge on `axis` is the line.
+ * @param axis Which way the existing cells shift: `Row` down, `Column` right.
+ */
+export function classifyInsertCut(cut: RangeCoords, insert: RangeCoords, axis: RangeAxis): InsertCutShift {
+  const isRow = axis === RangeAxis.Row;
+  const isAligned = isRow
+    ? (cut.colStart === insert.colStart && cut.colEnd === insert.colEnd)
+    : (cut.rowStart === insert.rowStart && cut.rowEnd === insert.rowEnd);
+  if (isAligned) {
+    /* The line has to be OUTSIDE the block. Landing it within means closing a gap the block is
+       still sitting in. The line immediately past either end is fine - that is the no-op drop. */
+    const isInside = isRow
+      ? (insert.rowStart > cut.rowStart && insert.rowStart <= cut.rowEnd)
+      : (insert.colStart > cut.colStart && insert.colStart <= cut.colEnd);
+    return isInside ? InsertCutShift.Inside : InsertCutShift.Close;
+  }
+  /* Off the band the shift still reaches the cut if the cut sits at or after the insert line and
+     the two cross - it would then move some of the cut's rows/columns and not the others. */
+  const isDisplaced = isRow
+    ? (cut.rowEnd >= insert.rowStart && cut.colStart <= insert.colEnd && cut.colEnd >= insert.colStart)
+    : (cut.colEnd >= insert.colStart && cut.rowStart <= insert.rowEnd && cut.rowEnd >= insert.rowStart);
+  return isDisplaced ? InsertCutShift.Tear : InsertCutShift.Blank;
+}
+
+/** Whether an {@link InsertCutShift} is one of the two refusals - a drop that cannot be performed. */
+export function isRefusedInsertCut(shift: InsertCutShift): boolean {
+  return shift === InsertCutShift.Inside || shift === InsertCutShift.Tear;
 }

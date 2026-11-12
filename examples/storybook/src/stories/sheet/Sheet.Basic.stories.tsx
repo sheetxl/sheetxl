@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 
-import { Sheet } from '@sheetxl/sdk';
+import { Worksheet } from '@sheetxl/sdk';
 
-import { SheetElement } from '@sheetxl/react';
+import { WorksheetElement } from '@sheetxl/react';
+
+import { asStory } from '../../components';
 
 const Template: React.FC = (props) => {
   const {
@@ -14,14 +16,18 @@ const Template: React.FC = (props) => {
   } = props as any;
 
   const [sheet] = useState(() => {
-    return new Sheet({
-      maxColumns,
-      maxRows
+    return new Worksheet({
+      json: {
+        entireSize: {
+          width: maxColumns,
+          height: maxRows
+        }
+      }
     });
   });
 
   return (
-    <SheetElement
+    <WorksheetElement
       style={{
         // minHeight: '400px',
         minHeight: '100%',
@@ -37,7 +43,7 @@ const Template: React.FC = (props) => {
   );
 };
 
-export const BaseSheet = Template.bind({});
+export const BaseSheet = asStory(Template);
 
 BaseSheet.args = {
   maxRows: 100,
@@ -49,7 +55,7 @@ BaseSheet.args = {
 BaseSheet.storyName = "Base";
 
 const Story = {
-  title: 'Sheet',
-  component: SheetElement,
+  title: 'Sheet/Base',
+  component: WorksheetElement,
 };
 export default Story;

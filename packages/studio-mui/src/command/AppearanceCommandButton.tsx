@@ -1,59 +1,56 @@
-import React, { memo, forwardRef } from 'react';
+import { memo, forwardRef } from 'react';
 
 import { useMediaQuery } from '@mui/material';
 
 import {
-  Command, CommandButtonType, useCallbackRef, useCommands, ICommands
+  useCommands, useCommandButtonEntry, CommandButtonType, useCallbackRef, type ThemeMode
 } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitDivider, ExhibitPopupPanelProps, ThemeMode
+  CommandButton, CommandPopupButton, defaultRenderPopupPanel, ExhibitDivider,
+  type CommandPopupButtonProps, type ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 export const AppearanceCommandButton = memo(forwardRef<HTMLElement, CommandPopupButtonProps>((props, refForwarded) => {
   const {
-    commands: propCommands,
-    commandHook: propCommandHook,
-    scope,
-    disabled: propDisabled = false,
+    groupKey,
+    disabled: propDisabled,
     ...rest
   } = props;
 
-  const resolved = useCommands<any,any>(propCommands, ['themeMode']);
-  const commandMode = resolved[0];
+  // Close-on-execute is handled automatically: the popup members render inside this button's float,
+  // and `useCommands` closes the enclosing float on execute (`useFloat`) — no per-button wiring.
+  const [commandMode] = useCommands(['themeMode']);
+  const entry = useCommandButtonEntry('appearanceOptions');
 
-
-  const createPopupPanel = useCallbackRef((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
+  const renderPopupPanel = useCallbackRef((props: ExhibitPopupPanelProps) => {
     const commandButtonProps = {
       variant: CommandButtonType.Menuitem,
-      // parentFloat: props.floatReference,
-      commandHook: propCommandHook,
-      scope: 'appearance',
+      groupKey: 'appearanceOptions',
       disabled: propDisabled
     }
 
     const children = (<>
       <CommandButton
         {...commandButtonProps}
-        command={commandMode as Command<ThemeMode>}
+        commandKey={'themeMode'}
       />
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('defaultThemeMode') as Command<boolean>}
+        commandKey={'defaultThemeMode'}
       />
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('enableDarkGrid') as Command<boolean>}
+        commandKey={'enableDarkGrid'}
       />
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('enableDarkImages') as Command<boolean>}
+        commandKey={'enableDarkImages'}
       />
     </>);
-    return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, commandMode, propCommandHook, scope]);
+    return defaultRenderPopupPanel({...props, children});
+  }, [propDisabled, commandMode, groupKey]);
 
   const darkModeUserOverride:ThemeMode = commandMode?.getState();
   const darkModeSystemDefault = useMediaQuery('(prefers-color-scheme: dark)');
@@ -64,12 +61,11 @@ export const AppearanceCommandButton = memo(forwardRef<HTMLElement, CommandPopup
     <CommandPopupButton
       ref={refForwarded}
       quickCommand={'themeMode'}
-      commands={propCommands}
-      commandHook={propCommandHook}
-      createPopupPanel={createPopupPanel}
-      label="Appearance"
-      tooltip="Change the light/dark mode to match your viewing preference. This does not affect the view for others."
-      onQuickClick={() => { commandMode?.execute(currentDark ? 'light' : 'dark', propCommandHook) }}
+      renderPopupPanel={renderPopupPanel}
+      // Head chrome comes from the registered `appearanceOptions` entry (catalog-backed, language-aware).
+      label={entry?.getLabel?.()}
+      tooltip={entry?.getDescription?.()}
+      onQuickClick={() => { commandMode?.execute(currentDark ? 'light' : 'dark') }}
       selected={isUserOverride}
       {...rest}
     />

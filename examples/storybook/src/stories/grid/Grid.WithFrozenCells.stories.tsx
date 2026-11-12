@@ -1,29 +1,28 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useMemo } from 'react';
 
 import {
-  DefaultCellRenderer, type CellRendererProps, ScrollableGrid as Grid,
-  IGridElement, useSelection
+  DefaultCellRenderer, SelectionLayer, DefaultSelection,
+  type CellRendererProps, type IGrid,
 } from '@sheetxl/grid-react';
+
+import { ScrollableGrid as Grid, asStory } from '../../components';
 
 const Template: React.FC = (props) => {
   const {
     freezeTop,
     freezeLeft,
+    columnCount = 200,
+    rowCount = 200,
     ...rest
   } = props as any;
 
-  const gridRef = useRef<IGridElement>(null);
+  const gridRef = useRef<IGrid>(null);
 
-  const {
-    selection,
-    // commands: commandsSelection,
-    renderOverlay: renderSelection,
-    ...selectionProps // used for callbacks
-  } = useSelection({
-    gridRef
-  });
+  const selection = useMemo(() => new DefaultSelection({
+    getBounds: () => ({ rowStart: 0, colStart: 0, rowEnd: rowCount - 1, colEnd: columnCount - 1 })
+  }), [rowCount, columnCount]);
 
-  const renderCell = useCallback((props: CellRendererProps) => {
+  const renderCells = useCallback((props: CellRendererProps) => {
     const {
       key,
       style: propStyle,
@@ -36,9 +35,9 @@ const Template: React.FC = (props) => {
         {...rest}
         style={{
           ...propStyle,
-          color: `${range.rowStart < freezeTop || range.colStart < freezeLeft ? 'blue' : undefined}`
+          color: `${range!.rowStart < freezeTop || range!.colStart < freezeLeft ? 'blue' : undefined}`
         }}
-        value={`${props.range.rowStart}:${props.range.colStart}`}
+        value={`${props.range!.rowStart}:${props.range!.colStart}`}
       />
     )
   }, [freezeTop, freezeLeft]);
@@ -53,24 +52,21 @@ const Template: React.FC = (props) => {
       <Grid
         {...rest}
         ref={gridRef}
-        renderCell={renderCell}
+        columnCount={columnCount}
+        rowCount={rowCount}
+        renderCells={renderCells}
         freezeTop={freezeTop}
         freezeLeft={freezeLeft}
         propsFreezeLeft={freezeDividerProps}
         propsFreezeTop={freezeDividerProps}
-        // onKeyDown={(e: React.KeyboardEvent<any>) => {
-        //   commandsSelection.onKeyDown(e);
-        // }}
-        onPointerDown={(e: React.PointerEvent<any>) => {
-          selectionProps.onPointerDown(e);
-        }}
-        renderOverlays={[renderSelection]}
-      />
+      >
+        <SelectionLayer key="selection" selection={selection} />
+      </Grid>
     </div>
   );
 };
 
-export const GridWithFrozenCells = Template.bind({});
+export const GridWithFrozenCells = asStory(Template);
 GridWithFrozenCells.args = {
   columnCount: 200,
   rowCount: 200,
@@ -78,7 +74,7 @@ GridWithFrozenCells.args = {
   freezeLeft: 4
 };
 
-GridWithFrozenCells.storyName = "with Frozen Cells";
+GridWithFrozenCells.storyName = "Frozen Cells";
 
 const Story = {
   title: 'Grid',

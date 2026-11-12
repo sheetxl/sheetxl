@@ -1,3 +1,52 @@
 {
-  "extends": "./tsconfig.build.json"
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "paths": {
+      "@sheetxl/primitives": [
+        "../../packages/primitives/src"
+      ],
+      "@sheetxl/utils": [
+        "../../packages/utils/src"
+      ],
+      "@sheetxl/io": [
+        "../../packages/io/src"
+      ],
+      "@sheetxl/utils-react": [
+        "../../packages/utils-react/src"
+      ],
+      "@sheetxl/utils-mui": [
+        "../../packages/utils-mui/src"
+      ],
+      "@sheetxl/studio-mui": [
+        "../../packages/studio-mui/src"
+      ]
+    },
+    "tsBuildInfoFile": "./build/.tsbuildinfo.storybook",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "./src",
+    "../../packages/primitives/src",
+    "../../packages/utils/src",
+    "../../packages/sdk/src",
+    "../../packages/io/src",
+    "../../packages/io-xlsx/src",
+    "../../packages/utils-react/src",
+    "../../packages/utils-react/src/icons/packs/*.json",
+    "../../packages/utils-mui/src",
+    "../../packages/grid-react/src",
+    "../../packages/react/src",
+    "../../packages/studio-mui/src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**",
+    "../../packages/**/*.test.*",
+    "../../packages/**/__tests__/**",
+    "**/.pnpm",
+    "**/build",
+    "**/dist",
+    "**/node_modules"
+  ]
 }

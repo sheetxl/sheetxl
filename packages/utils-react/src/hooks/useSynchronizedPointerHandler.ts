@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import type React from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
 import { ReactUtils } from '../utils';
 
@@ -34,16 +35,12 @@ export interface PointerHandlerOptions<T extends Element = Element> {
   timerInitial?: number;
   timerContinuous?: number;
   /**
-   * If this is being used for a touch device then this should be true. This will
-   * prevent the default touch events from being fired (by calling defaultPrevent during the capture phase).
+   * Track the gesture through pointer events rather than mouse events, so a finger or a pen drives
+   * it too. The element pressed declares `touch-action: none` to keep the browser's pan, and the
+   * scroll pane's touch scroller, off the gesture.
    * @default false
    */
   processTouch?: boolean;
-  /**
-   * If true the touch events will be consumed and not propagated.
-   * @default true
-   */
-  consumeTouch?: boolean;
 }
 
 /**
@@ -66,7 +63,6 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
     onPointerUp: propOnPointerUp,
     onPointerMoveOrWait: propOnPointerMoveOrWait,
     processTouch = false,
-    consumeTouch = true,
   } = options;
 
   const onPointerDown = useCallbackRef(propOnPointerDown, [propOnPointerDown]);
@@ -83,10 +79,10 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
   const timerContinuous = options?.timerContinuous ?? timerInitial / 2;
 
   const originalEvent = useRef<React.PointerEvent | null>(null);
-  const lastPointerEvent = useRef<globalThis.PointerEvent>(null);
-  const lastKeyboardModifiers = useRef<PointerModifiers>(null);
+  const lastPointerEvent = useRef<globalThis.PointerEvent | null>(null);
+  const lastKeyboardModifiers = useRef<PointerModifiers | null>(null);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopTimer = useCallback(() => {
     if (!timerRef.current) return;
 
@@ -100,11 +96,12 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
         if (refIsPressed.current === false) return;
         const nativeEvent = lastPointerEvent.current;
         const original = originalEvent.current;
+        if (!nativeEvent || !original) return;
         const syntheticEvent = ReactUtils.createSyntheticEvent<Element, PointerEvent, React.PointerEvent<Element>>(
           nativeEvent,
           original.currentTarget
         );
-        onPointerMoveOrWait?.(syntheticEvent, lastKeyboardModifiers.current, original);
+        onPointerMoveOrWait?.(syntheticEvent, lastKeyboardModifiers.current!, original);
       });
       startTimer(timerContinuous); // we make first time slightly longer to similar a delayed start
     }, delay ?? timerInitial);
@@ -115,22 +112,16 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
   }, []);
 
   const eventType = processTouch ? 'pointer' : 'mouse';
-  const consumeTouchHandler = useCallback((e: TouchEvent) => {
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    e.preventDefault();
-  }, []);
 
   const handlePointerUp = useCallbackRef((e: globalThis.PointerEvent) => {
     /* Remove listener */
-    document.removeEventListener(`${eventType}move`, handlePointerMove);
-    document.removeEventListener(`${eventType}up`, handlePointerUp);
+    document.removeEventListener(`${eventType}move`, handlePointerMove as EventListener);
+    document.removeEventListener(`${eventType}up`, handlePointerUp as EventListener);
+    document.removeEventListener('pointercancel', handlePointerUp as EventListener);
 
     document.removeEventListener(`keydown`, handleKeyDown);
     document.removeEventListener(`keyup`, handleKeyUp);
 
-    document.removeEventListener("touchstart", consumeTouchHandler, { capture: true });
-    document.removeEventListener("touchmove", consumeTouchHandler, { capture: true });
     window.removeEventListener('blur', handleWindowBlur);
     stopTimer();
 
@@ -140,18 +131,20 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
       refIsPressed.current = false;
       const nativeEvent = e;
       const original = originalEvent.current;
+      if (!original) return;
       const syntheticEvent = ReactUtils.createSyntheticEvent<Element, PointerEvent, React.PointerEvent<Element>>(
         nativeEvent,
         original.currentTarget
       );
-      onPointerUp?.(syntheticEvent, lastKeyboardModifiers.current, original);
+      onPointerUp?.(syntheticEvent, lastKeyboardModifiers.current!, original);
       lastKeyboardModifiers.current = null;
     });
   }, []);
 
+  // Losing the window (another app or a system overlay takes the pointer) ends the press as a release
+  // at the last known position; the release path clears `refIsPressed` itself.
   const handleWindowBlur = useCallback(() => {
-    if (refIsPressed.current === false) return;
-    refIsPressed.current = false;
+    if (refIsPressed.current === false || !lastPointerEvent.current) return;
     handlePointerUp(lastPointerEvent.current);
   }, []);
 
@@ -163,11 +156,12 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
       if (refIsPressed.current === false) return;
       const nativeEvent = lastPointerEvent.current;
       const original = originalEvent.current;
+      if (!nativeEvent || !original) return;
       const syntheticEvent = ReactUtils.createSyntheticEvent<Element, PointerEvent, React.PointerEvent<Element>>(
         nativeEvent,
         original.currentTarget
       );
-      onPointerMoveOrWait?.(syntheticEvent, lastKeyboardModifiers.current, original);
+      onPointerMoveOrWait?.(syntheticEvent, lastKeyboardModifiers.current!, original);
     });
   }, [timerContinuous]);
 
@@ -211,18 +205,15 @@ export function useSynchronizedPointerHandler(options: PointerHandlerOptions): P
     originalEvent.current = e;
     lastPointerEvent.current = e.nativeEvent;
 
-    document.addEventListener(`${eventType}up`, handlePointerUp, { passive: false });
-    document.addEventListener(`${eventType}move`, handlePointerMove, { passive: false });
+    document.addEventListener(`${eventType}up`, handlePointerUp as EventListener, { passive: false });
+    document.addEventListener(`${eventType}move`, handlePointerMove as EventListener, { passive: false });
+    // The browser can take the pointer away mid-press with no `up` to follow.
+    document.addEventListener('pointercancel', handlePointerUp as EventListener, { passive: false });
 
     document.addEventListener(`keydown`, handleKeyDown, { passive: false });
     document.addEventListener(`keyup`, handleKeyUp, { passive: false });
 
     window.addEventListener('blur', handleWindowBlur, { passive: true });
-
-    if (processTouch && consumeTouch) {
-      document.addEventListener("touchstart", consumeTouchHandler, { passive: false, capture: true });
-      document.addEventListener("touchmove", consumeTouchHandler, { passive: false, capture: true });
-    }
 
     refIsPressed.current = true;
     startTimer(timerInitial);

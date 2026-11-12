@@ -1,0 +1,176 @@
+{
+  "$schema": "../../../utils-react/command-catalog.schema.json",
+  "scope": "app",
+  "label": "Application",
+  "tag": "en",
+  "version": 1,
+  "commands": {
+    "help": {
+      "label": "Show Help",
+      "description": "Provide Help.",
+      "icon": "Documentation",
+      "shortcut": "F1"
+    },
+    "showKeyboardShortcuts": {
+      "label": "Keyboard Shortcuts",
+      "description": "Show keyboard shortcuts.",
+      "icon": "Keyboard",
+      "shortcut": "ctrl+/"
+    },
+    "gotoUrlGithub": {
+      "label": "Github",
+      "description": "Download examples, explore source code, and leave a star.",
+      "icon": "Github"
+    },
+    "gotoUrlDiscord": {
+      "label": "Discord",
+      "description": "Join our community on discord.",
+      "icon": "Discord"
+    },
+    "gotoUrlDocumentation": {
+      "label": "Documentation",
+      "description": "Read the documentation.",
+      "icon": "Documentation"
+    },
+    "gotoUrlIssue": {
+      "label": "Create Issue",
+      "description": "Create an issue to identify a bug or a feature request.",
+      "icon": "Ticket"
+    },
+    "fullScreenToggle": {
+      "label": "FullScreen",
+      "description": "Toggle showing the application using the full screen.",
+      "icon": "FullScreen",
+      "shortcut": "F11"
+    },
+    "themeMode": {
+      "label": "{dark, select, true{Dark Mode} other{Light Mode}}",
+      "description": "Toggle the application styling between light and dark mode.",
+      "groupLabels": {
+        "appearanceOptions": "{dark, select, true{Dark Mode} other{Light Mode}}"
+      },
+      "params": {
+        "dark": false
+      }
+    },
+    "defaultThemeMode": {
+      "label": "Use System Light/Dark Mode",
+      "description": "Use the system settings to determine styling for light and dark mode.",
+      "groupLabels": {
+        "appearanceOptions": "Use System Default"
+      }
+    },
+    "enableDarkGrid": {
+      "label": "Enable Dark Grid",
+      "description": "Allow the grid to render in dark mode if dark mode is being used. This is ensures that the grid will render the colors as specified in another tools (for example Excel)."
+    },
+    "enableDarkImages": {
+      "label": "Enable Dark Images",
+      "description": "Allow the images to render in dark mode if dark mode is being used. This is ensures that the images will render the colors as specified in another tools (for example Excel). This only has any effect if the grid is in dark mode."
+    },
+    "language": {
+      "label": "Language",
+      "description": "The language used for menus, tooltips, and messages. This is your own preference and is not saved with the workbook.",
+      "icon": "Language"
+    },
+    "insertDataFromFile": {
+      "label": "Import Data from Device…",
+      "description": "Import a file and add its sheets to the current workbook as new tabs.",
+      "groupLabels": {
+        "insertDataOptions": "From Device…"
+      },
+      "icon": "DataInsert",
+      "tags": [
+        "mutator"
+      ]
+    },
+    "insertDataFromURL": {
+      "label": "Import Data from the Web…",
+      "description": "Import a workbook from the web and add its sheets to the current workbook as new tabs.",
+      "groupLabels": {
+        "insertDataOptions": "From the Web…"
+      },
+      "icon": "DataInsert",
+      "tags": [
+        "mutator"
+      ]
+    },
+    "newWorkbook": {
+      "description": "Create a new blank workbook. A workbook with unsaved changes is kept, and the new one opens in another tab.",
+      "label": "New Workbook",
+      "groupLabels": {
+        "workbook": "New",
+        "newWorkbookOptions": "Blank Workbook"
+      },
+      "icon": "FileNew"
+    },
+    "newWorkbookFromTemplate": {
+      "description": "Create a new workbook from a template.",
+      "label": "New Workbook From Template…",
+      "groupLabels": {
+        "newWorkbookOptions": "From Template…"
+      },
+      "icon": "FileNew"
+    },
+    "showWelcome": {
+      "description": "Show the welcome screen: start blank, open a workbook, or pick a template.",
+      "label": "Welcome",
+      "icon": "FileNew"
+    },
+    "openWorkbook": {
+      "description": "Open a workbook from the desktop.",
+      "label": "Open Workbook…",
+      "groupLabels": {
+        "workbook": "Open…",
+        "openWorkbookOptions": "From Device…"
+      },
+      "icon": "FileOpen",
+      "shortcut": "ctrl+O"
+    },
+    "openWorkbookFromUrl": {
+      "description": "Open a workbook from the web.",
+      "label": "Open Workbook From Web",
+      "groupLabels": {
+        "workbook": "From Web…",
+        "openWorkbookOptions": "From the Web…"
+      },
+      "icon": "FileOpen"
+    },
+    "saveWorkbook": {
+      "description": "Save the workbook.",
+      "label": "Save Workbook",
+      "groupLabels": {
+        "workbook": "Save"
+      },
+      "icon": "FileDownloadAsSheet",
+      "shortcut": "ctrl+S"
+    },
+    "saveWorkbookAs": {
+      "description": "Save the workbook to a new location.",
+      "label": "Save Workbook As…",
+      "groupLabels": {
+        "saveWorkbookOptions": "as…",
+        "workbook": "Save as…"
+      },
+      "icon": "FileDownloadAsSheet",
+      "shortcut": [
+        "ctrl+shift+S",
+        "F12",
+        "alt+F2"
+      ]
+    },
+    "protectWorkbook": {
+      "description": "Encrypt the workbook with a password, or protect its structure.",
+      "label": "Protect Workbook…",
+      "groupLabels": {
+        "workbook": "Protect…"
+      },
+      "icon": "Lock"
+    },
+    "closeWorkbook": {
+      "description": "Close the workbook.",
+      "label": "Close Workbook",
+      "shortcut": "ctrl+alt+W"
+    }
+  }
+}

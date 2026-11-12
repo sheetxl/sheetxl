@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>SheetXL Studio - Zero Install Demo</title>
+  <link rel="icon" href="https://www.sheetxl.com/favicon.ico" crossorigin="anonymous" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#4a90e2" />
+  <meta name="description" content="SheetXL Studio - Advanced spreadsheet component for web applications" />
+  <link rel="apple-touch-icon" href="https://www.sheetxl.com/img/logo_x192.png" crossorigin="anonymous" />
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>
+      <a href="https://www.sheetxl.com" target="_blank" rel="noopener noreferrer">
+        <img src="https://www.sheetxl.com/logo-text.svg" alt="SheetXL" />
+      </a>
+      Zero Install Demo
+    </h1>
+
+    <div class="info">
+      <p>
+        Simple integration with advanced configurations just a few lines of code.
+      </p>
+      <div class="action-buttons">
+        <a href="#" onclick="copyCode(); return false;" class="btn btn-copy">
+          📋 Copy this Page
+        </a>
+      </div>
+    </div>
+
+    <div id="sheetxl">
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>
+      Powered by <a href="https://www.sheetxl.com" target="_blank" rel="noopener noreferrer">SheetXL</a> |
+      <a href="https://github.com/sheetxl" target="_blank" rel="noopener noreferrer">View on GitHub</a> |
+      <a href="https://www.sheetxl.com/docs" target="_blank" rel="noopener noreferrer">Documentation</a>
+    </p>
+  </div>
+  <script type="module">
+    // This loads SheetXL
+    // A dist-tag url (`@latest`) is cached by the browser for up to a week, but the chunks it imports
+    // resolve against whatever the tag points at now. After a release the two no longer match, so
+    // resolve the tag to an exact version and load everything from there.
+    async function resolveVersion(url) {
+      const match = url.match(/^(https:\/\/cdn\.jsdelivr\.net\/npm\/@[^/@]+\/[^/@]+)(?:@([^/]+))?(\/.*)$/);
+      if (!match) return url;
+      const [, base, specifier = 'latest', path] = match;
+      if (/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(specifier)) return url;
+      try {
+        const name = base.slice('https://cdn.jsdelivr.net/npm/'.length);
+        const response = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${name}/resolved?specifier=${specifier}`);
+        const { version } = await response.json();
+        return version ? `${base}@${version}${path}` : url;
+      } catch {
+        return url;
+      }
+    }
+
+    async function importSheetXL(url) {
+      const resolved = await resolveVersion(url);
+      try {
+        return await import(resolved);
+      } catch {
+        // If the version lookup failed, a stale cached entry may be the cause. Retry once with a fresh copy.
+        return await import(`${resolved}${resolved.includes('?') ? '&' : '?'}t=${Date.now()}`);
+      }
+    }
+
+    async function initializeSheetXL() {
+      // `@latest` is the current stable release. Pin an exact version (`@0.7.27`) in production.
+      const moduleUrl = 'https://cdn.jsdelivr.net/npm/@sheetxl/studio-vanilla@latest/cdn/index.js';
+      // const moduleUrl = 'http://localhost:4000/cdn/index.js';
+      try {
+        // (await import("https://esm.sh/@sheetxl/studio-vanilla")).default.attachStudio("#sheetxl");
+        // console.log('✅ SheetXL loaded successfully:', test);
+        const module = await importSheetXL(moduleUrl);
+        const { SheetXL } = module;
+        await SheetXL.attachStudio({
+          selector: "#sheetxl",
+          // A license key can also be available at the local url as well.
+          // licenseKey: `visit https://my.sheetxl.com to generate a license key.`,
+          // Shown while the bundle downloads. Colors are set so it reads on this page's blue background.
+          loading: {
+            message: 'Loading SheetXL Studio...',
+            cssVars: { color: 'white', iconColor: 'white' }
+          }
+        });
+      } catch (error) {
+        console.error('❌ Error loading SheetXL:', error);
+        const container = document.getElementById('sheetxl');
+        container.innerHTML = `
+          <div class="error full-height">
+            ❌ Failed to load SheetXL Studio at '${moduleUrl}'
+            <div class="error content">
+              <strong>Error:</strong> ${error.message}
+              ${error.details ? `<br><small>${error.details}</small>` : ''}
+              <br><br>
+              <strong>Troubleshooting:</strong>
+              <ul>
+                <li>Check if the url is accessible</li>
+                <li>Verify your internet connection</li>
+                <li>Try refreshing the page</li>
+              </ul>
+            </div>
+          </div>
+        `;
+      }
+    }
+    // Initialize when DOM is ready
+    initializeSheetXL();
+  </script>
+  <script type="module">
+    // Just for demo. Not part of the actual SheetXL code.
+    async function copyCode() {
+      try {
+        const response = await fetch('./index.html');
+        const code = await response.text();
+        await navigator.clipboard.writeText(code);
+        alert('✅ Code copied to clipboard!');
+      } catch (clipboardError) {
+        alert('✅ Unable to copy code to clipboard. Try CodePen!');
+      }
+    }
+    // Make copyCode available globally
+    window.copyCode = copyCode;
+  </script>
+</body>
+
+</html>

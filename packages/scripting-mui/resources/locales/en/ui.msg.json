@@ -1,0 +1,18 @@
+{
+  "insertFunction.fallbackLabel": "Function",
+  "insertFunction.insertNamed": "Insert {name}",
+  "insertScript.fallbackLabel": "Insert Script",
+  "insertScript.loadFailedRetry": "Couldn’t load templates. Retry",
+  "insertScript.loading": "Loading...",
+  "runScript.executeNamed": "Execute {name}",
+  "runScript.fallbackLabel": "Macro",
+  "templateSelect.blankSummary": "Start with an empty script.",
+  "templateSelect.blankTitle": "Blank Template...",
+  "templateSelect.errorTitle": "Error loading Templates",
+  "templateSelect.intro": "Choose from a template to provide a starting point to automate tasks or create user defined functions.",
+  "templateSelect.intro2": "Templates provide a foundation to customize and meet your specific needs.",
+  "templateSelect.loadFailed": "Failed to load scripts",
+  "templateSelect.retry": "Retry",
+  "templateSelect.title": "Script Template",
+  "templateSelect.untitled": "Untitled"
+}

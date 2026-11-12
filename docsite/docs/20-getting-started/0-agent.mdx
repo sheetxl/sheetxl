@@ -1,0 +1,50 @@
+---
+sidebar_position: 5
+title: Quick Start (with Agent)
+sidebar_label: Quick Start (with Agent)
+description: Give your AI agent a real spreadsheet engine, or have it build a spreadsheet app with you, from one copied prompt.
+---
+
+import { AgentCard, AgentUseCases } from '@site/src/components/AgentPrompt';
+
+# Quick Start (with Agent)
+
+SheetXL gives AI agents a real spreadsheet engine: Excel-compatible calculation with
+545+ functions, best-in-class `.xlsx` support, and a typed SDK the agent writes code
+against — not a fixed menu of tools.
+
+Pick what you want, copy the prompt, and paste it into your agent. It works in any agent
+that has a terminal: Claude Code, Codex, Cursor, Copilot, and others.
+
+## Upgrade your agent
+
+<AgentCard id="agent" title="Spreadsheet skills for my agent">
+  Your agent learns to read, build, calculate, and check spreadsheets. It installs the skill,
+  fetches the engine on demand, and shows you what it can do.
+</AgentCard>
+
+## Build something
+
+Answer a couple of questions and the agent builds it, then shows it to you running.
+
+<AgentUseCases />
+
+:::note No terminal?
+Chat apps such as Claude Desktop cannot run the install command. Connect them through the
+[MCP server](./mcp) instead.
+:::
+
+## Go deeper — just ask your agent
+
+The agent isn't only the user of the install; it's the installer. Once the skill is in,
+you can ask it to:
+
+- **"Wire up the SheetXL MCP server"** — audited edits, undo, and sandbox sessions. The
+  [MCP guide](./mcp) has the command, button, or config for each client.
+- **"Show me this workbook in a viewer"** — the agent serves the spreadsheet to a local
+  browser link.
+- **"Install the SheetXL VS Code extension"** — a human in the loop: shared sessions,
+  live highlights, and prompts. The [VS Code guide](./vscode) walks through it, click by click
+  and command by command.
+
+The skills repo: [github.com/sheetxl/skills](https://github.com/sheetxl/skills)

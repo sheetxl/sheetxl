@@ -1,0 +1,181 @@
+---
+sidebar_position: 70
+title: MCP Server
+sidebar_label: MCP Server
+description: Add the SheetXL MCP server to Claude Code, Codex, Cursor, VS Code, Claude Desktop, or any MCP client.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+import { AgentPromptCode } from '@site/src/components/AgentPrompt';
+import { MCP_LINKS } from '@site/src/components/AgentPrompt/prompts';
+
+# Getting Started with MCP
+
+The SheetXL MCP server gives any [MCP](https://modelcontextprotocol.io) client a real spreadsheet
+engine. The agent opens workbooks as sessions, runs TypeScript inside the calculation engine, and
+every change is a commit you can undo. In VS Code it also works on the workbooks you have open.
+
+It runs through `npx`, so there is nothing to install first. You only need Node.js 22 or later
+(24 recommended). Setup means registering it with your client.
+
+The quickest way is to let your agent do it:
+
+<AgentPromptCode id="mcp" />
+
+Or pick your client below. A newly registered server connects at the client's next session, so
+restart the client (or start a new chat) after adding it.
+
+## Claude Code
+
+The `sheetxl` plugin brings the MCP server and the SheetXL skill, at the same version.
+
+<Tabs
+  defaultValue="agent"
+  values={[
+    {label: 'agent', value: 'agent'},
+    {label: 'terminal', value: 'terminal'},
+    {label: 'chat', value: 'chat'}
+  ]}>
+  <TabItem value="agent">
+
+Paste this into Claude Code:
+
+<AgentPromptCode id="mcpClaudeCode" />
+
+  </TabItem>
+  <TabItem value="terminal">
+```bash
+claude plugin marketplace add sheetxl/skills
+claude plugin install sheetxl@sheetxl
+```
+  </TabItem>
+  <TabItem value="chat">
+
+Type these inside a Claude Code chat:
+
+```text
+/plugin marketplace add sheetxl/skills
+/plugin install sheetxl@sheetxl
+```
+  </TabItem>
+</Tabs>
+
+To add only the server, without the plugin:
+
+```bash
+claude mcp add sheetxl -- npx -y @sheetxl/mcp
+```
+
+## Codex
+
+The same plugin works in Codex.
+
+<Tabs
+  defaultValue="agent"
+  values={[
+    {label: 'agent', value: 'agent'},
+    {label: 'terminal', value: 'terminal'}
+  ]}>
+  <TabItem value="agent">
+
+Paste this into Codex:
+
+<AgentPromptCode id="mcpCodex" />
+
+  </TabItem>
+  <TabItem value="terminal">
+```bash
+codex plugin marketplace add sheetxl/skills
+codex plugin add sheetxl@sheetxl
+```
+  </TabItem>
+</Tabs>
+
+## Cursor
+
+<a className="button button--primary button--lg" href={MCP_LINKS.cursor}>
+  Add SheetXL to Cursor
+</a>
+
+<p />
+
+Cursor shows the server's configuration and asks you to confirm. If the button does nothing, add
+this to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
+
+```json
+{
+  "mcpServers": {
+    "sheetxl": {
+      "command": "npx",
+      "args": ["-y", "@sheetxl/mcp"]
+    }
+  }
+}
+```
+
+## VS Code
+
+Install the [SheetXL extension](./vscode). It opens spreadsheets in the editor and registers the
+MCP server for you, so Copilot and other agents work on the same workbook you see.
+
+To add only the server, without the extension:
+
+<a className="button button--secondary" href={MCP_LINKS.vscode}>
+  Add the MCP server to VS Code
+</a>
+
+<p />
+
+```bash
+code --add-mcp '{"name":"sheetxl","command":"npx","args":["-y","@sheetxl/mcp"]}'
+```
+
+## Claude Desktop
+
+Open **Settings → Developer → Edit Config** and add the server to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "sheetxl": {
+      "command": "npx",
+      "args": ["-y", "@sheetxl/mcp"]
+    }
+  }
+}
+```
+
+Then quit and reopen Claude Desktop. The file lives at
+`%APPDATA%\Claude\claude_desktop_config.json` on Windows and
+`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS.
+
+## Any other client
+
+Every MCP client takes the same launch command. Add it wherever your client keeps its servers:
+
+```json
+{
+  "mcpServers": {
+    "sheetxl": {
+      "command": "npx",
+      "args": ["-y", "@sheetxl/mcp"]
+    }
+  }
+}
+```
+
+## Check it
+
+Ask your agent:
+
+```text
+Call the SheetXL info tool and tell me what it reports.
+```
+
+From a terminal, `npx -y sheetxl setup agent` lists the clients that already have SheetXL
+registered, and `npx -y sheetxl info` checks the engine.
+
+The server's tools are listed in the
+[`@sheetxl/mcp` README](https://www.npmjs.com/package/@sheetxl/mcp).

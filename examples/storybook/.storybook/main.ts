@@ -1,4 +1,9 @@
-import type { StorybookConfig } from '@storybook/react-vite';
+import { type StorybookConfig } from '@storybook/react-vite';
+
+// NOTE: `ResourcesPlugin` (which serves each `@sheetxl/*` package's `locales/`) is wired in the
+// auto-loaded `../vite.config.ts`, NOT here. Importing the build-time plugin's `.ts` chain into this
+// file makes Storybook's config bundler warn about the extensionless imports throughout our internal
+// build tooling; Vite's own config loader handles that chain cleanly, so the wiring lives there.
 
 const config: StorybookConfig = {
   stories: [

@@ -1,13 +1,12 @@
 {
   "version": "0.2.0",
   "configurations": [
-
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Studio MUI - Example",
+      "name": "Example - UI",
       "url": "http://localhost:5173",
-      "webRoot": "${workspaceFolder}/examples/studio-mui",
+      "webRoot": "${workspaceFolder}/examples",
       "runtimeArgs": [
         "--profile-directory=debug-profile",
         "--preserve-symlinks",
@@ -32,7 +31,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Studio ESM - Example",
+      "name": "Example - Studio ESM",
       "url": "http://localhost:4000",
       "webRoot": "${workspaceFolder}/examples/studio-vanilla",
       "runtimeArgs": [
@@ -57,39 +56,9 @@
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
-      "type": "node",
-      "request": "launch",
-      "name": "CLI - Repl",
-      "runtimeExecutable": "tsx",
-      "args": ["src/cli.ts"], // as repl
-      // "args": ["src/cli.ts", "repl"], // as repl
-      // "args": ["src/cli.ts", "repl", "assets/simple.xlsx"], // as repl
-      // "args": ["src/cli.ts", "license"], // as repl
-      // "args": ["src/cli.ts", "extract", "assets/simple.xlsx"],
-      "cwd": "${workspaceFolder}/packages/cli",
-      "env": {
-        "NODE_ENV": "development",
-        "NODE_OPTIONS": "--conditions=development"
-      },
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "CLI - Command",
-      "runtimeExecutable": "tsx",
-      "args": ["src/cli.ts", "run", "examples/simple-script.ts", "--workbook", "assets/simple.xlsx", "range", "--", "--testing=true", "-test2=123"],
-      "cwd": "${workspaceFolder}/packages/cli",
-      "env": {
-        "NODE_ENV": "development",
-        "NODE_OPTIONS": "--conditions=development"
-      },
-      "console": "integratedTerminal"
-    },
-    {
       "type": "chrome",
       "request": "launch",
-      "name": "Storybook - Example",
+      "name": "Example - Storybook",
       "url": "http://localhost:6006",
       "webRoot": "${workspaceFolder}/examples/storybook",
       "runtimeArgs": [
@@ -101,18 +70,68 @@
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart"
     },
-    // {
-    //   "name": "CLI - Examples",
-    //   "type": "node",
-    //   "request": "launch",
-    //   "cwd": "${workspaceFolder}/examples/cli",
-    //   "runtimeArgs": [
-    //     "--preserve-symlinks"
-    //   ],
-    //   "args": ["--experimental-transform-types", "${workspaceFolder}/examples/cli/src/index.ts", "--verbose", "extract", "assets/${input:assetName}"],
-    //   "console": "integratedTerminal",
-    //   "internalConsoleOptions": "neverOpen"
-    // },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "CLI - Repl",
+      "runtimeExecutable": "tsx",
+      "args": ["${workspaceFolder}/packages/cli/scripts/dev-cli.mts"], // as repl
+      // "args": ["src/cli.ts", "activate"], // as repl
+      // "args": ["src/cli.ts", "activate", "sdfsdfds"], // as repl
+      // "args": ["src/cli.ts", "repl"], // as repl
+      // "args": ["src/cli.ts", "repl", "assets/simple.xlsx"], // as repl
+      // "args": ["src/cli.ts", "repl", "assets/simple.xlsx"], // as repl
+      // "args": ["src/cli.ts", "repl", "https://www.sheetxl.com/docs/examples/loan-calculator.xlsx"], // as repl
+      // "args": ["src/cli.ts", "license"], // as repl
+      // "args": ["src/cli.ts", "extract", "assets/simple.xlsx"],
+      "cwd": "${workspaceFolder}/packages/cli",
+      // `--conditions=development` resolves @sheetxl/* to src, so these launches debug SOURCE. That
+      // source imports the vite-only `virtual:sheetxl/bundled-locale`, which node cannot resolve —
+      // `scripts/dev-cli.mts` registers the hooks that stand in for the vite plugin and then hands off
+      // to `src/cli.ts`. It carries that preload itself (rather than a `--import=` here) so `cwd` is
+      // free to be any directory you want to run the CLI from.
+      // Flags belong on the runtime, NOT in `env.NODE_OPTIONS`: `integratedTerminal` sets env on the
+      // TERMINAL, so a NODE_OPTIONS there outlives the debug session and hits every later node command.
+      "runtimeArgs": ["--conditions=development"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "CLI - Command",
+      "runtimeExecutable": "tsx",
+      // "args": ["${workspaceFolder}/packages/cli/scripts/dev-cli.mts", "-f", "scripts/simple-script.ts", "--in", "grep/budget.xlsx", "--", "--testing=true", "-test2=123"],
+      // Scripts arrive through `-f`, which is repeatable for a pipeline; a positional is the WORKBOOK.
+      "args": ["${workspaceFolder}/packages/cli/scripts/dev-cli.mts", "-f", "scripts/report-errors.ts", "-f", "scripts/simple-script.ts"],
+      // cwd is the EXAMPLE dir, not the cli package — relative args resolve the way they do in a terminal.
+      "cwd": "${workspaceFolder}/examples/cli",
+      "runtimeArgs": ["--conditions=development"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "CLI - Test to Excel",
+      "runtimeExecutable": "tsx",
+      // Run with a fixture JSON open in the editor: SHEETXL_IN pins the fixture root, so
+      // `${fileDirnameBasename}/${fileBasename}` addresses it as e.g. `statistical/AVEDEV.json`.
+      "args": ["${workspaceFolder}/packages/cli/scripts/dev-cli.mts", "-f", "scripts/test-to-xlsx.ts", "--out", "${fileBasenameNoExtension}.xlsx", "--", "--test", "${fileDirnameBasename}/${fileBasename}"],
+      // cwd is the EXAMPLE dir, not the cli package — relative args resolve the way they do in a terminal.
+      "cwd": "${workspaceFolder}/examples/cli",
+      "runtimeArgs": ["--conditions=development"],
+      "env": {
+        "NODE_ENV": "development",
+        "SHEETXL_IN": "${workspaceFolder}/packages/sdk/src/__tests__/functions",
+        "SHEETXL_OUT": "${workspaceFolder}/packages/sdk/build/test-xlsx"
+      },
+      "console": "integratedTerminal"
+    },
     {
       "type": "node",
       "request": "launch",

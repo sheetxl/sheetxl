@@ -1,7 +1,8 @@
-import { ScrollbarProps } from './IScrollbar';
+import { type ScrollbarProps } from './IScrollbar';
 
 import { Scrollbar } from './Scrollbar';
-import { NativeScrollbar } from './NativeScrollbar';
+
+export { getWheelOwner, PANE_SCROLLER_ATTRIBUTE } from './wheelOwner';
 
 /**
   * scan all elements until we find one in the given direction

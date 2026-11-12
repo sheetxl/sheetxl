@@ -1,20 +1,25 @@
 import { MimeType } from '../types';
 import { CommonUtils, BufferUtils, ImageUtils } from '../utils';
 
-import { ReferenceableClipboard } from './ReferenceableClipboard';
+import { type ReferenceableClipboard } from './ReferenceableClipboard';
 
-// const ERROR_MESSAGE_LEGACY = `Your browser is limiting what can be read from the clipboard. To paste formatting from outside the browser use Ctrl+V or Ctrl+Shift+V to ensure you get accurate results.`;
-const ERROR_MESSAGE_SAFARI = `The Safari browser does not support advanced copy and paste.\nCopy and paste will be limited to within the browser tab.\n\nPlease use Chrome or Edge if external copy and paste is required.`;
-const ERROR_MESSAGE_PERMS = `You do not have permissions to access the clipboard.\nAll copy and paste operations will be limited to the browser tab.`;
-const ERROR_MESSAGE_CLIPBOARD_PERMS_WRITE = CommonUtils.getOS() === CommonUtils.OSType.Safari ? ERROR_MESSAGE_SAFARI : ERROR_MESSAGE_PERMS;
-const ERROR_MESSAGE_CLIPBOARD_PERMS_READ = CommonUtils.getOS() === CommonUtils.OSType.Safari ? ERROR_MESSAGE_SAFARI : ERROR_MESSAGE_PERMS;
+const ERROR_INFO_SAFARI: InternalClipboard.ClipboardErrorInfo = {
+  code: 'safari',
+  message: `The Safari browser does not support advanced copy and paste.\nCopy and paste will be limited to within the browser tab.\n\nPlease use Chrome or Edge if external copy and paste is required.`
+};
+const ERROR_INFO_PERMS: InternalClipboard.ClipboardErrorInfo = {
+  code: 'perms',
+  message: `You do not have permissions to access the clipboard.\nAll copy and paste operations will be limited to the browser tab.`
+};
+// Safari can't do advanced clipboard at all, so its permission failures read as the Safari notice.
+const ERROR_INFO_CLIPBOARD_PERMS: InternalClipboard.ClipboardErrorInfo =
+  CommonUtils.getPlatform() === CommonUtils.OSType.Safari ? ERROR_INFO_SAFARI : ERROR_INFO_PERMS;
 
 const ERROR_MESSAGES = {
-  Safari: `The Safari browser does not support advanced copy and paste.\nCopy and paste will be limited to within the browser tab.\n\nPlease use Chrome or Edge if external copy and paste is required.`,
-  // LEGACY: ERROR_MESSAGE_LEGACY,
-  Perms: ERROR_MESSAGE_PERMS,
-  PermsWrite: ERROR_MESSAGE_CLIPBOARD_PERMS_WRITE,
-  PermsRead: ERROR_MESSAGE_CLIPBOARD_PERMS_READ
+  Safari: ERROR_INFO_SAFARI,
+  Perms: ERROR_INFO_PERMS,
+  PermsWrite: ERROR_INFO_CLIPBOARD_PERMS,
+  PermsRead: ERROR_INFO_CLIPBOARD_PERMS
 }
 
 
@@ -32,8 +37,8 @@ const whenDocumentFocus = async (): Promise<void> => {
 }
 
 const requestAction = async (permName: string, tryAction: () => boolean | Promise<boolean>, onFail: (error: any)=> void | Promise<void>) => {
-  if (CommonUtils.getOS() === CommonUtils.OSType.Safari) {
-    return await onFail(new Error(ERROR_MESSAGES.Safari));
+  if (CommonUtils.getPlatform() === CommonUtils.OSType.Safari) {
+    return await onFail(new Error(ERROR_INFO_SAFARI.message));
   };
   try {
     const tryActionIgnoreFocus = async (action: () => boolean | Promise<boolean>): Promise<boolean> => {
@@ -69,11 +74,12 @@ const requestAction = async (permName: string, tryAction: () => boolean | Promis
   }
 }
 
-const readClipboardUnsanitized = async (clipboard: Clipboard): Promise<ClipboardItems> => {
+const readClipboardUnsanitized = async (clipboard: Clipboard | null): Promise<ClipboardItems | null> => {
+  if (!clipboard) return null;
   try {
     // @ts-ignore
     return await clipboard.read({
-      unsanitized: [MimeType.html],
+      unsanitized: [MimeType.Html],
     })
   } catch (error: any) {
   }
@@ -88,7 +94,7 @@ const readClipboardUnsanitized = async (clipboard: Clipboard): Promise<Clipboard
   // }
 }
 
-const readBlobFromClipboard = async (clipboard: Clipboard, mimeType: string): Promise<Blob> => {
+const readBlobFromClipboard = async (clipboard: Clipboard | null, mimeType: string): Promise<Blob | null> => {
   if (!clipboard) {
     return null;
   }
@@ -101,9 +107,7 @@ const readBlobFromClipboard = async (clipboard: Clipboard, mimeType: string): Pr
       return blob;
     }
   }
-  if (!foundType) {
-    return null;
-  }
+  return null;
 }
 
 /* Firefox doesn't support ClipboardItem and Chrome makes ClipboardItem unavailable if not secure so we polly. */
@@ -166,7 +170,7 @@ if (!globalThis.ClipboardItem) {
 
   globalThis.ClipboardItem = ClipboardItemPolyfillImpl as any;
 }
-const readStringFromClipboard = async (clipboard: Clipboard, mimeType: string=MimeType.html): Promise<string> => {
+const readStringFromClipboard = async (clipboard: Clipboard | null, mimeType: string=MimeType.Html): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
       const blob = await readBlobFromClipboard(clipboard, mimeType);
@@ -188,20 +192,20 @@ const readStringFromClipboard = async (clipboard: Clipboard, mimeType: string=Mi
   });
 }
 
-const readHTMLFromClipboard = async (clipboard: Clipboard, mimeType: string=MimeType.html): Promise<Document> => {
+const readHTMLFromClipboard = async (clipboard: Clipboard | null, mimeType: string=MimeType.Html): Promise<Document | null> => {
   const asString = await readStringFromClipboard(clipboard, mimeType);
   if (!asString) return null;
-  let asHtmlDoc = null;
+  let asHtmlDoc: Document | null = null;
   try {
     const domParser = new DOMParser();
-    asHtmlDoc = domParser.parseFromString(asString, MimeType.html);
+    asHtmlDoc = domParser.parseFromString(asString, MimeType.Html);
   } catch (error: any) {
     console.warn(`Can't parse html from clipboard.`);
   }
   return asHtmlDoc;
 }
 
-const clearClipboard = async(clipboard: Clipboard): Promise<void> => {
+const clearClipboard = async(clipboard: Clipboard | null): Promise<void> => {
   if (!clipboard)
     return;
   /* write with empty doesn't clear so we mimic with a writeText */
@@ -219,6 +223,10 @@ export const ClipboardUtils = _ClipboardUtils;
 const CLIPBOARD_UUID_TOKEN = 'clipboard-uuid';
 const CLIPBOARD_UUID_MIMETYPE = `web text/uuid`;
 const CLIPBOARD_HTML_UUID = (uuid: string) => `<div style="display:none" ${CLIPBOARD_UUID_TOKEN}="${uuid}"/>`;
+
+const _MimeTypePlain =  { type: MimeType.Plain };
+const _MimeTypeHtml =  { type: MimeType.Html };
+const _MimeTypeUUID = { type: CLIPBOARD_UUID_MIMETYPE };
 
 /**
  * Due to a limitation in the clipboard we use html to embed a reference id that
@@ -238,14 +246,14 @@ const CLIPBOARD_HTML_UUID = (uuid: string) => `<div style="display:none" ${CLIPB
  * https://chromium.googlesource.com/chromium/src/+/2266c115486be4dd767585a9ee5321edd1a83bc9
  *
  */
-const embedUUIDInHtml = (uuid: string, htmlAsString: string): string => {
+const embedUUIDInHtml = (uuid: string, htmlAsString: string): string | null => {
   // TODO - be smarter and use reg ex to match uuid pattern. This would allow us to replace existing clipboard-ids
-  let asEmbeddedString = null;
+  let asEmbeddedString: string | null = null;
   try {
     const domParser = new DOMParser();
-    const htmlDoc:Document = domParser.parseFromString(htmlAsString, MimeType.html);
-    const elem:Element = htmlDoc.body.firstElementChild;
-    elem.setAttribute(CLIPBOARD_UUID_TOKEN, uuid);
+    const htmlDoc:Document = domParser.parseFromString(htmlAsString, MimeType.Html);
+    const elem:Element | null = htmlDoc.body.firstElementChild;
+    elem?.setAttribute(CLIPBOARD_UUID_TOKEN, uuid);
     asEmbeddedString = htmlDoc.getElementsByTagName("body")[0].innerHTML;
   } catch (error: any) {
     console.warn(`Can't embed uuid.`, error);
@@ -266,7 +274,7 @@ const embedUUIDInHtml = (uuid: string, htmlAsString: string): string => {
  * We pass in a uuid since it's possible there may be more than one element
  * with a clipboard-uuid. This can occur in nested situations.
  */
-const parseForUUIDInHtml = (uuid: string, docHtml: Document): boolean => {
+const parseForUUIDInHtml = (uuid: string | null | undefined, docHtml: Document | null): boolean => {
   if (!docHtml || !uuid) {
     return false;
   }
@@ -290,9 +298,9 @@ const parseForUUIDInHtml = (uuid: string, docHtml: Document): boolean => {
 
 /** @internal */
 interface State {
-  uuid: string; // uuid for reconciliating our items to the native clipboard
-  items: ClipboardItems;
-  ref: ReferenceableClipboard.ReferenceItem;
+  uuid: string | null; // uuid for reconciliating our items to the native clipboard
+  items: ClipboardItems | null;
+  ref: ReferenceableClipboard.ReferenceItem | null;
 }
 
 /**
@@ -318,15 +326,16 @@ interface State {
 
 export class InternalClipboard implements ReferenceableClipboard {
 
-  private _state: State;
+  private _state: State | null = null;
 
-  private _nativeClipboard: Clipboard;
+  private _nativeClipboard: Clipboard | null = null;
   private _disableCheckOnFocus: boolean;
-  private _listeners: Map<string, Map<EventListenerOrEventListenerObject, AddEventListenerOptions>>;
-  private _listenersCapture: Map<string, Map<EventListenerOrEventListenerObject, AddEventListenerOptions>>;
+  // assigned in _init (called from the constructor)
+  private _listeners!: Map<string, Map<EventListenerOrEventListenerObject, AddEventListenerOptions>>;
+  private _listenersCapture!: Map<string, Map<EventListenerOrEventListenerObject, AddEventListenerOptions>>;
 
-  private _onFocus: () => void;
-  private _onBlur: () => void;
+  private _onFocus: (() => void) | null = null;
+  private _onBlur: (() => void) | null = null;
 
   constructor(options?: InternalClipboard.ConstructorOptions) {
     if ((options?.nativeClipboard === undefined || options?.nativeClipboard === true)) {
@@ -340,7 +349,7 @@ export class InternalClipboard implements ReferenceableClipboard {
     } else if (options?.nativeClipboard === false) {
       this._nativeClipboard = null;
     } else {
-      this._nativeClipboard = options?.nativeClipboard;
+      this._nativeClipboard = options?.nativeClipboard ?? null;
     }
     this._disableCheckOnFocus = options?.disableCheckOnFocus ?? false;
     this._init();
@@ -361,7 +370,7 @@ export class InternalClipboard implements ReferenceableClipboard {
         return true;
       }
 
-      const asHTML = await readHTMLFromClipboard(this._nativeClipboard, MimeType.html);
+      const asHTML = await readHTMLFromClipboard(this._nativeClipboard, MimeType.Html);
       if (!this._state) return true;
       if (parseForUUIDInHtml(this._state.uuid, asHTML)) {
         return true;
@@ -370,7 +379,7 @@ export class InternalClipboard implements ReferenceableClipboard {
       this.clear();
       return true;
     }, async (error) => {
-      if (error?.message !== 'denied' && !error.message?.includes(`Document is not focused`) && (CommonUtils.getOS() !== CommonUtils.OSType.Safari)) {
+      if (error?.message !== 'denied' && !error.message?.includes(`Document is not focused`) && (CommonUtils.getPlatform() !== CommonUtils.OSType.Safari)) {
         console.warn(`Unable to detect clipboard changes: `, error);
         // this.dispatchEvent(new Event('clipboarderrorread'));
       }
@@ -391,7 +400,7 @@ export class InternalClipboard implements ReferenceableClipboard {
     }
 
     this._onBlur = () => {
-      globalThis.addEventListener?.("focus", _self._onFocus, { once: true});
+      globalThis.addEventListener?.("focus", _self._onFocus!, { once: true});
     }
     globalThis.addEventListener?.("blur", this._onBlur);
 
@@ -411,7 +420,8 @@ export class InternalClipboard implements ReferenceableClipboard {
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Clipboard/read) */
   async read(): Promise<ClipboardItems> {
     if (!this._nativeClipboard) {
-      return this._state?.items ?? null;
+      // pre-strict behavior: resolves null (not []) when there is no state
+      return (this._state?.items ?? null) as ClipboardItems;
     }
 
     const _self = this;
@@ -420,11 +430,11 @@ export class InternalClipboard implements ReferenceableClipboard {
       // try to read from the native clipboard
       if (this._state?.uuid) {
         const uuid = await readStringFromClipboard(this._nativeClipboard, CLIPBOARD_UUID_MIMETYPE);
-        if (uuid && uuid  === _self._state.uuid) {
+        if (uuid && uuid  === _self._state?.uuid) {
           return true;
         }
 
-        const asHTML = await readHTMLFromClipboard(this._nativeClipboard, MimeType.html);
+        const asHTML = await readHTMLFromClipboard(this._nativeClipboard, MimeType.Html);
         if (parseForUUIDInHtml(_self._state?.uuid, asHTML))
           return true;
       }
@@ -459,10 +469,10 @@ export class InternalClipboard implements ReferenceableClipboard {
       this._state = state;
       this.dispatchEvent(new Event('clipboardwrite'));
       this.dispatchEvent(new Event('clipboardchange'));
-      return null;
+      return;
     }
     const _self = this;
-    const nativeData = [];
+    const nativeData: ClipboardItem[] = [];
     const uuid = state.uuid;
     let items = state.items ?? [];
     const writeInternal = () => {
@@ -480,12 +490,12 @@ export class InternalClipboard implements ReferenceableClipboard {
         /* we need at least 1 item to store uuids */
         items.push(
           new ClipboardItem({
-            [CLIPBOARD_UUID_MIMETYPE] : new Blob([uuid], { type: CLIPBOARD_UUID_MIMETYPE })
+            [CLIPBOARD_UUID_MIMETYPE] : new Blob([uuid], _MimeTypeUUID)
           })
         );
         items.push(
           new ClipboardItem({
-            [MimeType.html] : new Blob([CLIPBOARD_HTML_UUID(uuid)], { type: MimeType.html })
+            [MimeType.Html] : new Blob([CLIPBOARD_HTML_UUID(uuid)], _MimeTypeHtml)
           })
         );
       }
@@ -493,19 +503,20 @@ export class InternalClipboard implements ReferenceableClipboard {
         const item:ClipboardItem = items[i];
         // f there is an image or text and not html we create an html version.
         // then we update html to include a uuid. (ensure it doesn't have one.)
-        let indexHtml = item.types.indexOf(MimeType.html);
-        let htmlString = null;
+        let indexHtml = item.types.indexOf(MimeType.Html);
+        let htmlString: string | null = null;
         if (indexHtml !== -1) {
-          const asHTMLBlob = await item.getType(MimeType.html);
+          const asHTMLBlob = await item.getType(MimeType.Html);
           htmlString = await BufferUtils.blobToString(asHTMLBlob);
           if (htmlString) {
-            htmlString = embedUUIDInHtml(uuid, htmlString);
+            // uuid is only null from clear(), which never reaches here (no items to iterate)
+            htmlString = embedUUIDInHtml(uuid!, htmlString);
           }
         }
-        if (!htmlString && item.types.includes((MimeType.plain))) {
-          const asTextBlob = await item.getType(MimeType.plain);
+        if (!htmlString && item.types.includes((MimeType.Plain))) {
+          const asTextBlob = await item.getType(MimeType.Plain);
           if (asTextBlob) {
-            let textString:string = null;
+            let textString:string | null = null;
             if (typeof asTextBlob === 'string') {
               console.warn('text as string', asTextBlob); // TODO - Review. I don't think this is possible.
               textString = asTextBlob;
@@ -517,18 +528,20 @@ export class InternalClipboard implements ReferenceableClipboard {
             }
           }
         }
-        if (!htmlString && item.types.includes((MimeType.png))) {
-          const image:Blob = await item.getType(MimeType.png);
+        if (!htmlString && item.types.includes((MimeType.Png))) {
+          const image:Blob = await item.getType(MimeType.Png);
           const asBase64 = BufferUtils.arrayBufferToBase64(await image.arrayBuffer());
           htmlString = `<div ${CLIPBOARD_UUID_TOKEN}="${uuid}"><img src="${ImageUtils.DATA_URL_PNG_PREFIX + asBase64}"/></div>`;
         }
         if (!htmlString && uuid) {
           htmlString = CLIPBOARD_HTML_UUID(uuid);
         }
-        const htmlEmbed = new Blob([htmlString ?? ''], { type: MimeType.html })
-        const newClipboardTypes = {};
-        for (let i=0; i<item.types.length; i++) {
-          const type = item.types[i];
+        const htmlEmbed = new Blob([htmlString ?? ''], _MimeTypeHtml)
+        const newClipboardTypes: Record<string, Blob | Promise<Blob>> = {};
+        const types = item.types;
+        const typesLength = types.length;
+        for (let i=0; i<typesLength; i++) {
+          const type = types[i];
           if (i === indexHtml) {
             newClipboardTypes[type] = htmlEmbed;
           } else {
@@ -536,10 +549,10 @@ export class InternalClipboard implements ReferenceableClipboard {
           }
         }
         if (htmlString && indexHtml === -1) {
-          newClipboardTypes[MimeType.html] = htmlEmbed;
+          newClipboardTypes[MimeType.Html] = htmlEmbed;
         }
         if (uuid) {
-          newClipboardTypes[CLIPBOARD_UUID_MIMETYPE] = new Blob([uuid], { type: CLIPBOARD_UUID_MIMETYPE });
+          newClipboardTypes[CLIPBOARD_UUID_MIMETYPE] = new Blob([uuid], _MimeTypeUUID);
         }
 
         nativeData.push(new ClipboardItem(newClipboardTypes))
@@ -549,7 +562,7 @@ export class InternalClipboard implements ReferenceableClipboard {
         if (!nativeData || nativeData.length === 0) {
           await clearClipboard(this._nativeClipboard);
         } else {
-          await this._nativeClipboard.write(nativeData);
+          await this._nativeClipboard!.write(nativeData);
         }
       } catch (error: any) {
         if (!error.message?.includes(`Document is not focused`)) {
@@ -572,12 +585,12 @@ export class InternalClipboard implements ReferenceableClipboard {
       return;
     }
 
-    let errorCaught = null;
-    const mimeTypes = {};
+    let errorCaught: any = null;
+    const mimeTypes: Record<string, Blob> = {};
     try {
       const plain = await data.toText?.() ?? null;
       if (plain)
-        mimeTypes[MimeType.plain] = new Blob([plain ?? ''], { type: MimeType.plain });
+        mimeTypes[MimeType.Plain] = new Blob([plain ?? ''], _MimeTypePlain);
     } catch (error: any) {
       errorCaught = error;
       // console.warn('export to plain', error);
@@ -585,7 +598,7 @@ export class InternalClipboard implements ReferenceableClipboard {
     try {
       const html = await data.toHtml?.() ?? null
       if (html)
-        mimeTypes[MimeType.html] = new Blob([html], { type: MimeType.html });
+        mimeTypes[MimeType.Html] = new Blob([html], { type: MimeType.Html });
     } catch (error: any) {
       errorCaught = error;
       console.warn('export to html', error);
@@ -593,7 +606,7 @@ export class InternalClipboard implements ReferenceableClipboard {
     try {
       const image = await data.toImage?.() ?? null;
       if (image)
-      mimeTypes[MimeType.png] = image;
+      mimeTypes[MimeType.Png] = image;
     } catch (error: any) {
       errorCaught = error;
       console.warn('export to png', error);
@@ -636,21 +649,24 @@ export class InternalClipboard implements ReferenceableClipboard {
   readText(): Promise<string> {
     return new Promise<string>(async (resolve: (result: string) => void, reject: any) => {
       const items = await this.read();
-      let found:Blob = null;
-      for (let i=0; !found && items && i<items.length; i++) {
-        if (items[i].types.includes(MimeType.plain))
-        found = await items[i].getType(MimeType.plain)
+      let found: Blob | null = null;
+      const itemsLength: number = items ? items.length : 0;
+      for (let i=0; !found && i<itemsLength; i++) {
+        const item = items[i];
+        if (item.types.includes(MimeType.Plain)) {
+          found = await item.getType(MimeType.Plain);
+        }
       }
       if (!found) {
         resolve(''); // native read returns ''.
         return;
       }
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = (): void => {
         resolve(reader.result as string);
       }
       reader.readAsText(found);
-      reader.onerror = (error) => {
+      reader.onerror = (error): void => {
         reject(error); // native read returns ''.
       }
     })
@@ -660,9 +676,11 @@ export class InternalClipboard implements ReferenceableClipboard {
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Clipboard/writeText)
    */
   async writeText(data: string): Promise<void> {
-    const writeData = [new ClipboardItem({
-      [MimeType.plain] : new Blob([data], { type: MimeType.plain })
-    })];
+    const writeData = [
+      new ClipboardItem({
+        [MimeType.Plain] : new Blob([data], _MimeTypePlain)
+      })
+    ];
     return this._write({
       uuid: CommonUtils.uuidV4(),
       items: writeData,
@@ -689,6 +707,7 @@ export class InternalClipboard implements ReferenceableClipboard {
       listeners = new Map();
       listenersByType.set(type, listeners);
     }
+    if (!callback) return;
     listeners.set(callback, typeof options === 'boolean' ? {} : options);
   }
 
@@ -698,7 +717,7 @@ export class InternalClipboard implements ReferenceableClipboard {
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/EventTarget/dispatchEvent)
    */
   dispatchEvent(event: Event): boolean {
-    if (!event) return;
+    if (!event) return false;
     const dispatchType = (listenersByType: Map<string, Map<EventListenerOrEventListenerObject, AddEventListenerOptions>>) => {
       const listeners = listenersByType.get(event.type);
       if (!listeners) return;
@@ -732,7 +751,7 @@ export class InternalClipboard implements ReferenceableClipboard {
   removeEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: EventListenerOptions | boolean): void {
     const listenersByType = ((options as AddEventListenerOptions)?.capture ? this._listenersCapture : this._listeners);
     const listeners = listenersByType.get(type);
-    if (!listeners) {
+    if (!listeners || !callback) {
         return;
     }
     listeners.delete(callback);
@@ -742,8 +761,8 @@ export class InternalClipboard implements ReferenceableClipboard {
   }
 
   close(): void {
-    globalThis.removeEventListener?.("focus", this._onFocus);
-    globalThis.removeEventListener?.("blur", this._onBlur);
+    if (this._onFocus) globalThis.removeEventListener?.("focus", this._onFocus);
+    if (this._onBlur) globalThis.removeEventListener?.("blur", this._onBlur);
   }
 }
 
@@ -774,7 +793,23 @@ export namespace InternalClipboard {
   }
 
   /**
-   * Common  Error messages related to the internal clipboard.
+   * A language-free reason a clipboard operation could not complete. `@sheetxl/utils` is treated as a
+   * third-party library and owns NO i18n — a UI host localizes by switching on this code against its
+   * own message catalog.
+   */
+  export type ClipboardErrorReason = 'safari' | 'perms';
+
+  /** A clipboard failure: a language-free {@link ClipboardErrorReason} plus developer-facing English. */
+  export interface ClipboardErrorInfo {
+    /** The reason code a UI host switches on to localize. */
+    code: ClipboardErrorReason;
+    /** Developer-facing English (logs / non-localized hosts). A localizing host IGNORES this. */
+    message: string;
+  }
+
+  /**
+   * Common Error messages related to the internal clipboard, each a language-free
+   * {@link ClipboardErrorInfo.code} plus developer-facing English a UI host localizes.
    */
   export const ErrorMessages = ERROR_MESSAGES;
 

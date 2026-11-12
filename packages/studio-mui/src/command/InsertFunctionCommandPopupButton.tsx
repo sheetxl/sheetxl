@@ -1,18 +1,19 @@
-import React, { useState, useEffect, memo, forwardRef, useCallback } from 'react';
+import type React from 'react';
+import { useState, useEffect, memo, forwardRef, useCallback } from 'react';
 
 import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
 
-import { IFunction } from '@sheetxl/sdk';
+import { type IFunction } from '@sheetxl/sdk';
 
 import {
-  ICommand, ICommands, useCommands, KeyCodes
+  useCommands, KeyCodes, useTranslator
 } from '@sheetxl/utils-react';
 
-import type { CommandContext } from '@sheetxl/react';
+import { type CommandContext } from '@sheetxl/react';
 
 import {
-  ExhibitMenuItem, CommandPopupButton, defaultCreatePopupPanel,
+  ExhibitMenuItem, CommandPopupButton, defaultRenderPopupPanel,
   type ExhibitPopupPanelProps, type CommandPopupButtonProps
 } from '@sheetxl/utils-mui';
 
@@ -20,17 +21,9 @@ export interface InsertFunctionCommandButtonProps extends CommandPopupButtonProp
 
   category: string;
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
+  icon?: React.ReactNode | ((command: any) => React.ReactNode);
 
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
+  label?: React.ReactNode | ((command: any) => React.ReactNode);
 
 }
 
@@ -115,9 +108,7 @@ const InsertFunctionCommandButton = memo((props: any) => { // TODO - type
   const {
     command,
     formulaFunction: propFunction,
-    commandHook: propCommandHook,
-    disabled: propDisabled = false,
-    parentFloat,
+    disabled: propDisabled,
     handleInsert,
     icon: propIcon,
     label: propLabel,
@@ -183,19 +174,16 @@ export const InsertFunctionCommandPopupButton = memo(
   forwardRef<HTMLElement, InsertFunctionCommandButtonProps>((props, refForwarded) => {
   const {
     category,
-    commands: propCommands,
-    commandHook: propCommandHook,
-    scope,
-    sx: propSx,
-    disabled: propDisabled = false,
-    parentFloat,
+    disabled: propDisabled,
+    groupKey,
     ...rest
   } = props;
 
-  const commandsResolved = useCommands(propCommands, ['insertFunction']);
+  const commandsResolved = useCommands(['insertFunction']);
   const command = commandsResolved[0]
+  const t = useTranslator();
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const categoryDesc = mapCategories.get(category);
     if (!categoryDesc) {
       console.warn('invalidate category', category);
@@ -203,23 +191,23 @@ export const InsertFunctionCommandPopupButton = memo(
     }
 
     const propCommands = {
-      commandHook: propCommandHook,
       ...props
     }
-    const panel = (<InsertFormulaPopupPanel category={categoryDesc.label} {...propCommands} commands={commands} />);
-    return defaultCreatePopupPanel({...props, children: panel});
-  }, [category, command, propCommandHook, scope]);
+    const panel = (<InsertFormulaPopupPanel category={categoryDesc.label} {...propCommands} />);
+    return defaultRenderPopupPanel({...props, children: panel});
+  }, [category, command, groupKey]);
 
   const categoryDesc = mapCategories.get(category);
   return (
     <CommandPopupButton
       ref={refForwarded}
       // quickCommand={activeCommandKey}
-      commands={propCommands}
-      commandHook={propCommandHook}
-      createPopupPanel={createPopupPanel}
-      label={categoryDesc.label}
-      tooltip={`Insert Function`} // ${categoryDesc.label}
+      disabled={propDisabled}
+      renderPopupPanel={renderPopupPanel}
+      // `label` is the function CATEGORY name (a `CategoryDesc`, not command chrome) — it localizes
+      // with the Plane-3 function work, not here.
+      label={categoryDesc?.label}
+      tooltip={t('insertFunction.tooltip')}
       icon={mapCategories.get(category)?.icon ?? 'FormulaGroup'}
       {...rest}
     />
@@ -235,35 +223,42 @@ interface InsertFormulaPopupPanelProps extends ExhibitPopupPanelProps, CommandPo
 const InsertFormulaPopupPanel = memo(forwardRef<any, InsertFormulaPopupPanelProps>((props: InsertFormulaPopupPanelProps, refForwarded) => {
   const {
     // floatReference,
-    commands: propCommands,
     category,
-    commandHook: propCommandHook,
     ...rest
   } = props;
 
-  const resolvedCommands = useCommands(propCommands, ['insertFunction']);
+  const resolvedCommands = useCommands(['insertFunction']);
+  const command = resolvedCommands[0];
   const [functions, setFunctions] = useState<IFunction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    let cancelled = false;
     const checkScripts = async () => {
+      const context: CommandContext.FormulaFunction = command?.getContext() as any;
+      // No resolved command / context (e.g. the command isn't contributed for this host) ⇒ empty list,
+      // never a hard crash on `context.searchByCategory`.
+      if (!context?.searchByCategory) {
+        setFunctions([]);
+        return;
+      }
       setIsLoading(true);
-      const context: CommandContext.FormulaFunction = resolvedCommands[0]?.getContext() as any;
       const functionsResolved = await context.searchByCategory(category);
+      // Guard against a stale fetch (command/category changed mid-flight) clobbering a newer result.
+      if (cancelled) return;
       setFunctions(functionsResolved);
       setIsLoading(false);
     }
     checkScripts();
-  }, []);
+    return () => { cancelled = true; };
+  }, [command, category]);
 
   const functionsLength = functions.length;
   const functionsElements = new Array(functionsLength);
-  const command = propCommands.getCommand('insertFunction') as ICommand<any>
+
   const handleInsert = (newValue: IFunction) => {
     // TODO - - these should really be command buttons since they handle ripple and avoid duplicate code
-    propCommandHook?.beforeExecute?.(command, command?.getState());
-    command.execute(newValue);
-    propCommandHook?.onExecute?.(command, command?.getState());
+    command?.execute(newValue);
   }
   for (let i=0; i<functionsLength; i++) {
     const formulaFunction = functions[i];
@@ -273,7 +268,6 @@ const InsertFormulaPopupPanel = memo(forwardRef<any, InsertFormulaPopupPanelProp
         command={command}
         formulaFunction={formulaFunction}
         handleInsert={handleInsert}
-        // commandHook={propCommandHook}
       />
     );
   }
@@ -300,6 +294,6 @@ const InsertFormulaPopupPanel = memo(forwardRef<any, InsertFormulaPopupPanelProp
     </Box>
   );
 
-  return defaultCreatePopupPanel({...rest, children});
+  return defaultRenderPopupPanel({...rest, children});
 
 }));

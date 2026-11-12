@@ -1,6 +1,8 @@
-import React, { createContext, useContext, type ReactNode } from 'react';
+import type React from 'react';
+import { createContext, createElement, useContext, useMemo } from 'react';
 
-import { DefaultNotifier, NotifierOptions, INotifier, Notifier } from "@sheetxl/utils";
+import { type RenderSlotFn } from '../components';
+import { CommonUtils, Notifier, type NotifierOptions, type INotifier } from "@sheetxl/utils";
 
 /**
  * Indicates the type of notification.
@@ -31,13 +33,57 @@ export interface EnqueueNotifierOptions extends NotifierOptions {
 }
 
 /**
+ * One button in an options / input dialog. A bare `string` is shorthand for `{ label: string }` whose
+ * identity is that same string (back-compat).
+ *
+ * Identity and display are deliberately separate: `label` is what the user SEES — and may be a thunk so
+ * a language change while the dialog is open re-localizes it — while `id` is the language-free value the
+ * caller COMPARES (`results.option === 'insert'`) and never varies. Whether a button is the default
+ * (Enter) or the cancel (Esc) is NOT part of the option: that is contextual to the dialog and set by
+ * {@link ShowOptionsOptions.defaultOption} / {@link ShowOptionsOptions.cancelOption}.
+ */
+export interface InputOption {
+  /** Button label. A thunk resolves at render, so a mid-dialog language change re-localizes it. */
+  label: string | (() => string);
+  /**
+   * Stable, language-free identity returned as {@link InputResults.option} and compared by callers.
+   * Omit for a display-only button — then the option's own identity is returned (the `string` form, or
+   * this object by reference). NOT a thunk: an identity must not vary by language.
+   */
+  id?: string;
+  /**
+   * Refuses the option outright: the button renders disabled, and Enter does not activate it as the
+   * default. A thunk resolves at render, so a dialog can gate its action on live editor state.
+   *
+   * @remarks
+   * This is for an action that is not OFFERED — a form the user has not made valid yet. It is not
+   * {@link ShowOptionsOptions.onValidateOption}, which lets the click through and then refuses to
+   * close; use that when the reason only emerges from the attempt (a rejected password).
+   */
+  disabled?: boolean | (() => boolean);
+  /** Render this option's button. Spread `buttonProps` on it. */
+  renderButton?: RenderSlotFn<OptionButtonRenderProps>;
+}
+
+/** What {@link InputOption.renderButton} is handed. */
+export interface OptionButtonRenderProps {
+  /** The dialog's wiring for the button: its click, `type` and class. */
+  buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
+  /** The option is the dialog's default (its submit). */
+  isDefaultOption: boolean;
+}
+
+/** A dialog option: a plain label/identity `string`, or a rich {@link InputOption}. */
+export type OptionInput = string | InputOption;
+
+/**
  * Configuration for an options dialog.
  */
 export interface ShowOptionsOptions<T=any, C=any> extends ShowWindowOptions<T, C> {
   /**
-   * The options as a list of strings
+   * The dialog buttons: plain identity strings or rich {@link InputOption}s (mixable).
    */
-  options?: string[];
+  options?: OptionInput[];
   /**
    * The title of the options panel
    */
@@ -47,43 +93,39 @@ export interface ShowOptionsOptions<T=any, C=any> extends ShowWindowOptions<T, C
    */
   description?: string;
   /**
-   * Display an icon next to the description for additional context
-   *
-   * @remarks
-   * Not yet implemented
+   * What kind of message this is. `info`, `warning`, `error` and `success` show the matching icon
+   * beside the description; `default` (or omitted) shows none.
+   */
+  type?: NotifierType;
+  /**
+   * An icon beside the description, in place of the one {@link type} implies. A `string` is an icon
+   * key.
    */
   icon?: React.ReactNode | string;
   /**
-   * Allows for the option will be the default selected option and the enter key trigger.
+   * The option that is the default (Enter key), matched against the {@link options} by identity
+   * (a `string` matches an option's id/string form, an {@link InputOption} matches by reference).
    * @defaultValue The first option
    */
-  defaultOption?: string;
+  defaultOption?: OptionInput;
   /**
-   * Allows for the cancel option to be specified. Allow for special styling.
+   * The cancel option (Esc key), matched against the {@link options} by identity. Gets special styling.
    * @defaultValue 'Cancel'
    */
-  cancelOption?: string;
+  cancelOption?: OptionInput;
   /**
-   * Call when an option is selected.
+   * Call when an option is selected. `option` is the selected option's IDENTITY (its `id` if provided,
+   * else the `string` form, else the {@link InputOption} object).
    * @remarks
    * It is possible that the option can be both a cancel and a default option.
    */
-  onOption?: (option: string, isCancel: boolean, isDefault: boolean) => void;
+  onOption?: (option: OptionInput, isCancel: boolean, isDefault: boolean) => void;
   /**
-   * Hook for create custom options buttons
-   * @param props
-   *
-   * @remarks
-   * The option is passed as the `children` prop and as the second argument
+   * Call when an option is selected. If false is returned, the dialog will not close. INotifier is not
+   * provided but can be supplied via the textFieldProps helperText property. `option` is the selected
+   * option's identity (see {@link onOption}).
    */
-  // TODO - make this a regular render.
-  createOptionsButton?: (option: string, props: React.HTMLAttributes<HTMLButtonElement> & React.Attributes, isDefaultOption: boolean) => React.ReactNode;
-  /**
-   * Call when an option is selected. If false is returned, the the
-   * dialog will not close. INotifier is not provided but can
-   * be supplied via the textFieldProps helperText property.
-   */
-  onValidateOption?: (option?: string) => boolean | Promise<boolean>;
+  onValidateOption?: (option?: OptionInput) => boolean | Promise<boolean>;
 };
 
 
@@ -130,6 +172,14 @@ export interface ShowWindowOptions<T=any, C=any> {
    * If true the window will not be automatically destroyed when closed.
    */
   disableAutoDestroy?: boolean
+
+  /**
+   * Mount the window hidden (do not reveal it) so a later real open is an instant reuse. Implies
+   * {@link disableAutoDestroy} (a prewarmed window must be kept alive). Use at idle to move the
+   * heavy first-mount cost off the user's open. A no-op if an instance already exists.
+   * @defaultValue false
+   */
+  prewarm?: boolean
 }
 
 export interface InputValidationResults {
@@ -138,7 +188,8 @@ export interface InputValidationResults {
 }
 export interface InputResults {
   input: string;
-  option: string;
+  /** The selected option's identity (its `id` if provided, else the `string`, else the {@link InputOption}). */
+  option: OptionInput;
 }
 export interface ShowInputOptions<T=string, C=any> extends ShowOptionsOptions<T, C> {
 
@@ -153,16 +204,23 @@ export interface ShowInputOptions<T=string, C=any> extends ShowOptionsOptions<T,
 
   inputPlaceHolder?: string;
 
-  onInput?: (input?: T, option?: string) => void | Promise<void>;
+  onInput?: (input?: T, option?: OptionInput) => void | Promise<void>;
 
   /**
-   * Call when an option is selected. If false is returned, the the
-   * dialog will not close. INotifier is not provided but can
-   * be supplied via the textFieldProps helperText property.
+   * Validates the current input. Returning `{ valid: false }` keeps the dialog **open** and shows
+   * `message` under the field.
+   *
    * @remarks
-   * Optional the textProps can be updated via the textFieldProps argument
+   * Called in two situations, told apart by `option`:
+   * - **`option` is `undefined`** — the user typed. Fires on every keystroke, so this path must stay
+   *   cheap (a format/duplicate-name check).
+   * - **`option` is set** — the user submitted. This is where expensive work belongs (a network
+   *   round-trip, a password derivation); it is awaited, and the activated button shows a spinner
+   *   while it runs.
+   *
+   * An expensive validator MUST therefore branch on `option` — otherwise it runs once per keystroke.
    */
-  onValidateInput?: (input?: T, option?: string) => InputValidationResults | Promise<InputValidationResults>;
+  onValidateInput?: (input?: T, option?: OptionInput) => InputValidationResults | Promise<InputValidationResults>;
 }
 
 export interface ShowBusyOptions {
@@ -170,6 +228,57 @@ export interface ShowBusyOptions {
   // onCancel?: () => void;
 
   icon?: React.ReactNode;
+}
+
+/**
+ * The handle returned by {@link IReactNotifier.showBusy}.
+ *
+ * @remarks
+ * It is callable — calling it dismisses the busy indicator (the historical `hideBusy()` contract) —
+ * and also carries methods to update the indicator while it is showing. This keeps every existing
+ * `const hideBusy = await showBusy(...); hideBusy();` call working unchanged.
+ */
+export interface BusyHandle {
+  /**
+   * Dismiss the busy indicator.
+   */
+  (): void;
+  /**
+   * Update the indicator to a determinate state. When `total` is known the indicator shows a
+   * percentage / progress bar; passing `total` as `undefined` (or `completed` as `undefined`)
+   * returns it to the indeterminate (spinner) state.
+   *
+   * @param completed The cumulative work done so far.
+   * @param total The total work, in the same units as `completed`.
+   */
+  setProgress(completed?: number, total?: number): void;
+  /**
+   * Update the message shown beside the indicator.
+   */
+  setMessage(message: string | React.ReactNode): void;
+}
+
+/**
+ * Builds a {@link BusyHandle} from a dismiss function (and optional updaters). Used to wrap the
+ * plain `hideBusy` callbacks that providers produce, and to supply inert no-op handles where no
+ * provider is present.
+ */
+export function createBusyHandle(
+  dismiss: () => void = () => {},
+  setProgress: (completed?: number, total?: number) => void = () => {},
+  setMessage: (message: string | React.ReactNode) => void = () => {}
+): BusyHandle {
+  const handle = (() => dismiss()) as BusyHandle;
+  handle.setProgress = setProgress;
+  handle.setMessage = setMessage;
+  return handle;
+}
+
+/**
+ * An inert {@link BusyHandle} whose methods do nothing. Returned when no busy provider is available.
+ */
+export function createNoopBusyHandle(): BusyHandle {
+  return createBusyHandle();
 }
 
 /**
@@ -189,11 +298,11 @@ export interface IReactNotifier extends INotifier {
   /**
    * Useful when performing a long running operation and you want to inform the user.
    *
-   * A return type of a handler will be returned to allow for hideBusy.
-   * If multiple calls are made the consumer should continue to indicated blocked
-   * until all calls have been hideBusy.
+   * Returns a {@link BusyHandle}: call it to dismiss the indicator, or use its `setProgress` /
+   * `setMessage` methods to update it while it shows. If multiple calls are made the consumer should
+   * continue to indicate blocked until all handles have been dismissed.
    */
-  showBusy: (message: string | React.ReactNode, options?: ShowBusyOptions) => (Promise<() => void>) | (() => void);
+  showBusy: (message: string | React.ReactNode, options?: ShowBusyOptions) => (Promise<BusyHandle>) | BusyHandle;
   /**
    * Show a dialog for a given type.
    *
@@ -205,7 +314,7 @@ export interface IReactNotifier extends INotifier {
    * Provide a user with a list of options to choose from.
    * @param options
    */
-  showOptions: (options: ShowOptionsOptions) => Promise<string>;
+  showOptions: (options: ShowOptionsOptions) => Promise<OptionInput>;
   /**
    * Provider a user with a way to enter a text input.
    * @param options
@@ -216,132 +325,97 @@ export interface IReactNotifier extends INotifier {
   // TODO - add an onBackgroundOperation handler
 }
 
-export class DefaultReactNotifier extends DefaultNotifier implements IReactNotifier {
-  /** @inheritdoc IReactNotifier.setOverrides */
-  setOverrides(overrides: Partial<IReactNotifier> | null) {
-    super.setOverrides(overrides);
-  }
-
-  /** @inheritdoc IReactNotifier.getDelegate */
-  getDelegate(): Partial<IReactNotifier> | null {
-    return this._overrides;
-  }
-
-  /** @inheritdoc IReactNotifier.showMessage */
-  showMessage(message: string | React.ReactNode, options?: EnqueueNotifierOptions): void {
-    const delegate = this.getDelegate();
-    if (delegate?.showMessage) {
-      return delegate.showMessage(message, options);
-    }
-    if (options?.type === NotifierType.Warning) {
-      Notifier.warn(message as string);
-      return;
-    }
-    if (options?.type === NotifierType.Error) {
-      Notifier.error(message as string);
-      return;
-    }
-    Notifier.log(message as string);
-  }
-
-  /** @inheritdoc IReactNotifier.showBusy */
-  showBusy(message: string | React.ReactNode, options?: ShowBusyOptions): (Promise<() => void>) | (() => void) {
-    const delegate = this.getDelegate();
-    if (delegate?.showBusy) {
-      return delegate.showBusy(message, options);
-    }
-    return new Promise((resolve) => { resolve (() => {}); });
-  }
-
-  /** @inheritdoc IReactNotifier.showWindow */
-  showWindow(type: string, options?: ShowWindowOptions): Promise<HTMLElement> {
-    const delegate = this.getDelegate();
-    if (delegate?.showWindow) {
-      return delegate.showWindow(type, options);
-    }
-    // return Promise.resolve(document.createElement('div'));
-  }
-
-  /** @inheritdoc IReactNotifier.showError */
-  showError(error: any): void {
-    const delegate = this.getDelegate();
-    if (delegate?.showError) {
-      delegate.showError(error);
-      return;
-    }
-    Notifier.error(error);
-  }
-
-  /** @inheritdoc IReactNotifier.showOptions */
-  showOptions(options: ShowOptionsOptions): Promise<string> {
-    const delegate = this.getDelegate();
-    if (delegate?.showOptions) {
-      return delegate.showOptions(options);
-    }
-    return Promise.resolve('');
-  }
-
-  /** @inheritdoc IReactNotifier.showInput */
-  showInput(options: ShowInputOptions): Promise<InputResults> {
-    const delegate = this.getDelegate();
-    if (delegate?.showInput) {
-      return delegate.showInput(options);
-    }
-    return Promise.resolve({ input: '', option: '' });
-  }
-}
-
-// Create a singleton instance of ReactNotifier
-const ReactNotifier = new DefaultReactNotifier();
-
-// Create the context with the default ReactNotifier instance
-const NotifierContext = createContext<IReactNotifier>(ReactNotifier);
+const NotifierMethods: readonly (keyof IReactNotifier)[] = [
+  'debug', 'log', 'warn', 'error',
+  'showMessage', 'showError', 'showBusy', 'showWindow', 'showOptions', 'showInput'
+];
 
 /**
- * Context provider for notifications. Allows custom notification implementations
- * to be provided to components within the provider tree.
+ * Takes each method from the first notifier that has it. Methods are bound, so a class instance
+ * works as well as a plain object.
+ */
+const mergeNotifiers = (...notifiers: (Partial<IReactNotifier> | null | undefined)[]): Partial<IReactNotifier> => {
+  const merged: Partial<IReactNotifier> = {};
+  for (const key of NotifierMethods) {
+    for (const notifier of notifiers) {
+      const method = notifier?.[key];
+      if (typeof method === 'function') {
+        (merged as any)[key] = method.bind(notifier);
+        break;
+      }
+    }
+  }
+  return merged;
+};
+
+/**
+ * What {@link useNotifier} does for a method no provider supplies: show nothing, and send logging
+ * and errors to the global {@link Notifier}.
+ */
+const Unprovided: IReactNotifier = {
+  debug: (message, options) => Notifier.debug(message, options),
+  log: (message, options) => Notifier.log(message, options),
+  warn: (message, options) => Notifier.warn(message, options),
+  error: (error, options) => Notifier.error(error, options),
+  showMessage: () => {},
+  showError: (error) => Notifier.error(error),
+  showBusy: () => Promise.resolve(createNoopBusyHandle()),
+  showWindow: () => Promise.resolve(document.createElement('div')),
+  showOptions: () => Promise.resolve(''),
+  showInput: () => Promise.resolve({ input: '', option: '' })
+};
+
+const NotifierContext = createContext<Partial<IReactNotifier>>(CommonUtils.EmptyObject);
+
+export interface ReactNotifierProviderProps {
+  children: React.ReactNode;
+  /**
+   * The methods this provider implements. The ones it leaves out come from a provider further out,
+   * or do what {@link useNotifier} does with no provider.
+   */
+  notifier: Partial<IReactNotifier>;
+}
+
+/**
+ * Shows the messages, dialogs and busy indicators that components below it ask for through
+ * {@link useNotifier}.
+ *
+ * @remarks
+ * Providers stack **per method, and the outermost wins**. An app that wraps a studio in a provider
+ * with only `showMessage` replaces the studio's toasts and keeps its dialogs.
+ *
+ * The provider affects React components only. To redirect the SDK's own messages, override the
+ * global {@link Notifier}.
  *
  * @example
  * ```tsx
- * const customNotifier = {
+ * const notifier = {
  *   showMessage: (message) => toast(message),
- *   showError: (error) => toast.error(error),
- *   // ... other methods
+ *   showError: (error) => toast.error(String(error))
  * };
  *
- * <NotifierProvider notifier={customNotifier}>
+ * <ReactNotifierProvider notifier={notifier}>
  *   <App />
- * </NotifierProvider>
+ * </ReactNotifierProvider>
  * ```
  */
-export interface NotifierProviderProps {
-  children: ReactNode;
-  notifier: IReactNotifier;
-}
-
-export const NotifierProvider: React.FC<NotifierProviderProps> = ({ children, notifier }) => {
-  // Set the singleton delegate when this provider mounts or when notifier changes
-  React.useEffect(() => {
-    const restore = Notifier.getOverrides();
-    Notifier.setOverrides(notifier);
-    return () => {
-      Notifier.setOverrides(restore);
-    };
-  }, [notifier]);
-
-  return React.createElement(
+export const ReactNotifierProvider: React.FC<ReactNotifierProviderProps> = ({ children, notifier }) => {
+  const outer = useContext(NotifierContext);
+  const merged = useMemo(() => mergeNotifiers(outer, notifier), [outer, notifier]);
+  return createElement(
     NotifierContext.Provider,
-    { value: notifier },
+    { value: merged },
     children
   );
 };
 
 /**
- * Hook to access the notification system. Uses the notifier from the nearest
- * NotifierProvider, or falls back to the default ReactNotifier singleton if
- * no provider is found.
+ * Returns the notifier for showing the user messages, dialogs and busy indicators.
  *
- * @returns The notification interface
+ * @remarks
+ * Every method is always present. With no {@link ReactNotifierProvider} above, messages, dialogs and
+ * busy indicators show nothing (a dialog resolves as if cancelled), and `log`, `warn`, `error` and
+ * `showError` go to the global {@link Notifier}.
  *
  * @example
  * ```tsx
@@ -357,5 +431,6 @@ export const NotifierProvider: React.FC<NotifierProviderProps> = ({ children, no
  * ```
  */
 export const useNotifier = (): IReactNotifier => {
-  return useContext(NotifierContext);
+  const provided = useContext(NotifierContext);
+  return useMemo(() => mergeNotifiers(provided, Unprovided) as IReactNotifier, [provided]);
 };

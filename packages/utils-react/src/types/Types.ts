@@ -1,98 +1,3 @@
-import { Direction, type TopLeft, type CellCoords } from '@sheetxl/utils';
-
-// TODO - duplicate with sdk - review and move to utils
-export const HorizontalAlignment = {
-  /**
-   * Aligned based on the data value.
-   * Text data is left-aligned. Numbers, dates, and times are right-aligned. Boolean types are centered.
-   */
-   General: 'general',
-   Left: 'left',
-   Right: 'right',
-   Center: 'center',
-   Justify: 'justify',
-   Fill: 'fill',
-   /** Not Supported */
-   Distributed: 'distributed',
-   /** Not Supported */
-   CenterContinuous: 'centerContinuous'
-} as const;
-export type HorizontalAlignment = typeof HorizontalAlignment[keyof typeof HorizontalAlignment];
-
-// TODO - extend bounds with it has left/top instead of x/y
-export type ScrollableViewport = {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-
-  totalWidth: number;
-  totalHeight: number;
-}
-
-export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
-
-export interface ScrollState extends TopLeft {
-  horizontalScrollDirection: Direction | null; // not scrolling
-  verticalScrollDirection: Direction | null; // not scrolling
-}
-
-export type ItemSizer = (index: number) => number;
-
-export interface Style {
-  stroke?: string;
-  strokeLeftColor?: string;
-  strokeTopColor?: string;
-  strokeRightColor?: string;
-  strokeBottomColor?: string;
-  strokeWidth?: number;
-  strokeTopWidth?: number;
-  strokeRightWidth?: number;
-  strokeBottomWidth?: number;
-  strokeLeftWidth?: number;
-  strokeStyle?: string;
-}
-
-export interface ICellLayout {
-  /**
-   * Returns the offset given an index.
-   */
-  getColOffset: ItemSizer;
-  /**
-   * Returns the index given an offset.
-   */
-  getColIndex: ItemSizer;
-  /**
-   * Returns the offset given an index.
-   */
-  getRowOffset: ItemSizer;
-  /**
-   * Returns the index given an offset.
-   */
-  getRowIndex: ItemSizer;
-}
-
-
-export interface HiddenHeadersAt {
-  /**
-   * A called back to traverse hidden headers
-   */
-  (index: number, reverse?: boolean): number;
-}
-
-export interface IsContentfulCell {
-  (coords: CellCoords): boolean;
-}
-
-export type CellFinder = (
-  activeCoords: CellCoords,
-  isContentfulCell: IsContentfulCell | undefined,
-  hiddenAt: HiddenHeadersAt | undefined,
-  direction: Direction,
-  first: boolean,
-  limit: number
-) => number;
-
 
 export const KeyModifiers = {
   Shift: 'shift',
@@ -104,6 +9,12 @@ export type KeyModifiers = typeof KeyModifiers[keyof typeof KeyModifiers];
 
 export interface IKeyStroke {
   readonly key: string;
+
+  // TODO - remove modifiers const.
+  // shift?: boolean;
+  // ctrl?: boolean;
+  // alt?: boolean;
+  // meta?: boolean;
   readonly modifiers?: KeyModifiers[];
 }
 

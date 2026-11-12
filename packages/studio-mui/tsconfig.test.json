@@ -1,0 +1,12 @@
+{
+  // Test-only typecheck project (relaxed strictness). See config/tsconfig.test.base.json for why.
+  "extends": ["./tsconfig.json", "../../config/tsconfig.test.base.json"],
+  "include": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**/*.ts",
+    "src/**/__tests__/**/*.tsx",
+    "src/**/*.d.ts"
+  ],
+  "exclude": ["**/node_modules", "**/build", "**/dist", "**/.pnpm"]
+}

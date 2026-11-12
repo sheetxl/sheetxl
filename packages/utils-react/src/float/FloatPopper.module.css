@@ -1,0 +1,25 @@
+.float-popper {
+  display: flex;
+  max-width: 100%;
+  max-height: 100%;
+  /* The portal root has no typography of its own; the theme carried onto this wrapper does, so content that
+     does not set a font or a color (a card, a label) inherits the app's instead of the page's. */
+  font-family: var(--sxl-font-family, inherit);
+  font-size: var(--sxl-font-size, inherit);
+  font-weight: var(--sxl-font-weight, inherit);
+  font-style: var(--sxl-font-style, inherit);
+  color: var(--sxl-color-base-content, inherit);
+}
+
+.float-popper-grow {
+  display: flex;
+  transform: scale(0.75);
+  opacity: 0;
+  transition: transform 180ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.float-popper-grow.entered {
+  transform: scale(1);
+  opacity: 1;
+}

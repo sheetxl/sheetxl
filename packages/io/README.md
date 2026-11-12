@@ -6,6 +6,6 @@
   </a>
 </p>
 
-IO Package used for converting to/from SheetXL Object Model.
-
-Focus is primarily on OOXML but Google sheets and PDFs are also on the roadmap.
+Library for importing and exporting SheetXL various formats.
+s
+The current built-in formats are JSON and CSV.

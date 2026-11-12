@@ -69,7 +69,7 @@ export const isRunning = (id: number): boolean => {
  * @returns Identifier of animation. Can be used to stop it any time.
  */
 export const  start = (
-  stepCallback: (percent: number, now: number, virtual?: boolean) => boolean,
+  stepCallback: (percent: number, now: number, virtual?: boolean) => boolean | void,
   verifyCallback: (id: number) => boolean,
   completedCallback: (droppedFrames: number, finishedAnimation: number, wasFinished?: boolean) => void,
   duration: number=0,
@@ -84,15 +84,15 @@ export const  start = (
 
   // Compacting running db automatically every few new animations
   if (id % 20 === 0) {
-    const newRunning = {};
+    const newRunning: Record<number, boolean | null> = {};
     for (let usedId in running) {
-      newRunning[usedId] = true;
+      newRunning[usedId as unknown as number] = true;
     }
     running = newRunning;
   }
 
   // This is the internal step method which is called every few milliseconds
-  const step = function (virtual) {
+  const step = function (virtual?: boolean | number) {
     // Normalize virtual value
     let render = virtual !== true;
 
@@ -134,7 +134,7 @@ export const  start = (
 
     // Execute step callback, then...
     let value = easingMethod ? easingMethod(percent) : percent;
-    let stepResult = false;
+    let stepResult: boolean | void = false;
     try {
       stepResult = stepCallback(value, now, render);
     } catch (error: any) {

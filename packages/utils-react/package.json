@@ -10,8 +10,8 @@
   "bugs": {
     "url": "https://github.com/sheetxl/sheetxl/issues"
   },
-  "license": "SEE LICENSE IN <LICENSE>",
-  "private": false,
+  "license": "MIT",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -28,7 +28,7 @@
     "build:node": "cross-env BUILD_ENV=node vite build",
     "build:browser": "vite build",
     "build": "pnpm run build:node && pnpm run build:browser",
-    "build:tsdocs:json": "typedoc --json ../../build/docs/utils-react.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "build:tsdocs:json": "pnpm -w exec typedoc --options packages/utils-react/typedoc.json --json build/docs-json/utils-react.json --tsconfig packages/utils-react/tsconfig.build.json",
     "clean": "rimraf ./build",
     "clean:all": "git clean -fdX .",
     "release:package": "cd build && pnpm publish --no-git-checks --access public",
@@ -38,20 +38,21 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@floating-ui/react-dom": "^2.1.9",
     "@sheetxl/utils": "workspace:*",
     "clsx": "^2.1.1",
     "detect-it": "^4.0.1",
-    "react-merge-refs": "^3.0.2",
-    "react-use": "^17.6.0",
-    "tiny-invariant": "^1.3.3"
+    "prop-types": "^15.8.1",
+    "react-draggable": "^4.7.2",
+    "react-merge-refs": "^3.0.2"
   },
   "peerDependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
   },
   "sideEffects": [
     "*.css",
@@ -67,5 +68,6 @@
     "xlsx",
     "utilities",
     "react"
-  ]
+  ],
+  "privateRepo": false
 }

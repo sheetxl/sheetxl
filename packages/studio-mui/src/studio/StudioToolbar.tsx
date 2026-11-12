@@ -1,24 +1,25 @@
-import React, { useRef, memo, forwardRef, useMemo } from 'react';
+import type React from 'react';
+import { useRef, memo, forwardRef } from 'react';
 
-import { mergeRefs } from 'react-merge-refs';
+import { useMergeRefs } from 'react-merge-refs';
 
-import { useMeasure } from 'react-use';
+import { useMeasure } from '@sheetxl/utils-react';
 
-import { Theme } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 
-import { ICommand } from '@sheetxl/utils-react';
+import { type IWorkbookElement } from '@sheetxl/react';
 
-import { LogoNoPaddingIcon } from '@sheetxl/react';
-import { ExhibitTooltip, useFloatStack } from '@sheetxl/utils-mui';
+import { defaultRenderToolbar, type WorkbookToolbarsProps } from '../toolbar';
 
-import { type WorkbookToolbarsProps, renderWorkbookToolbars } from '../toolbar';
-import { AppearanceCommandButton } from '../command';
-
-import { StandaloneFileCommandButton } from './StandaloneFileCommandButton';
+import { DefaultLogo } from './DefaultLogo';
 
 export interface StudioToolbarProps extends WorkbookToolbarsProps {
+  /**
+   * The active workbook — application chrome (e.g. the centered `DocumentTitle` built by the studio)
+   * reads it; the toolbar strip itself no longer needs it.
+   */
+  workbook?: IWorkbookElement | null;
   /**
    * optional logo to display in the toolbar
    */
@@ -26,93 +27,55 @@ export interface StudioToolbarProps extends WorkbookToolbarsProps {
 
   mainElement?: React.ReactNode;
 
-  showFileMenu?: boolean;
+  /**
+   * Slot rendered at the start of the toolbar (after the logo, before the title).
+   *
+   * @remarks
+   * Application-level chrome the studio no longer hardcodes — e.g. a file menu. The studio example
+   * injects a {@link StandaloneFileCommandButton} here.
+   */
+  startElement?: React.ReactNode;
 
-  showAppearanceMenu?: boolean;
+  /**
+   * Slot rendered at the end of the toolbar.
+   *
+   * @remarks
+   * Application-level chrome — e.g. an appearance (light/dark) menu. The studio example injects an
+   * {@link AppearanceCommandButton} here.
+   */
+  endElement?: React.ReactNode;
 }
 
-export const DEFAULT_LOGO = (
-  <ExhibitTooltip
-    label={"SheetXL"}
-    description={"Visit me at sheetxl.com."}
-  >
-    <Box
-      sx={{
-        width:'24px',
-        height: '24px',
-        marginBottom: '4px',
-        marginLeft: '6px'
-      }}
-    >
-      <LogoNoPaddingIcon
-        onClick={() => {
-          window?.open('https://www.sheetxl.com', '_blank');
-        }}
-        style={{
-          width:'24px',
-          height: '24px',
-          cursor: 'pointer'
-        }}
-      />
-    </Box>
-  </ExhibitTooltip>
-);
-
 /**
- * Wrap the workbooks toolbar with application level items. File Menu, Title, App settings menu, and App Logo
+ * Wrap the workbooks toolbar with application level items: a logo, a centered title (`mainElement`),
+ * and injectable {@link StudioToolbarProps.startElement} / {@link StudioToolbarProps.endElement} slots.
  */
 export const StudioToolbar = memo(
   forwardRef<any, StudioToolbarProps>((props, refForwarded) => {
   const {
-    commands,
     workbook,
-    logo = DEFAULT_LOGO,
+    className: propClassName,
+    logo = DefaultLogo,
     mainElement,
-    showFileMenu = true,
-    showAppearanceMenu = true,
+    startElement,
+    endElement,
     ...rest
   } = props;
 
-  const { reference } = useFloatStack();
   const [refMeasureContainer, { width: widthContainer }] = useMeasure<HTMLDivElement>();
   const isCompact =  widthContainer < 530;
-
-  const startElement = (showFileMenu ?
-    <StandaloneFileCommandButton
-      commands={commands}
-      commandHook={{
-        beforeExecute(): void {
-          reference?.closeAll();
-        },
-        onError(_command: ICommand<any, any>, _error: any, _args: any): void {
-          // propCommandHook?.onError(command, error, args);
-        }
-      }}
-    />
-  : null);
-
-  const endElement = (showAppearanceMenu ?
-    <AppearanceCommandButton
-      // outlined={outlined}
-      commands={commands}
-      commandHook={{
-        beforeExecute(): void {
-          reference?.closeAll();
-        },
-        onError(_command: ICommand<any, any>, _error: any, _args: any): void {
-          // propCommandHook?.onError(command, error, args);
-        }
-      }}
-    />
-  : null);
 
   const wrapperSelect = (children: React.ReactNode) => {
     return (
       <Box
         sx={{
-          display: 'flex',
+          display: 'grid',
+          // Symmetric side tracks keep `mainElement` centered relative to the ENTIRE toolbar
+          // (not the leftover whitespace). Each side takes only the space its content needs; the
+          // rest of its track is whitespace. If a side's content exceeds its `1fr` share the track
+          // grows past it (fr tracks won't shrink below content), pushing the center off-center.
+          gridTemplateColumns: '1fr auto 1fr',
           flex: '1',
-          flexDirection: 'row',
           alignItems: 'stretch',
           gap: (theme: Theme) => theme.spacing(1),
           paddingLeft: (theme: Theme) => theme.spacing(1),
@@ -124,7 +87,7 @@ export const StudioToolbar = memo(
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            flex: '1 1 100%',
+            justifyContent: 'start',
             gap: (theme: Theme) => theme.spacing(0.5),
           }}
         >
@@ -145,7 +108,7 @@ export const StudioToolbar = memo(
           sx={{
             display: 'flex',
             flexDirection: 'row',
-            flex: '1 1 300%',
+            minWidth: 0,
             overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center'
@@ -157,8 +120,7 @@ export const StudioToolbar = memo(
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'end',
-            flex: (isCompact && !endElement) ? '0 0 auto' : '1 1 100%'
+            justifyContent: 'end'
           }}
         >
           {endElement}
@@ -167,34 +129,26 @@ export const StudioToolbar = memo(
     );
   }
 
-  const localPropsSelect = useMemo(() => {
-    return {
-      paddingLeft: (theme: Theme) => theme.spacing(1),
-      paddingRight: (theme: Theme) => theme.spacing(1)
-    }
-  }, []);
-
   const refLocal = useRef<HTMLDivElement>(null);
+  const refMerged = useMergeRefs([refLocal, refMeasureContainer, refForwarded]);
 
   return (
     <Box
-      ref={mergeRefs([refLocal, refMeasureContainer, refForwarded]) as any}
       {...rest}
+      ref={refMerged as any}
+      className={propClassName}
     >
-      {renderWorkbookToolbars({
-        commands,
+      {defaultRenderToolbar({
         isCompact,
-        workbook,
         wrapperSelect,
-        propsSelect: localPropsSelect,
-        propsToolbars: {
-          'Home': {
-            sx: {}
-          }
-        }
+        // propsToolbars: {
+        //   'homeToolbar': {
+        //     sx: {}
+        //   }
+        // }
       })}
     </Box>
   );
 }));
 
-StudioToolbar.displayName = "StudioToolbar";
+StudioToolbar.displayName = 'StudioToolbar';

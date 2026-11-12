@@ -1,6 +1,6 @@
 
 # Change Log
 
-We have migrated to github releases
+Release notes are published on the website:
 
-- https://github.com/sheetxl/sheetxl/releases
+- https://www.sheetxl.com/changelog

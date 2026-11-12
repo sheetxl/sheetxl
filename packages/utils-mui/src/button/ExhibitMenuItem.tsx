@@ -1,23 +1,34 @@
-import React, { memo, useState, useMemo, forwardRef } from 'react';
+import type React from 'react';
+import { memo, useState, useMemo, forwardRef } from 'react';
 
 import clsx from 'clsx';
 
-import { DynamicIcon } from '@sheetxl/utils-react';
+import { DynamicIcon, useFloat } from '@sheetxl/utils-react';
 
-import { Theme } from '@mui/material/styles';
-
-import { MenuItem, type MenuItemProps } from '@mui/material';
+import { type Theme } from '@mui/material';
+import { ListItemButton, type ListItemButtonProps } from '@mui/material';
 import { ListItemIcon } from '@mui/material';
 
 import { ChipStrip } from '../components';
 import { type ExhibitIconButtonProps } from './ExhibitIconButton';
 import { ExhibitTooltip, type ExhibitTooltipProps } from './ExhibitTooltip';
 
-import { FloatReference } from '../float/useFloatStack';
-
 const BLANK_ICON = <DynamicIcon/>;
 
-export interface ExhibitMenuItemProps extends MenuItemProps {
+/**
+ * The horizontal box model of a menu row — the margins and paddings an {@link ExhibitMenuItem} sits
+ * in. Exported so a row that is NOT an item (a field row, a header) can occupy the same column as the
+ * items around it instead of re-deriving the numbers. Lead such a row with an empty `ListItemIcon` and
+ * its content lines up past the icon gutter, where a menu item's label starts.
+ */
+export const MenuItemInsets = {
+  marginLeft: '4px',
+  marginRight: '4px',
+  paddingLeft: '6px',
+  paddingRight: '18px'
+} as const;
+
+export interface ExhibitMenuItemProps extends ListItemButtonProps {
   icon?: React.ReactNode | (() => React.ReactNode);
 
   renderIcon?: (props: ExhibitIconButtonProps) => React.ReactElement;
@@ -35,8 +46,6 @@ export interface ExhibitMenuItemProps extends MenuItemProps {
    */
   propsTooltip?: Omit<ExhibitTooltipProps, 'children'>;
 
-  parentFloat?: FloatReference;
-
   chips?: string | string[] | React.ReactNode | React.ReactNode[];
 }
 
@@ -49,7 +58,6 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
   const {
     icon = BLANK_ICON,
     renderIcon = defaultRenderIcon,
-    parentFloat,
     className: propClassName,
     onFocus: propOnFocus,
     selected,
@@ -65,6 +73,10 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
     primary,
     ...rest
   } = props;
+
+  // We close an open sibling submenu on hover via the enclosing float, taken
+  // from context (the provider reaches us even through portals).
+  const enclosingFloat = useFloat();
 
   const [hasFocus, setFocus] = useState<boolean>(false);
   const [isHovered, setHovered] = useState<boolean>(false);
@@ -97,25 +109,24 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
 
 
   let retValue = (
-    <MenuItem
+    <ListItemButton
       ref={refForwarded}
-      // size="small"
-      // component={compElement}
+      role="menuitem"
       disabled={disabled}
-      onMouseOver={(event: React.MouseEvent<HTMLLIElement>) => {
+      onMouseOver={(event: React.MouseEvent<HTMLDivElement>) => {
         propOnMouseOver?.(event);
         if (event.isDefaultPrevented()) return;
         setHovered(true);
       }}
-      onMouseOut={(event: React.MouseEvent<HTMLLIElement>) => {
+      onMouseOut={(event: React.MouseEvent<HTMLDivElement>) => {
         propOnMouseOut?.(event);
         if (event.isDefaultPrevented()) return;
         setHovered(false);
       }}
-      onMouseEnter={(event: React.MouseEvent<HTMLLIElement>) => {
+      onMouseEnter={(event: React.MouseEvent<HTMLDivElement>) => {
         propOnMouseEnter?.(event);
         if (event.isDefaultPrevented()) return;
-        parentFloat?.closeChild();
+        enclosingFloat?.closeChild();
       }} // close any other children
       TouchRippleProps={{
         center: false
@@ -124,16 +135,34 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
         'Mui-focusVisible': hasFocus,
         'Mui-hovered': isHovered,
       }, propClassName)}
-      onFocus={(e: React.FocusEvent<HTMLLIElement>) => {
+      onFocus={(e: React.FocusEvent<HTMLDivElement>) => {
         propOnFocus?.(e);
         setFocus(true);
       }}
-      onBlur={(e: React.FocusEvent<HTMLLIElement>) => {
+      onBlur={(e: React.FocusEvent<HTMLDivElement>) => {
         propOnBlur?.(e);
         setFocus(false);
       }}
       sx={{
+        // Menu-item look, ported from the former `MuiMenuItem` theme override
+        // (no longer applies now that this is a ListItemButton, not a MenuItem).
+        // ListItemButton (unlike MenuItem) does not apply `typography.body1`, so
+        // set the themed font explicitly or text falls back to the serif default.
         flex: '1 1 100%',
+        // A menu row never wraps its label: the menu grows to the longest row. (A float whose max width
+        // is capped by the overflow `size` middleware would otherwise wrap the longest label.)
+        whiteSpace: 'nowrap',
+        fontFamily: (theme: Theme) => theme.typography.fontFamily,
+        fontWeight: 400,
+        lineHeight: 1.5,
+        paddingTop: '2px',
+        paddingBottom: '2px',
+        ...MenuItemInsets,
+        borderRadius: '4px',
+        fontSize: '0.875em',
+        '@media (pointer: coarse)': {
+          fontSize: '1em',
+        },
         "&.Mui-disabled > .icon path": {
           filter: 'grayscale(65%)',
         },
@@ -153,7 +182,7 @@ export const ExhibitMenuItem: React.FC<ExhibitMenuItemProps & { ref?: any }> = m
       {listIcon}
       {children}
       {chips ? <ChipStrip chips={chips}/> : null}
-    </MenuItem>
+    </ListItemButton>
   );
 
   if (propsTooltip) {

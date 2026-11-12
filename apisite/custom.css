@@ -1,0 +1,305 @@
+/**
+ * API reference theme. Layered over TypeDoc's default theme so the reference reads as part of the
+ * docsite: Inter, the same blue, soft surfaces, rounded corners, and the navy dark mode.
+ *
+ * Tokens mirror docsite/src/css/custom.css (which mirrors landing/src/css/style.css). Keep them in
+ * step. TypeDoc ships its rules inside `@layer typedoc`, so unlayered rules here win without
+ * `!important`.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --sxl-primary: #3e7dff;
+  --sxl-black: #080321;
+  --sxl-navy: #131b4d;
+  --sxl-light-bg: #f5f8ff;
+
+  --sxl-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --sxl-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --sxl-radius: 0.75rem;
+  --sxl-radius-sm: 0.5rem;
+
+  --dim-toolbar-contents-height: 3.5rem;
+
+  /* Light */
+  --light-color-background: #ffffff;
+  --light-color-background-secondary: var(--sxl-light-bg);
+  --light-color-background-active: rgba(62, 125, 255, 0.1);
+  --light-color-accent: #e4e9f5;
+  --light-color-active-menu-item: rgba(62, 125, 255, 0.1);
+  --light-color-text: #374151;
+  --light-color-contrast-text: var(--sxl-black);
+  --light-color-text-aside: #637381;
+  --light-color-icon-background: #ffffff;
+  --light-color-link: var(--sxl-primary);
+  --light-color-focus-outline: var(--sxl-primary);
+  --light-color-ts-keyword: #2a6cf5;
+  --light-color-document: var(--sxl-black);
+  --light-color-alert-note: var(--sxl-primary);
+  --sxl-code-bg: var(--sxl-light-bg);
+  --sxl-heading: var(--sxl-black);
+
+  /* Dark */
+  --dark-color-background: var(--sxl-black);
+  --dark-color-background-secondary: var(--sxl-navy);
+  --dark-color-background-active: rgba(110, 156, 255, 0.14);
+  --dark-color-accent: #232b5c;
+  --dark-color-active-menu-item: rgba(110, 156, 255, 0.14);
+  --dark-color-text: #c9c8d1;
+  --dark-color-contrast-text: #ffffff;
+  --dark-color-text-aside: #9b99a6;
+  --dark-color-icon-background: var(--sxl-navy);
+  --dark-color-link: #82abff;
+  --dark-color-focus-outline: #6e9cff;
+  --dark-color-ts-keyword: #82abff;
+  --dark-color-document: #ffffff;
+  --dark-color-alert-note: #6e9cff;
+}
+
+/* TypeDoc switches schemes by swapping `--color-*` under these two selectors; the code surface
+   and heading color follow the same switch. */
+:root[data-theme='dark'] {
+  --sxl-code-bg: #0d1340;
+  --sxl-heading: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sxl-code-bg: #0d1340;
+    --sxl-heading: #ffffff;
+  }
+}
+
+/* ---------- Base ---------- */
+
+body {
+  font-family: var(--sxl-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--sxl-heading);
+  font-weight: 700;
+}
+
+h1 {
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  letter-spacing: -0.015em;
+}
+
+.tsd-typography {
+  line-height: 1.7;
+}
+
+/* TypeDoc tints a symbol link by its kind; in prose that reads as a rainbow, so links there are
+   the link color. Signatures keep the kind colors. */
+.tsd-typography a[class*='tsd-kind-'] {
+  color: var(--color-link);
+}
+
+/* ---------- Code ---------- */
+
+code,
+pre,
+.tsd-signature {
+  font-family: var(--sxl-mono);
+}
+
+:not(pre) > code {
+  padding: 0.1em 0.35em;
+  border-radius: 0.35rem;
+  background: var(--sxl-code-bg);
+  font-size: 0.85em;
+}
+
+pre {
+  padding: 0.9rem 1rem;
+  border-color: var(--color-accent);
+  border-radius: var(--sxl-radius);
+  background: var(--sxl-code-bg);
+}
+
+pre > button {
+  border-radius: var(--sxl-radius-sm);
+}
+
+/* ---------- Toolbar ---------- */
+
+.tsd-page-toolbar {
+  background: color-mix(in srgb, var(--color-background) 85%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.tsd-toolbar-contents > .title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--sxl-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.tsd-toolbar-contents > .title::before {
+  content: '';
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+  background: url("data:image/svg+xml,%3Csvg width='974' height='974' viewBox='0 0 974 974' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m 46.765,0.923 c -15.79,0 -28.62,10.663 -28.62,23.747 v 514.81 h -0.2 v 410.7 c 0,8.04 4.87,15.13 12.26,19.43 v 3.75 h 10.27 c 1.97,0.35 4,0.56 6.1,0.56 h 314.9 339.43 v 0 h 230.24 c 2.09,0 4.11,-0.21 6.07,-0.56 h 1.41 v -0.37 c 12.15,-2.75 21.13,-11.88 21.13,-22.81 V 547.52 c 0.12,-0.87 0.19,-1.73 0.19,-2.62 V 24.67 c 0,-13.092 -12.83,-23.747 -28.62,-23.747 h -319.22 v 0.004 h -41.96 V 0.923 Z' fill='%23547dbe' fill-rule='evenodd'/%3E%3Cpath d='m 57.935,56.027 v 183.256 h 176.45 V 56.027 Z m 227.71,0 v 183.256 h 176.45 V 56.027 Z m 228.39,0 v 183.256 h 176.45 V 56.027 Z m 229.72,0 v 183.256 h 176.45 V 56.027 Z M 57.935,291.347 V 470.55 h 176.45 V 291.347 Z m 227.71,0 V 470.55 h 176.45 V 291.347 Z m 228.39,0 V 470.55 h 176.45 V 291.347 Z m 229.72,0 V 470.55 h 176.45 V 291.347 Z M 57.935,522.63 v 175.81 h 176.45 V 522.63 Z m 227.71,0 v 175.81 h 177.11 V 522.63 Z m 228.39,0 v 175.81 h 176.45 V 522.63 Z m 229.72,0 v 175.81 h 176.45 V 522.63 Z m -685.1,220.58 v 175.82 h 176.45 V 743.21 Z m 227.72,0 v 175.82 h 177.12 V 743.21 Z m 228.39,0 v 175.82 h 176.45 V 743.21 Z m 229.72,0 v 175.82 h 176.45 V 743.21 Z' fill='%23ffffff' fill-rule='evenodd'/%3E%3Cpath d='m 57.765,56.078 v 183.256 h 177.27 V 56.078 Z m 0,235.321 V 470.6 h 177.27 V 291.399 Z m 0,231.281 V 698.5 h 177.27 V 522.68 Z m 0.73,220.58 v 175.82 h 177.27 V 743.26 Z' fill='%23547dbe' fill-rule='evenodd' fill-opacity='0.4'/%3E%3Cpath d='m 625.245,126.49977 c 37.56,0 74.24,6.02199 110.04,18.06396 35.79,12.04497 70.86,30.42804 105.22,55.1582 l -48.16,65.99577 c -28.57,-20.55278 -56.66,-35.80782 -84.27,-45.7631 -27.61,-9.95528 -55.22,-14.93293 -82.83,-14.93293 -52.333,0 -93.023,10.75655 -122.077,32.27465 -29.055,21.5161 -43.58,52.02716 -43.58,91.5272 v 0.48115 c 0,27.61713 8.347,48.65403 25.041,63.10583 16.694,14.4508 38.363,25.2103 65.009,32.2746 26.645,7.0644 55.057,13.6505 85.237,19.7516 26.32,5.4588 52.49,11.8008 78.5,19.0262 26,7.2264 49.67,17.5038 71.02,30.8312 21.35,13.3274 38.37,31.3914 51.05,54.1919 12.68,22.8015 19.02,52.5083 19.02,89.1174 v 0.9663 c 0,64.5493 -22.47,114.4928 -67.42,149.8144 -44.94,35.3217 -108.19,52.9875 -189.73,52.9875 -34.031,0 -66.055,-3.2111 -96.075,-9.6332 -30.017,-6.4221 -58.105,-16.0553 -84.273,-28.9095 -26.165,-12.8443 -50.642,-28.8995 -73.435,-48.1659 l 51.524,-65.0325 c 28.254,24.4061 59.154,42.7141 92.703,54.9192 33.546,12.204 70.064,18.306 109.556,18.306 55.54,0 98.48,-10.6835 128.81,-32.0376 30.34,-21.357 45.51,-51.3049 45.51,-89.8426 v -0.4812 c 0,-27.9402 -7.54,-49.3763 -22.63,-64.3082 -15.09,-14.9329 -34.83,-26.1736 -59.23,-33.7221 -24.4,-7.5455 -50.89,-13.8876 -79.46,-19.0263 -27.29,-4.8166 -54.657,-10.4364 -82.106,-16.8615 -27.45,-6.4212 -52.57,-15.8943 -75.363,-28.4204 -22.794,-12.5232 -41.175,-30.347 -55.14,-53.4707 -13.966,-23.1246 -20.948,-53.9518 -20.948,-92.48947 v -0.48116 c 0,-65.19551 21.669,-115.69617 65.012,-151.50098 43.34,-35.80781 104.497,-53.71372 183.475,-53.71372 z' stroke='%23eb594d' stroke-width='54.9909' stroke-linejoin='round' stroke-miterlimit='10' fill='%23f9cecb' fill-rule='evenodd'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+#tsd-toolbar-links a {
+  color: var(--color-text-aside);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+#tsd-toolbar-links a:hover {
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.tsd-widget {
+  border-radius: 999px;
+}
+
+.tsd-widget:hover {
+  background-color: var(--color-background-active);
+}
+
+/* ---------- Search ---------- */
+
+#tsd-search[open] {
+  border-radius: var(--sxl-radius);
+}
+
+#tsd-search-input {
+  border-radius: 999px;
+  font-family: inherit;
+}
+
+/* ---------- Sidebar ---------- */
+
+.site-menu {
+  font-size: 0.9rem;
+}
+
+.tsd-navigation a,
+.tsd-page-navigation a {
+  border-radius: var(--sxl-radius-sm);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.tsd-navigation a:hover,
+.tsd-page-navigation a:hover {
+  background-color: var(--color-background-secondary);
+  text-decoration: none;
+}
+
+.tsd-navigation a.current,
+.tsd-page-navigation a.current {
+  color: var(--color-link);
+  font-weight: 600;
+}
+
+.tsd-accordion-summary > h3,
+.tsd-accordion-summary > h4 {
+  font-weight: 600;
+}
+
+/* ---------- Page ---------- */
+
+.tsd-breadcrumb {
+  font-size: 0.85rem;
+}
+
+.tsd-page-title h1 {
+  font-size: 2.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Section headings ("Properties", "Methods", …) and member names get a hairline like the docsite. */
+.tsd-panel-group > .tsd-accordion-summary,
+.tsd-panel > h2 {
+  border-bottom: 1px solid var(--color-accent);
+  padding-bottom: 0.4rem;
+}
+
+.tsd-member .tsd-anchor + h3 {
+  letter-spacing: -0.01em;
+}
+
+/* Signatures read as code blocks: one rounded surface, members separated by hairlines. */
+.tsd-signature {
+  padding: 0.8rem 1rem;
+  border-color: var(--color-accent);
+  border-radius: var(--sxl-radius);
+  background: var(--sxl-code-bg);
+  font-size: 0.85rem;
+}
+
+.tsd-signatures {
+  border: 1px solid var(--color-accent);
+  border-radius: var(--sxl-radius);
+  overflow: hidden;
+}
+
+.tsd-signatures .tsd-signature {
+  border-width: 0;
+  border-radius: 0;
+}
+
+.tsd-signatures > li + li .tsd-signature,
+.tsd-signatures > li + li > .tsd-signature {
+  border-top: 1px solid var(--color-accent);
+}
+
+.tsd-signatures .tsd-description {
+  padding: 0 1rem;
+}
+
+.tsd-flag,
+code.tsd-tag {
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-family: var(--sxl-font);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tsd-alert {
+  border-left-width: 3px;
+  border-radius: var(--sxl-radius-sm);
+}
+
+.tsd-typography table {
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.tsd-typography th {
+  background: var(--color-background-secondary);
+}
+
+.tsd-typography th,
+.tsd-typography td {
+  border-color: var(--color-accent);
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+  border-top-color: var(--color-accent);
+  color: var(--color-text-aside);
+  font-size: 0.85rem;
+}

@@ -1,7 +1,7 @@
-import { RemoveListener } from '@sheetxl/utils';
+import { type RemoveListener } from '@sheetxl/utils';
 
 import {
-  IconPackKey, IconGlyphKey, IconPack, IconGlyphPackPair, IconPackInput, IconGlyph
+  type IconPackKey, type IconGlyphKey, type IconPack, type IconGlyphPackPair, type IconPackInput, type IconGlyph
 } from './Types';
 
 import { normalizePackInput } from './_Utils';
@@ -50,6 +50,13 @@ export function createDynamicIconService() {
   }
 
   // --- Registration --------------------------------------------------------
+  /**
+   * Register an icon pack, or a loader for one, under `key`; registering a key again replaces it.
+   *
+   * @remarks
+   * A pack stays registered for the life of the page: there is no unregister. A pack only answers
+   * lookups for its glyphs, so one left behind by a plugin that was removed draws nothing on its own.
+   */
   function register(
     key: IconPackKey,
     packOrLoader: IconPack | IconPackInput | PackLoader
@@ -143,7 +150,7 @@ export function createDynamicIconService() {
       return null;
     }
 
-    // Non-namespaced: resolve in the active chain as before
+    // Non-namespaced: resolve in the active chain
     return _resolveInPackChain(start, key);
   }
 
@@ -237,10 +244,18 @@ export function createDynamicIconService() {
   };
 }
 
-export const DefaultDynamicIconService = createDynamicIconService();
+export const DefaultIconService = createDynamicIconService();
 
 // Prefetch at boot/SSR if you want zero pop-in.
-DefaultDynamicIconService.register(
+DefaultIconService.register(
   'base',
   () => import(/* webpackChunkName: "icons-base" */ './packs/Base')
+);
+
+// Conditional-formatting icon-set shapes. Its own pack rather than part of 'base' because nothing
+// but a sheet with an icon-set rule ever asks for these — the loader keeps them out of the bundle
+// until one does. Address them as 'cf:arrowUp'.
+DefaultIconService.register(
+  'cf',
+  () => import(/* webpackChunkName: "icons-cf" */ './packs/Conditional')
 );

@@ -1,0 +1,15 @@
+.App {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.App-message {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}

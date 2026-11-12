@@ -1,39 +1,48 @@
-import React, { useCallback, useState, useMemo, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useCallback, useState, useMemo, memo, forwardRef } from 'react';
 
 import { type SxProps } from '@mui/system';
-import { Theme, alpha, getOverlayAlpha } from '@mui/material/styles';
-
+import { alpha, type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { Paper, type PaperProps } from '@mui/material';
 import { Tabs } from '@mui/material';
 import { Tab, type TabProps } from '@mui/material';
 import { MenuItem } from '@mui/material';
 import { FormControl } from '@mui/material';
-import { Select, SelectChangeEvent, type SelectProps } from '@mui/material';
+import { Select, type SelectChangeEvent, type SelectProps } from '@mui/material';
 import { type ToolbarProps } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
-import { ICommands } from '@sheetxl/utils-react';
+import { CommandButtonEntryLabel, useCommandButtonRegistry } from '@sheetxl/utils-react';
+import { CommandToolbar } from '@sheetxl/utils-mui';
 
-import { IWorkbookElement } from '../components';
+import { WORKBOOK_TOOLBARS_KEY } from '@sheetxl/react';
 
-import { HomeToolbar } from './HomeToolbar';
-import { InsertToolbar } from './InsertToolbar';
-import { FormulaToolbar } from './FormulaToolbar';
-import { ViewToolbar } from './ViewToolbar';
+/**
+ * Fallback tab list used only when the {@link WORKBOOK_TOOLBARS_KEY} strip panel is not registered (a bare
+ * host that never called `registerWorkbookCommandGroups`). Normally the strip's members ARE the config.
+ */
+export const DefaultWorkbookToolbars: readonly string[] = [
+  'homeToolbar', 'insertToolbar', 'formulaToolbar', 'dataToolbar', 'reviewToolbar', 'viewToolbar'
+];
 
 export interface WorkbookToolbarsProps extends React.HTMLAttributes<HTMLDivElement> {
-  commands: ICommands.IGroup;
+  /**
+   * Explicit override of the ordered ribbon tabs (each the **key** of a registered toolbar surface).
+   *
+   * @remarks
+   * By default the tabs are **contribution-driven**: resolved from the members of the
+   * `workbookToolbars` strip panel, so features/plugins add tabs by contributing into it (e.g. the
+   * react table contributor's contextual `tableToolbar`). Pass this only to bypass the registry and
+   * pin an explicit list — doing so opts OUT of contributed/contextual tabs.
+   */
+  toolbars?: readonly string[];
   /**
    * Wrap the select with custom component.
    *
    * @param children
    */
   wrapperSelect?: (children: React.ReactNode) => React.ReactNode;
-  /**
-   * Properties for the select
-   */
-  propsSelect?: SxProps;
   /**
    * If we need to render compact.
    */
@@ -47,9 +56,9 @@ export interface WorkbookToolbarsProps extends React.HTMLAttributes<HTMLDivEleme
 
   propsPalette?: PaperProps;
 
+  /** Per-tab {@link ToolbarProps}, keyed by the toolbar key (e.g. `homeToolbar`). */
   propsToolbars?: Record<string, ToolbarProps>;
 
-  workbook?: IWorkbookElement;
   /**
    * MUI SX props {@link https://mui.com/system/getting-started/the-sx-prop/}
    */
@@ -60,7 +69,7 @@ interface StyledTabProps extends TabProps {
 
 }
 
-export const renderWorkbookToolbars = (props: WorkbookToolbarsProps): React.ReactElement => {
+export const defaultRenderToolbar = (props: WorkbookToolbarsProps): React.ReactElement => {
   return <WorkbookToolbars {...props}/>
 }
 
@@ -131,7 +140,7 @@ const ToolbarSelectTabs = memo((props: any) => {
   const tabs = useMemo(() => {
     const retValue = [];
     for (let i=0; i<toolbars.length; i++) {
-      retValue.push(<StyledTab label={toolbars[i].label} key={toolbars[i].label}/>);
+      retValue.push(<StyledTab label={toolbars[i].label} key={toolbars[i].key ?? toolbars[i].label}/>);
     }
     return retValue;
   }, [toolbars]);
@@ -183,7 +192,6 @@ type OptionSelectProps = Omit<SelectProps, 'variant' | 'onSelect'> & {
   toolbars: any;
   value: number;
   onToolbarChange: (newValue: number) => void;
-  propsSelect?: SxProps;
 }
 
 const OptionSelect = memo((props: OptionSelectProps) => {
@@ -191,21 +199,21 @@ const OptionSelect = memo((props: OptionSelectProps) => {
     toolbars,
     value: propValue,
     onToolbarChange,
-    propsSelect,
     ...rest
   } = props;
 
-  const handleChange = useCallback((event: SelectChangeEvent) => {
+  const handleChange = useCallback((event: SelectChangeEvent<unknown>) => {
     onToolbarChange?.(event.target.value as unknown as number);
   }, [onToolbarChange]);
 
   const menus = useMemo(() => {
     const retValue = [];
-    for (let i=0; i<toolbars.length; i++) {
+    const toolbarsLength = toolbars.length;
+    for (let i=0; i<toolbarsLength; i++) {
       const label = toolbars[i].label;
       retValue.push(
         <MenuItem
-          key={label}
+          key={toolbars[i].key ?? label}
           value={i}
           sx={{
             color: (theme: Theme) => {
@@ -257,8 +265,7 @@ const OptionSelect = memo((props: OptionSelectProps) => {
               // return theme.palette.text.primary;
             }
           }
-        },
-        ...propsSelect
+        }
       }}
       size="small"
     >
@@ -266,9 +273,6 @@ const OptionSelect = memo((props: OptionSelectProps) => {
         value={propValue}
         onChange={handleChange}
         variant="outlined"
-        sx={{
-          backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
-        }}
         {...rest}
       >
         {menus}
@@ -278,78 +282,54 @@ const OptionSelect = memo((props: OptionSelectProps) => {
 });
 
 
-// TODO - add a beforeTabs and afterTabs top (for file and settings)
 export const WorkbookToolbars = memo(forwardRef<HTMLElement, WorkbookToolbarsProps>(
   (props: WorkbookToolbarsProps, refForwarded) => {
   const {
-    commands,
+    toolbars: toolbarsOverride,
     wrapperSelect,
-    propsSelect = CommonUtils.EmptyObject,
     isCompact = false,
     wrapperPalette,
     propsToolbars = CommonUtils.EmptyObject,
     propsPalette = CommonUtils.EmptyObject,
-    workbook,
     sx: sxProp,
     ...rest
   } = props;
 
-  const toolbars = useMemo(() => {
-    const retValue = [];
-    const {
-      ref: toolbarHomeRef,
-      ...restToolbarHomeProps
-    } = propsToolbars?.['Home'] || CommonUtils.EmptyObject;
+  // The tab strip is **contribution-driven**: resolve the `workbookToolbars` panel's members (the base
+  // tabs woven with any contributed tabs — e.g. the react table contributor's contextual `tableToolbar`,
+  // added / removed as a table is selected). `useCommandButtonRegistry` re-renders this on the registry
+  // version (which the table contributor bumps when it toggles the tab), so no selection logic lives
+  // here. An explicit `toolbars` prop bypasses the registry (opting out of contributed tabs).
+  const registry = useCommandButtonRegistry();
+  const toolbarKeys: readonly string[] = toolbarsOverride ?? (() => {
+    const resolved = registry.resolveMembers(WORKBOOK_TOOLBARS_KEY);
+    if (!resolved) return DefaultWorkbookToolbars;
+    return resolved.filter((m): m is string => typeof m === 'string' && m !== '-');
+  })();
+  // Stable signature so the descriptor memo only rebuilds when the tab SET changes (not every render).
+  const toolbarKeysSig = toolbarKeys.join('|');
 
-    retValue.push({
-      label: 'Home',
-      component: <HomeToolbar commands={commands} {...restToolbarHomeProps} />
+  // Ribbon-tab descriptors. Labels are self-resolving elements over the toolbar panel ENTRIES (the same
+  // registry-first, language-aware read as any command button), so this stays stable across language
+  // switches — the label element re-renders itself. `key` is the (stable) toolbar key, never the label
+  // (react keys must survive a language switch).
+  const tabs = useMemo(() => {
+    return toolbarKeys.map((key) => {
+      const { ref: _ref, ...propsToolbar } = propsToolbars?.[key] ?? CommonUtils.EmptyObject;
+      return {
+        key,
+        label: <CommandButtonEntryLabel entryKey={key}/>,
+        component: <CommandToolbar {...propsToolbar} key={key} groupKey={key}/>
+      };
     });
+  }, [toolbarKeysSig, propsToolbars]);
 
-    const {
-      ref: toolbarInsertRef,
-      ...restToolbarInsertProps
-    } = propsToolbars?.['Insert'] || CommonUtils.EmptyObject;
-    retValue.push({
-      label: 'Insert',
-      component: <InsertToolbar commands={commands} {...restToolbarInsertProps} />
-    });
-    if (__DEV__) {
-      const {
-        ref: toolbarFormulasRef,
-        ...restToolbarFormulasProps
-      } = propsToolbars?.['Formulas'] || CommonUtils.EmptyObject;
-      retValue.push({
-        label: 'Formulas',
-        component: <FormulaToolbar commands={commands} {...restToolbarFormulasProps} />
-      });
-    }
-    const {
-      ref: toolbarViewRef,
-      ...restToolbarViewProps
-    } = propsToolbars?.['View'] || CommonUtils.EmptyObject;
-    retValue.push({
-      label: 'View',
-      component: <ViewToolbar commands={commands} {...restToolbarViewProps} />
-    });
-    return retValue;
-  }, [commands, workbook]);
-
-  const tabPanes = useMemo(() => {
-    // Note - We could generate just the single toolbar
-    const retValue = [];
-    for (let i=0; i<toolbars.length; i++) {
-      retValue.push(
-        React.cloneElement(toolbars[i].component, {
-          ...toolbars[i].component.props,
-          key: (toolbars[i] as unknown as any).key ?? toolbars[i].label
-        })
-      );
-    }
-    return retValue;
-  }, [toolbars]);
+  const tabPanes = useMemo(() => tabs.map((tab) => tab.component), [tabs]);
 
   const [tabIndex, setTabIndex] = useState<number>(0);
+  // The Table tab is contextual, so the active count changes at runtime; clamp the rendered index so a
+  // vanishing tab (table deselected while its tab was active) falls back to the last available tab.
+  const selectedIndex = tabs.length > 0 ? Math.min(tabIndex, tabs.length - 1) : 0;
 
   const handleToolbarChange = (newValue: number) => {
     setTabIndex(newValue);
@@ -360,22 +340,24 @@ export const WorkbookToolbars = memo(forwardRef<HTMLElement, WorkbookToolbarsPro
     if (isCompact) {
       return (
         <OptionSelect
-          toolbars={toolbars}
-          value={tabIndex}
+          toolbars={tabs}
+          value={selectedIndex}
           onToolbarChange={handleToolbarChange}
-          sx={propsSelect}
+          sx={{
+            paddingLeft: (theme: Theme) => theme.spacing(1),
+            paddingRight: (theme: Theme) => theme.spacing(1)
+          }}
         />
       );
     }
     return (
       <ToolbarSelectTabs
-        toolbars={toolbars}
-        value={tabIndex}
+        toolbars={tabs}
+        value={selectedIndex}
         onToolbarChange={handleToolbarChange}
-        sx={propsSelect}
       />
     );
-  }, [toolbars, tabIndex, propsSelect, isCompact]);
+  }, [tabs, selectedIndex, isCompact]);
 
   const {
     sx: paletteSXProps,
@@ -391,7 +373,13 @@ export const WorkbookToolbars = memo(forwardRef<HTMLElement, WorkbookToolbarsPro
         userSelect: 'none',
         flexGrow: 1,
         borderRadius: '8px', // border-radius: var(--borderRadiusXLarge);
-        backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
+        // The palette is docked, not floating, but it wants to read as the SAME surface as the menus and
+        // the overflow popup it spawns — so it reads the float fill rather than a token of its own
+        // ("a brighter toolbar" is an app style choice, not a color a host names). Falls back to the paper
+        // it has always used.
+        backgroundColor: 'var(--sxl-color-elevated, var(--sxl-color-base-100))',
+        // The edge a flat host gives its floating chrome — see ExhibitFloatPanel.
+        border: '1px solid var(--sxl-color-elevated-border, transparent)',
         marginLeft: (theme: Theme) => { return theme.spacing(1) },
         marginRight: (theme: Theme) => { return theme.spacing(1) },
         marginTop: (theme: Theme) => { return theme.spacing(0.5) },
@@ -400,7 +388,7 @@ export const WorkbookToolbars = memo(forwardRef<HTMLElement, WorkbookToolbarsPro
       }}
       {...paletteRest}
     >
-      {tabPanes[tabIndex]}
+      {tabPanes[selectedIndex]}
     </Paper>
   );
   return (

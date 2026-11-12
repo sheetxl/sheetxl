@@ -1,15 +1,9 @@
-/* Global defaults (theme can override) */
+/* Sizes. Colors come from the tokens (`.scrollbar-colors` in ScrollbarTheme.module.css). */
 :root {
-  --scrollbar-track-color: rgba(0,0,0,0.06);
-  --scrollbar-thumb-color: rgba(0,0,0,0.35);
-  --scrollbar-button-color: var(--scrollbar-thumb-color);
-  --scrollbar-active-color: rgba(0,0,0,0.55);
-  --scrollbar-corner-color: transparent;
-  --scrollbar-border-color: transparent;
     /* Override scrollbar size for touch devices - applies to element and all children */
-  :global(.has-touch-thumb),
-  :global(.has-touch-thumb) * {
-    --scrollbar-size: 4px;
+  :global(.sxl-has-touch-thumb),
+  :global(.sxl-has-touch-thumb) * {
+    --scrollbar-size: 0px;
     --scrollbar-border-width: 0px;
     --scrollbar-width: var(--scrollbar-size);
     --scrollbar-height: var(--scrollbar-size);
@@ -56,7 +50,7 @@
     background: var(--scrollbar-active-color);
   }
 
-  &:global(.vertical) {
+  &:global(.sxl-vertical) {
     flex-direction: column;
     min-width: var(--scrollbar-width, 0px);
     max-width: var(--scrollbar-width, 100%);
@@ -68,7 +62,7 @@
     }
   }
 
-  &:global(.horizontal) {
+  &:global(.sxl-horizontal) {
     flex-direction: row;
     min-height: var(--scrollbar-height, 0px);
     max-height: var(--scrollbar-height, 100%);
@@ -80,10 +74,17 @@
     }
   }
 
-  &:global(.dragging) {
+  &:global(.sxl-dragging) {
     .thumb {
       background: var(--scrollbar-active-color);
     }
+  }
+
+  /* On touch the grips ARE the scroll affordance — the native 4px track/thumb reads as noise. Keep it
+     in the layout (its track measurement drives the grip's fraction mapping, and the grip renders from
+     inside it — visibility doesn't cross the portal) but off screen and inert to pointers. */
+  &:global(.sxl-has-touch-thumb) {
+    visibility: hidden;
   }
 
   .scrollbar-button {
@@ -111,10 +112,10 @@
       opacity: 0.5;
     }
 
-    &:global(.vertical) {
+    &:global(.sxl-vertical) {
       width: var(--scrollbar-width);
     }
-    &:global(.horizontal) {
+    &:global(.sxl-horizontal) {
       height: var(--scrollbar-height);
     }
   }
@@ -126,12 +127,13 @@
   border-radius: 9999px;
   cursor: grab;
   pointer-events: all;
+  touch-action: none;
   transition-property: opacity;
   border-radius: 9999px;
   will-change: opacity;
   opacity: 0.7; /* ideally only the background */
   &:global(:hover),
-  &:global(.dragging) {
+  &:global(.sxl-dragging) {
     opacity: 1;
   }
 }

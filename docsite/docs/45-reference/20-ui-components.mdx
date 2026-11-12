@@ -1,0 +1,123 @@
+---
+sidebar_position: 20
+title: UI Components
+---
+import ComponentsOverviewImg from '@site/src/components/ComponentsOverviewImg';
+
+SheetXL's UI is built from a set of composable React Components. These can be used as standalone components or assembled together to support
+a complete spreadsheet experience.
+
+An overview of the [Studio](https://api.sheetxl.com/modules/_sheetxl_studio-mui.html) component is
+shown below:
+<ComponentsOverviewImg style={{maxWidth: '100%', marginLeft: '4px', marginRight: '4px'}} alt={`Components Overview`}/>
+
+## Spreadsheet Components
+
+| Component | Package | Description |
+|------------|------|------|
+| Studio | studio-mui | Fully functional application that can be easily embedded and/or extended using Material-UI and React. |
+| WorkbookElement | react | Accepts a Workbook and displays an IWorksheet and other editing artifacts. |
+| WorkbookToolbars | studio-mui | A collection of toolbars that contain CommandButtons. |
+| FormulaBar | studio-mui | The formula bar: a wrapper around the cell editor. |
+| FormulaField | studio-mui | A field whose value is a formula or a range reference, pickable from the grid. |
+| WorksheetElement | react | Shows a sheet's cells, headers, and editing layers. |
+| CellTextRenderer | react | Paints an ICell's value as text, as the sheet shows it. |
+| SheetCellEditorLayer | react | The layer that edits an ICell in place. |
+| WorkbookStrip | react | Contains a set of WorkbookTabs to allow navigation between Sheets. |
+| StatusBar | studio-mui | A collection of status bar items. |
+| SheetZoomScale | studio-mui | An editor for adjusting zoom scale. |
+| InputField | studio-mui | A validated text field with live/commit change channels. |
+
+### Advanced Components
+
+Components that are designed to be used standalone but provide
+advanced editing capabilities found in spreadsheets.
+
+All of these are in `@sheetxl/studio-mui`.
+
+| Component | Description |
+|------------|------|
+| FindReplaceWindow | Find/Replace items in the Workbook. |
+| NumberFormatPanel | Number Format Edit and Preview. |
+| HyperlinkDialog | Hyperlink editor. |
+| CommentsTaskPane | Comments editor. |
+| SortDialog | Advanced and multi-level sorting. |
+| ThemeSelectPanel | For previewing or selecting current theme from a list of predefined themes. |
+| ShortcutKeysPanel | Display the shortcut keys associated with a CommandGroup. |
+| ResizeHeaderDialog | Allows for resizing of row and column headers. |
+| TableNewDialog | Simple table creation. |
+| TableDetailsTaskPane | Advanced table editing. |
+| ColorPanel | Color-chooser that is theme aware. |
+| PresetCellStylesCommandButton | For previewing, selecting, and modifying predefined styles. |
+
+### Container Types
+
+SheetXL has 3 main container types.
+
+| Container | Description | Where |
+|------------|------|------|
+| Dialog | A modal dialog that blocks the UI until dismissed. | `OptionsDialog`, `useInputDialog` in `@sheetxl/utils-mui` |
+| TaskPane | A side pane container that can be collapsed and is expected to be 'selection aware'. | `TaskPaneArea`, `useTaskPane` in `@sheetxl/react` |
+| Window | A floating window container that can be moved and resized. | `InternalWindow`, `useLazyWindow` in `@sheetxl/utils-mui` |
+
+### Notification Types
+
+Notifications go through the `useNotifier` hook in `@sheetxl/utils-react`.
+
+| Notification | Description |
+|------------|------|
+| Toast | Alerts that appear temporarily and do not block the UI. |
+| Busy | A blocking indicator for operations that require the user to wait (`createBusyHandle`). |
+| Error | An unexpected runtime error with details for debugging (`StackTraceErrorPanel` in `@sheetxl/utils-mui`). |
+
+### Common Dialogs
+
+| Dialog | Description |
+|------------|------|
+| `useInputDialog` | Configurable input dialog, used for 'Goto', 'Rename', confirmation prompts, and other simple inputs. |
+| `OptionsDialog` | Configurable options dialog for easily presenting a set of options. |
+
+## Configuring Components
+
+Like all React components SheetXL components are configured using properties; see [API Reference](https://api.sheetxl.com/) for the specific
+properties available for each component. Most components also support the ref property; when they do they always expose the
+underlying component and additional imperative API calls as defined in the Typescript interface
+following the convention `<Component>`Attributes.
+
+### App Themes
+
+SheetXL has two kinds of theme:
+
+1. **App themes** color the UI: the grid, headers, tabs, menus. You set them with CSS variables or the
+   `tokens` prop, and with `muiTheme` if you use `Studio`.
+2. **Document themes** are part of the workbook file (the colors and fonts it was saved with). They travel
+   with the data.
+
+Everything about app themes, including light and dark, matching your page, and the full token list, is on
+the [Theming](../40-how-tos/35-theme-the-spreadsheet.md) page.
+
+#### App theme extensions
+SheetXL has a thin layer of customized MUI components known as 'Exhibit Components'. These extend MUI components to provide
+functionality and styling needed for SheetXL. The Exhibit Components are MIT open-sourced and can be found at
+[github](https://github.com/sheetxl/sheetxl/tree/main/packages/utils-mui/).
+
+### Document Themes
+Document Themes are part of the data, so they are saved with the workbook and managed through
+[ITheme](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ITheme.html) rather than CSS.
+
+
+{/*
+
+<!-- Add a picture of the various components? -->
+
+<!-- Custom Renderers / Custom Editors. We need to allow these to be registered at workbook so that sheets can have different values -->
+<!-- Configure Toolbar -->
+<!-- Allow for Other items to be configured similar to AGGrid -->
+
+<!-- Side Panels (after full implementation) -->
+<!-- Advanced - Layers (after full implementation) -->
+<!-- Advanced - Commands (after refactor) -->
+
+*/}
+
+

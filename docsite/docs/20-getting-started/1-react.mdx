@@ -9,6 +9,7 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 import CodeBlock from '@theme/CodeBlock';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import { AgentPromptCode } from '@site/src/components/AgentPrompt';
 
 import SimpleStudioSource from '!!raw-loader!./SimpleStudio';
 
@@ -29,16 +30,28 @@ import SimpleStudioSource from '!!raw-loader!./SimpleStudio';
 
 ## New Project
 
-The fastest way to get started with SheetXL is using our project wizard. It will create a new
-project with SheetXL pre-configured and ready to use.
+The fastest way to get started is to hand it to your agent, or to run our project wizard yourself.
+Either way you get a new project with SheetXL pre-configured and ready to use.
 
 <Tabs
-  defaultValue="pnpm"
+  defaultValue="agent"
   values={[
+    {label: 'agent', value: 'agent'},
     {label: 'pnpm', value: 'pnpm'},
     {label: 'yarn', value: 'yarn'},
     {label: 'npm', value: 'npm'}
   ]}>
+  <TabItem value="agent">
+
+Paste this into your agent (Claude Code, Codex, Cursor, …), in an empty folder or in your project:
+
+<AgentPromptCode id="app" />
+
+Only want the sheet, with your own buttons and design around it?
+
+<AgentPromptCode id="grid" />
+
+  </TabItem>
   <TabItem value="pnpm">
 ```sh
 pnpm create sheetxl
@@ -56,7 +69,7 @@ npx create-sheetxl
   </TabItem>
 </Tabs>
 
-> ...and follow the interactive prompts.
+> ...and answer the questions. The agent asks what you want to build; the wizard asks which template.
 
 
 ## Existing Project
@@ -71,9 +84,9 @@ To start install the following packages:
 
 And additional peer dependencies unless you already have these in your project.
 
-* `react`, `react-dom` - React
-* `@emotion/react`, `@emotion/styled` - CSS-in-JSS Styling (Material UI dependency)
-* `@mui/material`, `@mui/styled-engine`, `@mui/system`, `@mui/utils` - Material UI
+* `react`, `react-dom` - React 19
+* `@emotion/react`, `@emotion/styled`, `@emotion/cache` - CSS-in-JS styling (Material UI dependency)
+* `@mui/material`, `@mui/styled-engine`, `@mui/system`, `@mui/utils` - Material UI 9
 
 <Tabs
   defaultValue="pnpm"
@@ -84,17 +97,17 @@ And additional peer dependencies unless you already have these in your project.
   ]}>
   <TabItem value="pnpm">
 ```sh
-pnpm add @sheetxl/studio-mui @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled react react-dom
+pnpm add @sheetxl/studio-mui @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled @emotion/cache react react-dom
 ```
   </TabItem>
   <TabItem value="yarn">
 ```sh
-yarn add @sheetxl/studio-mui mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled react react-dom
+yarn add @sheetxl/studio-mui @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled @emotion/cache react react-dom
 ```
   </TabItem>
   <TabItem value="npm">
 ```sh
-npm install @sheetxl/studio-mui @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled react react-dom
+npm install @sheetxl/studio-mui @mui/material @mui/styled-engine @mui/system @mui/utils @emotion/react @emotion/styled @emotion/cache react react-dom
 ```
   </TabItem>
 </Tabs>
@@ -112,18 +125,6 @@ Copy below to your project
     )
   }}
 </BrowserOnly>
-
-## Studio Example
-
-Sometimes starting with an example is the simplest way to start.
-
-The following code sandbox shows a React application with a Studio component:
-
-[CodeSandbox-Studio](https://codesandbox.io/p/sandbox/sheetxl-react-studio-nnc5t8)
-
-:::tip
-Sandboxes can also be forked or downloaded to be run locally.
-:::
 
 {/*
 ```jsx

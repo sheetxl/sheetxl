@@ -4,9 +4,8 @@
   "module": "./browser/esm/index.mjs",
   "exports": {
     ".": {
-      "import": "./browser/esm/index.mjs",
-      "require": "./browser/cjs/index.cjs",
-      "types": "./types/index.d.ts"
+      "types": "./types/index.d.ts",
+      "default": "./browser/esm/index.mjs"
     },
     "./cdn": "./cdn/index.js",
     "./loader.js": "./cdn/loader.js"

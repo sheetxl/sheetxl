@@ -1,0 +1,18 @@
+{
+  "insertFunction.fallbackLabel": "Funktion",
+  "insertFunction.insertNamed": "{name} einfügen",
+  "insertScript.fallbackLabel": "Skript einfügen",
+  "insertScript.loadFailedRetry": "Vorlagen konnten nicht geladen werden. Erneut versuchen",
+  "insertScript.loading": "Wird geladen...",
+  "runScript.executeNamed": "{name} ausführen",
+  "runScript.fallbackLabel": "Makro",
+  "templateSelect.blankSummary": "Mit einem leeren Skript beginnen.",
+  "templateSelect.blankTitle": "Leere Vorlage...",
+  "templateSelect.errorTitle": "Fehler beim Laden der Vorlagen",
+  "templateSelect.intro": "Wählen Sie eine Vorlage als Ausgangspunkt, um Aufgaben zu automatisieren oder benutzerdefinierte Funktionen zu erstellen.",
+  "templateSelect.intro2": "Vorlagen bieten eine Grundlage, die Sie anpassen und auf Ihre Bedürfnisse zuschneiden können.",
+  "templateSelect.loadFailed": "Skripte konnten nicht geladen werden",
+  "templateSelect.retry": "Erneut versuchen",
+  "templateSelect.title": "Skriptvorlage",
+  "templateSelect.untitled": "Unbenannt"
+}

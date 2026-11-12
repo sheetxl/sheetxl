@@ -7,3 +7,4 @@ export * from './dialog';
 
 export * from './float';
 export * from './command';
+export * from './locales';

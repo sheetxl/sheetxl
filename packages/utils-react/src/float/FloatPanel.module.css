@@ -1,0 +1,17 @@
+.float-panel {
+  display: flex;
+  overflow: auto;
+  outline: none;
+  box-sizing: border-box;
+  background: var(--sxl-color-base-100, #fff);
+  color: var(--sxl-color-base-content, rgba(0, 0, 0, 0.87));
+  /* Structure for a flat host that kills the elevation wash — see ExhibitFloatPanel. */
+  border: 1px solid var(--sxl-color-elevated-border, transparent);
+  border-radius: 4px;
+  /* Material's elevation-8 shadow in the theme's shadow token, so a panel still separates from a dark
+     surface (a fixed black shadow vanishes there; the token is light in dark mode). */
+  box-shadow:
+    0 5px 5px -3px var(--sxl-color-shadow, rgba(0, 0, 0, 0.2)),
+    0 8px 10px 1px var(--sxl-color-shadow, rgba(0, 0, 0, 0.14)),
+    0 3px 14px 2px var(--sxl-color-shadow, rgba(0, 0, 0, 0.12));
+}

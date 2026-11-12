@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { ScrollPane, Scrollbar, ScrollbarProps } from  '@sheetxl/utils-react';
+import {
+  ScrollPane, Scrollbar, type ScrollbarProps, type ScrollCornerProps
+} from  '@sheetxl/utils-react';
 
-import { ScrollableGrid } from '@sheetxl/grid-react';
-
-import { sharedCellRenderer } from '../../components';
+import { asStory, sharedCellRenderer, ScrollableGrid } from '../../components';
 
 /**
  * Uses scrollableGrid to provide default scrollbars.
@@ -15,7 +15,7 @@ const Template: React.FC = (props) => {
     showHorizontalScrollbar,
     renderScrollbarHorizontal,
     renderScrollbarVertical,
-    createScrollCorner,
+    renderScrollCorner,
     ...rest
   } = props as any;
 
@@ -27,15 +27,15 @@ const Template: React.FC = (props) => {
         showHorizontalScrollbar={showHorizontalScrollbar}
         renderScrollbarHorizontal={renderScrollbarHorizontal}
         renderScrollbarVertical={renderScrollbarVertical}
-        createScrollCorner={createScrollCorner}
-        renderCell={sharedCellRenderer}
+        renderScrollCorner={renderScrollCorner}
+        renderCells={sharedCellRenderer}
       />
     </div>
   );
 };
 
 
-export const Scrollable = Template.bind({});
+export const Scrollable = asStory(Template);
 Scrollable.args = {
   columnCount: 200,
   rowCount: 200,
@@ -54,24 +54,27 @@ const createRedScrollbar = (props: ScrollbarProps) => {
    );
 }
 
-const createCustomCorner = ({ width, height }) => {
+const renderScrollCorner = (props: ScrollCornerProps) => {
+  const { size: _size, ...rest } = props;
+  // The corner is a grid cell sized by the scrollbar gutters — just fill it.
   return (
-    <button style={{
-      minWidth: `${width}px`,
-      width: `${width}px`,
-      minHeight: `${height}px`,
-      height: `${height}px`,
-      background: 'green',
-      border: 'blue solid 2px'
-    }}/>
+    <button
+      style={{
+        width: '100%',
+        height: '100%',
+        background: 'green',
+        border: 'blue solid 2px'
+      }}
+      {...rest}
+    />
   );
 };
 
-export const CustomScrollElements = Template.bind({});
+export const CustomScrollElements = asStory(Template);
 CustomScrollElements.args = {
   renderScrollbarHorizontal: createRedScrollbar,
   renderScrollbarVertical: createRedScrollbar,
-  createScrollCorner: createCustomCorner,
+  renderScrollCorner: renderScrollCorner,
   columnCount: 200,
   rowCount: 200,
   showVerticalScrollbar: true,

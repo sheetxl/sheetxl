@@ -1,0 +1,23 @@
+{
+  "dialog.cancel": "Cancel",
+  "dialog.ok": "Ok",
+  "lazyLoad.retry": "Retry",
+  "overflow.more": "More",
+  "overflow.moreDescription": "More toolbar options…",
+  "scroll.edgeBottom": " Bottom: ''Ctrl+Click'' to scroll to the end",
+  "scroll.edgeLeft": " Left: ''Ctrl+Click'' to scroll to the beginning",
+  "scroll.edgeRight": " Right: ''Ctrl+Click'' to scroll to the end",
+  "scroll.edgeTop": " Top: ''Ctrl+Click'' to scroll to the beginning",
+  "shortcut.modifier.alt": "Alt",
+  "shortcut.modifier.cmd": "Cmd",
+  "shortcut.modifier.ctrl": "Ctrl",
+  "shortcut.modifier.meta": "Meta",
+  "shortcut.modifier.shift": "Shift",
+  "stackTrace.causedBy": "Caused by: {cause}",
+  "stackTrace.copy": "Copy stack trace",
+  "stackTrace.heading": "Stack Trace",
+  "stackTrace.headingFrames": "Stack Trace ({count} frames)",
+  "stackTrace.log": "Log error to console",
+  "stackTrace.moreFrames": "... and {count} more frames",
+  "window.close": "Close"
+}

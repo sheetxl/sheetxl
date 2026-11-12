@@ -1,11 +1,11 @@
-import React, { memo, forwardRef } from 'react';
+import { memo, forwardRef } from 'react';
 
 import { Box } from '@mui/material';
 
 import { useCallbackRef } from '@sheetxl/utils-react';
 
 import { ExhibitPopupIconButton, ExhibitPopupMenuItem, ExhibitMenuItem } from '../button';
-import { ExhibitPopupButtonProps, PopupButtonType, ExhibitPopupPanelProps } from '../float';
+import { PopupButtonType, type ExhibitPopupButtonProps, type ExhibitPopupPanelProps } from '../float';
 export interface NestingPopupButtonProps extends ExhibitPopupButtonProps {
   nestedChildren?: NestingPopupButtonProps[]; // TODO -  | (currentNode: NestedNode) => NestedNode[]
   /**
@@ -20,14 +20,14 @@ export const NestingPopupButton = memo(
   const {
     nestedChildren,
     variant,
-    disabled: propDisabled = false,
-    createPopupPanel: propCreatePopupPanel, // what to do with this?
+    disabled: propDisabled,
+    renderPopupPanel: propRenderPopupPanel, // what to do with this?
     ...rest
   } = props;
 
-  const createPopupPanel = useCallbackRef((props: ExhibitPopupPanelProps) => {
+  const renderPopupPanel = useCallbackRef((props: ExhibitPopupPanelProps) => {
     if (!nestedChildren || nestedChildren.length === 0)
-      return null;
+      return <></>;
     const {
       popupContainer,
       floatReference,
@@ -42,7 +42,6 @@ export const NestingPopupButton = memo(
       nestedChildrenElements.push(
         <NestingPopupButton
           key={i}
-          parentFloat={floatReference}
           {...rest}
           {...nestedChildNode}
         />
@@ -61,9 +60,7 @@ export const NestingPopupButton = memo(
       >
         Children here
        {nestedChildrenElements}
-       <ExhibitMenuItem
-          parentFloat={floatReference}
-        >
+       <ExhibitMenuItem>
         Close other children
       </ExhibitMenuItem>
       </Box>
@@ -72,7 +69,7 @@ export const NestingPopupButton = memo(
 
   const localPropsButton: ExhibitPopupButtonProps = {
     disabled: propDisabled,
-    createPopupPanel,
+    renderPopupPanel,
     ...rest
   }
   return (variant === PopupButtonType.Toolbar ?

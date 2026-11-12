@@ -1,16 +1,11 @@
-import React, { memo, forwardRef } from 'react';
+import { memo, forwardRef } from 'react';
 
-import { ICommands, type CommandButtonOptions } from '@sheetxl/utils-react';
+import { type CommandButtonOptions, type FloatReference } from '@sheetxl/utils-react';
 
-import { FloatReference } from '@sheetxl/utils-mui';
-
-import { SimpleCommandPopupButton } from '@sheetxl/utils-mui';
+import { CommandGroup } from '@sheetxl/utils-mui';
 
 
 export interface InsertFunctionSumCommandPopupButtonProps extends CommandButtonOptions {
-  parentFloat: FloatReference;
-
-  commands: ICommands.IGroup;
 }
 
 /**
@@ -23,22 +18,10 @@ export const InsertFunctionSumCommandPopupButton = memo(
   } = props;
 
   return (
-    <SimpleCommandPopupButton
+    <CommandGroup
       ref={refForwarded}
+      groupKey="insertFunctionSumOptions"
       {...rest}
-      popupCommandKeys={[
-        'insertFunctionSum',
-        'insertFunctionAverage',
-        'insertFunctionCount',
-        'insertFunctionMax',
-        'insertFunctionMin',
-        null,// divider
-        'insertFunction',
-      ]}
-      quickCommand={'insertFunctionSum'}
-      popupScope={'insertFunction'}
-      label="Quick Function"
-      tooltip="More functions."
     />
   );
 }));

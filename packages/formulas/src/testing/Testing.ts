@@ -1,27 +1,42 @@
 /* cspell: disable */
-import { Scalar, IRange } from '@sheetxl/primitives';
+import { FormulaContext, FormulaError, type IFormulaContext, type Scalar, type IRange } from '@sheetxl/primitives';
+
+interface DelayPayload {
+  time: number;
+  input: Scalar;
+}
+
+/** Answers each call with its input once its time has run; a call the sheet no longer wants is cleared. */
+function runDelays(calls: readonly IFormulaContext.DeferredCall<Scalar>[]): void {
+  for (const call of calls) {
+    const { time, input } = call.payload as DelayPayload;
+    const timer = setTimeout((): void => call.resolve(input), time);
+    call.onCancel((): void => clearTimeout(timer));
+  }
+}
 
 /**
+ * Returns the input value after a delay.
  * @hidden Testing
- * @summary Returns the input value after a delay.
  * @param time the delay time in milliseconds. Default is 1000ms (1 second).
  * @param input returns the input.
  * @param label optional label for the delay function.
+ * @category SheetXL
  */
-export async function DELAY(time: number, input: Scalar, label: string='No label'): Promise<Scalar> {
-  // console.log(`DELAY(${time}${label ? `, ${label}` : ''})`, time);
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(input);
-    }, time);
-  });
+export function DELAY(time: number, input: Scalar, label: string='No label'): Scalar {
+  FormulaContext.defer(runDelays, { time, input });
+  return FormulaError.BuiltIn.Busy;
 }
 
 // ---------------------------------------------------------------------------
 // 🚌  Tiny channel per event-type (FIFO, 1-to-1 producer/consumer)
 // ---------------------------------------------------------------------------
 
-// global singleton you can use from DevTools
+declare global {
+  // global singleton you can use from DevTools
+  var debugEventTarget: EventTarget | undefined;
+}
+
 globalThis.debugEventTarget ??= new EventTarget();
 const eventTarget = globalThis.debugEventTarget; // for easier typing
 
@@ -67,9 +82,33 @@ function nextEvent<T = any>(type: string): Promise<T> {
   return new Promise<T>((res) => waiters.push(res));
 }
 
+interface WaitPayload {
+  type: string;
+  inputValue: Scalar;
+}
+
+/** Answers each call with the next event of its type: one event, one call. */
+function runWaits(calls: readonly IFormulaContext.DeferredCall<string>[]): void {
+  for (const call of calls) {
+    const { type, inputValue } = call.payload as WaitPayload;
+    void nextEvent(type).then((payload: unknown): void => {
+      let message = `event["${type}"`;
+      if (payload !== undefined) {
+        message += `, payload: ${payload}`;
+      }
+      if (inputValue !== '') {
+        message += `, input: ${inputValue}`;
+      }
+      message += ']';
+      console.log(message);
+      call.resolve('' + payload + inputValue);
+    });
+  }
+}
+
 /**
+ * Starts waiting for event
  * @hidden Testing
- * @summary Starts waiting for event
  * @param type the type of message.
  * @param input an optional dependency.
  *
@@ -78,18 +117,11 @@ function nextEvent<T = any>(type: string): Promise<T> {
  *  '=WAIT("test", A1)'
  *   [globalThis].debugEventTarget.dispatchEvent(new CustomEvent(type, payload));
  *   (e.g. globalThis.debugEventTarget.dispatchEvent(new CustomEvent('test', { detail: "ping" }));
+ * @category SheetXL
  */
-export async function WAIT(type: string, input?: IRange): Promise<string> {
-  const payload = await nextEvent(type);      // one event ➜ one promise
-  let inputValue = input?.getValueAt(0, 0) ?? ''; // force the value to be read
-  let message = `event["${type}"`;
-  if (payload !== undefined) {
-    message += `, payload: ${payload}`;
-  }
-  if (inputValue !== '') {
-    message += `, input: ${inputValue}`;
-  }
-  message += ']';
-  console.log(message);
-  return '' + payload + inputValue;
+export function WAIT(type: string, input?: IRange): string {
+  const inputValue = input?.getValueAt(0, 0) ?? ''; // force the value to be read
+  FormulaContext.defer(runWaits, { type, inputValue });
+  // The cell shows an error until the event lands; an error passes through a text return.
+  return FormulaError.BuiltIn.Busy as unknown as string;
 }

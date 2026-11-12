@@ -1,23 +1,25 @@
-import React, {
+import type React from 'react';
+import {
   memo, forwardRef, useMemo, useRef, useCallback, useEffect, useState
 } from 'react';
 
 import clsx from 'clsx';
-import { mergeRefs } from 'react-merge-refs';
-import { useMeasure } from 'react-use';
+import { useMergeRefs } from 'react-merge-refs';
 
-import { useCallbackRef, useImperativeElement } from '../hooks';
-import { ReactUtils } from '../utils';
+import { useMeasure, useCallbackRef, useImperativeElement, useInputModality } from '../hooks';
+import { RenderSlot } from '../components';
 
 import {
   ScrollbarOrientation, type ScrollbarProps, type IScrollbarElement, type IScrollbarAttributes
 } from './IScrollbar';
 import {
-  type ScrollButtonProps, defaultCreateScrollStartButton, defaultCreateScrollEndButton
+  type ScrollButtonProps, defaultRenderScrollButtonStart, defaultRenderScrollButtonEnd
 } from './ScrollButton';
 import { TouchThumbHandle } from './TouchThumbHandle';
+import { useTrackDrag, type TrackDragSession, type TrackDragZone } from './TrackDrag';
 
 import styles from './Scrollbar.module.css';
+import themeStyles from './ScrollbarTheme.module.css';
 
 const DEFAULT_MIN_THUMB_PX = 24; // touch target
 
@@ -38,18 +40,21 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
     scrollButtonAdditionalRepeatDelay = 120, // we make first time slightly longer to similar a delayed start
     minThumbSize = DEFAULT_MIN_THUMB_PX,
     maxThumbSize,
-    renderScrollButtonStart = defaultCreateScrollStartButton,
-    renderScrollButtonEnd = defaultCreateScrollEndButton,
+    renderScrollButtonStart = defaultRenderScrollButtonStart,
+    renderScrollButtonEnd = defaultRenderScrollButtonEnd,
     propsTouchThumb,
     propsThumb,
+    onThumbEdgeHold: propOnThumbEdgeHold,
+    onThumbDrag: propOnThumbDrag,
     onMouseDown: propOnMouseDown,
     ...rest
   } = props;
 
-  const isTouch = ReactUtils.detectIt().primaryInput === 'touch';
+  // Live: the touch thumbs appear after a finger's press and the desktop bar after a mouse's.
+  const isTouch = useInputModality() === 'touch';
 
   const showCustomScrollButtons = propShowCustomScrollButtons ?? !isTouch;
-  const onScroll = useCallbackRef(propOnScroll, [propOnScroll]);
+  const onScroll = useCallbackRef(propOnScroll ?? (() => {}), [propOnScroll]);
 
   const [thumb, setThumb] = useState({ offset: 0, length: 0, disabled: false }); // MIN_THUMB_PX
   const refInFlight = useRef<number>(-1);
@@ -57,6 +62,8 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
   const isVertical = orientation === ScrollbarOrientation.Vertical;
   const [refMeasure, { width: widthMeasure, height: heightMeasure }] = useMeasure<HTMLDivElement>();
   const trackLength = isVertical ? heightMeasure : widthMeasure;
+  const refTrack = useRef<HTMLDivElement>(null);
+  const refTrackMerged = useMergeRefs<HTMLDivElement>([refMeasure, refTrack]);
 
   const calcThumb = useCallbackRef((
     offset: number, viewportSize: number, totalSize: number
@@ -112,10 +119,6 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
   // Compute thumb size and position from props
   const maxOffset = Math.max(0, propTotalSize - propViewportSize);
 
-  const [dragging, setDragging] = useState(false);
-  const dragStartPxRef = useRef(0);
-  const dragStartPosPxRef = useRef(0);
-
   const refLocal = useImperativeElement<IScrollbarElement, IScrollbarAttributes>(refForwarded, () => ({
     isScrollbar: () => true,
     // scrollTo: (args: any) => {
@@ -123,47 +126,42 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
     // },
   }), []);
 
-  const processPointerDown = useCallbackRef((e: React.PointerEvent) => {
-    setDragging(true);
-    dragStartPxRef.current = isVertical ? e.clientY : e.clientX;
-    dragStartPosPxRef.current = thumb.offset;
-    // handlePhysicalScroll(thumb.offset, propViewportSize, propTotalSize);
-  }, [isVertical, thumb]);
+  // One drag engine serves the whole track surface: a press is zone hit-tested (thumb vs track) and the
+  // session supplies the policy. The engine owns capture, the hold timers, and the dragMode signal.
+  const pageScroll = useCallbackRef((direction: -1 | 1) => {
+    // Same step the keyboard PageUp/PageDown path uses.
+    const page = Math.max(1, Math.floor(propViewportSize * 0.9));
+    const target = direction > 0
+      ? Math.min(maxOffset, propOffset + page)
+      : Math.max(0, propOffset - page);
+    handleLogicalScroll(target);
+  }, [propViewportSize, propOffset, maxOffset]);
 
-  const onThumbPointerDown = useCallbackRef((e: React.PointerEvent) => {
-    (e.currentTarget as Element).setPointerCapture(e.pointerId);
-    processPointerDown(e);
-    // e.preventDefault();
-    e.stopPropagation();
-  }, [propOnMouseDown]);
+  const handleTrackDragStart = useCallbackRef((zone: TrackDragZone): TrackDragSession | null => {
+    if (thumb.disabled) return null;
+    if (zone === 'thumb') {
+      // Signal the drag lifecycle with the thumb element (a virtual wrapper pins its elastic region;
+      // a client anchors drag UI — e.g. a tooltip — to the element).
+      propOnThumbDrag?.({ dragging: true, element: refThumbEl.current, source: 'thumb' });
+      return {
+        apply: (trackPx: number) => handlePhysicalScroll(trackPx),
+        // Parked past the end: an elastic/virtual wrapper extends its region (its policy, its pace);
+        // a linear scrollbar leaves this unset — its end is the end.
+        edgeHold: propOnThumbEdgeHold,
+        end: () => propOnThumbDrag?.({ dragging: false, element: refThumbEl.current, source: 'thumb' }),
+        dragMode: 'thumb'
+      };
+    }
+    return { page: pageScroll, dragMode: 'page' };
+  }, [thumb, propOnThumbEdgeHold, propOnThumbDrag]);
 
-  const processPointerMove = useCallbackRef((e: React.PointerEvent) => {
-    if (!dragging) return;
-    const now = isVertical ? e.clientY : e.clientX;
-    const delta = now - dragStartPxRef.current;
-    const pixel = dragStartPosPxRef.current + delta;
-    handlePhysicalScroll(pixel);
-  }, [dragging, isVertical]);
-
-  const onThumbPointerMove = useCallbackRef((e: React.PointerEvent) => {
-    processPointerMove(e);
-  }, []);
-
-  const processPointerUp = useCallbackRef((e: React.PointerEvent) => {
-    setDragging(false);
-  }, []);
-
-  const onThumbPointerUp = useCallbackRef((e: React.PointerEvent) => {
-    try { (e.currentTarget as Element).releasePointerCapture(e.pointerId); } catch {}
-    processPointerUp(e);
-  }, []);
-
-  const onTrackPointerDown = useCallbackRef((e: React.PointerEvent) => {
-    if (!e.currentTarget) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const offset = isVertical ? e.clientY - rect.top : e.clientX - rect.left;
-    handlePhysicalScroll(offset);
-  }, [isVertical, thumb, propViewportSize, propTotalSize]);
+  const trackDrag = useTrackDrag({
+    vertical: isVertical,
+    getTrackRect: () => refTrack.current?.getBoundingClientRect() ?? null,
+    getThumb: () => thumb.disabled ? null : { offset: thumb.offset, length: thumb.length },
+    onStart: handleTrackDragStart
+  });
+  const dragging = trackDrag.dragMode === 'thumb';
 
   // Keyboard (accessibility)
   const onKeyDown = useCallbackRef((e: React.KeyboardEvent) => {
@@ -195,7 +193,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
       <div
         {...propsThumb}
         className={clsx(styles['thumb'], {
-          'disabled': disabled
+          'sxl-disabled': disabled
         })}
         ref={refThumbEl}
         role="slider"
@@ -214,27 +212,29 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
           [isVertical ? 'minHeight' : 'minWidth']: `${minThumbSize}px`,
         } as React.CSSProperties }
         onMouseDown={propOnMouseDown}
-        onPointerDown={onThumbPointerDown}
-        onPointerMove={onThumbPointerMove}
-        onPointerUp={onThumbPointerUp}
       />
     );
     if (!isTouch || disabled) return thumbInline;
 
+    // The grip is a touch-sized rendering of THIS thumb: it rides the thumb's fraction (so a
+    // virtual/elastic thumb stays in sync) and drags through the same physical-scroll mapping — with
+    // the same edge-hold policy as the desktop thumb (park at the end → the elastic region extends,
+    // accelerating) and the same drag-pinning signal. Positioned within the viewport via the
+    // TouchThumbFrame context published by the ScrollPane.
+    const thumbTravel = Math.max(0, trackLength - thumb.length);
     return (<>
       {thumbInline}
       <TouchThumbHandle
         {...propsTouchThumb}
-        offset={thumb.offset}
-        // length={thumb.length}
         orientation={isVertical ? ScrollbarOrientation.Vertical : ScrollbarOrientation.Horizontal}
-        onPointerDown={processPointerDown}
-        onPointerMove={processPointerMove}
-        onPointerUp={processPointerUp}
+        fraction={thumbTravel > 0 ? thumb.offset / thumbTravel : 0}
+        onScrollToFraction={(fraction: number) => handlePhysicalScroll(fraction * thumbTravel)}
+        onEdgeHold={propOnThumbEdgeHold}
+        onDraggingChange={propOnThumbDrag}
       />
     </>
     )
-  }, [thumb, minThumbSize, maxOffset, propOffset, isVertical, isTouch, propOnMouseDown, propsTouchThumb, propsThumb]);
+  }, [thumb, minThumbSize, maxOffset, propOffset, isVertical, isTouch, propOnMouseDown, propsTouchThumb, propsThumb, trackLength, propOnThumbEdgeHold, propOnThumbDrag]);
 
   const [scrollScrolling, setScrollScrolling] = useState<number | null>(null);
 
@@ -266,7 +266,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
     return newOffset;
   }, [scrollButtonIncrement, propOffset, maxOffset, propViewportSize, propTotalSize]);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<any | null>(null); // NodeJS.Timeout
   const scrollingToRef = useRef<number | null>(null);
   const stopScrolling = useCallback(() => {
     if (!timerRef.current) return;
@@ -303,7 +303,7 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
       onMouseDown:() => startScrolling(propOffset, true, true),
     }
 
-    return renderScrollButtonStart?.(props);
+    return <RenderSlot render={renderScrollButtonStart} props={props} />;
   }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling]);
 
   const scrollEndButton = useMemo(() => {
@@ -315,37 +315,42 @@ export const Scrollbar = memo(forwardRef<IScrollbarElement, ScrollbarProps>(
       onMouseLeave:stopScrolling,
       onMouseDown:() => startScrolling(propOffset, true, false),
     }
-    return renderScrollButtonEnd?.(props);
+    return <RenderSlot render={renderScrollButtonEnd} props={props} />;
   }, [showCustomScrollButtons, orientation, propOffset, maxOffset, scrollScrolling]);
 
 
-  const directionClassName = isVertical ? 'vertical' : 'horizontal';
+  const orientationName = isVertical ? 'vertical' : 'horizontal';
+  const directionClassName = `sxl-${orientationName}`;
+  const refMerged = useMergeRefs([refLocal, refForwarded]);
   return (
     <div
-      ref={mergeRefs([refLocal, refForwarded])}
+      ref={refMerged as React.Ref<HTMLDivElement>}
       className={
         clsx(propClassName,
           styles['scrollbar'],
+          themeStyles['scrollbar-colors'],
           directionClassName,
           {
-          'dragging': dragging,
-          'has-touch-thumb': isTouch,
+          'sxl-dragging': dragging,
+          'sxl-has-touch-thumb': isTouch,
         })}
       style={propStyle}
       {...rest}
     >
       {scrollStartButton}
       <div
-        ref={refMeasure}
+        ref={refTrackMerged}
         role="scrollbar"
-        aria-orientation={directionClassName}
+        aria-orientation={orientationName}
         aria-valuemin={0}
         aria-valuemax={maxOffset}
         aria-valuenow={propOffset}
         tabIndex={0}
-        className={clsx(styles['track'], 'track', directionClassName)}
+        className={clsx(styles['track'], 'sxl-track', directionClassName)}
         onMouseDown={propOnMouseDown}
-        onPointerDown={onTrackPointerDown}
+        onPointerDown={trackDrag.onPointerDown}
+        onPointerMove={trackDrag.onPointerMove}
+        onPointerUp={trackDrag.onPointerUp}
         onKeyDown={onKeyDown}
       >
         {thumbEl}

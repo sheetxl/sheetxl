@@ -1,48 +1,37 @@
-import React, {
+import type React from 'react';
+import {
   useMemo, memo, forwardRef, useCallback, useState, useEffect, useRef
 } from 'react';
 
-import { Theme } from '@mui/material/styles';
+import { type Theme } from '@mui/material';
 import { Box } from '@mui/material';
-import type { TooltipProps } from '@mui/material';
 
 import {
-  ITable, Table, ITableStyle, IStyleCollection
+  type ITable, Table, type ITableStyle, type IStyleCollection
 } from '@sheetxl/sdk';
 
-import { type GridSurfaceStyle } from '@sheetxl/grid-react';
-
 import {
-  useCommand, ICommand, useCallbackRef, CommandButtonType, ICommands
+  useCommands, useCallbackRef, useTranslator, CommandButtonType
 } from '@sheetxl/utils-react';
 
 import { type CommandContext } from '@sheetxl/react';
 
 import {
   CommandButton, ExhibitMenuHeader, ExhibitTooltip, CommandPopupButton,
-  ExhibitIconButton, ContextMenu, defaultCreatePopupPanel, ExhibitDivider,
-  type ExhibitIconButtonProps, type CommandPopupButtonProps, type ExhibitPopupPanelProps
+  ExhibitIconButton, ContextMenu, defaultRenderPopupPanel, ExhibitDivider,
+  type ExhibitIconButtonProps, type CommandPopupButtonProps, type ExhibitPopupPanelProps, type ButtonTooltipRenderProps
 } from '@sheetxl/utils-mui';
 
-import { TableStylePreview, TableStyleCanvasPreview } from '../components/table';
+// By module, not the `../table` barrel: the table panel imports this button from `../command`, so
+// two barrels here would close a command <-> table cycle. The previews are leaves; the barrel is not.
+import { TableStylePreview, TableStyleCanvasPreview } from '../table';
 
 export interface PresetTableStylesCommandButtonProps extends CommandPopupButtonProps {
 
-  command: ICommand<ITableStyle.StyleOptions, CommandContext.Table>;
-
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
+  commandKey: string;//ICommand<ITableStyle.StyleOptions, CommandContext.Table>;
 
   selectedTable?: ITable;
   onSelectTableStyleName?: (styleName: string) => void;
-
-  bodyStyle?: GridSurfaceStyle;
 
   usePreviewIcon?: boolean;
 
@@ -59,16 +48,12 @@ interface PresetTableStyleIconButtonProps extends ExhibitIconButtonProps {
   styles: IStyleCollection;
 
   hasContextMenu?: boolean;
-  bodyStyle?: GridSurfaceStyle;
-
   /**
    * Purely selection concerns
    */
   selectedTableStyleName?: string;
   onSelectTableStyleName?: (styleName: string) => void;
 
-  commands: ICommands.IGroup;
-  commandHook: ICommand.Hook<any, any>;
   /**
    * If true uses a simple but 'faster' preview based on canvas.
    * @remarks
@@ -91,27 +76,23 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
     onSelectTableStyleName,
     styles,
     hasContextMenu = true,
-    bodyStyle,
-    parentFloat,
-    commands,//: propCommands,
     disabled,
-    commandHook,
     useCanvasPreview=true, // Note - this seems to be slower than html divs...
     canvas,
     ...rest
   } = props;
+  const t = useTranslator();
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const commandButtonProps = {
       variant: CommandButtonType.Menuitem,
-      commandHook: commandHook,
-      context: 'table',
+      groupKey: 'tableStyleOptions', // the style-swatch context menu — selects the compact `@tableStyleOptions` labels
       // disabled: propDisabled
     }
     const menus = (<>
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('formatTableStyleClearCellStyles')}
+        commandKey={'formatTableStyleClearCellStyles'}
         commandState={tableStyle}
         disabled={disabled}
       />
@@ -120,7 +101,7 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         style={{ // We want to indicate that this is the default action.
           fontWeight: 550
         }}
-        command={commands.getCommand('formatTableStyle')}
+        commandKey={'formatTableStyle'}
         commandState={{
           name: tableStyle.getName()
         }}
@@ -129,7 +110,7 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
       <ExhibitDivider orientation="horizontal"/>
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('setDefaultTableStyle')}
+        commandKey={'setDefaultTableStyle'}
         commandState={tableStyle.getName()}
         disabled={disabled}
       />
@@ -137,19 +118,19 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
       {/*
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('modifyTableStyle')}
+        commandKey={'modifyTableStyle'}
         commandState={tableStyle?.getName()}
         disabled={disabled || !tableStyle || tableStyle.isBuiltIn()}
       />
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('duplicateTableStyle')}
+        commandKey={'duplicateTableStyle'}
         commandState={tableStyle?.getName()}
       />
       */}
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('deleteTableStyle')}
+        commandKey={'deleteTableStyle'}
         commandState={tableStyle?.getName()}
         disabled={disabled || !tableStyle || tableStyle.isBuiltIn()}
       />
@@ -174,18 +155,18 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         </Box>
       </Box>
     );
-    return defaultCreatePopupPanel({...props, children});
-  }, [commands]);
+    return defaultRenderPopupPanel({...props, children});
+  }, []);
 
-  const isSelected = tableStyle?.getName() === selectedTableStyleName;
+  const isSelected:boolean = tableStyle?.getName() === selectedTableStyleName;
   const tablePreview:React.ReactElement = useMemo(() => {
     const tablePreviewProps = {
       table,
       tableStyle,
-      styles,
-      bodyStyle
+      styles
     }
     if (useCanvasPreview) {
+      // The canvas preview self-sources the grid scheme (useGridColorScheme) + resolves its window color
       return (
         <TableStyleCanvasPreview
           canvas={canvas}
@@ -199,7 +180,7 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
         />
       )
     }
-  }, [table, tableStyle, styles, bodyStyle]);
+  }, [table, tableStyle, styles]);
 
   let retValue = (
     <ExhibitIconButton
@@ -214,7 +195,7 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
       }}
       key={tableStyle.getName()}
       propsTooltip={{
-        label: tableStyle.getName() ?? 'None',
+        label: tableStyle.getName() ?? t('tableStyle.none'),
         placement: 'bottom-start', //'right-end'
       }}
       disabled={disabled}
@@ -232,8 +213,7 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
     retValue = (
       <ContextMenu
         label={table.getStyleOptions().name}
-        parentFloat={parentFloat}
-        createPopupPanel={createPopupPanel}
+        renderPopupPanel={renderPopupPanel}
       >
         { retValue}
       </ContextMenu>
@@ -242,25 +222,21 @@ const PresetTableStyleIconButton = memo((props: PresetTableStyleIconButtonProps)
   return retValue;
 });
 
-const createDefaultTable = (styleOptions: ITableStyle.StyleOptions, styles: IStyleCollection): ITable => {
-  const defaultSize = {
-    rowStart: 0,
-    colStart: 0,
-    rowEnd: 4,
-    colEnd: 4
-  };
+const createDefaultTable = (styleOptions: ITableStyle.StyleOptions | undefined, styles: IStyleCollection): ITable => {
   return new Table({
-    initialAnchor: defaultSize,
+    size: {
+      width: 5,
+      height: 5
+    },
     styles,
     json: {
       name: 'PreviewTable',
-      ref: defaultSize,
       description: 'PreviewTable',
 
       headerRowCount: 1, // The preview table has a headerRowCount of 1
       totalsRowCount: 0, // for testing
 
-      styleOptions
+      style: styleOptions
     },
   });
 }
@@ -268,33 +244,33 @@ const createDefaultTable = (styleOptions: ITableStyle.StyleOptions, styles: ISty
 export const PresetTableStylesCommandButton = memo(
   forwardRef<HTMLElement, PresetTableStylesCommandButtonProps>((props, refForwarded) => {
   const {
-    commands: propCommands,
-    command,
-    commandHook,
+    commandKey,
     selectedTable: propSelectedTable,
     onSelectTableStyleName: propOnSelectTableStyleName,
-    disabled: propDisabled = false,
-    bodyStyle: propBodyStyle,
+    disabled: propDisabled,
     disabledQuickKey = false,
     usePreviewIcon = false,
+    groupKey,
     // style: propStyle,
     //className: propClassName,
     ...rest
   } = props;
 
-  const _ = useCommand(command);
+  const t = useTranslator();
+  const command = useCommands([commandKey])[0];
   const context:CommandContext.Table = command?.getContext();
-  const styles = context?.styles;
+  const stylesFn = context?.styles;
+  const styles = stylesFn?.();
 
-  const tableActive:ITable = propSelectedTable ?? context?.table?.();
+  const tableActive:ITable | null = propSelectedTable ?? context?.table?.() ?? null;
   let quickCommandKey = 'insertTable';
   if (tableActive) {
     quickCommandKey = 'editTable';
   }
 
   const defaultTable = useMemo(() => {
-    return createDefaultTable(tableActive?.getStyleOptions(), styles?.());
-  }, [styles?.().getDefaultTableStyle(), tableActive?.getStyleOptions()]);
+    return createDefaultTable(tableActive?.getStyleOptions(), styles);
+  }, [styles?.getTableStyles().getDefault(), tableActive?.getStyleOptions()]);
 
   const tableExternal:ITable = tableActive ?? defaultTable;
   const [table, setTable] = useState<ITable>(tableExternal);
@@ -302,28 +278,27 @@ export const PresetTableStylesCommandButton = memo(
   useEffect(() => {
     setTable(tableExternal);
   }, [tableExternal]);
-  const bodyStyle = propBodyStyle ?? context?.bodyStyle();
 
   const handleOnSelectStyleName = useCallbackRef((styleName: string) => {
     propOnSelectTableStyleName?.(styleName);
     command?.execute({
       name: styleName
-    }, commandHook);
-  }, [command, propOnSelectTableStyleName, commandHook]);
+    });
+  }, [command, propOnSelectTableStyleName]);
 
   const refCanvas = useRef<HTMLCanvasElement>(null);
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const propsStyleButton = {
       onSelectTableStyleName: handleOnSelectStyleName,
-      styles: styles(),
-      parentFloat: props.floatReference,
+      styles,
     }
 
     if (!refCanvas.current) {
       refCanvas.current = document.createElement('canvas');
     }
-    const generateStyleButton = (styleName: string) => {
-      const tableStyle:ITableStyle = styles().getTableStyle(styleName);
+    const generateStyleButton = (styleName: string | null) => {
+      if (!styleName) return null;
+      const tableStyle:ITableStyle | null = styles?.getTableStyles().getByName(styleName);
       if (!tableStyle) return null;
 
         return (
@@ -332,17 +307,13 @@ export const PresetTableStylesCommandButton = memo(
           table={table}
           tableStyle={tableStyle}
           selectedTableStyleName={table.getStyleOptions().name}
-          bodyStyle={context.bodyStyle()}
-
-          commands={commands}
-          commandHook={commandHook}
-          canvas={refCanvas.current}
+          canvas={refCanvas.current!}
           {...propsStyleButton}
         />
       );
     }
 
-    const generateStyleCategory = (categoryName: string, styleNames: string[], showDivider: boolean=true) => {
+    const generateStyleCategory = (categoryName: string, styleNames: (string | null)[], showDivider: boolean=true) => {
       const buttons = [];
       for (let i=0; i<styleNames.length; i++) {
         const button = generateStyleButton(styleNames[i]);
@@ -376,14 +347,16 @@ export const PresetTableStylesCommandButton = memo(
     }
 
     const presets = [];
-    const customStyles:ITableStyle[] = styles().getCustomTableStyles();
+    const customStyles:ITableStyle[] = styles?.getTableStyles().getItems({ type: 'custom' });
     const customNames = [];
-    if (customStyles.length > 0) {
-      for (let i=0; i<customStyles.length; i++) {
-        if (customStyles[i].isShownInTableStyles())
-          customNames.push(customStyles[i].getName());
+    const customStylesLength = customStyles ? customStyles.length : 0;
+    if (customStylesLength > 0) {
+      for (let i=0; i<customStylesLength; i++) {
+        const customStyle = customStyles[i];
+        if (customStyle.isShownInTableStyles())
+          customNames.push(customStyle.getName());
       }
-      presets.push(generateStyleCategory('Custom', customNames, false));
+      presets.push(generateStyleCategory(t('tableStyle.category.custom'), customNames, false));
     }
 
     const lightNames = [];
@@ -394,20 +367,20 @@ export const PresetTableStylesCommandButton = memo(
     // lightNames.push('TableStyleLight'+7);
     // presets.push(generateStyleCategory('Light', lightNames));
 
-    for (let i=0;i<21;i++) {
+    for (let i=0; i<21; i++) {
       lightNames.push('TableStyleLight'+(i+1));
     }
-    presets.push(generateStyleCategory('Light', lightNames, customNames.length > 0));
+    presets.push(generateStyleCategory(t('tableStyle.category.light'), lightNames, customNames.length > 0));
     const mediumNames = [];
-    for (let i=0;i<28;i++) {
+    for (let i=0; i<28; i++) {
       mediumNames.push('TableStyleMedium'+(i+1));
     }
-    presets.push(generateStyleCategory('Medium', mediumNames));
+    presets.push(generateStyleCategory(t('tableStyle.category.medium'), mediumNames));
     const darkNames = [];
-    for (let i=0;i<11;i++) {
+    for (let i=0; i<11; i++) {
       darkNames.push('TableStyleDark'+(i+1));
     }
-    presets.push(generateStyleCategory('Dark', darkNames));
+    presets.push(generateStyleCategory(t('tableStyle.category.dark'), darkNames));
 
     let additionalOptions = null;
     if (tableActive) {
@@ -417,8 +390,7 @@ export const PresetTableStylesCommandButton = memo(
         <CommandButton
           variant={CommandButtonType.Menuitem}
           // context="table"
-          command={commands.getCommand('formatTableStyleClearTableStyle')}
-          commandHook={commandHook}
+          commandKey={'formatTableStyleClearTableStyle'}
           disabled={propDisabled}
         />
         </>
@@ -449,9 +421,9 @@ export const PresetTableStylesCommandButton = memo(
         {additionalOptions}
       </Box>
     );
-  }, [styles, styles?.().getTheme(), bodyStyle, table]);
+  }, [styles, styles?.getTheme(), table, t]);
 
-  const isDisabled = propDisabled || !command || command.disabled();
+  const isDisabled = propDisabled ?? (!command || command.disabled());
   const icon = useMemo(() => {
     if (!context || !usePreviewIcon) {
       return command?.getIcon();
@@ -462,7 +434,6 @@ export const PresetTableStylesCommandButton = memo(
     //     table={table}
     //     tableStyle={table}
     //     styles={context.styles()}
-    //     bodyStyle={context.bodyStyle()}
     //     className={"outline-hover"}
     //     disabled={isDisabled}
     //     sx={{
@@ -474,20 +445,18 @@ export const PresetTableStylesCommandButton = memo(
     //     }}
     //   />
     // );
-  }, [table, bodyStyle, isDisabled, command]);
+  }, [table, isDisabled, command]);
 
   return (
     <CommandPopupButton
       ref={refForwarded}
       quickCommand={disabledQuickKey ? undefined : quickCommandKey}
-      createPopupPanel={createPopupPanel}
-      commands={propCommands}
-      label={command?.getLabel()}
+      renderPopupPanel={renderPopupPanel}
+      label={command?.getLabel(groupKey)}
+      groupKey={groupKey}
       commandState={tableActive}
-      commandHook={commandHook}
-      selected={tableActive !== null}
       // outlined={usePreviewIcon} // and not menu item (perhaps just have menu item honor outline prop even if it ignores)
-      createTooltip={({children}: TooltipProps, disabled: boolean) => {
+      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
         return (
           <ExhibitTooltip
             label={command?.getLabel()}

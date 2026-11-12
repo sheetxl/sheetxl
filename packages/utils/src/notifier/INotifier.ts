@@ -2,6 +2,8 @@
 /**
  * Configuration for non-blocking notifications.
  */
+// TODO - align to winstonjs. (To enabled winston to back this api.)
+// TODO - Add a meta type
 export interface NotifierOptions {
   /**
    * Setting this to true will leave the notification on the screen unless it is dismissed (programmatically or through user interaction).
@@ -21,39 +23,28 @@ export interface NotifierOptions {
    */
   onceKey?: string;
   /**
-   * Details about the notification.
+   * Structured data/context for the log entry.
+   * Can contain any application-specific data like validation errors,
+   * import warnings, metrics, etc. Maps to Winston's meta parameter.
    */
-  details?: any;
+  // TODO - create a LogMeta that has type + Record
+  meta?: {
+    type: string;
+    [key: string]: any;
+  };
 }
 
 /**
  * Interface that provides notification.
  */
 export interface INotifier {
-
   /**
-   * Useful when informing the user of something but are not expecting a response.
+   * For trace level logging.
    *
-   * @param message The log message to display.
-   * @param options Options for the log notification.
+   * @param message The trace message to display.
+   * @param options Options for the trace notification.
    */
-  log(message: string, options?: NotifierOptions): void;
-
-  /**
-   * Should return error object exception.
-   *
-   * @param error The error message or object to display.
-   * @param options Options for the error notification.
-   */
-  error(error: string | Error, options?: NotifierOptions): void;
-
-  /**
-   * Should return error object exception.
-   *
-   * @param message The warning message to display.
-   * @param options Options for the warning notification.
-   */
-  warn(message: string, options?: NotifierOptions): void;
+  // trace(message: string, options?: NotifierOptions): void;
 
   /**
    * For debug logging.
@@ -62,5 +53,49 @@ export interface INotifier {
    * @param options Options for the debug notification.
    */
   debug(message: string, options?: NotifierOptions): void;
+
+  /**
+   * Useful when informing the user of something but are not expecting a response.
+   *
+   * @param message The log message to display.
+   * @param options Options for the log notification.
+   */
+  log(message: string, options?: NotifierOptions): void;
+  /**
+   * Should return error object exception.
+   *
+   * @param message The warning message to display.
+   * @param options Options for the warning notification.
+   */
+  warn(message: string, options?: NotifierOptions): void;
+  /**
+   * Should return error object exception.
+   *
+   * @param error The error message or object to display.
+   * @param options Options for the error notification.
+   */
+  error(error: string | Error, options?: NotifierOptions): void;
 }
 
+// export interface ILoggerConfig {
+//   setLevel(level: LogLevel | keyof typeof LogLevel): void;
+//   getLevel(): LogLevel;
+//   isLevelEnabled(level: LogLevel): boolean;
+// }
+
+export namespace INotifier {
+  /**
+   * Npm log levels.
+   */
+  // export const LogLevel = {
+  //   Error: 0,
+  //   Warn: 1,
+  //   Info: 2,
+  //   Http: 3,
+  //   Verbose: 4,
+  //   Debug: 5,
+  //   Silly: 6,
+  // } as const;
+  // export type L = typeof LogLevel[keyof typeof LogLevel];
+  // SysLogLevels - https://datatracker.ietf.org/doc/html/rfc5424
+}

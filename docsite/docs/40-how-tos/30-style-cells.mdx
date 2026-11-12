@@ -1,0 +1,355 @@
+---
+sidebar_position: 30
+title: Style Cells
+---
+
+Fonts, fills, borders, number formats: everything you'd set from Excel's Home tab. In SheetXL it all
+hangs off one object, the **style**, and you get it from a range:
+
+```typescript
+workbook.getRange('Sheet1!A1:E5').getStyle().setFill('#ffd966');
+```
+
+That's the whole pattern. Pick a range, call `getStyle()`, set something. The change lands on every cell
+in the range, in one call, and it's one step to undo.
+
+:::tip
+This page is about the *cells'* look, which is saved with the workbook. To make the spreadsheet UI match
+your site (backgrounds, brand color, dark mode), see [Theme the Spreadsheet](./35-theme-the-spreadsheet.md).
+:::
+
+## The 30-second version
+
+A header row, the way you'd do it by hand in Excel:
+
+```typescript
+const header = workbook.getRange('Sheet1!A1:E1').getStyle();
+
+header.setFill('#1f4e79');
+header.getFont().setBold(true).setColor('white');
+header.getAlignment().setHorizontal('center');
+header.getBorders().setBottom('medium black');
+
+workbook.getRange('Sheet1!E2:E100').getStyle().setNumberFormat('$#,##0.00');
+```
+
+Every part of a style works the same way: a `get…()` that hands you the part, and setters on it that you
+can chain. The rest of this page walks through the parts one at a time.
+
+| Part | Get it with | What it covers |
+| --- | --- | --- |
+| Fill | `getFill()` / `setFill()` | Background: solid color, gradient, or pattern |
+| Font | `getFont()` | Family, size, bold, italic, underline, strikethrough, color, super/subscript |
+| Borders | `getBorders()` | Each edge, the outline, inner grid lines, diagonals |
+| Alignment | `getAlignment()` | Horizontal, vertical, wrap, shrink, indent, rotation |
+| Number format | `getNumberFormat()` / `setNumberFormat()` | How a value is displayed: currency, percent, dates |
+| Named style | `getNamed()` / `setNamed()` | Reusable styles such as `Heading 1` or `Good` |
+| Protection | `getProtection()` | Whether a cell stays editable on a protected sheet |
+
+The full list is on [ICellStyle](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellStyle.html).
+
+## Fill
+
+The background of a cell. Pass a color and you're done:
+
+```typescript
+const style = workbook.getRange('Sheet1!A1:E5').getStyle();
+
+style.setFill('#ffd966');          // hex
+style.setFill('aliceblue');        // any CSS color name
+style.setFill('rgb(255, 217, 102)');
+style.setFill('accent1');          // a theme color, see "Colors" below
+style.setFill(null);               // remove the fill
+```
+
+Gradients and patterns take an object instead of a color:
+
+```typescript
+style.setFill({ type: 'gradient', stops: ['white', 'accent1'], angle: 90 });
+style.setFill({ type: 'pattern', patternType: 'lightUp', foreground: 'red' });
+```
+
+## Font
+
+`getFont()` returns the font, and its setters chain:
+
+```typescript
+const font = workbook.getRange('Sheet1!A1:E1').getStyle().getFont();
+
+font.setBold(true).setItalic(true).setSize(14);
+font.setFamily('Arial').setColor('#c00000');
+font.setUnderline('single');       // or 'double', 'none'
+font.setStrike('single');          // strikethrough
+```
+
+Rather set several things in one go? Hand `setFont` an object. Leave a property out and it keeps its
+current value:
+
+```typescript
+const style = workbook.getRange('Sheet1!A1:E1').getStyle();
+
+style.setFont({ bold: true, size: 14, color: 'white' });
+style.setFont('bold 14pt Arial');  // CSS shorthand: style, weight, size, family
+style.setFont(null);               // back to the default font
+```
+
+More on [IFontStyle](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IFontStyle.html).
+
+## Borders
+
+A border is a line style plus a color, and you can write it as a short string: `'thin red'`,
+`'medium black'`, `'double blue'`, `'dashed gray'`.
+
+```typescript
+const borders = workbook.getRange('Sheet1!A1:E5').getStyle().getBorders();
+
+borders.setOutline('medium black');   // a box around the whole range
+borders.setBottom('double black');    // one edge: setTop, setLeft, setRight, setBottom
+borders.setHorizontal('thin gray');   // the lines between rows
+borders.setVertical('thin gray');     // the lines between columns
+borders.setBottom(null);              // remove an edge
+```
+
+A full grid is an outline plus the two inner lines, and they chain:
+
+```typescript
+workbook.getRange('Sheet1!A1:E5').getStyle().getBorders()
+  .setOutline('medium black')
+  .setHorizontal('thin gray')
+  .setVertical('thin gray');
+```
+
+The line styles are Excel's: `hair`, `thin`, `medium`, `thick`, `dotted`, `dashed`, `double`, and the
+dash-dot family (`dashDot`, `mediumDashed`, and so on).
+
+The color can be anything from the [Colors](#colors) table (`'thin #999999'`, `'double accent1'`), and
+if CSS is what your fingers know, that works too: `'1px solid #999999'` is a thin line, `2px` is medium,
+and `3px` is thick. There's also an object form, `{ style: 'thin', color: '#999999' }`, for when the
+parts come from variables.
+
+More on [IBorders](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IBorders.html).
+
+## Alignment
+
+Where the text sits in the cell, and what happens when it doesn't fit:
+
+```typescript
+const alignment = workbook.getRange('Sheet1!A1:E5').getStyle().getAlignment();
+
+alignment.setHorizontal('center');   // 'left', 'center', 'right', 'justify'
+alignment.setVertical('top');        // 'top', 'center', 'bottom'
+alignment.setOverflow('wrap');       // wrap text; 'shrink' shrinks it to fit
+alignment.setIndent(1);
+alignment.setRotation(45);           // degrees
+```
+
+Or as one object:
+
+```typescript
+workbook.getRange('Sheet1!A1:E5').getStyle()
+  .setAlignment({ horizontal: 'right', vertical: 'center', overflow: 'wrap' });
+```
+
+## Number formats
+
+A number format changes how a value *looks*, never the value itself. `0.256` is still `0.256`; it just
+shows as `25.60%`. The codes are the same ones Excel uses.
+
+```typescript
+const style = workbook.getRange('Sheet1!B2:B100').getStyle();
+
+style.setNumberFormat('#,##0.00');     // 1,234.50
+style.setNumberFormat('0%');           // 26%
+style.setNumberFormat('$#,##0.00');    // $1,234.50
+style.setNumberFormat('yyyy-mm-dd');   // 2023-03-15
+style.setNumberFormat(null);           // back to General
+```
+
+To read one back, ask the range. To get the text a person would see in the cell, ask the cell:
+
+```typescript
+const range = workbook.getRange('Sheet1!B2');
+
+range.getNumberFormat();        // '#,##0.00'
+range.getCell().getText();      // '1,234.50'
+```
+
+## Named styles
+
+A named style is a whole look with a name on it, the same idea as Excel's *Cell Styles* gallery. The
+built-ins are all there: `Heading 1`, `Title`, `Good`, `Bad`, `Neutral`, `Input`, `Total`, and friends.
+
+```typescript
+workbook.getRange('Sheet1!A1:E1').getStyle().setNamed('Heading 1');
+workbook.getRange('Sheet1!A1:E1').getStyle().setNamed(null);   // back to Normal
+```
+
+You can add your own. The nice part: change the named style later and every cell that uses it follows.
+
+```typescript
+const namedStyles = workbook.getStyles().getNamedStyles();
+
+namedStyles.set({
+  name: 'Brand Header',
+  style: { fill: '#1f4e79', font: { bold: true, color: 'white' } }
+});
+
+workbook.getRange('Sheet1!A1:E1').getStyle().setNamed('Brand Header');
+```
+
+## Several things at once
+
+When you have a pile of changes, `update` takes them all as one object. The keys match the parts above:
+
+```typescript
+workbook.getRange('Sheet1!A1:E5').getStyle().update({
+  fill: '#ffd966',
+  font: { bold: true, size: 12 },
+  alignment: { horizontal: 'center' },
+  numberFormat: '#,##0.00'
+});
+```
+
+`update` is a *partial* update, and three small rules cover it:
+
+1. A value **replaces** what was there.
+2. `null` **resets** that property to the default.
+3. Anything you leave out (or set to `undefined`) is **left alone**.
+
+```typescript
+// Remove the fill. The font, alignment, and number format stay as they were.
+workbook.getRange('Sheet1!A1:E5').getStyle().update({ fill: null });
+```
+
+Need the new style to depend on the old one? Pass a function. It runs once per cell and gets that cell's
+current style:
+
+```typescript
+// Make every font 2 points bigger, whatever size each cell had.
+workbook.getRange('Sheet1!A1:E5').getStyle().update((current) => ({
+  font: { size: current.getFont().getSize() + 2 }
+}));
+```
+
+:::note
+The function form does more work than a plain object, since it visits each cell. Great for a table,
+not something to run over a million rows.
+:::
+
+You can also copy a look from one place to another by passing a style:
+
+```typescript
+const source = workbook.getRange('Sheet1!A1').getStyle();
+workbook.getRange('Sheet1!A10:E10').getStyle().update(source);
+```
+
+## Colors
+
+Anywhere a color goes, a string works:
+
+| You write | What it is |
+| --- | --- |
+| `'#ffd966'`, `'#fd6'` | Hex |
+| `'rgb(255, 217, 102)'` | CSS `rgb()` |
+| `'steelblue'` | A CSS color name |
+| `'accent1'` … `'accent6'`, `'tx1'`, `'bg1'` | A color from the workbook's theme |
+
+Theme colors are worth a second look. `accent1` isn't a fixed color. It means "whatever the theme's first
+accent is", so when someone switches the workbook's theme, those cells change with it. Use a hex color
+when you want it to stay put, and a theme color when you want it to follow along. Themes are described by
+[ITheme](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ITheme.html).
+
+## Reading styles
+
+The same `get…()` calls that hand you something to set also tell you what's there:
+
+```typescript
+const style = workbook.getRange('Sheet1!A1').getStyle();
+
+style.getFont().getBold();              // true
+style.getFont().getSize();              // 14
+style.getFill().getColor()?.toCSS();    // 'rgb(31,78,121)'
+style.getBorders().getBottom().getStyle();   // 'medium'
+style.getAlignment().getHorizontal();   // 'center'
+```
+
+One thing to know: reading a style from a range that's bigger than one cell tells you about its
+**top-left cell**. That's what Excel's ribbon does too. Select a block and the Bold button shows the
+first cell's state.
+
+So `getStyle()` answers "what does this cell look like?" It does not answer "is this whole block the same?"
+For that, read on.
+
+## Finding styled cells
+
+"Where are the yellow cells?" is a different question from "what color is A1?", and it has its own call:
+**[getRegions](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html#getregions)**. Give it a
+feature and it returns the blocks of cells that share it.
+
+```typescript
+const regions = workbook.getRange('Sheet1!A1:Z100').getRegions('fill');
+
+for (const region of regions) {
+  const color = region.getCell().getStyle().getFill().getColor()?.toCSS();
+  console.log(region.getAddress(), color);
+}
+// A1:E1   rgb(31,78,121)
+// B4:C9   rgb(255,217,102)
+```
+
+Each region is a rectangle where every cell has the *same* fill. Two colors side by side come back as two
+regions. Cells with no fill aren't listed at all, so a sheet with three colored blocks gives you three
+regions, however big the sheet is.
+
+The style features are `'fill'`, `'font'`, `'borders'`, `'alignment'`, `'numberFormat'`, and
+`'protection'`. A region gives you two ways back to the cells:
+
+- `region.getCell()` is its first cell, for reading. Every cell in the region matches it.
+- `region.getRange()` is the whole block, for writing.
+
+That makes "find and restyle" a short loop:
+
+```typescript
+// Bold everything that has a fill.
+for (const region of workbook.getRange('Sheet1!A1:Z100').getRegions('fill')) {
+  region.getRange().getStyle().getFont().setBold(true);
+}
+```
+
+And it answers the question from the last section. A block has one fill throughout when it comes back as
+a single region that covers all of it:
+
+```typescript
+const [first, ...others] = workbook.getRange('Sheet1!A1:E1').getRegions('fill');
+
+const uniform = others.length === 0 && first?.getAddress() === 'A1:E1';
+```
+
+## Clearing styles
+
+```typescript
+// Wipe the formatting, keep the values.
+workbook.getRange('Sheet1!A1:E5').clear('formats');
+
+// Same thing, starting from the style.
+workbook.getRange('Sheet1!A1:E5').getStyle().clear();
+```
+
+To clear just one part, set it to `null`: `setFill(null)`, `setFont(null)`, `setBorders(null)`.
+
+## Going cell by cell
+
+Everything above works on blocks, and that's almost always what you want: it's less code and it's fast.
+When you really do need to look at each cell, `forEach` visits the cells that have a value and hands you
+the cell along with it:
+
+```typescript
+workbook.getRange('Sheet1!A1:E5').forEach((value, context) => {
+  const style = context.getCell().getStyle();
+  if (style.getFont().getBold()) {
+    console.log(context.getCell().getAddress(), value);
+  }
+});
+```
+
+A cell is for reading. To change a style, go back through a range, as in every example on this page.

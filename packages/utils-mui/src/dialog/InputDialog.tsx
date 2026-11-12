@@ -1,16 +1,17 @@
-import React, { useState, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useState, memo, forwardRef } from 'react';
 
 import clsx from 'clsx';
 
-import { Theme, alpha, getOverlayAlpha } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { FormControl } from '@mui/material';
 import { TextField } from '@mui/material';
 
 import {
-  type ShowInputOptions, useCallbackRef, KeyCodes
+  type ShowInputOptions, type OptionInput, useCallbackRef, KeyCodes
 } from '@sheetxl/utils-react';
+
 
 import { type OptionsDialogProps } from './useOptionsDialog';
 import { OptionsDialog } from './OptionsDialog';
@@ -43,7 +44,7 @@ const InputDialog = memo(forwardRef<HTMLDivElement, InputDialogProps>((props, re
   const [helperText, setHelperText] = useState<string>('');
   const [isValid, setIsValid] = useState<boolean>(true);
 
-  const handleValidation = useCallbackRef(async (input?: string, option?: string): Promise<boolean> => {
+  const handleValidation = useCallbackRef(async (input?: string, option?: OptionInput): Promise<boolean> => {
     if (!onValidateInput) return true;
     const results = await onValidateInput?.(input, option);
     setHelperText(results?.message ?? '');
@@ -52,7 +53,7 @@ const InputDialog = memo(forwardRef<HTMLDivElement, InputDialogProps>((props, re
     return valid;
   }, [onValidateInput]);
 
-  const handleInput = useCallbackRef(async (option: string) => {
+  const handleInput = useCallbackRef(async (option: OptionInput) => {
     onInput?.(input, option);
     // console.warn(new Error('onInput'));
     // onOption?.(option, option === cancelOption, option === defaultOption);
@@ -61,7 +62,7 @@ const InputDialog = memo(forwardRef<HTMLDivElement, InputDialogProps>((props, re
 
   const handleKeyDown = useCallbackRef(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.keyCode === KeyCodes.Enter) {
-      let _valid = await handleValidation?.(input, null);
+      let _valid = await handleValidation?.(input, undefined);
       // I commented this out because is was causing a race condition with OptionsDialog submit (due to the timeout)
       // if (valid !== false) {
       //   handleInput(defaultOption);
@@ -71,23 +72,21 @@ const InputDialog = memo(forwardRef<HTMLDivElement, InputDialogProps>((props, re
 
   const handleOnChange = useCallbackRef((e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
-    handleValidation?.(e.target.value, null);
+    handleValidation?.(e.target.value, undefined);
   }, [onValidateOption]);
 
-  const handleValidateOption = useCallbackRef(async (option: string): Promise<boolean> => {
-    let result = await handleValidation(input, option);
-    try {
-      if (result !== false)
-        result = await handleValidation(input, option);
-    } catch (e) {}
-    return result ?? true;
+  // Validate ONCE. This used to run `handleValidation` a second time when the first passed, which
+  // was invisible for a cheap predicate but doubles the cost of an expensive one (a password
+  // derivation is ~1s, so submitting cost two).
+  const handleValidateOption = useCallbackRef(async (option?: OptionInput): Promise<boolean> => {
+    return (await handleValidation(input, option)) ?? true;
   }, [input, onValidateOption]);
 
   return (
     <OptionsDialog
       options={options}
       onDone={onDone}
-      onOption={(option: string, isCancel: boolean) => { if (!isCancel) handleInput(option) } }
+      onOption={(option: OptionInput, isCancel: boolean) => { if (!isCancel) handleInput(option) } }
       onValidateOption={handleValidateOption}
       cancelOption={cancelOption}
       defaultOption={defaultOption}
@@ -138,8 +137,7 @@ const InputDialog = memo(forwardRef<HTMLDivElement, InputDialogProps>((props, re
               className: clsx('autoFocus', propsInput?.className),
               sx: {
                 paddingTop: (theme: Theme) => theme.spacing(1.25),
-                paddingBottom: (theme: Theme) => theme.spacing(0.75),
-                backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`
+                paddingBottom: (theme: Theme) => theme.spacing(0.75)
               }
             }
           }}

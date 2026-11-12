@@ -1,6 +1,10 @@
 import { useLayoutEffect, useRef } from 'react';
 
-export const SingleItemContainer = ({ initValue, useHookBody, applyStateChange }) => {
+export const SingleItemContainer = ({ initValue, useHookBody, applyStateChange }: {
+  initValue: any;
+  useHookBody: () => any;
+  applyStateChange: (val: any) => void;
+}) => {
   const lastState = useRef(initValue);
   if (typeof useHookBody !== 'function') {
     throw new Error(`function expected as hook body parameter. got ${typeof useHookBody}`);

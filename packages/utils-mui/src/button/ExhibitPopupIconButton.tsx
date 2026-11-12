@@ -1,25 +1,25 @@
-import React, {
+import type React from 'react';
+import {
   forwardRef, memo, useMemo, useState, useRef
 } from 'react';
 
 import clsx from 'clsx';
 
 import { alpha } from '@mui/system';
-import { useTheme, Theme } from '@mui/material/styles';
-
+import { useTheme, type Theme } from '@mui/material';
 import { Box, type BoxProps } from '@mui/material';
 import { IconButton } from '@mui/material';
-import { type TooltipProps } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
-import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
+import { useCallbackRef, KeyCodes, useFloatStack, DynamicIcon, RenderSlot } from '@sheetxl/utils-react';
 
 import { SimpleTooltip } from '../components';
 import { ExhibitIconButton } from './ExhibitIconButton';
+import { composeButtonContent } from './ButtonContent';
 
 import {
-  createDownArrow, useFloatStack,
-  type ExhibitPopupButtonProps, type ExhibitQuickButtonProps
+  createDownArrow,
+  type ExhibitPopupButtonProps, type ExhibitQuickButtonProps, type ButtonTooltipRenderProps
 } from '../float';
 
 export interface OutlineBorder {
@@ -42,22 +42,23 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     dense = true,
     outlined: propOutlined = false,
     label: propLabel,
+    showLabel: propShowLabel = false,
     selected: propSelected = false,
     onQuickClick,
     parentFloat,
-    createPopupPanel,
+    renderPopupPanel,
     propsPopup,
     onPopupOpen: propOnPopupOpen,
     onPopupClose: propOnPopupClose,
     propsQuickButton,
     renderQuickButton,// : propCreateQuickButton,
     tooltip = '',
-    createTooltip,
+    renderTooltip,
     icon: propIcon,
     disabled: propDisabled,
     propsButton = CommonUtils.EmptyObject,
     disableHover,
-    touchRippleRef,
+    ripple,
     primary,
     children,
     sx: propSx,
@@ -65,15 +66,15 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     ...rest
   } = props;
   // TODO - // if this is not specified perhaps we should just disable
-  // if (!createPopupPanel)
-  //   throw new Error('createPopupPanel is required');
+  // if (!renderPopupPanel)
+  //   throw new Error('renderPopupPanel is required');
   // const renderQuickButton = useCallback(propCreateQuickButton, [propCreateQuickButton]);
 
   const appTheme:Theme = useTheme();
 
   const colors = useMemo(() => {
     const evalColor = (key: string, theme: Theme, outlinedColor: string, defaultColor: string=outlinedColor) => {
-      const color = typeof propOutlined === 'boolean' ? null : (propOutlined as OutlineBorder)[key];
+      const color = typeof propOutlined === 'boolean' ? null : (propOutlined as OutlineBorder)[key as keyof OutlineBorder];
       if (typeof color === "function") {
         return (color as (theme: Theme) => string)(theme);
       }
@@ -112,7 +113,7 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
   const floatStack = useFloatStack({
     anchor: anchorRef.current,
     label: propLabel as string,
-    createPopupPanel: createPopupPanel,
+    renderPopupPanel: renderPopupPanel,
     parentFloat: parentFloat,
     propsPopper: propsPopup?.propsPopper,
     onClose: () => { setOpen(false); propOnPopupClose?.(); },
@@ -213,6 +214,12 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
       },
       "&:hover:not(.Mui-disabled, [disabled])": {
         color: (theme: Theme) => theme.palette.text.primary,
+        // MUI gives an IconButton its hover fill only while its own ripple is enabled; the quick part
+        // disables it to host the managed ripple, so the fill is stated here for both parts.
+        ...(disableHover ? null : {
+          backgroundColor: (theme: Theme) => alpha(theme.palette.action.active, theme.palette.action.hoverOpacity),
+          '@media (hover: none)': { backgroundColor: 'transparent' }
+        })
       },
       backgroundColor: () => {
         return disableHover ? 'transparent' : undefined; // Note - This is a terrible approach. styles should be additive. Revisit disableHover as it's not well supported
@@ -242,8 +249,8 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     }
   }, [colors, disableHover]);
 
-  const defaultTooltip = useCallbackRef((props: TooltipProps) => {
-    const { children, ref, ...rest } = props;
+  const defaultTooltip = useCallbackRef((props: ButtonTooltipRenderProps) => {
+    const { children, ref, disabled: _disabled, ...rest } = props;
     return (
       <SimpleTooltip ref={ref as any} {...rest} disableInteractive>
         {children}
@@ -252,9 +259,9 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
   }, []);
 
   const isSplit = onQuickClick || renderQuickButton;
-  const isSplitTooltip = isSplit && (propsQuickButton?.tooltip || propsQuickButton?.createTooltip);
-  const defaultCreateQuickButton = (props: ExhibitQuickButtonProps) => {
-    const { tooltip : quickTooltip, createTooltip: quickCreateTooltip, sx: sxProp, ...rest } = props;
+  const isSplitTooltip = isSplit && (propsQuickButton?.tooltip || propsQuickButton?.renderTooltip);
+  const defaultRenderQuickButton = (props: ExhibitQuickButtonProps) => {
+    const { tooltip : quickTooltip, renderTooltip: quickRenderTooltip, sx: sxProp, ...rest } = props;
     let quickButton = <IconButton
       sx={{
         ...sxProp
@@ -264,10 +271,11 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     />;
     if (!isSplitTooltip)
       return quickButton;
-    quickButton = (quickCreateTooltip ?? defaultTooltip)({
+    quickButton = <RenderSlot render={quickRenderTooltip ?? defaultTooltip} props={{
       title: !isOpen ? (quickTooltip ?? tooltip) : '',
-      children: <div>{quickButton}</div>
-    }, isOpen);
+      children: <div>{quickButton}</div>,
+      disabled: isOpen
+    }} />;
     return quickButton;
   }
 
@@ -285,9 +293,18 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
     }
   }
   let button = <></>;
+  // Compose the button's visible content — a glyph and, when `showLabel` is set, the label text:
+  //   • glyph = the resolved icon, else (for a split button, which MUST keep a glyph or the quick
+  //             button collapses) the toggle checkmark. `propIcon` already carries the quick command's
+  //             own icon when it has one (resolved upstream), so a real icon wins over the checkmark.
+  //   • label = rendered as text only when `showLabel` is set — toolbars are icon-only by default, so
+  //             normal buttons keep the label as tooltip-only. `composeButtonContent` styles + lays it
+  //             out (shared with `CommandButton`).
   const icon = useMemo(() => {
-    return typeof propIcon === "function" ? propIcon() : propIcon ;
-  }, [propIcon]);
+    const resolved = typeof propIcon === "function" ? propIcon() : propIcon;
+    const glyph = resolved ?? (isSplit ? CHECK_ICON : null);
+    return composeButtonContent(glyph, propShowLabel ? propLabel : null);
+  }, [propIcon, propLabel, propShowLabel, isSplit]);
 
   if (isSplit) {
     let arrowStyling = isOpen ? styling.openQuickButtonStyling : styling.quickButtonStyling;
@@ -298,10 +315,12 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
       edge: "end",
       // onMouseDown:(e: React.MouseEvent<HTMLElement>) => e.preventDefault(),
       // onMouseUp: handleQuickClick,
-      onMouseEnter: () => { floatStack.reference.parent.closeChild() },
+      onMouseEnter: () => { floatStack.reference.parent?.closeChild() },
       onMouseDown: (e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault(); handleQuickClick(e) },
-      touchRippleRef: touchRippleRef as any,
-      children: icon,
+      // Host the caller's always-mounted ripple and disable MUI's lazy one, so a remote execute of the
+      // quick command can flash this button (see `useManagedRipple`).
+      disableRipple: !!ripple,
+      children: <>{icon}{ripple}</>,
       ...propsQuickButton,
       className: clsx({
         ['Mui-focusVisible']: (isFocused || isOpen),
@@ -320,14 +339,15 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
       },
 
     };
-    const quickButton = (renderQuickButton || defaultCreateQuickButton)(localPropsQuickButton);
+    const quickButton = <RenderSlot render={renderQuickButton ?? defaultRenderQuickButton} props={localPropsQuickButton} />;
 
     let downArrow = createDownArrow(true, dense, isOpen);
     if (isSplitTooltip)
-      downArrow = (createTooltip ?? defaultTooltip)({
+      downArrow = <RenderSlot render={renderTooltip ?? defaultTooltip} props={{
         title: !isOpen ? tooltip : '',
-        children: downArrow
-      }, isOpen);
+        children: downArrow,
+        disabled: isOpen
+      }} />;
     button = (<>
       {quickButton}
       <IconButton
@@ -389,6 +409,9 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
           // 'button': true
         })}
         sx={{
+          // Fill the root when a caller widens the control (a form field rather than a toolbar
+          // button); a content-sized root leaves this unchanged.
+          flex: '1 1 auto',
           // ...dynamicStyling,
           ...styling.quickButtonStyling,
           ...compoundStyling
@@ -459,10 +482,11 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
   );
 
   if (!isSplitTooltip) {
-    buttonRoot =  (createTooltip ?? defaultTooltip)({
+    buttonRoot = <RenderSlot render={renderTooltip ?? defaultTooltip} props={{
       title: !isOpen ? tooltip : '',
-      children: buttonRoot
-    }, isOpen);
+      children: buttonRoot,
+      disabled: isOpen
+    }} />;
   }
 
   return (
@@ -484,3 +508,7 @@ export const ExhibitPopupIconButton: React.FC<ExhibitPopupIconButtonProps & { re
 }));
 
 ExhibitPopupIconButton.displayName = "ExhibitPopupIconButton";
+
+// Fallback glyph for a split (quick command) button with no resolved icon — keeps the quick button
+// visible and reflects its toggle state. Mirrors `ExhibitIconButton`'s default toggle icon.
+const CHECK_ICON = <DynamicIcon iconKey="Check"/>;

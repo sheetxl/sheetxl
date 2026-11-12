@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "types": [
+      "node"
+    ],
+    "rootDir": "../..",
+    "paths": {
+      "@sheetxl/primitives": [
+        "../primitives/src"
+      ],
+      "@sheetxl/utils": [
+        "../utils/src"
+      ]
+    },
+    "tsBuildInfoFile": "./build/.tsbuildinfo.cli"
+  },
+  "include": [
+    "./src",
+    "./examples",
+    "../primitives/src",
+    "../utils/src"
+  ]
+}

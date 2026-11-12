@@ -58,8 +58,9 @@ export const showPanel = (selector: string | HTMLElement, config: PanelConfig = 
     }
 
     // Apply CSS variables with fallbacks
+    // Config keys are camelCase (iconColor); the stylesheet reads kebab-case (--sheetxl-panel-icon-color).
     const cssVarStyles = Object.entries(cssVars)
-      .map(([key, value]) => `--sheetxl-panel-${key}: ${value};`)
+      .map(([key, value]) => `--sheetxl-panel-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}: ${value};`)
       .join(' ');
 
     const styleText = `

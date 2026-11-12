@@ -1,9 +1,9 @@
-import React, { useMemo, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useMemo, memo, forwardRef } from 'react';
 
 import { type SxProps } from '@mui/system';
-import { Theme } from '@mui/material/styles';
+import { type Theme } from '@mui/material';
 import { alpha } from '@mui/system';
-
 import { Box } from '@mui/material';
 
 import { DynamicIcon } from '@sheetxl/utils-react';

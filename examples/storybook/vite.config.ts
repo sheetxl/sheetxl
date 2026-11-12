@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 import * as path from 'path';
 import * as fs from 'fs';
+
+import { ResourcesPlugin } from '../../config/vite-plugin-resources';
+import { LocaleBundlePlugin } from '../../config/vite-plugin-locale-bundle';
+import { licenseKeysDefine } from '../../config/license-keys';
 
 const CURRENT_DIR = process.cwd();
 const REPO_DIR = path.resolve(CURRENT_DIR, `../..`);
@@ -21,10 +24,20 @@ const isProduction = process.env.NODE_ENV === 'production';
 export default defineConfig({
   plugins: [
     react(),
-    tsconfigPaths({
-      projects: ['./tsconfig.build.json'],
-    })
+    // Storybook runs its own Vite pipeline and does not inherit `createLibraryConfig` (where a real app
+    // picks up `ResourcesPlugin`). Without it nothing serves `/resources/locales/...`, every locale index
+    // request falls through to the SPA shell (200 text/html → treated as absent), and the runtime warns
+    // "no locales for '@sheetxl/sdk' in any resource root" and renders raw message keys. In dev this
+    // serves each `@sheetxl/*` dependency's locales from source; `app: true` also stages them into the
+    // static `storybook build`.
+    ResourcesPlugin({ root: CURRENT_DIR, pkg: getPackage(CURRENT_DIR), app: true }),
+    // Storybook consumes `@sheetxl/*` as SOURCE, so it hits the `virtual:sheetxl/bundled-locale` import
+    // each package's registration uses; this resolves it (as `createLibraryConfig` does for real apps).
+    LocaleBundlePlugin(),
   ] as any,
+  // NOTE: no vite-tsconfig-paths. It was pointed at tsconfig.build.json (which has no `paths`, only
+  // project `references`), so it contributed zero mappings — a no-op. `@sheetxl/*` resolves to source
+  // via each package.json's `development` export condition (→ ./src/index.ts), not tsconfig paths.
   server: {
     middlewareMode: false,
     watch: {
@@ -44,7 +57,6 @@ export default defineConfig({
   worker: {
     format: 'es', // Use ES modules for workers
     rollupOptions: {
-      maxParallelFileOps: 20, // make lower if "Too many open files" errors on Windows
       output: {
         entryFileNames: 'assets/[name].worker.js', // Remove hash for workers
       }
@@ -52,8 +64,9 @@ export default defineConfig({
   },
     define: {
       __DEV__: !isProduction,
-      __BUILD_DATE__: JSON.stringify(new Date().toDateString()),
+      __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
       __BUILD_VERSION__: JSON.stringify(isProduction ? getVersion() : 'local'),
+      ...licenseKeysDefine(isProduction && !['local', '0.0.0', 'unknown'].includes(getVersion())),
       // TODO - remove this
       'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development')
     },
@@ -61,7 +74,6 @@ export default defineConfig({
     outDir: 'build', // Changes output directory from 'dist' to 'build'
     sourcemap: false,//"hidden" // Enable debugging with source maps
     rollupOptions: {
-      maxParallelFileOps: 1, // make lower if "Too many open files" errors on Windows
       input: {
         main: 'index.html',
         // ...workerEntries

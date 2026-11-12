@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>SheetXL Studio - No Code</title>
+  <link rel="icon" href="https://www.sheetxl.com/favicon.ico" crossorigin="anonymous" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#4a90e2" />
+  <meta name="description" content="SheetXL Studio - Advanced spreadsheet component for web applications" />
+  <link rel="apple-touch-icon" href="https://www.sheetxl.com/img/logo_x192.png" crossorigin="anonymous" />
+  <!-- TODO - make this a global link to sheetxl for portability -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>
+      <a href="https://www.sheetxl.com" target="_blank" rel="noopener noreferrer">
+        <img src="https://www.sheetxl.com/logo-text.svg" alt="SheetXL" />
+      </a>
+      No code integration
+    </h1>
+
+    <div class="info">
+      <p>
+        Simple integration with <strong>no code</strong>.
+      </p>
+      <div class="action-buttons">
+        <a href="#" onclick="copyCode(); return false;" class="btn btn-copy">
+          📋 Copy this Page
+        </a>
+      </div>
+    </div>
+
+    <div id="sheetxl">
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>
+      Powered by <a href="https://www.sheetxl.com" target="_blank" rel="noopener noreferrer">SheetXL</a> |
+      <a href="https://github.com/sheetxl" target="_blank" rel="noopener noreferrer">View on GitHub</a> |
+      <a href="https://www.sheetxl.com/docs" target="_blank" rel="noopener noreferrer">Documentation</a>
+    </p>
+  </div>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@sheetxl/studio-vanilla@latest/cdn/loader.js"
+    data-target="#sheetxl"
+    data-license-key="visit https://my.sheetxl.com to generate a license key."
+    data-auto-focus="true"
+    defer>
+  </script>
+  <script type="module">
+    // Just for demo. Not part of the actual SheetXL code.
+    async function copyCode() {
+      try {
+        const response = await fetch(location.href);
+        const code = await response.text();
+        await navigator.clipboard.writeText(code);
+        alert('✅ Code copied to clipboard!');
+      } catch (clipboardError) {
+        alert('✅ Unable to copy code to clipboard. Try CodePen!');
+      }
+    }
+    // Make copyCode available globally
+    window.copyCode = copyCode;
+  </script>
+</body>
+
+</html>

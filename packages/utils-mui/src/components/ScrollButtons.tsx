@@ -1,21 +1,50 @@
-import React from 'react';
+import type React from 'react';
 
 import { IconButton } from '@mui/material';
 
 import {
-  defaultCreateScrollEdgeButton, ScrollbarOrientation, ScrollButtonProps, DynamicIcon
+  defaultRenderScrollButtonEdge as renderPlainScrollButtonEdge, ScrollbarOrientation, DynamicIcon, useTranslator,
+  type ScrollButtonProps
 } from '@sheetxl/utils-react';
 
 import { SimpleTooltip } from '../components';
 
-export const renderScrollButtonEdge = (props: ScrollButtonProps) => {
+/**
+ * The edge-scroll tooltip text.
+ *
+ * A component rather than a string, so the text re-renders on a language switch. Each of the four
+ * variants is a WHOLE sentence — gluing a translated edge name onto a translated clause doesn't
+ * work, because a fragment is not independently translatable.
+ */
+const ScrollEdgeTooltipTitle = ({ isHorizontal, isBefore }: { isHorizontal: boolean; isBefore: boolean }): React.ReactElement => {
+  const t = useTranslator();
+  // Literal keys at every branch — the extractor cannot see a computed one.
+  if (isBefore) return <>{isHorizontal ? t('scroll.edgeLeft') : t('scroll.edgeTop')}</>;
+  return <>{isHorizontal ? t('scroll.edgeRight') : t('scroll.edgeBottom')}</>;
+};
+
+export const defaultRenderScrollButtonEdge = (props: ScrollButtonProps): React.ReactNode => {
   const propsCustom = {
     style: {
       cursor: 'pointer'
     },
     ...props
   };
-  return defaultCreateScrollEdgeButton(propsCustom)
+  let retValue = renderPlainScrollButtonEdge(propsCustom);
+  if (props.isBefore !== undefined && !props.disabled) {
+    const isHorizontal = props.orientation === ScrollbarOrientation.Horizontal;
+    retValue = (
+      <SimpleTooltip
+        title={<ScrollEdgeTooltipTitle isHorizontal={isHorizontal} isBefore={props.isBefore} />}
+        enterDelay={800}
+        enterNextDelay={1600}
+      >
+        {props.disabled ? <div style={{display: 'flex'}}>{retValue}</div> : retValue}
+      </SimpleTooltip>
+    );
+  }
+
+  return retValue;
 }
 
 export const createScrollButton = (props: ScrollButtonProps, icon: React.ReactElement, title: string, description: string) => {
@@ -54,7 +83,7 @@ export const createScrollButton = (props: ScrollButtonProps, icon: React.ReactEl
   )
 }
 
-export const renderScrollButtonStart = (props: ScrollButtonProps) => {
+export const defaultRenderScrollButtonStart = (props: ScrollButtonProps): React.ReactNode => {
   return createScrollButton(
     props,
     (ScrollbarOrientation.Horizontal ? <DynamicIcon iconKey="ArrowLeft" size="small"/> : <DynamicIcon iconKey="ArrowUpward" size="small"/>),
@@ -63,7 +92,7 @@ export const renderScrollButtonStart = (props: ScrollButtonProps) => {
   );
 }
 
-export const renderScrollButtonEnd = (props: ScrollButtonProps) => {
+export const defaultRenderScrollButtonEnd = (props: ScrollButtonProps): React.ReactNode => {
   return createScrollButton(
     props,
     (ScrollbarOrientation.Horizontal ? <DynamicIcon iconKey="ArrowRight" size="small"/> : <DynamicIcon iconKey="ArrowDownward" size="small"/>),

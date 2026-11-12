@@ -5,6 +5,11 @@ sidebar_label: CLI
 description: Quickly get started with SheetXL using our CLI.
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+import { AgentPromptCode } from '@site/src/components/AgentPrompt';
+
 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
   <img
     src={require('/static/img/cli-logo.png').default}
@@ -21,7 +26,7 @@ description: Quickly get started with SheetXL using our CLI.
   />
 </div>
 
-The SheetXL CLI is a powerful command-line tool for automating spreadsheet operations, running scripts, and managing workbooks programmatically.
+The SheetXL CLI is a command-line tool for automating spreadsheet operations, running scripts, and managing workbooks programmatically.
 
 <div className="doc-animated-banner">
   <img
@@ -32,78 +37,235 @@ The SheetXL CLI is a powerful command-line tool for automating spreadsheet opera
 
 ## Installation
 
-The easiest way to use the SheetXL CLI is by running it directly without a permanent installation. All you need is Node.js (v22+) installed (v24 recommended),
+The easiest way to use the SheetXL CLI is to run it directly, with no permanent installation. All you need is Node.js (v22 or later; v24 recommended).
 
-Open your terminal and run:
+Hand it to your agent, or open your terminal and run it yourself:
 
+<Tabs
+  defaultValue="agent"
+  values={[
+    {label: 'agent', value: 'agent'},
+    {label: 'npx', value: 'npx'},
+    {label: 'pnpm', value: 'pnpm'},
+    {label: 'npm', value: 'npm'}
+  ]}>
+  <TabItem value="agent">
+
+Paste this into your agent (Claude Code, Codex, Cursor, …), in the folder with your spreadsheets:
+
+<AgentPromptCode id="terminal" />
+
+  </TabItem>
+  <TabItem value="npx">
 ```bash
 npx sheetxl
 ```
+  </TabItem>
+  <TabItem value="pnpm">
+```bash
+pnpm dlx sheetxl
+```
+  </TabItem>
+  <TabItem value="npm">
+```bash
+npm install -g sheetxl
+sheetxl
+```
 
-*(If you use `pnpm`, you can use `dlx sheetxl`)*
+A permanent install; afterwards the command is just `sheetxl`.
+  </TabItem>
+</Tabs>
 
-This will start an interactive REPL (Read-Eval-Print Loop), pre-loaded with the SheetXL SDK.
+Run by hand, it starts an interactive session, pre-loaded with the SheetXL SDK.
 
 ```terminal
-SheetXL >
+SheetXL>
 ```
 
 :::tip
-Type `help` in CLI for a list of commands.
+Type `.help` in the session for a list of commands.
 :::
 
 ## Usage
 
-The CLI can be used in three main ways: as an [**interactive REPL**](#interactive-repl), for [**executing scripts**](#executing-scripts) files, or for running [**direct commands**](#direct-commands).
-
-### Interactive REPL
-
-Running the CLI with no arguments starts the interactive session. This is a powerful JavaScript environment for prototyping, running calculations, or managing your workbooks programmatically.
-
-```bash
-npx sheetxl
+```text
+sheetxl [options] [workbook]
 ```
 
-Inside the REPL, you have access to the `@sheetxl/sdk` and `@sheetxl/io` packages and special commands:
+The workbook is the trailing positional argument. Omit it and you get a blank workbook. One rule decides everything else:
 
-* `help`: Displays help message.
-* `.help`: Shows all available dot commands.
+:::tip The one rule
+**Give it code and it runs, prints, and exits. Give it none and you get an interactive session.**
+:::
 
+Code means `-e`, `-f`, or source piped on stdin.
 
-#### Accessing the SDK API
+| You type | You get |
+| --- | --- |
+| `sheetxl` | interactive session, blank workbook |
+| `sheetxl book.xlsx` | interactive session, `wb` loaded |
+| `sheetxl -e "wb.getWorksheet()" book.xlsx` | evaluate, print, exit |
+| `sheetxl -f script.ts book.xlsx` | run a script file, exit |
+| `sheetxl -i -f setup.ts book.xlsx` | run the script, then stay interactive |
+| `sheetxl book.xlsx --out book.csv` | convert; no code needed |
+| `sheetxl book.xlsx < script.ts` | run code from stdin, exit |
 
-You can access the sdk directly
+If you know `duckdb` or `sqlite3`, you already know this shape. The difference is that SheetXL takes TypeScript where they take SQL. And it is the same TypeScript for asking a question and for changing the workbook, so nothing distinguishes a "query" from a "script."
 
-Create a new Workbook and save with a single value.
+### Reading
+
+`-e` takes an expression, and the value of its **final expression** is rendered:
+
+```bash
+npx sheetxl -e "wb"                              book.xlsx   # workbook report
+npx sheetxl -e "wb.getWorksheet('Sales')"        book.xlsx   # sheet report
+npx sheetxl -e "wb.getRange('B2:D9').getStats()" book.xlsx   # min/max/mean/…
+```
+
+`await` is implicit. Never write it. `wb`, `log`, `warn`, `error`, and `args` are ambient.
+
+Returning a subject describes it, so there is no separate `describe` or `query` command to learn. Reports render as markdown by default; use `--json` for the raw value.
+
+When the code is more than one line, or shell quoting gets awkward, pipe it in instead:
+
+```bash
+npx sheetxl book.xlsx --save <<'EOF'
+const sheet = wb.getWorksheet();
+sheet.getRange('B2').setValue('42%');
+sheet.getRange('B3').setValue('=SUM(B1:B2)');
+EOF
+```
+
+### Writing
+
+Nothing is written unless you ask.
+
+```bash
+npx sheetxl -e "wb.getRange('B2').setValue('42%')" book.xlsx --save         # in place
+npx sheetxl -e "wb.getRange('B2').setValue('42%')" book.xlsx --out new.xlsx # elsewhere
+```
+
+After a write, the CLI prints what changed (`Changed:`, `Dependents:`, …). Pass `--no-delta` to skip that.
+
+### Converting
+
+Name a workbook and an output and the CLI converts between formats, with no code at all. The format comes from the extension: `.xlsx`, `.sxl` (SheetXL's native format, smaller and faster to load), `.csv`, and `.json`.
+
+```bash
+npx sheetxl book.xlsx --out book.sxl
+npx sheetxl data.csv --out data.xlsx --in.csv.delimiter=";"
+```
+
+`--in.<key>=<value>` and `--out.<key>=<value>` pass format options, such as a CSV delimiter.
+
+### Executing Scripts
+
+For automation and more complex tasks, pass a local script file with `-f`. It runs within the SheetXL environment with the SDK available, and it is repeatable: each script receives the workbook the previous one left behind.
+
+```bash
+npx sheetxl -f path/to/your/script.ts book.xlsx
+npx sheetxl -f normalize.ts -f summarize.ts book.xlsx --save
+```
+
+A file with **no default export** behaves exactly like `-e`. A file with a **default export** is handed the run context, and its return value is the result. These are [runner scripts](../40-how-tos/65-write-a-runner-script.md); that page covers the context, arguments, and return values in full.
+
+Everything after `--` reaches the script as `args`:
+
+```bash
+npx sheetxl -f summarize.ts book.xlsx -- --sheet Q3
+```
+
+### Interactive Sessions
+
+Starting with no code drops you into an interactive session. Name a workbook and it arrives as `wb`:
+
+```bash
+npx sheetxl book.xlsx
+```
+
+Start with no workbook and the session also loads `@sheetxl/sdk` and `@sheetxl/io`, so you can build one from scratch and save it:
 
 ```javascript title="New Workbook"
 wb = new Workbook();
-wb.getRange('a1').setValues([[1]]);
-save('myWorkbook.xlsx', wb);
+wb.getRange('A1').setValues([[1]]);
+write('myWorkbook.xlsx', wb);
+```
+
+Two helpers exist only in the session: `read('<file-or-url>')` loads a workbook and `write(file [, wb])` saves one. Promises are awaited for you.
+
+Dot commands control the session itself:
+
+| Command | What it does |
+| --- | --- |
+| `.help` | Lists every dot command. |
+| `.api` | The API help screen. |
+| `.md [expr]` | Renders a result as markdown. |
+| `.write <file>` | Saves the session's workbook. |
+| `.grep <pattern>` | Searches the open workbook (every read command is also a dot command). |
+| `.exit` | Leaves the session. |
+
+Use `-i` to run code first and stay in the session:
+
+```bash
+npx sheetxl -i -f fixtures.ts book.xlsx
 ```
 
 :::info API Reference
 See our full [SDK API Documentation](https://api.sheetxl.com) for a complete list of all available classes and methods.
 :::
 
-### Executing Scripts
+## Options
 
-For automation and more complex tasks, you can pass a local JavaScript file to the CLI for execution. The script will run within the SheetXL environment, with the SDK available.
+`-h` prints the short help below. `--help` prints everything.
+
+| Option | What it does |
+| --- | --- |
+| `-e, -c <code>` | Inline code. The final expression is rendered. Repeatable. |
+| `-f <script>` | A script file. Repeatable; scripts chain on the same workbook. |
+| `-i, --interactive` | Stay in an interactive session after the code runs. |
+| `--out <file>` | Write the workbook here. `-` writes to stdout for piping. |
+| `--save` | Write back to the workbook that was opened. |
+| `--no-delta` | Do not print what a write changed. |
+| `--json` | Print the result as JSON instead of a rendered report. |
+| `--in <file>` | The input workbook, as an option instead of the positional. |
+| `--in.<key>=<value>` | Format options for reading, such as `--in.csv.delimiter=";"`. |
+| `--out.<key>=<value>` | Format options for writing, such as `--out.format=csv`. |
+| `--md.<key>=<value>` | Report options: `--md.features=fill,borders` picks the sections, `--md.mode=value` shows full-precision values. |
+| `-- [args...]` | Everything after `--` is passed to the script as `args`. |
+| `-v` | Prints the CLI, engine, and Node versions. |
+
+## Commands
+
+Commands cover the things that are *not* "operate on this workbook."
 
 ```bash
-npx sheetxl run path/to/your/script.js
+npx sheetxl grep "Q[1-4] Total" book.xlsx   # search cell contents
+npx sheetxl info                            # engine readiness and environment
+npx sheetxl mcp                             # run as an MCP server
+npx sheetxl help                            # help for any command
 ```
 
-### Direct Commands
+| Command | What it does |
+| --- | --- |
+| `grep <pattern> [workbook]` | Finds cells by content. The pattern is a regular expression; `-F` makes it literal, `-i` ignores case, `--fields` picks what to search (display text, formulas, comments, shapes, charts, names). |
+| `info` | Checks the engine and reports the environment: versions, skills, MCP status. |
+| `setup agent` | Prints how to register the MCP server and skills with each AI client, and which are already registered. Installs nothing. |
+| `mcp` | Runs the MCP server on stdio, for AI clients. |
+| `compile <files...>` | Typechecks scripts without running them, and optionally emits compiled modules with `--out`. Non-zero exit on errors, so it works as a CI gate. |
+| `screenshot [file]` | Renders a range to a PNG, as the app shows it. |
+| `license` | Prints the current license. `license activate [key]` stores a key (or signs you in through the browser when no key is given); `license deactivate` removes it. |
+| `config` | Gets, sets, and lists CLI settings. |
+| `fonts` | Adds, lists, and removes the fonts SheetXL measures text with. |
+| `resources` | Manages locale packs and other runtime resources. |
+| `skills` | Lists and prints the agent reference documents shipped with this install. |
+| `help [command]` | Help for the CLI or one command. |
 
-You can also run specific built-in commands directly. This is useful for one-off tasks.
+### Activate Your License
 
-#### Activate Your License
-
-To activate your license key, run the `activate` command:
+To store a license key for every future run on this machine:
 
 ```bash
-npx sheetxl activate YOUR_LICENSE_KEY_HERE
+npx sheetxl license activate YOUR_LICENSE_KEY_HERE
 ```
 
-This will store your license key for future use.
+Omit the key to sign in through your browser instead. In CI, set the `SHEETXL_LICENSE_KEY` environment variable rather than activating.

@@ -1,6 +1,7 @@
-import React, { memo, forwardRef } from 'react';
+import type React from 'react';
+import { useMemo, memo, forwardRef, cloneElement } from 'react';
 
-import { Box, BoxProps } from '@mui/material';
+import { Box, type BoxProps } from '@mui/material';
 import { Chip } from '@mui/material';
 
 export interface ChipStripProps extends BoxProps {
@@ -15,11 +16,10 @@ export const ChipStrip: React.FC<ChipStripProps & { ref?: any }> = memo(
     ...rest
   } = props;
 
-  const chipElements = React.useMemo(() => {
+  const chipElements = useMemo(() => {
     if (!propChips)
       return null;
-    let chips: string[] | React.ReactNode[] = null;
-    chips = Array.isArray(propChips) ? propChips : [propChips];
+    const chips: string[] | React.ReactNode[] = Array.isArray(propChips) ? propChips : [propChips];
 
     const retValue = [];
     const chipsLength = chips.length;
@@ -39,7 +39,7 @@ export const ChipStrip: React.FC<ChipStripProps & { ref?: any }> = memo(
           />
         );
       } else {
-        React.cloneElement(chip as any, {
+        cloneElement(chip as any, {
           key: "chip-" + i
         });
       }

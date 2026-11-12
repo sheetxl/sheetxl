@@ -1,8 +1,0 @@
-{
-  "types": {
-    "0": {
-      "type": "bar",
-      "grouping": "percentStacked"
-    }
-  }
-}

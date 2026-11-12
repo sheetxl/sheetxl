@@ -6,23 +6,26 @@ export type ReactDOMRoot = import('react-dom/client').Root;
 /**
  * Reference to StudioMUI module.
  *
- * @link [@sheetxl/studio-mui](../modules/_sheetxl_studio-mui.html)
+ * @see
+ * [StudioMUI Module Documentation](https://api.sheetxl.com/modules/_sheetxl_studio-mui.html)
  */
 export type StudioMUIModule = typeof import('@sheetxl/studio-mui');
 
 /**
  * Reference to StudioProps.
  *
- * @link [StudioProps](../interfaces/_sheetxl_studio-mui.StudioProps.html)
+ * @see
+ * [StudioProps](https://api.sheetxl.com/interfaces/_sheetxl_studio-mui.StudioProps.html)
  */
 export type StudioProps = import('@sheetxl/studio-mui').StudioProps;
 
 /**
  * Reference to IWorkbookElement.
  *
- * @link [IWorkbookElement](../interfaces/_sheetxl_studio-mui.IWorkbookElement.html)
+ * @see
+ * [IStudioElement](https://api.sheetxl.com/interfaces/_sheetxl_studio-mui.IStudioElement.html)
  */
-export type StudioElement = import('@sheetxl/studio-mui').StudioElement;
+export type IStudioElement = import('@sheetxl/studio-mui').IStudioElement;
 
 /**
  * Dependencies that are resolved. These are defaulted
@@ -132,7 +135,7 @@ export interface ISheetXL {
    * @returns A promise that resolves to a function that, when called, will detach the SheetXL React component from the DOM element.
    */
   // Note - we will create more of these methods as we expose more components via cdn if required
-  attachStudio(selector: string | InitializationOptions, props?: StudioProps): Promise<StudioElement & Attached<StudioProps>>;
+  attachStudio(selector: string | InitializationOptions, props?: StudioProps): Promise<IStudioElement & Attached<StudioProps>>;
 
   /**
    * Initializes the SheetXL runtime with the provided options.

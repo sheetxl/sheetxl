@@ -1,3 +1,3 @@
-export * from './DefaultNotifier';
+export * from './ConsoleNotifier';
 export * from './INotifier';
-export * from './TaskProgress';
+export * from './ITaskProgress';

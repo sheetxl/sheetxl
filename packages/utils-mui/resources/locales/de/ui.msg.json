@@ -1,0 +1,22 @@
+{
+  "dialog.cancel": "Abbrechen",
+  "dialog.ok": "OK",
+  "overflow.more": "Mehr",
+  "overflow.moreDescription": "Weitere Symbolleistenoptionen…",
+  "scroll.edgeBottom": " Unten: ''Strg+Klick'', um zum Ende zu scrollen",
+  "scroll.edgeLeft": " Links: ''Strg+Klick'', um zum Anfang zu scrollen",
+  "scroll.edgeRight": " Rechts: ''Strg+Klick'', um zum Ende zu scrollen",
+  "scroll.edgeTop": " Oben: ''Strg+Klick'', um zum Anfang zu scrollen",
+  "shortcut.modifier.alt": "Alt",
+  "shortcut.modifier.cmd": "Cmd",
+  "shortcut.modifier.ctrl": "Strg",
+  "shortcut.modifier.meta": "Meta",
+  "shortcut.modifier.shift": "Umschalt",
+  "stackTrace.causedBy": "Verursacht durch: {cause}",
+  "stackTrace.copy": "Stapelüberwachung kopieren",
+  "stackTrace.heading": "Stapelüberwachung",
+  "stackTrace.headingFrames": "Stapelüberwachung ({count} Frames)",
+  "stackTrace.log": "Fehler in der Konsole protokollieren",
+  "stackTrace.moreFrames": "... und {count} weitere Frames",
+  "window.close": "Schließen"
+}

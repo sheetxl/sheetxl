@@ -1,39 +1,37 @@
-import React, { forwardRef, memo, useCallback, useMemo } from 'react';
+import type React from 'react';
+import { forwardRef, memo, useCallback, useMemo } from 'react';
 
-import type { TooltipProps } from '@mui/material';
 
-import { useCallbackRef } from '@sheetxl/utils-react';
-import { useCommand } from '@sheetxl/utils-react';
+import { useCallbackRef, themeSurfaceProps } from '@sheetxl/utils-react';
+import { useCommands } from '@sheetxl/utils-react';
 
-import { IColor, Color } from '@sheetxl/sdk';
+import { type IColor, Color } from '@sheetxl/sdk';
 
-import { Command, CommandButtonType, ICommand } from '@sheetxl/utils-react';
+import { CommandButtonType } from '@sheetxl/utils-react';
 
-import type { CommandContext } from '@sheetxl/react';
+import { type CommandContext, useGridColorScheme } from '@sheetxl/react';
 
-import { CommandTooltip, PopupButtonType } from '@sheetxl/utils-mui';
+import { CommandTooltip, PopupButtonType, type ButtonTooltipRenderProps
+} from '@sheetxl/utils-mui';
 
 import {
   ColorPopupButton, type ColorPanelProps, type ColorPopupButtonProps
-} from '../components';
+} from '../color';
 
 /**
  * Wraps ColorPopupButton with a command.
  */
 export interface ColorCommandButtonProps extends Omit<ColorPopupButtonProps, "selectedColor" | "variant" | "icon" | "label"> {
-  command: Command<IColor, CommandContext.Color>;
+  commandKey?: string;
   /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
+   * The group the button is a member of: its label is the command's label in that group (a menu's
+   * short form, `High Point` for `High Point Color`).
    */
-  commandHook?: ICommand.Hook<any, any>;
+  groupKey?: string;
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
+  icon?: React.ReactNode | ((command: any) => React.ReactNode);
 
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
+  label?: React.ReactNode | ((command: any) => React.ReactNode);
   /**
    * Styling
    * @defaultValue CommandButtonType.Toolbar
@@ -47,13 +45,13 @@ export interface ColorCommandButtonProps extends Omit<ColorPopupButtonProps, "se
   darkMode?: boolean;
 }
 
-export const ColorCommandButton = memo(
-    forwardRef<HTMLElement, ColorCommandButtonProps>((props, refForwarded) => {
+export const ColorCommandButton = memo(forwardRef<HTMLElement, ColorCommandButtonProps>(
+  (props, refForwarded) => {
   const {
-    command,
-    commandHook,
+    commandKey,
+    groupKey,
     onSelectColor: propOnSelectedColor,
-    disabled: propDisabled = false,
+    disabled: propDisabled,
     variant = CommandButtonType.Toolbar,
     quickColor: propQuickColor,
     propsPanel,
@@ -68,20 +66,25 @@ export const ColorCommandButton = memo(
     schemeLookup: propSchemeLookup,
     recentColors: propRecentColors,
     ...restPanelProps
-  } = propsPanel;
+  } = propsPanel ?? {};
 
   if ((rest as any).selectedColor)
     throw new Error('Command selectedColor will be used. Do not try to provide one as a direct argument');
-  const _ = useCommand(command);
+  const [command] = useCommands<IColor, CommandContext.Color>([commandKey ?? '']);
 
-  const context:CommandContext.Color = command?.getContext();
+  const context:CommandContext.Color | undefined = command?.getContext();
   let quickColor = propQuickColor ?? context?.quickColor;
   if (isSplit && !quickColor)
     quickColor = new Color('transparent');
-  const autoColor = propAutoColor ?? context?.autoColor;
+  // `null` is a deliberate "no automatic swatch" from the caller; only an ABSENT prop falls back
+  // to the command's context (where e.g. the fill picker's automatic is No Fill).
+  const autoColor = propAutoColor !== undefined ? propAutoColor : context?.autoColor;
   const schemeLookup = propSchemeLookup ?? context?.schemeLookup;
   const recentColors = propRecentColors ?? context?.recentColors;
-  const darkMode = propDarkMode ?? context?.darkMode;
+  // Self-source the grid's light/dark intent from the shared preference (same value the grid resolves — no
+  // drift, no `context.darkMode`). A `darkMode` prop is still an explicit override.
+  const gridColorScheme = useGridColorScheme();
+  const darkMode = propDarkMode ?? (gridColorScheme === 'dark');
 
   const localPropsPanel:Partial<ColorPanelProps> = useMemo(() => {
     return {
@@ -89,6 +92,12 @@ export const ColorCommandButton = memo(
       schemeLookup,
       recentColors,
       darkMode,
+      // The picker popup is portaled outside the grid subtree. Instead of re-establishing the grid's
+      // `--sxl-sys-color-*` as concrete values, the panel root just ADOPTS
+      // the grid surface: `data-sxl-theme-surface="grid"` + the grid's mode. The float wrapper carries the
+      // origin instance's scope class, so the scoped `[mode][surface="grid"]` tokens + the global OOXML sys
+      // aliases resolve `auto`/system swatches (var(--sxl-sys-color-*)) against the grid — no concrete style needed.
+      ...themeSurfaceProps('grid', darkMode ? 'dark' : 'light'),
       ...restPanelProps
     };
   }, [autoColor, schemeLookup, recentColors, darkMode]);
@@ -97,13 +106,14 @@ export const ColorCommandButton = memo(
     if (color && isCustom && context?.addRecentColor)
       context.addRecentColor(color);
     if (context?.onColorSelect)
-      context.onColorSelect(color);
+      context.onColorSelect(color as IColor);
     propOnSelectedColor?.(color, isCustom);
-    command?.execute(color, commandHook);
-  }, [command, propOnSelectedColor, commandHook, context]);
+    command?.execute(color);
+  }, [command, propOnSelectedColor, context]);
 
-  const createTooltip = useCallback((props: TooltipProps, disabled: boolean): React.JSX.Element => {
+  const renderTooltip = useCallback((props: ButtonTooltipRenderProps): React.JSX.Element => {
     const {
+      disabled,
       children,
       title, // remove default title
        ...rest
@@ -125,7 +135,7 @@ export const ColorCommandButton = memo(
 
     return (
       <CommandTooltip
-        command={command as Command<any, any>}
+        commandKey={commandKey}
         placement={variant === CommandButtonType.Toolbar? "bottom-start" : "right-start"}
         disabled={disabled}
         {...rest}
@@ -139,14 +149,14 @@ export const ColorCommandButton = memo(
     <ColorPopupButton
       ref={refForwarded}
       propsPanel={localPropsPanel}
-      icon={propIcon ?? command?.getIcon(context) as any }
+      icon={propIcon ?? command?.getIcon() as any }
       quickColor={quickColor}
-      selectedColor={command?.getState()}
+      selectedColor={command?.getState() as IColor}
       onSelectColor={handleOnSelectColor}
       variant={variant === CommandButtonType.Menuitem ? PopupButtonType.Menuitem : PopupButtonType.Toolbar } // TODO - clean this up
-      createTooltip={createTooltip}
-      label={command?.getLabel() as any}
-      disabled={propDisabled || !command || command.disabled()}
+      renderTooltip={renderTooltip}
+      label={command?.getLabel(groupKey) as any}
+      disabled={propDisabled ?? (!command || command.disabled())}
       compareRGB={true}
       darkMode={darkMode}
       {...rest}

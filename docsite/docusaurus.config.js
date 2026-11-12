@@ -1,8 +1,4 @@
-import path from 'path';
-
-//import {themes as prismThemes} from 'prism-react-renderer';
-import { github as lightCodeTheme } from 'prism-react-renderer';
-import { dracula as darkCodeTheme } from 'prism-react-renderer';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 async function myPlugin(_context, _opts) {
   return {
@@ -16,48 +12,6 @@ async function myPlugin(_context, _opts) {
         // 'react-dom': 'ReactDOM',
         // add more externals as needed
       };
-      // Initialize alias if it doesn't exist
-      if (!config.resolve.alias) config.resolve.alias = {};
-
-      // Fix emotion imports
-      // config.resolve.alias['@emotion/styled'] = path.resolve(__dirname, 'node_modules/@emotion/styled/dist/emotion-styled.cjs.js');
-      // config.resolve.alias['@emotion/react'] = path.resolve(__dirname, 'node_modules/@emotion/react/dist/emotion-react.cjs.js');
-      // the packages are designed to use runtime detection for node/browser environments,
-      const packagesDir = path.resolve(__dirname, '../packages');
-      const selfContainedPackages = ['sdk', 'studio-mui', 'io', 'scripting'];
-      selfContainedPackages.forEach(pkg => {
-        const pkgBuildPath = path.resolve(packagesDir, pkg, 'build');
-        if (isServer) {
-          config.resolve.alias[`@sheetxl/${pkg}`] = false;
-        } else {
-          // Check if we're in development (local) or production (CI)
-          const isDev = process.env.NODE_ENV === 'development' || !process.env.CI;
-
-          if (isDev) {
-            // Development: Use local build for immediate testing
-            console.log(`Using local build for @sheetxl/${pkg} in development or local`);
-            config.resolve.alias[`@sheetxl/${pkg}`] = path.resolve(pkgBuildPath, 'browser/esm/index.mjs');
-          } else {
-            // Production: Use published npm packages (no alias = use from node_modules)
-            console.log(`Using npm package for @sheetxl/${pkg} in production`);
-            // Don't set alias - let webpack resolve from node_modules
-          }
-        }
-      });
-
-      // TODO - why is this needed?
-      const fallback = config.resolve.fallback ?? {};
-      fallback['crypto'] = false;
-      fallback['os'] = false;
-      fallback['fs'] = false;
-      fallback['fs/promises'] = false;
-      fallback['buffer'] = false;
-      if (!isServer) {
-        // These may still be needed for client-side MUI dependencies
-        fallback['path'] = require.resolve('path-browserify');
-        config.resolve.fallback = fallback;
-      }
-
       // Add webpack rules for better JS module handling
       const rules = config.module?.rules ?? [];
       const newRule = {
@@ -90,8 +44,86 @@ async function myPlugin(_context, _opts) {
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-// const lightCodeTheme = require('prism-react-renderer/themes/github');
-// const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+// The docsite is served from a different place on each channel. Stable lives under
+// www.sheetxl.com/docs, where the landing app proxies that path through to this origin, so the
+// build has to carry a `/docs/` prefix. Beta is its own host with nothing in front of it and
+// serves at the root. Defaults are the stable values, so a plain `pnpm build` is unchanged.
+const siteUrl = process.env.DOCS_URL || 'https://www.sheetxl.com';
+const siteBaseUrl = process.env.DOCS_BASE_URL || '/docs/';
+// Beta duplicates the production docs and documents an unreleased API, so every page carries
+// `<meta name="robots" content="noindex, nofollow">`. The deploy pairs this with an
+// X-Robots-Tag header for the assets that have no HTML head.
+const siteNoIndex = process.env.DOCS_NO_INDEX === 'true';
+// Sibling SheetXL sites are per-channel too. Beta docs linking to api.sheetxl.com would send a
+// tester to the reference for the stable API they are not running. `my` has no beta host, so it
+// is left hardcoded.
+const siteChannel = process.env.DOCS_CHANNEL || 'stable';
+const siteHost = (name) => siteChannel === 'beta'
+  ? `https://${name}.beta.sheetxl.com`
+  : `https://${name}.sheetxl.com`;
+// The release these docs describe. Package versions in the tree are placeholders; the release
+// tag is the only place the real version lives, so CI passes it in.
+const siteVersion = (process.env.DOCS_VERSION || '').replace(/^v/, '');
+
+// Cross-site links written in markdown carry the production host. Rewriting them here rather
+// than in the content keeps one copy of each page across channels. Only `link` nodes are
+// visited, so a URL shown inside a code sample stays literal.
+//
+// A link to the docsite itself is the exception to the host swap: on stable it is a path under
+// `www`, on beta it is its own host at the root, so it resolves to wherever this build is served.
+const siteDocsRoot = `${siteUrl}${siteBaseUrl}`.replace(/\/$/, '');
+function remarkChannelLinks() {
+  return (tree) => {
+    const visit = (node) => {
+      if (node.type === 'link' && typeof node.url === 'string') {
+        node.url = /^https:\/\/www\.sheetxl\.com\/docs(?=$|[/#?])/.test(node.url)
+          ? node.url.replace('https://www.sheetxl.com/docs', siteDocsRoot)
+          : node.url.replace(
+            /^https:\/\/(www|api|demo|demo-cdn|storybook)\.sheetxl\.com/,
+            (_match, name) => siteHost(name)
+          );
+      }
+      (node.children || []).forEach(visit);
+    };
+    visit(tree);
+  };
+}
+
+// Install and scaffold commands resolve a dist-tag at run time, so an untagged command in the
+// beta docs quietly installs stable. Rewritten per channel rather than in the content, and only
+// on lines that are actually package-manager invocations - an `import ... from '@sheetxl/sdk'`
+// inside a sample must survive untouched.
+function rewritePackageSpecs(text) {
+  if (siteChannel !== 'beta') return text;
+  const TAG = '@beta';
+  return text.split('\n').map((line) => {
+    // CDN URLs pin with @latest; jsdelivr resolves dist-tags the same way.
+    let out = line.replace(/(@sheetxl\/[a-z0-9-]+)@latest/g, `$1${TAG}`);
+    if (/^\s*(npm|pnpm|yarn|bun|npx)\b/.test(out)) {
+      out = out.replace(/\b(create\s+sheetxl)(?![@\w-])/g, `$1${TAG}`);
+      out = out.replace(/\b(create-sheetxl)(?![@\w-])/g, `$1${TAG}`);
+      out = out.replace(/\bnpx(\s+)sheetxl(?![@\w/-])/g, `npx$1sheetxl${TAG}`);
+      // Only a real install command may put a tag onto a package name; an import in a sample
+      // must not be touched.
+      if (/^\s*(npm|pnpm|yarn|bun)\s+(add|install|i)\b/.test(out)) {
+        out = out.replace(/(@sheetxl\/[a-z0-9-]+)(?![@\w/-])/g, `$1${TAG}`);
+      }
+    }
+    return out;
+  }).join('\n');
+}
+
+function remarkChannelPackages() {
+  return (tree) => {
+    const visit = (node) => {
+      if ((node.type === 'code' || node.type === 'inlineCode') && typeof node.value === 'string') {
+        node.value = rewritePackageSpecs(node.value);
+      }
+      (node.children || []).forEach(visit);
+    };
+    visit(tree);
+  };
+}
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -101,10 +133,13 @@ const config = {
   favicon: 'favicon.ico',
   // staticDirectories: ['public'], // default is ['static']
   // Set the production url of your site here
-  url: 'https://www.sheetxl.com',
+  url: siteUrl,
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/docs/',
+  baseUrl: siteBaseUrl,
+  noIndex: siteNoIndex,
+  // Read by components that link to sibling sites; see siteHost above.
+  customFields: { channel: siteChannel },
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -122,20 +157,30 @@ const config = {
     locales: ['en'],
   },
   headTags: [
-    // Declare a <link> preconnect tag
-    // {
-    //   tagName: 'link',
-    //   attributes: {
-    //     rel: 'preconnect',
-    //     href: 'https://example.com',
-    //   },
-    // },
+    // Inter, the landing site's typeface. Loaded from Google Fonts rather than bundled so the
+    // docs build stays free of font assets; the CSS falls back to the system stack until it
+    // arrives.
+    {
+      tagName: 'link',
+      attributes: { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    },
+    {
+      tagName: 'link',
+      attributes: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+      },
+    },
     {
       tagName: 'link',
       attributes: {
         rel: 'icon',
         type: 'image/png',
-        href: '/docs/img/logo_x32.png',
+        href: `${siteBaseUrl}img/logo_x32.png`,
         sizes: '32x32'
       },
     },
@@ -144,7 +189,7 @@ const config = {
       attributes: {
         rel: 'icon',
         type: 'image/png',
-        href: '/docs/img/logo_x48.png',
+        href: `${siteBaseUrl}img/logo_x48.png`,
         sizes: '48x48'
       },
     },
@@ -153,7 +198,7 @@ const config = {
       attributes: {
         rel: 'icon',
         type: 'image/png',
-        href: '/docs/img/logo_x96.png',
+        href: `${siteBaseUrl}img/logo_x96.png`,
         sizes: '96x96'
       },
     },
@@ -162,7 +207,7 @@ const config = {
       attributes: {
         rel: 'icon',
         type: 'image/png',
-        href: '/docs/img/logo_x192.png',
+        href: `${siteBaseUrl}img/logo_x192.png`,
         sizes: '192x192'
       },
     },
@@ -171,7 +216,7 @@ const config = {
       attributes: {
         rel: 'icon',
         type: 'image/png',
-        href: '/docs/img/logo_x512.png',
+        href: `${siteBaseUrl}img/logo_x512.png`,
         sizes: '512x512'
       },
     },
@@ -207,7 +252,9 @@ const config = {
           routeBasePath: '/guides',
           sidebarPath: require.resolve('./sidebars.js'),
           remarkPlugins: [
-            [require('@docusaurus/remark-plugin-npm2yarn'), {sync: true}]
+            [require('@docusaurus/remark-plugin-npm2yarn'), {sync: true}],
+            remarkChannelLinks,
+            remarkChannelPackages
           ],
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
@@ -215,7 +262,7 @@ const config = {
           //   'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
         },
         pages: {
-          remarkPlugins: [require('@docusaurus/remark-plugin-npm2yarn')]
+          remarkPlugins: [require('@docusaurus/remark-plugin-npm2yarn'), remarkChannelLinks, remarkChannelPackages]
         },
         blog: {
           showReadingTime: true,
@@ -223,7 +270,9 @@ const config = {
             [
               require('@docusaurus/remark-plugin-npm2yarn'),
               {converters: ['pnpm']},
-            ]
+            ],
+            remarkChannelLinks,
+            remarkChannelPackages
           ]
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
@@ -252,17 +301,35 @@ const config = {
     ({
       // social card
       image: 'img/social.png',
+      // Beta docs are reachable by direct link and describe an unreleased API, so every page
+      // says which build it documents and how to install it.
+      ...(siteChannel === 'beta' ? {
+        announcementBar: {
+          id: `beta-${siteVersion}`,
+          content: (siteVersion ? `Beta documentation for <b>${siteVersion}</b>. ` : 'Beta documentation. ')
+            + 'Install with the <code>beta</code> tag, e.g. <code>pnpm add @sheetxl/studio-mui@beta</code>.',
+          backgroundColor: '#5b21b6',
+          textColor: '#ffffff',
+          isCloseable: true,
+        },
+      } : {}),
+      // The landing follows the OS setting until a visitor picks a mode; do the same here so the
+      // two agree before any choice has been stored.
+      colorMode: {
+        respectPrefersColorScheme: true,
+      },
       navbar: {
-        title: 'SheetXL',
         logo: {
           alt: 'SheetXL',
-          src: 'img/sheetxl-logo.svg',
-          href: 'https://www.sheetxl.com',
+          src: 'img/logo-wordmark.svg',
+          srcDark: 'img/logo-wordmark-white.svg',
+          // The landing page, which is not this site's own host on beta.
+          href: siteHost('www'),
           target: '_self',
         },
         items: [
-          {to: '/docs/demos', label: 'Demos', position: 'left'},
-          {to: '/docs/pricing', label: 'Pricing', position: 'left'},
+          {href: `${siteHost('www')}/demos`, label: 'Demos', position: 'left'},
+          {href: `${siteHost('www')}/pricing`, label: 'Pricing', position: 'left'},
           {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
@@ -275,7 +342,7 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
-          { to: '/guides/resources-community/support', label: 'Support', position: 'right' },
+          { href: `${siteHost('www')}/support`, label: 'Support', position: 'right' },
           {
             href: 'https://my.sheetxl.com',
             label: 'Sign-in',
@@ -284,7 +351,7 @@ const config = {
         ]
       },
       footer: {
-        style: 'dark',
+        style: 'light',
         links: [
           {
             title: 'Docs',
@@ -295,7 +362,7 @@ const config = {
               },
               {
                 label: 'API Reference',
-                to: 'https://api.sheetxl.com',
+                to: siteHost('api'),
               }
             ],
           },
@@ -312,15 +379,15 @@ const config = {
             items: [
               {
                 label: 'Privacy Policy',
-                to: '/privacy',
+                href: `${siteHost('www')}/privacy`,
               },
               {
                 label: 'End User License Agreement',
-                href: '/eula',
+                href: `${siteHost('www')}/eula`,
               },
               {
                 label: 'Terms and Conditions',
-                href: '/terms',
+                href: `${siteHost('www')}/terms`,
               }
             ],
           },
@@ -337,7 +404,7 @@ const config = {
               },
               {
                 label: 'Support',
-                to: '/guides/resources-community/support',
+                href: `${siteHost('www')}/support`,
               },
               {
                 label: 'Sign-in',
@@ -356,15 +423,15 @@ const config = {
         playgroundPosition: 'bottom',
       },
       prism: {
-        theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
+        theme: prismThemes.github,
+        darkTheme: prismThemes.dracula,
       },
       metadata: [
         {name: 'keywords', content: 'spreadsheet, sdk, ai, react, excel, open-source, datagrid'},
         {name: 'og:locale', content: 'en_us'},
         {name: 'og:type', content: 'website'},
 
-        {name: 'og:url', content: 'https://www.sheetxl.com'},
+        {name: 'og:url', content: siteUrl},
         {name: 'og:site_name', content: 'SheetXL'},
         // {name: 'og:description', content: `SheetXL is a spreadsheet and a data-grid. Fast⚡, beautiful, and compatible with Excel. Built using React, Typescript, and MUI.`},
         // // this is being overwritten by title from docusaurus

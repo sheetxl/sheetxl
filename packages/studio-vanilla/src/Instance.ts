@@ -3,9 +3,9 @@
  */
 type ReactDOMRoot = import('react-dom/client').Root;
 
-import type { ResolvedDependencies } from './_Types'; // Import the Runtime interface
+import { type ResolvedDependencies } from './_Types'; // Import the Runtime interface
 
-import type { InitializationOptions, Attached } from './Types';
+import { type InitializationOptions, type Attached } from './Types';
 import { showLoadingPanel, showErrorPanel, hidePanel } from './Panels';
 
 interface ReactInstance {
@@ -47,7 +47,7 @@ export const doAttach = async <T=any, P=any>(
     const componentRef = runtime.React.createRef<any>();
     // this hides the elementType so treeshaking may remove it
     // we add a hardcoded reference in StaticResolver
-    const element = runtime.StudioMUI[elementType];
+    const element = (runtime.StudioMUI as any)[elementType];
 
     let originalApi: any = null;
     const refReadyPromise = new Promise<void>(resolve => {
@@ -110,7 +110,7 @@ export const doAttach = async <T=any, P=any>(
   }
 }
 
-export const doInitialize = async (runtime: ResolvedDependencies, options: string | InitializationOptions): Promise<ResolvedDependencies> => {
+export const doInitialize = async (runtime: ResolvedDependencies, options?: string | InitializationOptions): Promise<ResolvedDependencies> => {
   if (typeof options === 'string') {
     options = { selector: options };
   }
@@ -122,7 +122,13 @@ export const doInitialize = async (runtime: ResolvedDependencies, options: strin
       throw new Error('No runtime provided');
     }
     if (options?.licenseKey) {
-      await runtime.StudioMUI.LicenseManager.setLicenseKey(options.licenseKey);
+      try {
+        await runtime.StudioMUI.LicenseManager.setLicenseKey(options.licenseKey);
+      } catch {
+        // Run as an evaluation, as the React Studio does, rather than leave the page empty. The SDK
+        // has printed why the key was refused.
+        console.error('SheetXL: the license key was not accepted; running as an evaluation.');
+      }
     }
     if (options?.selector) {
       hidePanel(options?.selector);

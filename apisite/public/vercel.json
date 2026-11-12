@@ -1,9 +1,9 @@
 {
   "headers": [
     {
-      "source": "api.sheetxl.com/:path*",
+      "source": "/(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        { "key": "X-Robots-Tag", "value": "googlebot: noindex" }
       ]
     }
   ]

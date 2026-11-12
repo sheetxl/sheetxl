@@ -1,6 +1,6 @@
 /* Global defaults (theme can override) */
 :root {
-  --icon-size-sm: calc(var(--icon-size, 1rem), * 0.875); /* 14px if root = 16px */
+  --icon-size-sm: calc(var(--icon-size, 1rem) * 0.875); /* 14px if root = 16px */
   --icon-size-md: var(--icon-size, 1rem);     /* 16px (default) */
   --icon-size-lg: calc(var(--icon-size, 1rem) * 1.25);  /* 20px */
   --icon-size-xl: calc(var(--icon-size, 1rem) * 1.5);   /* 24px */
@@ -44,16 +44,16 @@
 }
 
 .Icon :global(.sm) {
-  --font-size:   var(--icon-size-sm);
+  --icon-size:   var(--icon-size-sm);
 }
 .Icon :global(.md) {
-  --font-size:   var(--icon-size-md);
+  --icon-size:   var(--icon-size-md);
 }
 .Icon :global(.lg) {
-  --font-size:   var(--icon-size-lg);
+  --icon-size:   var(--icon-size-lg);
 }
 .Icon :global(.xl) {
-  --font-size:   var(--icon-size-xl);
+  --icon-size:   var(--icon-size-xl);
 }
 
 .Icon > svg {
@@ -77,39 +77,41 @@
 }
 
 /* Tones */
-.Icon :global(.secondary) {
-  --layer-color:   var(--icon-secondary-color);
-  /* --layer-opacity: var(--icon-secondary-opacity); */
-}
+/* NOTE: the generic layer opacity tones are `--icon-secondary-color` / `.tertiary` (priority
+   layers), distinct from the semantic hue classes below. The semantic accent is `.accent`
+   (renamed from `.secondary` to match the `--sxl-color-accent` token). */
 .Icon :global(.tertiary) {
   --layer-color:   var(--icon-tertiary-color);
   /* --layer-opacity: var(--icon-tertiary-opacity); */
 }
 
-/* Semantics (pull from globals with fallbacks) */
-.Icon :global(.primary)            { --layer-color: var(--sxl-app-color-primary, var(--icon-primary,  #595b5e)); }
-.Icon :global(.secondary)          { --layer-color: var(--sxl-app-color-secondary,          #9c27b0); }
-.Icon :global(.secondary.light)    { --layer-color: var(--sxl-app-color-secondary-light,    #a060ac); }
-.Icon :global(.success)            { --layer-color: var(--sxl-app-color-success,            #22c55e); }
-.Icon :global(.success.light)      { --layer-color: var(--sxl-app-color-success-light,      #22c55e); }
-.Icon :global(.info)               { --layer-color: var(--sxl-app-color-info,               #3b82f6); }
-.Icon :global(.warn)               { --layer-color: var(--sxl-app-color-warn,               #f59e0b); }
-.Icon :global(.error)              { --layer-color: var(--sxl-app-color-error,              #ef4444); }
-.Icon :global(.error.light)        { --layer-color: var(--sxl-app-color-error-light,        #f87171); }
-.Icon :global(.grey)               { --layer-color: var(--sxl-app-color-grey,               #cccccc); }
-.Icon :global(.shadow)             { --layer-color: var(--sxl-app-color-shadow,             #cccccc); }
+/* Semantics. Each reads an `--icon-<name>` OVERRIDE HOOK that defaults to the `--sxl-color-<name>`
+   token (then a hardcoded fallback). The hook lets a consumer retint one layer without touching the
+   theme token — e.g. WalkingIcon retints its `.primary` walkable stroke via `--icon-primary`.
+   NOTE: `.tint`/`.shade` are per-icon TONE FACETS (a highlight / shadow of the same hue, `color-mix`ed
+   toward white/black) — NOT theme modes and NOT `-content`. They pair with a semantic class on the same
+   path (e.g. `class="fill error tint"` in packs/Base.tsx). */
+.Icon :global(.primary)            { --layer-color: var(--icon-primary, var(--sxl-color-primary, #595b5e)); }
+.Icon :global(.accent)             { --layer-color: var(--icon-accent,  var(--sxl-color-accent,  #9c27b0)); }
+.Icon :global(.accent.tint)        { --layer-color: color-mix(in srgb, var(--icon-accent,  var(--sxl-color-accent,  #9c27b0)) 80%, white); }
+.Icon :global(.success)            { --layer-color: var(--icon-success, var(--sxl-color-success, #22c55e)); }
+.Icon :global(.success.tint)       { --layer-color: color-mix(in srgb, var(--icon-success, var(--sxl-color-success, #22c55e)) 80%, white); }
+.Icon :global(.info)               { --layer-color: var(--icon-info,    var(--sxl-color-info,    #3b82f6)); }
+.Icon :global(.warning)            { --layer-color: var(--icon-warning, var(--sxl-color-warning, #f59e0b)); }
+.Icon :global(.error)              { --layer-color: var(--icon-error,   var(--sxl-color-error,   #ef4444)); }
+.Icon :global(.error.tint)         { --layer-color: color-mix(in srgb, var(--icon-error,   var(--sxl-color-error,   #ef4444)) 80%, white); }
+.Icon :global(.grey)               { --layer-color: var(--sxl-color-neutral,                #cccccc); }
+.Icon :global(.shadow)             { --layer-color: var(--sxl-color-shadow,                 #cccccc); }
 
 /* Paint (skip themed styling for .fixed and elements with existing fill/stroke attributes) */
 .Icon :global(.fill:not(.fixed):not([fill])) {
   fill: var(--layer-color);
-  opacity: var(--layer-opacity);
   stroke: none;
 }
 .Icon :global(.line:not(.fixed):not([stroke])) {
   fill: none;
   stroke: var(--layer-color, var(--icon-line-color));
   stroke-width: var(--icon-stroke-em);
-  opacity: var(--layer-opacity, var(--icon-line-opacity));
   vector-effect: non-scaling-stroke;
   pointer-events: none;
   stroke-linecap: var(--icon-linecap, round);
@@ -117,10 +119,52 @@
   stroke-miterlimit: var(--icon-miter, 4);
 }
 
-/* Modifiers */
-@media (prefers-color-scheme: dark) {
-  .Icon :global(.invert-dark) { filter: invert(1) hue-rotate(180deg); }
+/* Layer opacity is its own rule so an authored `opacity` on the path WINS, the same way an authored
+   `fill` / `stroke` opts a path out of the themed color. A pack that dims one layer (the tinted band
+   behind a glyph in `ConditionalFormatOptions`) means that value literally — a presentation attribute
+   loses to any author rule, so the tone default has to decline to apply rather than be overridden.
+   The tone default still lands on every path that says nothing. */
+.Icon :global(.fill:not(.fixed):not([fill]):not([opacity])) {
+  opacity: var(--layer-opacity);
 }
+.Icon :global(.line:not(.fixed):not([stroke]):not([opacity])) {
+  opacity: var(--layer-opacity, var(--icon-line-opacity));
+}
+
+/* Solid-with-a-rim. An opt-in facet of `.fill` for glyphs that must read as small signs rather
+   than as line art — conditional-format icon sets, at 18px in a 20px row. The rim is DERIVED from
+   the layer's own color, so one declaration outlines every shape and a retint carries it along;
+   `paint-order` puts the stroke behind the fill so it grows outward instead of eating the shape. */
+.Icon :global(.fill.outlined:not(.fixed):not([fill])) {
+  stroke: var(--icon-outline, color-mix(in srgb, var(--layer-color) 62%, black));
+  stroke-width: var(--icon-outline-width, 1.25);
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+
+/* A near-black rim instead of a derived one — Excel's rimmed traffic lights, where the housing is
+   its own color and only the lamp follows the band. */
+.Icon :global(.fill.rimmed:not(.fixed):not([fill])) {
+  --icon-outline: var(--icon-rim, light-dark(#3c3c3c, #101010));
+  --icon-outline-width: 2;
+}
+
+/* A mark drawn ON a solid shape. White rather than a second hue so it reads as a hole punched
+   through the disc, which is how a circled check or cross stays legible at icon size. */
+.Icon :global(.knockout) {
+  --layer-color: var(--icon-knockout, #ffffff);
+}
+
+/* A heavier stroke for a glyph that stands alone rather than sitting inside a shape. */
+.Icon :global(.line.heavy:not(.fixed):not([stroke])) {
+  stroke-width: var(--icon-stroke-heavy-em, 0.155em);
+}
+
+/* Modifiers */
+/* Invert on dark: follow the app's dark-mode intent (a host-controlled token), NOT the OS
+   `prefers-color-scheme` — the app can be dark while the OS is light and vice versa. The token
+   resolves to the invert filter when dark images are enabled, else `none`. */
+.Icon :global(.invert-dark) { filter: var(--_sxl-image-filter, none); }
 
 .Icon :global(.muted) {
   opacity: calc(var(--layer-opacity, 1) * 0.6);

@@ -1,4 +1,6 @@
 
+export * from './ButtonContent';
+
 export * from './ExhibitIconButton';
 export * from './ExhibitMenuItem';
 export * from './ExhibitMenuHeader';
@@ -10,3 +12,5 @@ export * from './ExhibitOptionButton';
 export * from './ExhibitTooltip';
 
 export * from './SelectedIcon';
+
+export * from './OverflowPalette';

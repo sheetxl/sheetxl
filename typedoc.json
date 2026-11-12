@@ -16,5 +16,15 @@
   //  "hostedBaseUrl": "https://example.com" to fix the module url links
   // "gaID": "G-1JGL700TV6",
   "readme": "./apisite/README.md",
+  "customCss": "./apisite/custom.css",
+  // Same code themes as the docsite's Prism config.
+  "lightHighlightTheme": "github-light",
+  "darkHighlightTheme": "dracula",
+  // Production hosts; TsDocChannelLinks rewrites them for beta.
+  "navigationLinks": {
+    "Guides": "https://www.sheetxl.com/docs",
+    "Demos": "https://www.sheetxl.com/demos",
+    "GitHub": "https://github.com/sheetxl/sheetxl"
+  },
   "extends": ["./typedoc.base.json"], // Path to shared config
 }

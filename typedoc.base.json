@@ -10,7 +10,10 @@
   "validation": {
     "notExported": false, // Not working. TypeDoc is giving warnings for private interfaces on protected methods.
     "invalidLink": false,
-    "rewrittenLink": true,
+    // Links into anonymous type nodes (an intersection's object half, a `ReturnType<>`, a const
+    // aliasing a function). TypeDoc has no page for those, so it links the owner — the member is
+    // still on that page, just without its own anchor.
+    "rewrittenLink": false,
     "notDocumented": false,
     "unusedMergeModuleWith": true
   },

@@ -1,0 +1,14 @@
+{
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "node": "./node/esm/index.mjs",
+      "import": "./node/esm/index.mjs"
+    }
+  },
+  "types": "./types/index.d.ts",
+  "module": "./node/esm/index.mjs",
+  "sideEffects": false,
+  "engineStrict": true
+}

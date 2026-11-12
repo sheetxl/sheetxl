@@ -1,24 +1,22 @@
-import React, {
+import type React from 'react';
+import {
   forwardRef, useMemo, memo, useState, useRef, useCallback
 } from 'react';
 
 import clsx from 'clsx';
 
-import { Theme } from '@mui/material/styles';
-// import { useTheme } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { Divider } from '@mui/material'
-import { MenuItem } from '@mui/material';
-import { type TooltipProps } from '@mui/material';
+import { ListItemButton } from '@mui/material';
 
 import { ArrowRightIcon } from '../theme';
 
-import { useCallbackRef } from '@sheetxl/utils-react';
+import { useCallbackRef, useFloatStack, RenderSlot, type FloatPopperProps } from '@sheetxl/utils-react';
 
 import {
-  useFloatStack,
-  type ExhibitQuickButtonProps, type ExhibitFloatPanelProps, type ExhibitPopperProps, type ExhibitPopupButtonProps
+  type ExhibitQuickButtonProps, type ExhibitFloatPanelProps, type ExhibitPopupButtonProps,
+  type ButtonTooltipRenderProps
 } from '../float';
 import { SimpleTooltip } from '../components';
 
@@ -41,19 +39,22 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
     // outlined=false,
     selected: propSelected = false,
     label: propLabel,
+    // Menu items always render their label as text; `showLabel` is a toolbar-only concern. Strip it so
+    // it doesn't spread onto a DOM node (React would warn about an unknown attribute).
+    showLabel: _showLabel,
     onQuickClick,
     parentFloat,
-    createPopupPanel,
+    renderPopupPanel,
     propsPopup = PropsEmptyPopup,
     onPopupOpen: propOnPopupOpen,
     onPopupClose: propOnPopupClose,
     propsQuickButton: propsQuickButton,
     renderQuickButton,// : propCreateQuickButton,
     tooltip: _tooltipProp = '',
-    createTooltip,
+    renderTooltip,
     icon,
     disabled: propDisabled,
-    touchRippleRef,
+    ripple,
     primary,
     children,
     sx: propSx,
@@ -61,8 +62,8 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
   } = props;
 
   // TODO - // if this is not specified perhaps we should just disable
-  // if (!createPopupPanel)
-  //   throw new Error('createPopupPanel is required');
+  // if (!renderPopupPanel)
+  //   throw new Error('renderPopupPanel is required');
   // const renderQuickButton = useCallback(propCreateQuickButton, [propCreateQuickButton]);
 
   const [isOpen, setOpen] = useState<boolean>(false);
@@ -77,7 +78,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
 
   const popupIconRef = useRef(null);
 
-  const localPropsPopper:Partial<ExhibitPopperProps> = useMemo(() => {
+  const localPropsPopper: Partial<FloatPopperProps> | undefined = useMemo(() => {
     if (!propsPopup) return;
     const {
       propsPopper: popperProps,
@@ -94,7 +95,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
   const floatStack = useFloatStack({
     anchor: anchorRef.current,
     label: propLabel as string,
-    createPopupPanel: createPopupPanel,
+    renderPopupPanel: renderPopupPanel,
     parentFloat: parentFloat,
     propsPopper: localPropsPopper,
     onClose: () => { setOpen(false); propOnPopupClose?.(); },
@@ -130,8 +131,8 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
     }
   }
 
-  const defaultTooltip = useCallback((props: TooltipProps) => {
-    const { children, ref, ...rest } = props;
+  const defaultTooltip = useCallback((props: ButtonTooltipRenderProps) => {
+    const { children, ref, disabled: _disabled, ...rest } = props;
     return (
       <SimpleTooltip ref={ref as any} {...rest} disableInteractive>
         {children}
@@ -140,12 +141,14 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
   }, []);
 
   const isSplit = onQuickClick || renderQuickButton;
-  const defaultCreateQuickButton = (props: any) => {
+  const defaultRenderQuickButton = (props: any) => {
     // TODO - types between buttons and menus are not rationalized
-    const { tooltip : quickTooltip, createTooltip: quickCreateTooltip, ...rest } = props;
+    const { tooltip : quickTooltip, renderTooltip: quickRenderTooltip, ...rest } = props;
     let quickButton = (
       <ExhibitMenuItem
         icon={icon}
+        // Host the caller's always-mounted ripple and disable MUI's lazy one (see `useManagedRipple`).
+        disableRipple={!!ripple}
         className={clsx({
           ['Mui-hovered']: isHovered,
         })}
@@ -156,6 +159,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
         {...rest}
       >
       {propLabel}
+      {ripple}
       </ExhibitMenuItem>
     );
 
@@ -168,7 +172,13 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
 
     onMouseOver: () => { setHovered(true); },
     onMouseLeave: () => { setHovered(false); },
-    onMouseEnter: () => { floatStack.reference.open() },
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+      // Opening our own submenu already closes sibling submenus. preventDefault
+      // signals ExhibitMenuItem to skip its leaf-style closeChild, which would
+      // otherwise immediately close the submenu we are opening.
+      e.preventDefault();
+      floatStack.reference.open();
+    },
     onMouseDown: (e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault() },
     // onMouseUp: (e) => setOpen(false)
   }
@@ -178,7 +188,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
     const localPropsQuickButton:ExhibitQuickButtonProps = {
       tabIndex: -1,
       disabled: propDisabled,
-      onMouseEnter: () => { floatStack.reference.parent.closeChild() },
+      onMouseEnter: () => { floatStack.reference.parent?.closeChild() },
       onMouseDown: (e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.preventDefault(); handleQuickClick(e) },
       className: clsx('quick-left', {
         // ['Mui-selected']: isOpen,
@@ -187,11 +197,11 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
       // onMouseUp: handleQuickClick,
       ...propsQuickButton
     };
-    const quickButton = (renderQuickButton || defaultCreateQuickButton)(localPropsQuickButton);
+    const quickButton = <RenderSlot render={renderQuickButton ?? defaultRenderQuickButton} props={localPropsQuickButton} />;
     button = (<>
       {quickButton}
       <Divider sx={{ ml: '0px', mr: '0px' }} orientation="vertical" variant="middle" flexItem />
-      <MenuItem
+      <ListItemButton
         ref={popupIconRef}
         className={clsx({
           ['Mui-selected']: isOpen,
@@ -200,9 +210,13 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
         sx={{
           borderTopLeftRadius: '0px',
           borderBottomLeftRadius: '0px',
-          paddingLeft: '0px',
-          paddingRight: '0px',
+          borderTopRightRadius: '4px',
+          borderBottomRightRadius: '4px',
+          padding: '0',
+          paddingTop: '2px',
+          paddingBottom: '2px',
           marginLeft: '0px',
+          marginRight: '6px',
           color: (theme: Theme) => {
             return !primary ? theme.palette.text.secondary : undefined; // default
           },
@@ -239,7 +253,7 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
         >
           { arrowIcon }
         </Box>
-      </MenuItem>
+      </ListItemButton>
     </>);
   } else {
     button = (
@@ -322,12 +336,13 @@ export const ExhibitPopupMenuItem: React.FC<ExhibitPopupMenuItemProps & { ref?: 
   );
 
   // Menus only show a tooltip for quickButtons because they open on hover
-  const isSplitTooltip = isSplit && !isArrowHovered && (propsQuickButton?.tooltip || propsQuickButton?.createTooltip);
+  const isSplitTooltip = isSplit && !isArrowHovered && (propsQuickButton?.tooltip || propsQuickButton?.renderTooltip);
   if (isSplitTooltip) {
-    buttonRoot = (propsQuickButton?.createTooltip ?? defaultTooltip)({
+    buttonRoot = <RenderSlot render={propsQuickButton?.renderTooltip ?? defaultTooltip} props={{
       title: !isOpen ? (buttonRoot ?? propsQuickButton?.tooltip) : '',
-      children: buttonRoot
-    }, isOpen);
+      children: buttonRoot,
+      disabled: isOpen
+    }} />;
   }
 
   return (

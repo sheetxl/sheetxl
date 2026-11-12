@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "../..",
-    "baseUrl": ".",
     "paths": {
       "@sheetxl/utils": [
         "../utils/src"
@@ -31,15 +30,8 @@
     "../primitives/src",
     "../utils/src",
     "../utils-react/src",
+    "../utils-react/src/icons/packs/*.json",
     "../utils-mui/src",
     "../studio-mui/src"
-  ],
-  "exclude": [
-    "**.test.**",
-    "**/__tests__/**",
-    "**/.pnpm",
-    "**/build",
-    "**/dist",
-    "**/node_modules"
   ]
 }

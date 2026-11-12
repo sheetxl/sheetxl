@@ -1,29 +1,37 @@
-import React, { useMemo, useRef, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useMemo, useRef, memo, forwardRef } from 'react';
 
 import clsx from 'clsx';
 
-import { Theme, alpha, useTheme } from '@mui/material/styles';
-
+import { alpha, useTheme, type Theme } from '@mui/material';
 import { Box, Typography } from '@mui/material';
 import { DialogTitle } from '@mui/material';
 import { IconButton } from '@mui/material';
-import { TouchRippleActions } from '@mui/material';
+import { type TouchRippleActions } from '@mui/material';
 import { Tabs } from '@mui/material';
 import { Tab } from '@mui/material';
 
-import { IWorkbook } from '@sheetxl/sdk';
+import { type IWorkbook } from '@sheetxl/sdk';
 
-import { ICommands, useImperativeElement, DynamicIcon } from '@sheetxl/utils-react';
+import { useImperativeElement, DynamicIcon, useTranslator, useLanguage } from '@sheetxl/utils-react';
 
-import { TaskPaneArea, TaskPaneAreaProps, TaskPaneTitleProps, ITaskPaneAreaElement,
-  DefaultTaskPaneRegistry, ITaskPaneStrip, TaskPaneStripAttributes, TaskPaneStripProps
+import {
+  DefaultTaskPaneRegistry, TaskPaneArea, type TaskPaneAreaProps, type TaskPaneTitleProps, type ITaskPaneAreaElement,
+  type ITaskPaneStrip, type TaskPaneStripAttributes, type TaskPaneStripProps
 } from '@sheetxl/react';
 
 import { ExhibitTooltip, SimpleTooltip } from '@sheetxl/utils-mui';
 
+/**
+ * The field border — `--sxl-color-input-border`, the same token the formula bar and the field widgets read, so
+ * a pane frame and the toolbar above it stay one control. Read at FULL strength (not `alpha(divider, .2)`,
+ * which only reads as a border because MUI's own divider is already translucent and collapses to nothing on a
+ * host supplying an opaque one). Disabled still needs MUI — no token names a disabled border.
+ */
+const FIELD_BORDER_COLOR = 'var(--sxl-color-input-border, light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.2)))';
+
 export interface StudioTaskPaneAreaProps extends TaskPaneAreaProps {
-  commands?: ICommands.IGroup;
-  model: IWorkbook;
+  model?: IWorkbook;
 }
 
 const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
@@ -37,10 +45,14 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
     registry = DefaultTaskPaneRegistry,
     style: propsStyle,
     iconsOnly,
+    side = 'right',
     className: propClassName,
     ...rest
   } = props;
 
+  const isLeft = side !== 'right';
+  // Subscribe to language: entry titles resolve through the catalog, so a switch must rebuild.
+  const language = useLanguage();
   const elements = useMemo(() => {
     return taskPanes.map((key: string) => {
       const entry = registry.getRegisteredTaskPane(key);
@@ -49,21 +61,68 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
       }
 
       let icon = entry.getIcon?.();
-      if (icon) {
-        if (typeof icon === 'string') {
-          icon = <DynamicIcon iconKey={icon}/>;
-        }
-        icon = (
-          <span style={{
-            display: 'inline-block',
-            transform: 'rotate(90deg)',
-            transformOrigin: 'center'
-          }}>
-            {icon}
-          </span>
-        )
+      if (typeof icon === 'string') {
+        icon = <DynamicIcon iconKey={icon}/>;
       }
       const isSelected = key === propSelected;
+      const elementIcon = icon ? (
+        <Box
+          sx={{
+            display: 'inline-block',
+            // Icons don't auto-rotate with the vertical writing mode (only glyphs do),
+            // so rotate them to match the text direction on each side.
+            transform: isLeft ? `rotate(-90deg)` : `rotate(90deg)`,
+            transformOrigin: 'center',
+            color: (theme: Theme) => {
+              return theme.palette.text.secondary;
+            }
+          }}
+        >
+          {icon}
+        </Box>
+      ) : null;
+      // Icon-less entries always keep their label; the tab would otherwise be empty.
+      const showLabel = !icon || (!iconsOnly && isSelected);
+      // The label stays mounted inside a 0fr/1fr grid track so the transition runs
+      // to the text's real size (a max-height cap adds dead time that desyncs the
+      // in/out animations). In the vertical writing mode the text's length is the
+      // inline axis, so grid-template-columns is the track that animates it.
+      const elementText = (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: showLabel ? '1fr' : '0fr',
+            opacity: showLabel ? 1 : 0,
+            transition: (theme: Theme) => theme.transitions.create(
+              ['grid-template-columns', 'opacity'],
+              { duration: theme.transitions.duration.short }
+            )
+          }}
+        >
+          <Box
+            sx={{
+              overflow: 'hidden',
+              minWidth: 0,
+              minHeight: 0
+            }}
+          >
+            <Typography
+              component='div'
+              sx={{
+                textTransform: 'none',
+                whiteSpace: 'nowrap', // clip while collapsing; never re-wrap
+                transform: isLeft ? `rotate(180deg)` : undefined,
+                padding: '4px 0px',
+                color: (theme: Theme) => {
+                  return isSelected ? theme.palette.primary.main : theme.palette.text.secondary;
+                }
+              }}
+            >
+              {entry.getTitle()}
+            </Typography>
+          </Box>
+        </Box>
+      );
       return (
         <Tab
           key={key}
@@ -73,13 +132,12 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
             <SimpleTooltip
               disableInteractive
               title={entry.getTitle() ?? ''}
-              // title={''}
-              placement="left-start"
+              placement='left-start'
             >
               <Box
                 sx={{
                   padding: '0px 0px',
-                  writingMode: 'vertical-rl',
+                  writingMode: isLeft ? 'vertical-lr' : 'vertical-rl',
                   textOrientation: 'mixed',
                   display: 'flex',
                   alignItems: 'center',
@@ -90,34 +148,8 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
                   }
                 }}
               >
-                {icon && (
-                  <Box
-                    sx={{
-                      display: 'inline-block',
-                      // transform: 'rotate(90deg)',
-                      transformOrigin: 'center',
-                      color: (theme: Theme) => {
-                        return theme.palette.text.secondary;
-                      }
-                    }}
-                  >
-                    {icon}
-                  </Box>
-                )}
-                {(iconsOnly && icon) ? null : (
-                  <Typography
-                    component="div"
-                    textTransform={"none"}
-                    sx={{
-                      padding: '4px 0px',
-                      color: (theme: Theme) => {
-                        return isSelected ? theme.palette.primary.main : theme.palette.text.secondary;
-                      }
-                    }}
-                  >
-                    {entry.getTitle()}
-                  </Typography>
-              )}
+                { isLeft ? elementText : elementIcon }
+                { isLeft ? elementIcon : elementText }
               </Box>
             </SimpleTooltip>
           )}
@@ -134,7 +166,7 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
         />
       );
     });
-  }, [taskPanes, propSelected, onSelect, registry]);
+  }, [taskPanes, propSelected, onSelect, registry, isLeft, iconsOnly, language]);
 
   const refLocal = useImperativeElement<ITaskPaneStrip, TaskPaneStripAttributes>(refForwarded, () => {
     return {
@@ -151,15 +183,16 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
       ref={refLocal}
       className={className}
       sx={{
-        paddingLeft: '2px',
+        paddingLeft: isLeft ? undefined : '2px',
+        paddingRight: isLeft ? '2px' : undefined,
         paddingTop: '4px',
         ...propsStyle
       }}
       {...rest}
     >
       <Tabs
-        orientation="vertical"
-        variant="scrollable"
+        orientation='vertical'
+        variant='scrollable'
         value={propSelected}
         onChange={(_, newValue) => {
           onSelect(newValue);
@@ -172,8 +205,9 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
           },
           indicator: {
             sx: {
-              left: '0px',
-              right: 'unset'
+              left: isLeft ? undefined : '0px',
+              right: isLeft ? undefined : 'unset',
+              bottom: isLeft ? '0px' : undefined
             }
           }
         }}
@@ -184,36 +218,21 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
   );
 }));
 
-const renderTaskPaneStrip = (props: TaskPaneStripProps): React.ReactElement => {
-  return <StudioTaskPaneStrip {...props} />
-}
-
-export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioTaskPaneAreaProps>(
-  (props: StudioTaskPaneAreaProps, refForwarded) => {
+const StudioTaskPaneTitle = (props: TaskPaneTitleProps): React.ReactElement => {
   const {
-    commands: commandsApplication,
-    model: workbook,
+    title,
+    icon,
+    onClose,
+    readOnly,
+    focused,
     ...rest
   } = props;
-  const disabled = false;//!protection.isStructureAllowed();
-
-  const theme = useTheme();
-  const border = `solid ${(!disabled ? alpha(theme.palette.divider, 0.2) : theme.palette.action.disabled)} 1px`
-  const borderRadius = `${theme.shape.borderRadius ?? 4}px`;
-  const marginBottom = `${(theme as any).spacing?.(0.5) ?? 4}px`;
 
   const refRipple = useRef<TouchRippleActions>(null);
-  const renderTaskPanelTitle = (props: TaskPaneTitleProps): React.ReactElement => {
-    const {
-      title,
-      icon,
-      onClose,
-      readOnly,
-      focused,
-      ...rest
-    } = props;
 
-    return (
+  const t = useTranslator();
+
+  return (
       <DialogTitle
         className={clsx({
           ['Mui-selected']: focused
@@ -231,12 +250,12 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
             opacity: 1,
             transitionDuration: (theme: Theme) => `${theme.transitions.duration.shortest / 2}ms`, // should also use leaving screen with a second class
           },
-          backgroundColor: (theme: Theme) => {
-            return alpha(theme.palette.action.hover, 0.03);
-          },
-          borderBottom: (theme: Theme) => { // same as toolbar
-            return `solid ${alpha(theme.palette.divider, 0.2)} 1px`
-          }
+          // An app-local wash, deliberately NOT a token read: "a title bar sits a step above what it
+          // covers" is a style choice this app makes, and no host theming system names that color. Being
+          // translucent it lifts whatever surface the pane lands on by the same amount, so it needs no
+          // per-placement value.
+          backgroundColor: (theme: Theme) => alpha(theme.palette.action.hover, 0.03),
+          borderBottom: `solid ${FIELD_BORDER_COLOR} 1px` // same as toolbar
         }}
         {...rest}
       >
@@ -261,10 +280,10 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
             {title}
           </Box>
           <ExhibitTooltip
-            label={"Close"}
+            label={t('taskPane.close')}
           >
             <IconButton
-              aria-label="close"
+              aria-label='close'
               sx={{
                 color: (theme: Theme) => {
                   return ((theme.palette.text as any).icon ?? theme.palette.action.active);
@@ -282,13 +301,27 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
                 onClose();
               }}
             >
-              <DynamicIcon iconKey="Close" />
+              <DynamicIcon iconKey='Close' />
             </IconButton>
           </ExhibitTooltip>
         </Box>
       </DialogTitle>
-    );
-  };
+  );
+};
+
+export const StudioTaskPaneArea = forwardRef<ITaskPaneAreaElement, StudioTaskPaneAreaProps>(
+  (props: StudioTaskPaneAreaProps, refForwarded) => {
+  const {
+    model: workbook,
+    side,
+    ...rest
+  } = props;
+  const disabled = false;//!protection.isStructureAllowed();
+
+  const theme = useTheme();
+  const border = `solid ${(!disabled ? FIELD_BORDER_COLOR : theme.palette.action.disabled)} 1px`
+  const borderRadius = `${theme.shape.borderRadius ?? 4}px`;
+  const marginBottom = `${(theme as any).spacing?.(0.5) ?? 4}px`;
 
   return (
     <TaskPaneArea
@@ -302,8 +335,9 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
         }
       }}
       alwaysShowStrip={true}
-      renderTaskPanelTitle={renderTaskPanelTitle}
-      renderTaskPaneStrip={renderTaskPaneStrip}
+      componentTitle={StudioTaskPaneTitle}
+      componentStrip={StudioTaskPaneStrip}
+      side={side}
       {...props}
       onOpen={() => {
         props?.onOpen?.();
@@ -311,7 +345,6 @@ export const StudioTaskPaneArea = React.forwardRef<ITaskPaneAreaElement, StudioT
       onClose={() => {
         props?.onClose?.();
       }}
-      commands={commandsApplication}
       {...rest}
     >
     </TaskPaneArea>

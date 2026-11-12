@@ -1,16 +1,18 @@
-import React, {
+import type React from 'react';
+import {
   memo, forwardRef, useState, useMemo, useRef, useCallback, useEffect
 } from 'react';
 
 import clsx from 'clsx';
-import { useMeasure } from 'react-use';
 
-import { useCallbackRef } from '../hooks/useCallbackRef';
+import { RenderSlot } from '../components';
+import { useCallbackRef, useMeasure } from '../hooks';
 
 import {
-  ScrollButtonProps, defaultCreateScrollStartButton, defaultCreateScrollEndButton
+  type ScrollButtonProps, defaultRenderScrollButtonStart, defaultRenderScrollButtonEnd
 } from './ScrollButton';
 import { getScrollTo } from './Utils';
+import { PANE_SCROLLER_ATTRIBUTE } from './wheelOwner';
 
 import { ScrollbarOrientation, type ScrollbarProps } from './IScrollbar';
 
@@ -33,11 +35,11 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
     scrollButtonIncrement = 200,
     scrollButtonInitialRepeatDelay = 260,
     scrollButtonAdditionalRepeatDelay = 120, // we make first time slightly longer to similar a delayed start
-    renderScrollButtonStart = defaultCreateScrollStartButton,
-    renderScrollButtonEnd = defaultCreateScrollEndButton,
+    renderScrollButtonStart = defaultRenderScrollButtonStart,
+    renderScrollButtonEnd = defaultRenderScrollButtonEnd,
     ...rest
   } = props;
-  const onScroll = useCallbackRef(propOnScroll, [propOnScroll]);
+  const onScroll = useCallbackRef(propOnScroll ?? (() => {}), [propOnScroll]);
 
   const refScrollPane = useRef<HTMLDivElement>(null);
   const [refMeasureContainer, { width:widthContainer, height:heightContainer }] = useMeasure<HTMLDivElement>();
@@ -64,7 +66,9 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
   const scrollStart = useCallback((jumpTo: number, isJump: boolean=false) => {
     if (!refScrollPane.current)
       return 0;
-    const firstChild = refScrollPane.current.querySelector('.scrollbar-viewport');
+    const firstChild = refScrollPane.current.querySelector('.sxl-scrollbar-viewport');
+    if (!firstChild)
+      return 0;
     const refLocation = firstChild.getBoundingClientRect();
     const children = firstChild.children;
 
@@ -85,7 +89,9 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
   const scrollEnd = useCallback((jumpTo: number, isJump: boolean=false) => {
     if (!refScrollPane.current)
       return 0;
-    const firstChild = refScrollPane.current.querySelector('.scrollbar-viewport');
+    const firstChild = refScrollPane.current.querySelector('.sxl-scrollbar-viewport');
+    if (!firstChild)
+      return 0;
     const refLocation = firstChild.getBoundingClientRect();
     const children = firstChild.children;
 
@@ -111,7 +117,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
       return;
     }
 
-    const newScrollOffset = e.target[dimScrollStart];
+    const newScrollOffset = (e.target as HTMLElement)[dimScrollStart];
     onScrollOffset(newScrollOffset, propViewportSize, propTotalSize);
     onScroll?.(e);
   }, [onScrollOffset, propViewportSize, propTotalSize, propOffset]);
@@ -124,6 +130,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
     // we track the offset when we fired our event and don't re-scroll if it's stale
     const lastPropInFlight = refOffsetInFlight.current;
     if (propOffset === lastPropInFlight) return;
+    if (!refScrollPane.current) return;
     const currentScrollStart = refScrollPane.current[dimScrollStart];
     if (currentScrollStart === propOffset) return;
 
@@ -131,7 +138,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
     refScrollPane.current[dimScrollStart] = propOffset;
   }, [propOffset, dimScrollStart]);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollingToRef = useRef<number | null>(null);
   const stopScrolling = useCallback(() => {
     if (!timerRef.current) return;
@@ -171,7 +178,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
       onMouseDown:() => startScrolling(propOffset, true, true),
     }
 
-    return renderScrollButtonStart?.(props);
+    return <RenderSlot render={renderScrollButtonStart} props={props} />;
   }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
 
   const scrollEndButton = useMemo(() => {
@@ -183,7 +190,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
       onMouseLeave:stopScrolling,
       onMouseDown:() => startScrolling(propOffset, true, false),
     }
-    return renderScrollButtonEnd?.(props);
+    return <RenderSlot render={renderScrollButtonEnd} props={props} />;
   }, [showCustomScrollButtons, orientation, propOffset, scrollScrolling, lengthViewport, lengthContainer]);
 
   return (
@@ -197,11 +204,12 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
         ...propStyle
       }}
       className={clsx(styles['sheetxl-scrollbar'], propClassName)}
+      {...{ [PANE_SCROLLER_ATTRIBUTE]: '' }}
       {...rest}
     >
       {scrollStartButton}
       <div
-        className='pseudo-scrollbar'
+        className='sxl-pseudo-scrollbar'
         style={{
           flex: '1 1 100%',
           display:'flex',
@@ -233,7 +241,7 @@ export const NativeScrollbar = memo(forwardRef<HTMLDivElement, ScrollbarProps>((
               height: isVertical ? (propTotalSize - propViewportSize + (heightContainer ?? 0)) : 1,
               width: isVertical ? 1 : (propTotalSize - propViewportSize + (widthContainer ?? 0)),
             }}
-            className='scrollbar-viewport'
+            className='sxl-scrollbar-viewport'
           />
         </div>
       </div>

@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 
-import type { IconGlyphKey } from './Types';
+import { type IconGlyphKey } from './Types';
 import { DynamicIcon, type DynamicIconProps } from './DynamicIcon';
 
 /**
@@ -16,8 +17,11 @@ export interface WalkingIconProps extends DynamicIconProps {
   /** Animate the stroke marching effect. */
   isWalking: boolean;
 
-  /** Map the accent layer to a semantic token; defaults to "info". */
-  themedType?: "accent" | "success" | "info" | "warn" | "error";
+  /**
+   * Retint the walkable stroke to a semantic token. Mirrors `SheetClipboardLayer`
+   * (`isCut ? warning : primary`): defaults to `"primary"`, pass `"warning"` for a cut.
+   */
+  themedType?: "primary" | "accent" | "success" | "info" | "warning" | "error";
 
   /** Animation speed in milliseconds. */
   speed?: number;
@@ -30,7 +34,7 @@ export interface WalkingIconProps extends DynamicIconProps {
 export function WalkingIcon(props: WalkingIconProps) {
   const {
     isWalking = false,
-    themedType = "info",
+    themedType = "primary",
     speed = 120,
     dashGap = 3,
     dashLength = 5,
@@ -41,9 +45,9 @@ export function WalkingIcon(props: WalkingIconProps) {
     ...rest
   } = props;
 
-  const styleAnimation:React.CSSProperties = useMemo(() => {
+  const styleAnimation: React.CSSProperties | undefined = useMemo(() => {
     if (!isWalking)
-      return;
+      return undefined;
     const totalLength = dashGap + dashLength;
     const totalSpeed = speed * totalLength;
 
@@ -54,9 +58,11 @@ export function WalkingIcon(props: WalkingIconProps) {
       ["--walk-dash-gap"]: `${dashGap}px`,
     } as React.CSSProperties;
 
-    // TODO - why !== 'accent'?
-    if (themedType && themedType !== "accent") {
-      retValue["--icon-accent"] = `var(--icon-${themedType})`;
+    // Retint the walkable `.primary` layer to a semantic token via the `--icon-primary` override
+    // hook (the `.primary` class in DynamicIcon.module.css reads it). "primary" means "no override —
+    // keep the layer's own primary color", matching SheetClipboardLayer's default.
+    if (themedType && themedType !== "primary") {
+      (retValue as Record<string, string>)["--icon-primary"] = `var(--sxl-color-${themedType})`;
     }
     return retValue;
   }, [isWalking, speed, dashGap, dashLength, themedType]);

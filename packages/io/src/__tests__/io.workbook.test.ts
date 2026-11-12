@@ -4,26 +4,25 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs'; // for write outputs
 
-import { IWorkbook, Workbook } from '@sheetxl/sdk';
+import { WorkbookIO, type IWorkbook } from '@sheetxl/sdk';
 
-import { type WriteCSVOptions } from '../handlers';
+import { IOPlugin } from '..';
 
-import { WorkbookIO } from '..';
+WorkbookIO.install(IOPlugin);
 
 import createSimpleWorkbook from './helpers/createSimpleWorkbook';
 
 // TODO - add csv callback
 describe("Import/Export", () => {
   it("Import CSV With quotes and spaces", async () => {
-    const workbook: IWorkbook = await WorkbookIO.read({
+    const workbook = (await WorkbookIO.read({
       source: fs.readFileSync(path.resolve(__dirname, './csv/simple-quotes-in.csv'), {flag:'r'}) as any,
-      // format: 'csv'
-      name: 'simple-quotes-in.csv'
-    });
+      format: 'csv' // a bare buffer carries no extension, so the format must be explicit
+    }))!;
     // const buffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './csv/simple-quotes-in.csv'), {flag:'r'});
     // const workbook:IWorkbook = await fromBufferCSV(buffer);
 
-    const ws = workbook.getSheets().getByName('Sheet1');
+    const ws = workbook.getWorksheets().getByName('Sheet1');
     expect(ws?.getRange('A1').getCell().getValue()).toEqual('This is a string with spaces.');
     expect(true).toEqual(true);
   });
@@ -40,22 +39,23 @@ describe("Import/Export", () => {
       // console.log(err);
     }
 
-    const success = await WorkbookIO.writeFile(
+    const details = await WorkbookIO.write(
+      workbook,
       path.resolve(tmpDir, './exports/simple'),
-      workbook, {
+      {
         format: 'sxl',
         compress: false,
       } as any
     );
 
-    expect(success).toEqual(true);
+    expect(details).toBeTruthy();
   });
 
   // it("Import Simple", async () => {
   //   const buffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './csv/simple.csv'), {flag:'r'});
   //   const workbook:IWorkbook = await fromBufferCSV(buffer);
 
-  //   const ws = workbook.getSheets().getByName('Sheet1');
+  //   const ws = workbook.getWorksheets().getByName('Sheet1');
   //   expect(ws?.getRange('A1').getCell().getValue()).toEqual('this has spaces');
   //   expect(true).toEqual(true);
   // });

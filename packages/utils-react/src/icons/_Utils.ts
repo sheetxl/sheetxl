@@ -1,6 +1,6 @@
-import type {
-  IconGlyphKey, IconPack, IconPath, IconGlyph, SvgSourceInput, SvgSource,
-  IconGlyphInput, IconPackInput, IconPackMeta
+import {
+  type IconGlyphKey, type IconPack, type IconPath, type IconGlyph, type SvgSourceInput, type SvgSource,
+  type IconGlyphInput, type IconPackInput, type IconPackMeta
 } from './Types';
 
 function normalizeSvgSource(input: SvgSourceInput): SvgSource {
@@ -144,10 +144,8 @@ function decodeSvgDataUrl(input: string): string | null {
         }
         return decodeURIComponent(esc);
       } else {
-        // Node.js
-        const buf = (globalThis as any).Buffer
-          ? (globalThis as any).Buffer.from(payload, "base64")
-          : require("buffer").Buffer.from(payload, "base64");
+        // Node.js — `Buffer` is always a global here.
+        const buf = (globalThis as any).Buffer.from(payload, "base64");
         return buf.toString("utf-8");
       }
     } else {

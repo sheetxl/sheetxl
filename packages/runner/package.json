@@ -1,0 +1,65 @@
+{
+  "name": "@sheetxl/runner",
+  "version": "0.0.0",
+  "description": "SheetXL - Programmatic execution for SheetXL scripts",
+  "homepage": "https://sheetxl.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sheetxl/sheetxl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sheetxl/sheetxl/issues"
+  },
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./build/types/index.d.ts",
+      "import": {
+        "node": "./build/node/esm/index.mjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@sheetxl/io": "workspace:*",
+    "@sheetxl/primitives": "workspace:*",
+    "@sheetxl/scripting": "^1.0.0",
+    "@sheetxl/sdk": "^1.0.0",
+    "@sheetxl/utils": "workspace:*",
+    "tsx": "^4.23.15"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.0 || ^6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^5.9.0 || ^6.0.0"
+  },
+  "keywords": [
+    "sheetxl",
+    "spreadsheet",
+    "javascript",
+    "typescript",
+    "data wrangling",
+    "automation",
+    "scripting",
+    "excel",
+    "xlsx",
+    "runner"
+  ],
+  "privateRepo": false
+}

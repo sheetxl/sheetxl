@@ -1,10 +1,11 @@
-import React, { useRef, useMemo, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useRef, useMemo, memo, forwardRef, isValidElement, cloneElement } from 'react';
 
-import { Point } from '@sheetxl/utils';
+import { type Point } from '@sheetxl/utils';
 
-import { mergeRefs } from 'react-merge-refs';
+import { useMergeRefs } from 'react-merge-refs';
 
-import { useMeasure } from 'react-use';
+import { useMeasure } from '../hooks';
 
 
 /*****************************************************************************
@@ -40,6 +41,8 @@ import { useMeasure } from 'react-use';
  *               the previous and next points.
  * @returns A new SVG path string with the rounding
  */
+type PathCommand = (string | number)[] & { origPoint?: Point };
+
 function roundPathCorners(pathString: string, radius: number, useFractionalRadius: boolean=false) {
   if (radius === 0) return pathString;
   function moveTowardsLength(movingPoint:Point, targetPoint:Point, amount: number): Point {
@@ -57,7 +60,7 @@ function roundPathCorners(pathString: string, radius: number, useFractionalRadiu
   }
 
   // Adjusts the ending position of a command
-  function adjustCommand(cmd, newPoint: Point) {
+  function adjustCommand(cmd: PathCommand, newPoint: Point) {
     if (cmd.length > 2) {
       cmd[cmd.length - 2] = newPoint.x;
       cmd[cmd.length - 1] = newPoint.y;
@@ -65,17 +68,17 @@ function roundPathCorners(pathString: string, radius: number, useFractionalRadiu
   }
 
   // Gives an {x, y} object for a command's ending position
-  function pointForCommand(cmd) {
+  function pointForCommand(cmd: PathCommand): Point {
     return {
-      x: parseFloat(cmd[cmd.length - 2]),
-      y: parseFloat(cmd[cmd.length - 1]),
+      x: parseFloat(String(cmd[cmd.length - 2])),
+      y: parseFloat(String(cmd[cmd.length - 1])),
     };
   }
 
   // Split apart the path, handing concatenated letters and numbers
   let pathParts = pathString
     .split(/[,\s]/)
-    .reduce(function(parts, part) {
+    .reduce(function(parts: string[], part) {
       let match = part.match("([a-zA-Z])(.+)");
       if (match) {
         parts.push(match[1]);
@@ -85,28 +88,28 @@ function roundPathCorners(pathString: string, radius: number, useFractionalRadiu
       }
 
       return parts;
-    }, []);
+    }, [] as string[]);
 
   // Group the commands with their arguments for easier handling
-  let commands = pathParts.reduce(function(commands, part) {
+  let commands = pathParts.reduce(function(commands: PathCommand[], part) {
     // The part is a parsed number
-    if (parseFloat(part) == part && commands.length) {
+    if (parseFloat(part) == (part as any) && commands.length) {
       commands[commands.length - 1].push(part);
     } else {
-      commands.push([part]);
+      commands.push([part] as PathCommand);
     }
 
     return commands;
-  }, []);
+  }, [] as PathCommand[]);
 
   // The resulting commands, also grouped
-  let resultCommands = [];
+  let resultCommands: PathCommand[] = [];
 
   if (commands.length > 1) {
     let startPoint = pointForCommand(commands[0]);
 
     // Handle the close path case with a "virtual" closing line
-    let virtualCloseLine = null;
+    let virtualCloseLine: PathCommand | null = null;
     if (commands[commands.length - 1][0] === "Z" && commands[0].length > 2) {
       virtualCloseLine = ["L", startPoint.x, startPoint.y];
       commands[commands.length - 1] = virtualCloseLine;
@@ -181,6 +184,19 @@ export interface RoundedTabProps extends React.HTMLAttributes<HTMLElement> {
   radius?: number;
   strokeWidth?: number;
   strokeColor?: string;
+  /**
+   * The clip applied to the child (which also shapes any ripple drawn inside it).
+   * - `'tab'` — the inverted, open-top tab outline (Excel/Chrome style).
+   * - `'rounded'` — a plain rounded rectangle, optionally inset via {@link clipInset}
+   *   so it can match an inset "pill" background.
+   * @defaultValue 'tab'
+   */
+  variant?: 'tab' | 'rounded';
+  /**
+   * Inset (px) of the `'rounded'` clip from each edge of the container. Lets the clip
+   * line up with an inset pill so a ripple stays within the pill.
+   */
+  clipInset?: { top?: number; right?: number; bottom?: number; left?: number };
   // TODO - orientation. bottom, top, left, right
 }
 
@@ -193,6 +209,8 @@ export const RoundedTab: React.FC<RoundedTabProps> = memo(
     radius = 4, // zero doesn't quite render correctly
     strokeWidth: propStrokeWidth = 1,
     strokeColor = 'grey',
+    variant = 'tab',
+    clipInset,
     ...rest
   } = props;
 
@@ -205,34 +223,66 @@ export const RoundedTab: React.FC<RoundedTabProps> = memo(
     const bottomOffset = heightContainer - strokeOffset + padding;
 
     // draw left with notch out, bottom, right with notch out
-    const left = `M 0 ${topOffset} L ${radius - 0.5} ${topOffset} L ${radius - 0.5} ${bottomOffset} L ${radius*2} ${bottomOffset}`;
+    // (left inner edge at `radius` mirrors the right inner edge at `width - radius`)
+    const left = `M 0 ${topOffset} L ${radius} ${topOffset} L ${radius} ${bottomOffset} L ${radius*2} ${bottomOffset}`;
     const bottom = `L ${widthContainer - (radius*2)} ${bottomOffset}`;
     const right = `M ${widthContainer - radius*2} ${bottomOffset} L ${widthContainer - (radius)} ${bottomOffset} L ${widthContainer - (radius)} ${topOffset} L ${widthContainer} ${topOffset}`;
 
     return roundPathCorners(`${left} ${bottom} ${right}`, radius);
   }
 
+  const insetTop = clipInset?.top ?? 0;
+  const insetRight = clipInset?.right ?? 0;
+  const insetBottom = clipInset?.bottom ?? 0;
+  const insetLeft = clipInset?.left ?? 0;
+
+  // A plain rounded rectangle, inset per `clipInset`. Shared by both the visible outline
+  // (edgePath) and the clip (clipPath) when `variant === 'rounded'`, so the stroke and the
+  // fill use the same shape — needed once a rounded tab can have a *visible* border.
+  const roundedRectPath = useMemo(() => {
+    const x0 = insetLeft;
+    const y0 = insetTop;
+    const x1 = widthContainer - insetRight;
+    const y1 = heightContainer - insetBottom;
+    const rect = `M ${x0} ${y0} L ${x1} ${y0} L ${x1} ${y1} L ${x0} ${y1} Z`;
+    return roundPathCorners(rect, radius);
+  }, [widthContainer, heightContainer, radius, insetTop, insetRight, insetBottom, insetLeft]);
+
   const edgePath = useMemo(() => {
+    if (variant === 'rounded') return roundedRectPath;
     return calcBorder(propStrokeWidth);
-  }, [widthContainer, heightContainer, radius, propStrokeWidth]);
+  }, [variant, roundedRectPath, widthContainer, heightContainer, radius, propStrokeWidth]);
 
   const clipPath = useMemo(() => {
-     if (radius === 0) return undefined;
-     const strokeOffset = radius / 2;
-    const edgeBorder = calcBorder(radius);
-    // add a top edge; this move up right, down.
-    const path = edgeBorder + `L ${widthContainer} 0 L 0 0 L 0 ${strokeOffset}`;
-    return path
-  }, [edgePath, radius, propStrokeWidth]);
+    if (radius === 0) return undefined;
+    if (variant === 'rounded') return roundedRectPath;
+    const strokeOffset = propStrokeWidth / 2;
+    const w = widthContainer;
+    // Align the fill's sides/bottom to the stroke centerline so the foreground
+    // tucks under the border (no background seam). The top stays flush at y=0 so
+    // the tab reads "open" at the top.
+    const b = heightContainer - strokeOffset;
+    // A single continuous, closed tab outline rounded in one pass, so every
+    // corner — including the two top corners the stroke leaves open — gets a
+    // clean curve instead of the square-cap-over-inset-curve mismatch that let
+    // the background bleed through. Left open at the top edge; the fill closes it.
+    const path = `M 0 0 L ${radius} 0 L ${radius} ${b} L ${w - radius} ${b} L ${w - radius} 0 L ${w} 0`;
+    return roundPathCorners(path, radius);
+  }, [widthContainer, heightContainer, radius, propStrokeWidth, variant, roundedRectPath]);
 
   const childProps = useMemo(() => {
+    // Merge (don't replace) the child's own style so inline-styled children keep
+    // their styles; we only add the clip path.
+    const childStyle = isValidElement(children) ? (children.props as any)?.style : undefined;
     return {
       style: {
+        ...childStyle,
         clipPath: `path('${clipPath}')`
       }
     }
-  }, [clipPath]);
+  }, [clipPath, children]);
 
+  const refMerged = useMergeRefs([refLocal, refMeasureContainer, refForwarded]);
   return (
     <div
       className={propClassName}
@@ -242,9 +292,9 @@ export const RoundedTab: React.FC<RoundedTabProps> = memo(
         ...propStyle
       }}
       {...rest}
-      ref={mergeRefs([refLocal, refMeasureContainer, refForwarded])}
+      ref={refMerged as React.Ref<HTMLDivElement>}
     >
-      {React.isValidElement(children) ? React.cloneElement(children, childProps) : <></>}
+      {isValidElement(children) ? cloneElement(children, childProps) : <></>}
       <svg
         style={{
           position:"absolute",

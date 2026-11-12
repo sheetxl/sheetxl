@@ -41,34 +41,12 @@ An SXL Module is a gzipped bundle that contains everything needed for robust, CS
 
 ---
 
-### How to use SXL Modules with the CLI
-
-**Run a local SXL Module:**
-
-```bash
-npx sheetxl myscript.sxlm
-```
-
-**Download and run from a secure server:**
-
-```bash
-npx sheetxl https://secure.example.com/scripts/myscript.sxlm
-```
-
-**In the REPL:**
-
-```js
-.load myscript.sxlm
-```
-
----
-
 ### Creating SXL Modules
 
 You can package your scripts into `.sxlm` modules using the SheetXL CLI:
 
 ```bash
-npx sheetxl pack myscript.ts
+npx sheetxl compile myscript.ts --out myscript.sxlm
 ```
 
 This command bundles your script, metadata, types, and source map into a single portable `.sxlm` file.

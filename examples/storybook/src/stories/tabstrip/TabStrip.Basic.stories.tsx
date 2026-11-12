@@ -3,6 +3,8 @@ import React, { useCallback, useState } from 'react';
 import { CommonUtils } from '@sheetxl/utils';
 import { TabStrip } from '@sheetxl/react';
 
+import { asStory } from '../../components';
+
 const createScrollMenuButton = function() {
   return (
     <div
@@ -107,9 +109,6 @@ const Template: React.FC = (props) => {
     {...rest}
     >
       <TabStrip
-        style={{
-
-        }}
         {...props}
         selectedTabIndex={selectedIndex}
         tabNames={sheetNames}
@@ -124,7 +123,7 @@ const Template: React.FC = (props) => {
   );
 };
 
-export const TabStripBasic = Template.bind({});
+export const TabStripBasic = asStory(Template);
 TabStripBasic.args = {
   disabled: false,
   showMenuSquare: true

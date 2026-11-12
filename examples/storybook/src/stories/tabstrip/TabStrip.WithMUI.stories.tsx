@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 
-import { Theme } from '@mui/material/styles';
+import { type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { IconButton } from '@mui/material';
 
@@ -9,11 +9,12 @@ import { TabStrip } from '@sheetxl/react';
 import { DynamicIcon } from '@sheetxl/utils-react';
 import { ExhibitIconButton } from '@sheetxl/utils-mui';
 import {
-  renderScrollButtonEdge, renderScrollButtonStart, renderScrollButtonEnd
+  defaultRenderScrollButtonEdge, defaultRenderScrollButtonStart, defaultRenderScrollButtonEnd
 } from '@sheetxl/utils-mui';
 
-import { SheetTab } from '@sheetxl/studio-mui';
+import { defaultRenderSheetTab } from '@sheetxl/studio-mui';
 
+import { asStory } from '../../components';
 
 /**
  * Use the MUI Tab from workbook project to apply polished MUI styling to custom tabs.
@@ -107,12 +108,12 @@ const Template: React.FC = (props) => {
         onTabNameChange={handleTabNameChange}
         onTabMove={handleTabMove}
         background="white"
-        activeColor={null}
-        renderScrollButtonStart={renderScrollButtonStart}
-        renderScrollButtonEnd={renderScrollButtonEnd}
-        renderScrollButtonEdge={renderScrollButtonEdge}
+        activeColor=""
+        renderScrollButtonStart={defaultRenderScrollButtonStart}
+        renderScrollButtonEnd={defaultRenderScrollButtonEnd}
+        renderScrollButtonEdge={defaultRenderScrollButtonEdge}
         renderTabButton={(props) => {
-          return <SheetTab {...props}/>
+          return defaultRenderSheetTab(props as any)
         }}
         propsEditLabel={{
           styleHover: {
@@ -139,7 +140,7 @@ const Template: React.FC = (props) => {
           padding: '0',
           height: '24px', // why is this required?
           "&:hover:not([disabled])": {
-            color: (theme:Theme) => {
+            color: (theme: Theme) => {
               return theme.palette.primary.main;
             }
           }
@@ -153,7 +154,7 @@ const Template: React.FC = (props) => {
   );
 };
 
-export const TabStripMUI = Template.bind({});
+export const TabStripMUI = asStory(Template);
 TabStripMUI.args = {
   disabled:false
 };

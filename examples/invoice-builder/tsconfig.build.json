@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    {
+      "path": "../../packages/primitives"
+    },
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/utils-react"
+    }
+  ],
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "**.test.**",
+    "**/__tests__/**"
+  ]
+}

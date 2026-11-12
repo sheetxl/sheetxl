@@ -5,12 +5,12 @@
 export default class Deferred<T = any> {
   private _resolve:any = null;
   private _result:any = undefined;
-  private _handled:string = null;
+  private _handled:string | null = null;
 
   private _reject:any = null;
   private _error:any = undefined;
 
-  private _promise: Promise<T> = null;
+  private _promise: Promise<T>;
 
   constructor() {
       this._promise = new Promise<T>((resolve:any, reject:any): void => {

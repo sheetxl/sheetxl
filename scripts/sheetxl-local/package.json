@@ -1,0 +1,10 @@
+{
+  "name": "sheetxl-local",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Global `sheetxl-local` bin that runs THIS checkout's CLI build. Link with `pnpm link --global`. Outside the pnpm workspace globs on purpose — it is a dev shim, not a package we build or publish.",
+  "type": "module",
+  "bin": {
+    "sheetxl-local": "./bin.mjs"
+  }
+}

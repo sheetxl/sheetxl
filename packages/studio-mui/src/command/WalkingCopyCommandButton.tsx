@@ -1,6 +1,7 @@
-import React, { useEffect, useState, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useEffect, useState, memo, forwardRef } from 'react';
 
-import { useEditMode, type CommandButtonProps, DynamicIcon } from '@sheetxl/utils-react';
+import { useEditMode, DynamicIcon, type CommandButtonProps } from '@sheetxl/utils-react';
 
 import { CommandButton } from '@sheetxl/utils-mui';
 
@@ -9,26 +10,25 @@ export interface WalkingCopyCommandButtonProps extends CommandButtonProps {}
 export const WalkingCopyCommandButton: React.FC<WalkingCopyCommandButtonProps> = memo(
   forwardRef<any, WalkingCopyCommandButtonProps>((props, refForwarded) => {
   const {
-    command,
+    commandKey,
     ...rest
   } = props;
 
-  // TODO - move this to Icon too
   const editModeHandler = useEditMode();
   const [isWalking, setIsWalking] = useState<boolean>(false);
-  const [themedType, setThemedType] = useState<string>("info");
+  const [themedType, setThemedType] = useState<string>('primary');
 
   useEffect(() => {
     const mode = editModeHandler.getMode();
     const newWalking = (mode?.key === 'copy' || mode?.key === 'cut');
     setIsWalking(newWalking);
-    setThemedType(mode?.key === 'cut' ? "warn" : "accent");
+    setThemedType(mode?.key === 'cut' ? 'warning' : 'primary');
   }, [editModeHandler]);
 
   return (
     <CommandButton
       ref={refForwarded}
-      command={command}
+      commandKey={commandKey}
       icon={
         <DynamicIcon
           iconKey="copy.walking"

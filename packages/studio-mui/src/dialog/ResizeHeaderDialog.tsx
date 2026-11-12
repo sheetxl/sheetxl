@@ -1,20 +1,20 @@
-import React, { useState, useMemo, memo, useCallback } from 'react';
+import type React from 'react';
+import { useState, useMemo, memo, useCallback } from 'react';
 
-import { Theme, alpha, getOverlayAlpha } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { FormControl } from '@mui/material';
 import { InputLabel } from '@mui/material';
 import { MenuItem } from '@mui/material';
 import { TextField } from '@mui/material';
 import { Typography } from '@mui/material';
-import { Select, SelectChangeEvent } from '@mui/material';
+import { Select, type SelectChangeEvent } from '@mui/material';
 
 import { IRange } from '@sheetxl/sdk';
 
-import { useCallbackRef, KeyCodes } from '@sheetxl/utils-react';
+import { useCallbackRef, KeyCodes, useTranslator, type OptionInput } from '@sheetxl/utils-react';
 
-import type { CommandContext } from '@sheetxl/react';
+import { type CommandContext } from '@sheetxl/react';
 
 import { OptionsDialog, type InputDialogProps } from '@sheetxl/utils-mui';
 
@@ -26,8 +26,8 @@ const DEFAULT_INPUT_OPTIONS = ['Autofit', 'Ok', 'Cancel'];
  * * TODO
  * * Allow for entering in character units
  * * Show realtime conversion from native to pixels.
- * * Validation?
- * * 0 is hidden?
+ * * 0 is hidden - show a little indicate that this is hidden
+ * * validation - max size is based on header and unit
  */
 export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHeaderDialogProps) => {
   const {
@@ -44,36 +44,39 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
     ...rest
   } = props;
 
+  const t = useTranslator();
+
   const isColumn = useMemo(() => {
-    return context?.().getOrientation() === IRange.Orientation.Column;
+    return context?.().getAxis() === IRange.Axis.Column;
   }, [context]);
 
-  const [input, setInput] = useState<CommandContext.ResizeHeaderOptions>(initialValue);
+  const [input, setInput] = useState<CommandContext.ResizeHeaderOptions>(initialValue ?? { size: 0 });
   const [firstFocus, setFirstFocus] = useState<boolean>(false);
 
-  const onValidateInputOption = useCallback(async (_input?: CommandContext.ResizeHeaderOptions, _option?: string): Promise<boolean> => {
+  const onValidateInputOption = useCallback(async (_input?: CommandContext.ResizeHeaderOptions, _option?: OptionInput): Promise<boolean> => {
     // TODO - do validation of format
     return true;
   }, []);
 
   // Should convert to other
   const asOther = useMemo(() => {
-    if (!context().toUnits) {
+    const ctx = context?.();
+    if (!ctx?.toUnits) {
       return null;
     }
     let size = input?.size ?? 0;
     let unit: string = 'Px';
     if (input.unit === 'Px') {
-      size = context().toUnits?.(size);
-      unit = context().getUnitText();
+      size = ctx.toUnits?.(size) ?? size;
+      unit = ctx.getUnitText();
     } else {
-      size = context().toPixels?.(size);
+      size = ctx.toPixels?.(size) ?? size;
       unit = 'Px';
     }
     return { size, unit }
   }, [input?.unit, input?.size]);
 
-  const handleInput = useCallbackRef(async (option: string) => {
+  const handleInput = useCallbackRef(async (option: OptionInput) => {
     const isCancel = option === cancelOption;
     if (!isCancel) {
       onInput?.(input, option);
@@ -84,17 +87,17 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
 
   const handleKeyDown = useCallbackRef(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.keyCode === KeyCodes.Enter) {
-      let valid = await onValidateInputOption?.(input, null);
+      let valid = await onValidateInputOption?.(input);
       if (valid !== false)
         handleInput(defaultOption);
     }
   }, [input, handleInput]);
 
-  const handleValidateOption = useCallbackRef(async (option: string): Promise<boolean> => {
+  const handleValidateOption = useCallbackRef(async (option?: OptionInput): Promise<boolean> => {
     let result = await Promise.resolve(onValidateOption?.(option));
     try {
       if (result !== false)
-        result = await Promise.resolve(onValidateInputOption?.(input, option)) ?? true;
+        result = (await Promise.resolve(onValidateInputOption?.(input, option))) ?? true;
     } catch (e) {}
     return result ?? true;
   }, [onValidateOption]);
@@ -103,7 +106,7 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
   const handleOnTextChange = useCallbackRef((e: React.ChangeEvent<HTMLInputElement>) => {
     const asNewInput = { ...input, size: Number(e.target.value) }
     setInput(asNewInput);
-    onValidateInputOption?.(asNewInput, null);
+    onValidateInputOption?.(asNewInput);
   }, [input, onValidateOption]);
 
   const handleUnitChange = useCallbackRef((event: SelectChangeEvent<string>) => {
@@ -114,7 +117,7 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
   }, [input]);
 
   const optionsUnit = useMemo(() => {
-    const units = context().getUnitText();
+    const units = context?.().getUnitText() ?? '';
     const createOption = (value: string) => {
       return (
         <MenuItem
@@ -131,12 +134,17 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
     return options;
   }, []);
 
+  // 'Autofit' stays the identity (the command compares it); only its label is localized here.
+  const localizedOptions = useMemo(() => options.map((o) =>
+    o === 'Autofit' ? { id: 'Autofit', label: () => t('resizeHeader.autofit') } : o
+  ), [options, t]);
+
   return (
     <OptionsDialog
-      title={`Resize ${isColumn ? 'Columns' : 'Rows'}`}
-      options={options}
+      title={isColumn ? t('resizeHeader.titleColumns') : t('resizeHeader.titleRows')}
+      options={localizedOptions}
       onDone={onDone}
-      onOption={(option: string) => handleInput(option) }
+      onOption={(option: OptionInput) => handleInput(option) }
       onValidateOption={handleValidateOption}
       defaultOption={defaultOption}
       cancelOption={cancelOption}
@@ -175,7 +183,7 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
             size="small"
           >
           <TextField
-            label={`Size`}
+            label={t('resizeHeader.size')}
             onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
               if (!firstFocus) {
                 e.target?.select();
@@ -197,14 +205,15 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
                 autoComplete: "off",
                 type: 'number',
                 inputMode: 'numeric',
+                min: 0,
+                // max: 100, // this need to be dynamic
                 pattern: '[0-9]*',
                 // needed to override the default padding of 16px
                 // when using small size (which is 8px)
                 // see
                 sx: {
                   paddingTop: (theme: Theme) => theme.spacing(1.25),
-                  paddingBottom: (theme: Theme) => theme.spacing(0.75),
-                  backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`
+                  paddingBottom: (theme: Theme) => theme.spacing(0.75)
                 }
               }
             }}
@@ -221,15 +230,12 @@ export const ResizeHeaderDialog = memo<ResizeHeaderDialogProps>((props: ResizeHe
             size="small"
           >
             <InputLabel>
-              {'Unit'}
+              {t('resizeHeader.unit')}
             </InputLabel>
             <Select
               value={input.unit}
-              label={"Unit"}
+              label={t('resizeHeader.unit')}
               onChange={handleUnitChange}
-              sx={{
-                backgroundImage: `linear-gradient(${alpha('#fff', getOverlayAlpha(5))}, ${alpha('#fff', getOverlayAlpha(5))})`,
-              }}
             >
               {optionsUnit}
             </Select>

@@ -1,3 +1,7 @@
+/// <reference types="node" />
+// ^ Node-only module: declares the ambient types it needs, rather than inheriting whatever a
+// dependency's d.ts happens to pull in (tsconfig.base.json sets `"types": []`).
+
 export * from './compress.shared';
 
 // --- ArrayBuffer Version ---

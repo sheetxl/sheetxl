@@ -1,24 +1,33 @@
-import React, { useState, useRef, useMemo, memo, useEffect, forwardRef } from 'react';
+import type React from 'react';
+import { useState, useRef, useMemo, memo, useEffect, forwardRef } from 'react';
 
-import { Theme } from '@mui/material/styles';
-
+import { type InputBaseComponentProps, type Theme } from '@mui/material';
 import { IconButton } from '@mui/material'
 import { Input } from '@mui/material';
 
 import {
-  useCallbackRef, useCommand, ICommand, CommandButtonType, KeyCodes,
-  type CommandButtonProps, DynamicIcon
+  useCommands, useCallbackRef, CommandButtonType, KeyCodes, DynamicIcon,
+  type UseCommandsListener, type CommandButtonProps
 } from '@sheetxl/utils-react';
 
 import { ExhibitMenuItem, ExhibitIconButton } from '../button';
 
 import { CommandTooltip } from './CommandTooltip';
+import { useManagedRipple } from './useManagedRipple';
 
 const BLANK_ICON = <DynamicIcon/>;
 
 export interface InputCommandButtonProps<STATE=any, CONTEXT=any> extends CommandButtonProps<STATE, CONTEXT> {
   // TODO - move to command buttons
   label?: React.ReactNode | string | (() => React.ReactNode | string);
+
+  inputProps?: InputBaseComponentProps;
+    /**
+     * Pass a ref to the `input` element.
+     */
+  inputRef?: React.Ref<any>;
+
+  parseInput?: (value: string) => any;
 }
 
 /**
@@ -33,83 +42,93 @@ export interface InputCommandButtonProps<STATE=any, CONTEXT=any> extends Command
 export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
   forwardRef<any, InputCommandButtonProps>((props, refForwarded) => {
   const {
-    command,
-    scope,
-    icon: propIcon = BLANK_ICON,
+    commandKey,
+    groupKey,
+    icon: propIcon,
+    commandState,
     label: propLabel,
     variant = CommandButtonType.Toolbar,
-    disabled: propDisabled = false,
-    commandHook: propCommandHook,
+    disabled: propDisabled,
+    parseInput,
+    inputProps,
+    inputRef,
     ...rest
   } = props;
 
-  const refRipple = useRef<any>(null);
-  const refRippleSelf = useRef<boolean>(false);
-  const rippleDuration = 180;
+  const { ripple, trigger: triggerRipple } = useManagedRipple();
 
-  const commandHook:ICommand.Hook<any, any> = useMemo(() => {
-    const retValue:ICommand.Hook<any, any> = {
-      onExecute(command: ICommand<any, any>, args: any): void {
-        propCommandHook?.onExecute?.(command, args);
-        if (!refRippleSelf.current) {
-          refRipple.current?.start({
-            center: false
-          })
-          setTimeout(() => refRipple.current?.stop({}), rippleDuration);
-        }
-        refRippleSelf.current = false;
-      },
-      onError(command: ICommand<any, any>, error: any, args: any): void {
-        propCommandHook?.onError(command, error, args);
-      }
+  const commandListener: UseCommandsListener<any, any> = useMemo(() => ({
+    // Fires for EVERY dispatch of this command (see `useCommands`); our always-mounted ripple flashes
+    // the button so remote executes (keystroke/sibling/programmatic) give feedback too.
+    onExecute(): void {
+      triggerRipple();
     }
-    if (propCommandHook?.beforeExecute)
-      retValue.beforeExecute = propCommandHook.beforeExecute;
-    return retValue;
-  }, [propCommandHook]);
+  }), [triggerRipple]);
 
-  const _ = useCommand(command, commandHook);
+  const command = useCommands(commandKey ?? [], commandListener)[0];
 
   const committedInputValue = () => {
-    return command?.getState()?.toString() || '0';
+    return command?.getState()?.toString() || '';
   }
 
-  const [inputValue, setInputValue] = useState<string>(committedInputValue);
+  const [inputValue, setInputValue] = useState<any>('');
 
+  const refLastCommitted = useRef<string>(committedInputValue());
   const commitNewValue = useCallbackRef(() => {
-    const asNumber = parseFloat(inputValue);
-    if (isNaN(asNumber)) { // revert back to original value (blank is an example)
-      setInputValue(committedInputValue());
+    // we have a race condition with blur and enter key causing double commit
+    let newInput = inputValue;
+    if (parseInput) {
+      try {
+        newInput = parseInput(inputValue);
+      } catch (e) {
+        setInputValue(committedInputValue());
+        return;
+      }
+    }
+    if (refLastCommitted.current === inputValue) {
+      setInputValue(committedInputValue()); // not needed?
       return;
     }
-    // If the same don't commit
-    if (parseFloat(committedInputValue()) === asNumber)
-      return;
+    refLastCommitted.current = inputValue;
 
-    command.execute(asNumber, propCommandHook);
-  }, [committedInputValue, command, inputValue, propCommandHook]);
+    command?.execute(newInput);
+  }, [committedInputValue, command, inputValue, parseInput]);
 
   useEffect(() => {
     setInputValue(committedInputValue());
   }, [command?.getState()]);
 
-  const icon = useMemo(() => {
-    let retValue = typeof propIcon === "function" ? propIcon(command) : propIcon ;
-    if (retValue) {
-      retValue = command?.getIcon();
+  const icon: React.ReactNode = useMemo(() => {
+    if (propIcon === null) return BLANK_ICON;
+    let commandIcon: React.ReactNode;
+    if (typeof propIcon === "function") {
+      commandIcon = command ? propIcon(command) : undefined;
+    } else {
+      commandIcon = propIcon;
     }
-    if (typeof retValue === 'string') {
-      retValue = <DynamicIcon iconKey={retValue} />;
+    // If we are a menu and not selected we don't want the default checkmark icon
+    if (!commandIcon) {
+      commandIcon = command?.getIcon();
     }
-    return retValue;
-  }, [_, propIcon, command?.getIcon]);
+    if (commandIcon) {
+      if (typeof commandIcon === "string") {
+        commandIcon = <DynamicIcon iconKey={commandIcon}/>;
+      }
+      return commandIcon as React.ReactNode;
+    }
+
+    if (variant !== CommandButtonType.Toolbar && !command?.getState()) {
+      return BLANK_ICON;
+    }
+  }, [command?.getIcon(), propIcon]);
 
   const label = useMemo(() => {
     if (propLabel === undefined)
-      return command?.getLabel(scope);
+      return command?.getLabel(groupKey);
     return typeof propLabel === "function" ? propLabel() : propLabel ;
-  }, [_]);
+  }, [propLabel, command?.getLabel(groupKey)]);
 
+  const disabled = propDisabled ?? (!command || command.disabled());
   const input = useMemo(() => {
     return (
       <IconButton {...rest}
@@ -124,14 +143,14 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
         onMouseUp={(e: React.MouseEvent<HTMLElement>) => { if (e.button !== 0) return; e.stopPropagation() } }
       >
         <Input
-          inputMode={'numeric'}
-          disabled={propDisabled || !command || command.disabled()}
+          // inputMode={'numeric'}
+          disabled={disabled}
+          inputRef={inputRef}
           inputProps={{
             tabIndex:0,
-            name: `input-${command.getKey()}`,
+            name: `input-${command?.getKey()}`,
             autoComplete: "off",
-            type:"number",
-            maxLength: 4, // Not honored for inputType number so we manage in onchange and keypress
+            ...inputProps
           }}
           sx={{
             paddingTop: '0px',
@@ -204,13 +223,15 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
         />
       </IconButton>
       );
-  }, [inputValue, propDisabled, command]);
+  }, [inputValue, disabled, inputProps, inputRef]);
 
   const buttonProps = {
     tabIndex: 0,
     ref: refForwarded,
     icon,
-    touchRippleRef: refRipple,
+    // MUI's own ripple is lazy-mounted (only after a pointer/focus on THIS button), so it can't flash
+    // on a remote execute. We disable it and drive our always-mounted `ripple` via onExecute.
+    disableRipple: true,
     disabled: propDisabled || !command || command.disabled(),
     onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
       if (e.button !== 0)
@@ -221,13 +242,15 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
       // Note - Input button is being called twice so we have this hack. Review toggle vs buttons vs menus.
       if (e.isDefaultPrevented()) return;
       e.preventDefault();
-      command?.execute(!command?.getState(), commandHook);
+      commitNewValue();
+      // command?.execute(commandState ?? !command?.getState());
     },
     onKeyDown: (e: React.KeyboardEvent) => {
       // button prevents space so we don't check it
       // if (e.isDefaultPrevented()) return;
-      if (e.keyCode === KeyCodes.Enter || e.keyCode === KeyCodes.Space) {
-        command?.execute(!command?.getState(), commandHook);
+      if (e.keyCode === KeyCodes.Enter || e.keyCode === KeyCodes.Tab) {
+        commitNewValue();
+        // command?.execute(commandState ?? !command?.getState());
       }
     }
   }
@@ -237,11 +260,11 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
     retValue = (
       <ExhibitMenuItem
         {...rest as any}
-        chips={command?.getTags()}
         {...buttonProps}
       >
         {label}
         {input}
+        {ripple}
       </ExhibitMenuItem>
     );
   } else {
@@ -249,7 +272,9 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
       <ExhibitIconButton
         {...rest}
         {...buttonProps}
-      />
+      >
+        {ripple}
+      </ExhibitIconButton>
     );
   }
 
@@ -268,7 +293,7 @@ export const InputCommandButton: React.FC<InputCommandButtonProps> = memo(
 
   retValue = (
     <CommandTooltip
-      command={command}
+      commandKey={commandKey}
       placement={variant === CommandButtonType.Toolbar? "bottom-start" : "right-start"}
     >
     {retValue}

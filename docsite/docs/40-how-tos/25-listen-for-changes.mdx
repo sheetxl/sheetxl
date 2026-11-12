@@ -1,0 +1,99 @@
+---
+sidebar_position: 25
+title: Listen for Changes
+---
+
+Want to know when a user types in a cell, a formula recalculates, or a row gets inserted above your data?
+Add a listener to a range. In React, a hook does the subscribing and cleanup for you.
+
+## Using SDK
+
+To listen for changes at a range use [addListener](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.html#addlistener).
+The listener is handed an [ICellRange.Event](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.Event.html).
+
+```typescript
+import { Workbook, type ICellRange, type IListener } from '@sheetxl/sdk';
+
+const workbook = new Workbook();
+
+const removeListener: IListener.Remove = workbook.getRange('Sheet1!A1:E5000').addListener((event: ICellRange.Event): void => {
+  // The listened range, where it is now. Rows inserted above it move it; read from here, not from
+  // the range addListener was called on.
+  const range = event.getSource();
+  switch (event.getTrigger()) {
+    case 'data':
+      // The cells that changed within the range. event.getCommit() is null for a recalculation.
+      console.log('changed:', event.getRanges()!.getAddress(), event.isUndo() ? '(undo)' : '');
+      break;
+    case 'address':
+      // Moved by an insert, delete or sheet rename; #REF! if its cells were deleted.
+      console.log('now at:', range.getAddress(), 'was:', event.getPreviousAddress());
+      break;
+    case 'restore':
+      // Restored to a revision from before the listener was added; the range is #N/A there.
+      break;
+  }
+});
+// call removeListener() to remove the listener when finished
+```
+
+[ICellRange.ListenerOptions](https://api.sheetxl.com/interfaces/_sheetxl_sdk.ICellRange.ListenerOptions.html)
+choose which events the listener hears (`ignoreDataChanges`, `ignoreAddressChanges`), whether it takes
+part in the change or observes it afterwards (`transactional`), and how the range follows rows and
+columns inserted or deleted around it (`anchor`). A listener on the rows a view shows is anchored
+`Absolute`, so that it keeps naming the rows on screen:
+
+```typescript
+import { IAnchored } from '@sheetxl/sdk';
+
+sheet.getRange('A1:Z40').addListener(repaint, { anchor: IAnchored.Type.Absolute });
+```
+
+## Using React
+
+Hooks are available for React to make it easy to listen for changes. These are:
+
+* [useModelListener](https://api.sheetxl.com/functions/_sheetxl_react.useModelListener.html)
+* [useModelSync](https://api.sheetxl.com/functions/_sheetxl_react.useModelSync.html)
+* [useRangeListener](https://api.sheetxl.com/functions/_sheetxl_react.useRangeListener.html)
+
+
+```tsx title="useModelSync example"
+import { type IWorksheet } from '@sheetxl/sdk';
+import { useModelSync } from '@sheetxl/react';
+
+/* Causes a re-render when style changes */
+useModelSync<IWorksheet.IListeners>(sheet, 'onStyleChange');
+```
+
+
+```tsx title="useModelListener example"
+import { type IWorksheet } from '@sheetxl/sdk';
+import { useModelListener } from '@sheetxl/react';
+
+/* Updates state when there are changes to sheet */
+useModelListener<IWorksheet, IWorksheet.IListeners>(sheet, {
+  // See IWorksheet.IListeners for all events
+  onBeforeSave(source: IWorksheet): Promise<void> | void {
+    // throw an exception to prevent save.
+  },
+  onSave(source: IWorksheet, json: IWorksheet.JSON): void {
+    // do something with the json
+  },
+}, {
+  // Optional: skip the immediate callback that otherwise fires when the
+  // hook mounts or the model changes
+  ignoreModelChange: true
+});
+
+```
+
+```tsx title="useRangeListener example"
+import { type ICellRange, type IWorksheet } from '@sheetxl/sdk';
+import { useRangeListener } from '@sheetxl/react';
+
+/* Listens to A1:C3 of the sheet while mounted; the options are ICellRange.ListenerOptions */
+useRangeListener(sheet, 'A1:C3', (event: ICellRange.Event) => {
+  if (event.getTrigger() === 'data') console.log('changed:', event.getRanges()!.getAddress());
+}, { transactional: false });
+```

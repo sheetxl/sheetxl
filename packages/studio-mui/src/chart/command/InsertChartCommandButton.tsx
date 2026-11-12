@@ -1,31 +1,21 @@
-import React, { memo, forwardRef, useCallback } from 'react';
+import { memo, forwardRef, useCallback } from 'react';
 
 import { Box } from '@mui/material';
-import type { TooltipProps } from '@mui/material';
 
 import {
-  ICommand, ICommands, Command, useCommands, useCallbackRef
+  useCommands, useCommandButtonEntry, useCallbackRef, useTranslator
 } from '@sheetxl/utils-react';
 
 import {
-  ThemedIcon, ExhibitMenuHeader,
-  ExhibitTooltip, CommandPopupButton, ExhibitIconButton, ExhibitDivider,
-  type CommandPopupButtonProps, type ExhibitPopupPanelProps, type ExhibitIconButtonProps
+  ExhibitMenuHeader, ExhibitTooltip, CommandPopupButton, ExhibitIconButton, ExhibitDivider,
+  type CommandPopupButtonProps, type ExhibitPopupPanelProps, type ExhibitIconButtonProps, type ButtonTooltipRenderProps
 } from '@sheetxl/utils-mui';
 
 import {
-  ChartTypeDescriptor, PresetChartType, presetChartTypeDescriptor
-} from '../PresetChartTypeDescriptors';
+  presetChartTypeDescriptor, PresetChartType, ThemedChartIcon, type ChartTypeDescriptor
+} from '@sheetxl/react';
 
 export interface InsertChartCommandButtonProps extends CommandPopupButtonProps {
-  commands: ICommands.IGroup;
-
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-   commandHook?: ICommand.Hook<any, any>;
 }
 
 interface PresetChartIconButtonProps extends ExhibitIconButtonProps {
@@ -42,6 +32,7 @@ const PresetChartIconButton = memo((props: PresetChartIconButtonProps) => {
     size = 'large',
     ...rest
   } = props;
+  const t = useTranslator();
   const descriptor = presetChartTypeDescriptor(presetKey);
   if (!descriptor) {
     console.warn('no descriptor type', descriptor);
@@ -53,19 +44,14 @@ const PresetChartIconButton = memo((props: PresetChartIconButtonProps) => {
     <ExhibitIconButton
       key={presetKey}
       propsTooltip={{
-        description: descriptor.description
+        description: t(descriptor.description)
       }}
       icon={
-        <ThemedIcon
+        <ThemedChartIcon
           size={size}
         >
-          <ChartIcon
-            style={{
-              width: '100%',
-              height: '100%'
-            }}
-            />
-        </ThemedIcon>
+          <ChartIcon/>
+        </ThemedChartIcon>
       }
       onClick={() => { handleOnInsertChart(descriptor) }}
       {...rest}
@@ -81,27 +67,25 @@ const PresetChartIconButton = memo((props: PresetChartIconButtonProps) => {
 export const InsertChartCommandButton = memo(
   forwardRef<HTMLElement, InsertChartCommandButtonProps>((props, refForwarded) => {
   const {
-    commands: propCommands,
-    scope: propScope,
-    commandHook,
-    disabled: propDisabled = false,
+    groupKey: propGroupKey,
+    disabled: propDisabled,
     label: propLabel,
     icon: propIcon,
     ...rest
   } = props;
+  const t = useTranslator();
 
-  const resolvedCommands = useCommands<ChartTypeDescriptor>(propCommands, [
-    'insertChart'
-  ]);
+  const resolvedCommands = useCommands<ChartTypeDescriptor>(['insertChart']);
+  const entry = useCommandButtonEntry('insertChartOptions');
 
-  const command = resolvedCommands[0] as Command<ChartTypeDescriptor>;
-  const disabled = propDisabled || command?.disabled();
+  const command = resolvedCommands[0];
+  const disabled = propDisabled ?? command?.disabled();
 
   const handleOnInsertChart = useCallbackRef((preset: ChartTypeDescriptor) => {
-    command?.execute(preset, commandHook);
-  }, [command, commandHook, propScope]);
+    command?.execute(preset);
+  }, [command, propGroupKey]);
 
-  const createPopupPanel = useCallback((_props: ExhibitPopupPanelProps, _commands: ICommands.IGroup) => {
+  const renderPopupPanel = useCallback((_props: ExhibitPopupPanelProps) => {
     const buttonProps = {
       disabled,
       handleOnInsertChart
@@ -123,7 +107,7 @@ export const InsertChartCommandButton = memo(
           }}
         >
           <ExhibitMenuHeader>
-            Column
+            {t('chart.category.column')}
           </ExhibitMenuHeader>
           <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
             <PresetChartIconButton presetKey={PresetChartType.Column} {...buttonProps} />
@@ -132,7 +116,7 @@ export const InsertChartCommandButton = memo(
           </Box>
           <ExhibitDivider orientation="horizontal"/>
           <ExhibitMenuHeader>
-            Line
+            {t('chart.category.line')}
           </ExhibitMenuHeader>
           <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
             <PresetChartIconButton presetKey={PresetChartType.Line} {...buttonProps}/>
@@ -144,7 +128,7 @@ export const InsertChartCommandButton = memo(
           </Box>
           <ExhibitDivider orientation="horizontal"/>
           <ExhibitMenuHeader>
-            Pie
+            {t('chart.category.pie')}
           </ExhibitMenuHeader>
           <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
             <PresetChartIconButton presetKey={PresetChartType.Pie} {...buttonProps}/>
@@ -152,7 +136,7 @@ export const InsertChartCommandButton = memo(
           </Box>
           <ExhibitDivider orientation="horizontal"/>
           <ExhibitMenuHeader>
-            Bar
+            {t('chart.category.bar')}
           </ExhibitMenuHeader>
           <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
             <PresetChartIconButton presetKey={PresetChartType.Bar} {...buttonProps}/>
@@ -161,7 +145,7 @@ export const InsertChartCommandButton = memo(
           </Box>
           <ExhibitDivider orientation="horizontal"/>
           <ExhibitMenuHeader>
-            Area
+            {t('chart.category.area')}
           </ExhibitMenuHeader>
           <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
             <PresetChartIconButton presetKey={PresetChartType.Area} {...buttonProps}/>
@@ -170,7 +154,7 @@ export const InsertChartCommandButton = memo(
           </Box>
           <ExhibitDivider orientation="horizontal"/>
           <ExhibitMenuHeader>
-            Scatter
+            {t('chart.category.scatter')}
           </ExhibitMenuHeader>
           <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
             <PresetChartIconButton presetKey={PresetChartType.ScatterMarkers} {...buttonProps}/>
@@ -182,19 +166,19 @@ export const InsertChartCommandButton = memo(
         </Box>
       </Box>
     );
-  }, [propDisabled]);
+  }, [propDisabled, t]);
 
   const ChartIcon = presetChartTypeDescriptor(PresetChartType.Column).Icon;
   return (
     <CommandPopupButton
       ref={refForwarded}
-      commands={propCommands}
-      createPopupPanel={createPopupPanel}
-      createTooltip={({children}: TooltipProps, disabled: boolean) => {
+      renderPopupPanel={renderPopupPanel}
+      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
         return (
           <ExhibitTooltip
-            label="Insert Chart"
-            description="Insert a chart to visually explore the selected data."
+            // Tooltip chrome from the registered `insertChartOptions` entry (catalog-backed).
+            label={entry?.getLabel?.()}
+            description={entry?.getDescription?.()}
             disabled={disabled}
           >
             {children}
@@ -202,15 +186,15 @@ export const InsertChartCommandButton = memo(
         );
       }}
       // TODO - add a insert chart quick Command
-      label={command?.getLabel(propScope) ?? `Insert Chart...`}
+      label={command?.getLabel(propGroupKey) ?? t('chart.insertFallback')}
       disabled={disabled}
       selected={false}
       icon={
-        <ThemedIcon
+        <ThemedChartIcon
           // size={'small'}
         >
           <ChartIcon/>
-        </ThemedIcon>
+        </ThemedChartIcon>
       }
       {...rest}
     />

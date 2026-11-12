@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 
-import { useSynchronizedPointerHandler, PointerModifiers } from './useSynchronizedPointerHandler';
+import { useSynchronizedPointerHandler, type PointerModifiers } from './useSynchronizedPointerHandler';
 
 export interface RepeatClickOptions {
   timerInitial?: number;

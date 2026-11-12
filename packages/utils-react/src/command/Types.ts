@@ -1,5 +1,6 @@
-import type { IKeyStroke } from '../types';
-import type { ICommand } from './ICommand';
+import { type IKeyStroke } from '../types';
+
+import { type ResolvedCommand } from './createResolvedCommand';
 
 /**
  * Follow useCommandsButtons. pattern createCommandButtonSet
@@ -33,22 +34,25 @@ export type CommandButtonRefAttribute = {
   ref?: React.Ref<HTMLDivElement>;
 };
 
-export interface CommandButtonOptions<STATE=any, CONTEXT=any> extends Omit<React.HTMLAttributes<HTMLElement>, "color" | "label"> {
+export interface CommandButtonOptions<STATE=any, CONTEXT=any, ARGS = void> extends Omit<React.HTMLAttributes<HTMLElement>, "color" | "label"> {
   /**
-   * Allow for listeners against a specific buttons execute rather then the command.
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
+   * The panel/group the button renders in (e.g. `'contextMenu'`, `'cellStyle'`) — selects the
+   * command's matching `groupLabels` variant. Omit for the full label. (Named `groupKey`, NOT
+   * "scope" — command *scopes* are contributors; this is purely a presentation surface.)
    */
-  commandHook?: ICommand.Hook<STATE, CONTEXT>;
+  groupKey?: string;
+
+  icon?: React.ReactNode | ((command: ResolvedCommand<STATE, CONTEXT, ARGS>) => React.ReactNode);
+
+  label?: React.ReactNode | ((command: ResolvedCommand<STATE, CONTEXT, ARGS>) => React.ReactNode);
+
   /**
-   * Optional string to enable the command label to be configured based on the scope of how it is being used.
+   * Render the `label` as visible button content (alongside the icon) rather than tooltip-only.
+   * Toolbar buttons are icon-only by default; menu items always show their label. See
+   * {@link CommandButtonEntry.showLabel} for the entry-level equivalent.
+   * @defaultValue false
    */
-  scope?: string;
-
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-  // show label?
+  showLabel?: boolean;
 
   /**
    * The shortcut to display.
@@ -69,20 +73,19 @@ export interface CommandButtonOptions<STATE=any, CONTEXT=any> extends Omit<React
   propsTooltip?: any;//Omit<ExhibitTooltipProps, 'children'>;
   /**
    * How the button will be styles.
+   *
    * @defaultValue CommandButtonType.Toolbar
    */
   variant?: CommandButtonType;
   /**
    * Optional state for this specific command button.
+   *
    * @defaultValue to undefined
    */
   commandState?: STATE;
-
-  context?: CONTEXT;
 }
 
-export interface CommandButtonProps<STATE=any, CONTEXT=any> extends CommandButtonOptions {
-  command: ICommand<STATE, CONTEXT>;
-
-  // ref?: React.Ref<unknown>;
+export interface CommandButtonProps<STATE=any, CONTEXT=any, ARGS = void> extends CommandButtonOptions<STATE, CONTEXT, ARGS> {
+  commandKey?: string;
+  command?: ResolvedCommand<STATE, CONTEXT, ARGS>;
 }

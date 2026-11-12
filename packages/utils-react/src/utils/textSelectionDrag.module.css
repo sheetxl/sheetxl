@@ -1,0 +1,14 @@
+
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+/* Stamped on the document root for the life of a text-selection drag — see `useTextSelectionDrag`.
+   `!important` on a universal selector: what it overrides are unlayered author rules, some of them
+   themselves on `*`, so neither specificity nor source order can be relied on to win. */
+.dragging,
+.dragging * {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}

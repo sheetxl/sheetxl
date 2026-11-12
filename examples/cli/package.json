@@ -1,0 +1,20 @@
+{
+  "name": "example-cli",
+  "description": "SheetXL CLI examples — expression sessions, grep patterns, and runner scripts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "sheetxl": "sheetxl",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean:all": "git clean -fdX ."
+  },
+  "dependencies": {
+    "@sheetxl/runner": "workspace:*",
+    "@sheetxl/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "sheetxl": "^1.0.0"
+  }
+}

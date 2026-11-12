@@ -1,0 +1,21 @@
+{
+  "name": "example-cdn",
+  "description": "Example of loading SheetXL Studio from a CDN with no build step",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -o",
+    "build": "node build.js",
+    "preview": "npx http-server ./build -p 3000 -o",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX ."
+  },
+  "sheetxl": {
+    "demo": {
+      "title": "Loading from CDN",
+      "description": "Zero install. One script tag from a CDN and you have a spreadsheet: no build step, no npm install, no framework.",
+      "thumb": "demo-thumb.png"
+    }
+  }
+}

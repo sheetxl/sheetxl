@@ -1,3 +1,3 @@
-# SheetXL Studio: Full Demo
+# SheetXL Studio: Studio Mui
 
-This project is designed to run within the mono repo for full development debugging.
+This project is designed to run within the monorepo for full development debugging.

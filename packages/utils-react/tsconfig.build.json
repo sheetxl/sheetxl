@@ -10,7 +10,8 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "./src"
+    "./src",
+    "./src/icons/packs/*.json"
   ],
   "exclude": [
     "**.test.**",

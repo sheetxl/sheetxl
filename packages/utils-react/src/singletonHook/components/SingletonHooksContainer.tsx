@@ -1,20 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SingleItemContainer } from './SingleItemContainer';
 import { mount } from '../utils/env';
 import { warning } from '../utils/warning';
 
+interface WorkingHook {
+  hook: any;
+  key: number;
+}
+
 let nextKey = 1;
 let automaticRender = false;
 let manualRender = false;
-const workingSet = [];
-const renderedContainers = [];
+const workingSet: WorkingHook[] = [];
+const renderedContainers: Array<() => void> = [];
 
 const notifyContainersAsync = () => {
   renderedContainers.forEach(updateRenderedHooks => updateRenderedHooks());
 };
 
-export const SingletonHooksContainer = ({ automaticContainerInternalUseOnly }) => {
-  const [hooks, setHooks] = useState([]);
+export const SingletonHooksContainer = ({ automaticContainerInternalUseOnly }: {
+  automaticContainerInternalUseOnly?: boolean;
+}) => {
+  const [hooks, setHooks] = useState<WorkingHook[]>([]);
   const currentHooksRef = useRef<any[]>([]);
   currentHooksRef.current = hooks;
 
@@ -60,7 +68,7 @@ export const SingletonHooksContainer = ({ automaticContainerInternalUseOnly }) =
   return <>{hooks.map(({ hook, key }) => <SingleItemContainer {...hook} key={key}/>)}</>;
 };
 
-export const addHook = hook => {
+export const addHook = (hook: any) => {
   const key = nextKey++;
   workingSet.push({ hook, key });
 

@@ -1,4 +1,4 @@
-import { PaintableText, Size } from '../types';
+import { type PaintableText, type Size } from '../types';
 
 /**
  * Simple DOM element to measure text size for non-rich text.
@@ -11,8 +11,6 @@ import { PaintableText, Size } from '../types';
  * textMeasurer.naturalBounds('Hello world').width
  * ```
  */
-
-// TODO - check can I use dom? Ultimately we are going to replace this with our custom text layout
 export interface TextMeasurerOptions {
   maxWidth?:number;
   lineHeight?: string; // if not specified then derived from fontSize

@@ -3,16 +3,34 @@ sidebar_position: 1
 title: Concepts Overview
 id: concept-overview
 ---
-import ConceptsOverviewImg from '@site/src/components/ConceptsOverviewImg';
+import EngineMapImg from '@site/src/components/EngineMapImg';
 
 # Concepts Overview
 
-SheetXL follows the design principal that state is implemented using headless Typescript models and Components are implemented
-as React Components. This allows for many views against the same models and allows for different UIs (or no UI) when using
-the models.
+This section is the "why" behind SheetXL. You don't need it to get something on screen (that's what
+[Getting Started](../category/getting-started) is for), but a few ideas here make everything else click.
 
-The components and models interact through a set of hooks that wrap the model callback listeners.
+The big one: **everything in SheetXL plugs into one engine.** A workbook is a plain TypeScript object
+with no UI attached. The spreadsheet UI is one way to look at it. So are a script, the command line,
+and an AI agent. They all talk to the same engine, so they all get the same answers.
 
-Persistence is similar in that models can save and load JSON but all reading/writing to specific locations is handled through listeners.
+<EngineMapImg style={{width: '100%', maxWidth: '720px', display: 'block', margin: '1.5rem auto'}} alt={`One engine in the middle, with AI agents, your app, scripting, the command line, files, and databases all connected to it`}/>
 
-<ConceptsOverviewImg style={{width: '100%', maxWidth: '460px', marginLeft: 'auto', marginRight: 'auto'}} alt={`Concepts Overview`}/>
+That's why you can put several views on one workbook, build your own UI, or skip the UI entirely and
+run the same code in Node, in a worker, or from an agent.
+
+Saving works the same way. Models turn themselves into JSON; where the bytes actually go (a download,
+a file, your backend) is a separate, pluggable choice.
+
+## What's in this section
+
+- **[The Object Model](./20-object-model.mdx)**: workbooks, sheets, ranges, cells, and views, and how to
+  get from one to the next.
+- **[The (Data) Science of SheetXL](./30-ranges.md)**: a spreadsheet and a data science library on one
+  engine: `ICellRange` for the live sheet, `IRange` for the math, and how they hand off.
+- **[Live Scripting](./40-scripting.mdx)**: macros and custom functions written in TypeScript, inside the
+  spreadsheet.
+- **[Our Ecosystem](./90-ecosystem.mdx)**: every package behind the map above, what each is for, and how
+  each is licensed.
+
+Ready to build something? The [How To Guides](../40-how-tos/overview.mdx) are task by task.

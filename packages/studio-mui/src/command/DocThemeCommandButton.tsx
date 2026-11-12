@@ -1,35 +1,26 @@
-import React, { memo, forwardRef, useCallback } from 'react';
+import type React from 'react';
+import { memo, forwardRef, useCallback } from 'react';
 
-import type { TooltipProps } from '@mui/material';
 
-import { IThemeCollection, ITheme } from '@sheetxl/sdk';
+import { type IThemeCollection, type ITheme } from '@sheetxl/sdk';
 
 import {
-  ICommand, Command, CommandButtonType, useCommand, useCallbackRef
+  useCommands, CommandButtonType, useCallbackRef
 } from '@sheetxl/utils-react';
 
-import type { CommandContext } from '@sheetxl/react';
+import { CommandTooltip, PopupButtonType, type ButtonTooltipRenderProps
+} from '@sheetxl/utils-mui';
 
-import { CommandTooltip, PopupButtonType } from '@sheetxl/utils-mui';
+import { useGridColorScheme } from '@sheetxl/react';
 
-import { ThemeSelectPopupButton, type ThemeSelectPopupButtonProps } from '../components/theme';
+import { ThemeSelectPopupButton, type ThemeSelectPopupButtonProps } from '../theme';
 
+export interface DocThemeCommandButtonProps extends Omit<ThemeSelectPopupButtonProps, "renderPopupPanel" | "variant" | "themes" | "icon" | "label"> {
+  commandKey: string;//ICommand<ITheme, CommandContext.Theme>;
 
-export interface DocThemeCommandButtonProps extends Omit<ThemeSelectPopupButtonProps, "createPopupPanel" | "variant" | "themes" | "icon" | "label"> {
-  command: ICommand<ITheme, CommandContext.Theme>;
+  icon?: React.ReactNode | ((command: any) => React.ReactNode);
 
-  icon?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-
-  label?: React.ReactNode | ((command: ICommand) => React.ReactNode);
-
-  /**
-   * Allow for listeners against a specific buttons execute rather than the command.
-   *
-   * @remarks
-   * Useful when knowing the specific button that executed a command is required.
-   * (For example when closing menus or restoring focus)
-   */
-  commandHook?: ICommand.Hook<any, any>;
+  label?: React.ReactNode | ((command: any) => React.ReactNode);
 
   selectedTheme?: ITheme;
   onSelectTheme?: (docTheme: ITheme) => void;
@@ -46,11 +37,10 @@ export interface DocThemeCommandButtonProps extends Omit<ThemeSelectPopupButtonP
 export const DocThemeCommandButton = memo(
   forwardRef<HTMLElement, DocThemeCommandButtonProps>((props, refForwarded) => {
   const {
-    command,
-    commandHook,
+    commandKey,
     selectedTheme: propSelectedTheme,
     onSelectTheme: propOnSelectTheme,
-    disabled: propDisabled = false,
+    disabled: propDisabled,
     darkMode: propDarkMode,
     label: propLabel,
     icon: propIcon,
@@ -58,19 +48,22 @@ export const DocThemeCommandButton = memo(
     ...rest
   } = props;
 
-  const _ = useCommand(command);
+  const command = useCommands([commandKey])[0];
   const themes:IThemeCollection = command?.getContext()?.themes;
   const selectedTheme = propSelectedTheme || command?.getContext()?.theme;
-  const darkMode = propDarkMode ?? command?.getContext()?.darkMode;
-  const disabled = propDisabled || command?.disabled();
+  // Self-source the grid's light/dark intent (no `context.darkMode`).
+  const gridColorScheme = useGridColorScheme();
+  const darkMode = propDarkMode ?? (gridColorScheme === 'dark');
+  const disabled = propDisabled ?? command?.disabled();
 
   const handleOnSelectTheme = useCallbackRef((theme: ITheme) => {
     propOnSelectTheme?.(theme);
-    command?.execute(theme, commandHook);
-  }, [propOnSelectTheme, commandHook]);
+    command?.execute(theme);
+  }, [propOnSelectTheme]);
 
-  const createTooltip = useCallback((props: TooltipProps, disabledTip: boolean): React.JSX.Element => {
+  const renderTooltip = useCallback((props: ButtonTooltipRenderProps): React.JSX.Element => {
     const {
+      disabled: disabledTip,
       children,
       title, // remove default title
        ...rest
@@ -88,7 +81,7 @@ export const DocThemeCommandButton = memo(
 
     return (
       <CommandTooltip
-        command={command as Command<any, any>}
+        commandKey={commandKey}
         placement={variant === CommandButtonType.Toolbar? "bottom-start" : "right-start"}
         disabled={disabled || disabledTip}
         {...rest}
@@ -105,7 +98,7 @@ export const DocThemeCommandButton = memo(
       selectedTheme={selectedTheme}
       onSelectTheme={handleOnSelectTheme}
       variant={variant === CommandButtonType.Menuitem ? PopupButtonType.Menuitem : PopupButtonType.Toolbar } // TODO - clean this up
-      createTooltip={createTooltip}
+      renderTooltip={renderTooltip}
       disabled={disabled}
       darkMode={darkMode}
       {...rest}

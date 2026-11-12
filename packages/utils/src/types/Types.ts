@@ -1,4 +1,3 @@
-
 /**
  * Interface for serializing objects to and from JSON.
  */
@@ -7,7 +6,6 @@ export interface JSONSerializable<J> {
    * Save internal state to JSON
    */
   toJSON(): J;
-
   /**
    * Load internal state from json
    */
@@ -38,7 +36,6 @@ export interface FetchArgs {
    * The options for the fetch request.
    */
   init?: RequestInit;
-
   /**
    * Timeout in milliseconds for fetch operations.
    *
@@ -48,6 +45,28 @@ export interface FetchArgs {
    * @default 30000 (30 seconds)
    */
   timeout?: number; // in milliseconds
+}
+
+/**
+ * Wrapper object to explicitly indicate base64 string content.
+ *
+ * Use this interface to disambiguate base64 strings from URLs when
+ * the automatic detection might be ambiguous.
+ *
+ * @example
+ * ```typescript
+ * // Explicit base64 (no ambiguity)
+ * const source: ImportSource = {
+ *   source: { base64: 'iVBORw0KGgoAAAANSUhEUgAAA...' },
+ *   type: 'png'
+ * };
+ * ```
+ */
+export interface Base64Args {
+  /**
+   * The base64 encoded string content.
+   */
+  base64: string;
 }
 
 /**
@@ -160,8 +179,7 @@ export const Direction = {
 } as const;
 export type Direction = typeof Direction[keyof typeof Direction];
 
-
-export interface AxisOrientationFlags {
+export interface OrientationFlags {
   vertical: boolean;
   horizontal: boolean;
 }
@@ -179,12 +197,31 @@ export const AnchorLocation = {
 } as const;
 export type AnchorLocation = typeof AnchorLocation[keyof typeof AnchorLocation];
 
+/**
+ * Contains information about a fixed edge.
+ *
+ * Fixed edges can be associated with scrolling
+ */
+export interface FixedEdge {
+  /**
+   * The boundaries for the edge.
+   */
+  index: number;
+  /**
+   * If specified then the edge has an offset.
+   */
+  offset?: number;
+}
+
+/**
+ * Mime types for supported clipboard formats.
+ */
 export const MimeType = {
-  html: 'text/html',
-  plain: 'text/plain',
-  png: 'image/png'
-  // csv: 'text/csv',
-  // json: 'text/json',
+  Html: 'text/html',
+  Plain: 'text/plain',
+  Png: 'image/png'
+  // Csv: 'text/csv',
+  // Json: 'text/json',
 } as const
 export type MimeType = typeof MimeType[keyof typeof MimeType];
 
@@ -220,18 +257,18 @@ export interface PaintableText extends PaintableSurface {
   width?: number; // width of the text. Required for overflow
 }
 
-/*
- * Acts like partial but recursively applies to all properties.
+/**
+ * Shorthand type alias for a value that can either be a synchronous value or a Promise of that value.
  */
-// TODO - doesn't work in many cases
-// export type DeepPartial<T> = {
-//   [P in keyof T]?: DeepPartial<T[P]>;
-// };
+export type MaybePromise<T=any> = T | Promise<T>;
 
-// export type DeepPartial<T> = T extends Function ? T : (T extends object ? { [P in keyof T]?: DeepPartial<T[P]>; } : T);
-// // export type DeepPartial<T> = {
-// //   [P in keyof T]?:
-// //     T[P] extends (infer U)[] ? DeepPartial<U>[] :
-// //     T[P] extends object | undefined ? DeepPartial<T[P]> :
-// //     T[P];
-// // };
+/**
+ * A utility type that represents an object with exactly one property from the given type T.
+ *
+ * @remarks
+ * Creates an XOR relationship between the properties of T, ensuring that only one property can
+ * be set at a time.
+ */
+export type OneOf<T extends object> = {
+  [K in keyof T]: Required<Pick<T, K>> & Partial<Record<Exclude<keyof T, K>, never>>
+}[keyof T];

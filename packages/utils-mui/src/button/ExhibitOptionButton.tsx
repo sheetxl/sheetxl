@@ -1,8 +1,7 @@
-import React, {
-  forwardRef, memo
-} from 'react';
+import type React from 'react';
+import { forwardRef, memo } from 'react';
 
-import { IKeyStroke } from '@sheetxl/utils-react';
+import { type IKeyStroke } from '@sheetxl/utils-react';
 
 import {
   ExhibitIconButton, ExhibitTooltip, type ExhibitIconButtonProps

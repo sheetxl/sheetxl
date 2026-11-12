@@ -17,7 +17,13 @@
     delete props.target; // Remove target from props as it's not needed in the module
     delete props.licenseKey; // Remove licenseKey from props as it's handled separately
 
-    const loaderUrl = scriptTag.src;
+    // A loader fetched through a dist-tag (`@latest`) can sit in the browser cache for days after the
+    // tag moves. Loading `./index.js` relative to that url would pull the new release's entry, so pin
+    // to the release this loader was built with.
+    let loaderUrl = scriptTag.src;
+    if (__BUILD_VERSION__ !== 'local') {
+      loaderUrl = loaderUrl.replace(/\/@sheetxl\/studio-vanilla(@[^/]+)?\//, `/@sheetxl/studio-vanilla@${__BUILD_VERSION__}/`);
+    }
     const moduleUrl = new URL('./index.js', loaderUrl).href;
     import(/* @vite-ignore */moduleUrl).then(module => {
       const targetElement = document.querySelector(targetSelector);

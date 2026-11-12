@@ -1,7 +1,7 @@
 {
   "name": "@sheetxl/io",
   "version": "0.0.0",
-  "description": "IO - Import/Export Libraries for SheetXL.",
+  "description": "SheetXL - Import/Export Formats.",
   "homepage": "https://sheetxl.com",
   "repository": {
     "type": "git",
@@ -10,8 +10,8 @@
   "bugs": {
     "url": "https://github.com/sheetxl/sheetxl/issues"
   },
-  "license": "SEE LICENSE IN <LICENSE>",
-  "private": false,
+  "license": "MIT",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -23,16 +23,6 @@
         "default": "./build/browser/esm/index.mjs"
       }
     },
-    "./lib/path": {
-      "node": "./src/lib/path/path.node.js",
-      "browser": "./src/lib/path/path.browser.js",
-      "default": "./src/lib/path/path.node.js"
-    },
-    "./lib/file": {
-      "node": "./src/lib/file/file.node.js",
-      "browser": "./src/lib/file/file.browser.js",
-      "default": "./src/lib/file/file.node.js"
-    },
     "./lib/compress": {
       "node": "./src/lib/compress/compress.node.js",
       "browser": "./src/lib/compress/compress.browser.js",
@@ -43,7 +33,7 @@
     "build:node": "cross-env BUILD_ENV=node vite build",
     "build:browser": "vite build",
     "build": "pnpm run build:node && pnpm run build:browser",
-    "build:tsdocs:json": "typedoc --json ../../build/docs/io.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "build:tsdocs:json": "pnpm -w exec typedoc --options packages/io/typedoc.json --json build/docs-json/io.json --tsconfig packages/io/tsconfig.build.json",
     "clean": "rimraf ./build",
     "clean:all": "git clean -fdX .",
     "release:package": "cd build && pnpm publish --no-git-checks --access public",
@@ -53,18 +43,15 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@sheetxl/sdk": "*",
+    "@sheetxl/io-xlsx": "^1.0.0",
+    "@sheetxl/sdk": "^1.0.0",
     "@sheetxl/utils": "workspace:*",
-    "@xmldom/xmldom": "^0.9.8",
-    "papaparse": "^5.5.3",
-    "path-browserify": "^1.0.1",
-    "web-streams-polyfill": "^4.0.0",
-    "xlsx": "https://raw.githubusercontent.com/sheetxl/vendor-xlsx/main/xlsx-0.20.3.tgz",
-    "xml-formatter": "^3.6.4"
+    "papaparse": "^5.7.0",
+    "web-streams-polyfill": "^4.5.1"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.16",
-    "@types/path-browserify": "^1.0.3"
+    "@types/node": "^26.6.6",
+    "@types/papaparse": "^5.5.2"
   },
   "sideEffects": false,
   "keywords": [
@@ -81,5 +68,6 @@
     "office",
     "charting",
     "utilities"
-  ]
+  ],
+  "privateRepo": false
 }

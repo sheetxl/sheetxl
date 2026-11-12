@@ -1,37 +1,46 @@
 {
   "sheets": [
     {
-      "name": "Data",
+      "name": "Sheet1",
       "sheet": {
         "data": [
-          "[0,[[0,[\"0\"]]]]",
-          "[1,[[2,[34995]]]]",
-          "[2,[[1,[234,true]]]]"
+          [1,[[1,["0",234]]]],
+          [2,[[1,[34995,true]]]]
         ],
         "cols": [
           {
-            "min": 0,
-            "max": 0,
-            "sz": 15.42857143,
-            "csz": true
+            "r": "B:B",
+            "v": {
+              "sz": 10.28571429,
+              "csz": true
+            }
           },
           {
-            "min": 1,
-            "max": 1,
-            "sz": 11.42857143,
-            "csz": true
+            "r": "C:C",
+            "v": {
+              "sz": 10.28571429
+            }
+          },
+          {
+            "r": "F:G",
+            "v": {
+              "sz": 6.57142857,
+              "csz": true
+            }
           }
         ],
         "view": {
           "selection": {
-            "cell": "C3"
+            "cell": "F1",
+            "ranges": [
+              "F1:G1048576"
+            ]
           }
         },
         "directStyles": [
-          {
-            "r": "B3",
-            "v": 1
-          }
+          ["C2",1],
+          ["C3",2],
+          ["B5:C6",3]
         ]
       }
     }
@@ -41,13 +50,21 @@
       {},
       {
         "numberFormat": "Short Date"
+      },
+      {
+        "font": {
+          "weight": 700
+        }
+      },
+      {
+        "fill": {
+          "color": "bg2",
+          "type": "solid"
+        }
       }
     ]
   },
   "strings": [
-    "this has spaces"
-  ],
-  "view": {
-    "activeSheetId": 1
-  }
+    "hello world"
+  ]
 }

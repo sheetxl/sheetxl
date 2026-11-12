@@ -1,0 +1,22 @@
+{
+  "name": "example-headless",
+  "description": "Headless (Node) SheetXL examples — build spreadsheets with the SDK, no UI",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx --tsconfig ../../tsconfig.base.json src/readinglog.ts",
+    "reading-log": "tsx --tsconfig ../../tsconfig.base.json src/readinglog.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean": "rimraf ./build ./output",
+    "clean:all": "git clean -fdX .",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@sheetxl/io": "workspace:*",
+    "@sheetxl/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}

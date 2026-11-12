@@ -1,0 +1,14 @@
+{
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "browser": "./browser/esm/index.mjs",
+      "node": "./node/esm/index.mjs",
+      "default": "./browser/esm/index.mjs"
+    }
+  },
+  "types": "./types/index.d.ts",
+  "module": "./browser/esm/index.mjs",
+  "main": "./browser/esm/index.mjs"
+}

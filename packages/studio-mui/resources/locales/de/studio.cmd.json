@@ -1,0 +1,176 @@
+{
+  "$schema": "../../../utils-react/command-catalog.schema.json",
+  "scope": "app",
+  "label": "Anwendung",
+  "tag": "de",
+  "version": 1,
+  "commands": {
+    "help": {
+      "label": "Hilfe anzeigen",
+      "description": "Hilfe bereitstellen.",
+      "icon": "Documentation",
+      "shortcut": "F1"
+    },
+    "showKeyboardShortcuts": {
+      "label": "Tastenkombinationen",
+      "description": "Tastenkombinationen anzeigen.",
+      "icon": "Keyboard",
+      "shortcut": "ctrl+/"
+    },
+    "gotoUrlGithub": {
+      "label": "Github",
+      "description": "Beispiele herunterladen, Quellcode erkunden und einen Stern hinterlassen.",
+      "icon": "Github"
+    },
+    "gotoUrlDiscord": {
+      "label": "Discord",
+      "description": "Treten Sie unserer Community auf Discord bei.",
+      "icon": "Discord"
+    },
+    "gotoUrlDocumentation": {
+      "label": "Dokumentation",
+      "description": "Die Dokumentation lesen.",
+      "icon": "Documentation"
+    },
+    "gotoUrlIssue": {
+      "label": "Issue erstellen",
+      "description": "Ein Issue erstellen, um einen Fehler oder einen Funktionswunsch zu melden.",
+      "icon": "Ticket"
+    },
+    "fullScreenToggle": {
+      "label": "Vollbild",
+      "description": "Die Anzeige der Anwendung im Vollbildmodus umschalten.",
+      "icon": "FullScreen",
+      "shortcut": "F11"
+    },
+    "themeMode": {
+      "label": "{dark, select, true{Dunkler Modus} other{Heller Modus}}",
+      "groupLabels": {
+        "appearanceOptions": "{dark, select, true{Dunkler Modus} other{Heller Modus}}"
+      },
+      "description": "Das Erscheinungsbild der Anwendung zwischen hellem und dunklem Modus umschalten.",
+      "params": {
+        "dark": false
+      }
+    },
+    "defaultThemeMode": {
+      "label": "Hell/Dunkel gemäß Systemeinstellung",
+      "groupLabels": {
+        "appearanceOptions": "Systemstandard verwenden"
+      },
+      "description": "Die Systemeinstellungen für den hellen und dunklen Modus verwenden."
+    },
+    "enableDarkGrid": {
+      "label": "Dunkles Raster aktivieren",
+      "description": "Das Raster im dunklen Modus rendern, wenn der dunkle Modus verwendet wird. Dadurch werden die Farben so gerendert, wie sie in anderen Programmen (z. B. Excel) festgelegt sind."
+    },
+    "enableDarkImages": {
+      "label": "Dunkle Bilder aktivieren",
+      "description": "Bilder im dunklen Modus rendern, wenn der dunkle Modus verwendet wird. Dies hat nur eine Wirkung, wenn das Raster im dunklen Modus ist."
+    },
+    "language": {
+      "label": "Sprache",
+      "description": "Die Sprache für Menüs, Kurzhinweise und Meldungen. Dies ist Ihre persönliche Einstellung und wird nicht in der Arbeitsmappe gespeichert.",
+      "icon": "Language"
+    },
+    "insertDataFromFile": {
+      "label": "Daten vom Gerät importieren…",
+      "description": "Eine Datei importieren und ihre Blätter als neue Registerkarten zur aktuellen Arbeitsmappe hinzufügen.",
+      "groupLabels": {
+        "insertDataOptions": "Vom Gerät…"
+      },
+      "icon": "DataInsert",
+      "tags": [
+        "mutator"
+      ]
+    },
+    "insertDataFromURL": {
+      "label": "Daten aus dem Web importieren…",
+      "description": "Eine Arbeitsmappe aus dem Web importieren und ihre Blätter als neue Registerkarten zur aktuellen Arbeitsmappe hinzufügen.",
+      "groupLabels": {
+        "insertDataOptions": "Aus dem Web…"
+      },
+      "icon": "DataInsert",
+      "tags": [
+        "mutator"
+      ]
+    },
+    "newWorkbook": {
+      "label": "Neue Arbeitsmappe",
+      "groupLabels": {
+        "workbook": "Neu",
+        "newWorkbookOptions": "Leere Arbeitsmappe"
+      },
+      "description": "Eine neue leere Arbeitsmappe erstellen. Eine Arbeitsmappe mit ungespeicherten Änderungen bleibt erhalten, und die neue wird in einem anderen Tab geöffnet.",
+      "icon": "FileNew"
+    },
+    "newWorkbookFromTemplate": {
+      "label": "Neue Arbeitsmappe aus Vorlage…",
+      "groupLabels": {
+        "newWorkbookOptions": "Aus Vorlage…"
+      },
+      "description": "Eine neue Arbeitsmappe aus einer Vorlage erstellen.",
+      "icon": "FileNew"
+    },
+    "showWelcome": {
+      "label": "Willkommen",
+      "description": "Den Startbildschirm anzeigen: leer beginnen, eine Arbeitsmappe öffnen oder eine Vorlage wählen.",
+      "icon": "FileNew"
+    },
+    "openWorkbook": {
+      "label": "Arbeitsmappe öffnen…",
+      "groupLabels": {
+        "workbook": "Öffnen…",
+        "openWorkbookOptions": "Vom Gerät…"
+      },
+      "description": "Eine Arbeitsmappe vom Desktop öffnen.",
+      "icon": "FileOpen",
+      "shortcut": "ctrl+O"
+    },
+    "openWorkbookFromUrl": {
+      "description": "Eine Arbeitsmappe aus dem Web öffnen.",
+      "groupLabels": {
+        "workbook": "Aus dem Web…",
+        "openWorkbookOptions": "Aus dem Web…"
+      },
+      "label": "Arbeitsmappe aus dem Web öffnen",
+      "icon": "FileOpen"
+    },
+    "saveWorkbook": {
+      "label": "Arbeitsmappe speichern",
+      "groupLabels": {
+        "workbook": "Speichern"
+      },
+      "description": "Die Arbeitsmappe speichern.",
+      "icon": "FileDownloadAsSheet",
+      "shortcut": "ctrl+S"
+    },
+    "saveWorkbookAs": {
+      "label": "Arbeitsmappe speichern unter…",
+      "groupLabels": {
+        "saveWorkbookOptions": "unter…",
+        "workbook": "Speichern unter…"
+      },
+      "description": "Die Arbeitsmappe an einem neuen Ort speichern.",
+      "icon": "FileDownloadAsSheet",
+      "shortcut": [
+        "ctrl+shift+S",
+        "F12",
+        "alt+F2"
+      ]
+    },
+    "protectWorkbook": {
+      "description": "Die Arbeitsmappe mit einem Kennwort verschlüsseln oder ihre Struktur schützen.",
+      "label": "Arbeitsmappe schützen…",
+      "groupLabels": {
+        "workbook": "Schützen…"
+      },
+      "icon": "Lock"
+    },
+    "closeWorkbook": {
+      "label": "Arbeitsmappe schließen",
+      "description": "Die Arbeitsmappe schließen.",
+      "shortcut": "ctrl+alt+W"
+    }
+  }
+}

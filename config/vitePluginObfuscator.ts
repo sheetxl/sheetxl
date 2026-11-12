@@ -7,11 +7,14 @@ import ObfPackages from 'javascript-obfuscator';
 const defaultOptions = {
   // global: false,
   // options: {},
-  // include: ['**/*.js', '**/*.ts'],
   exclude: ['node_modules/**'],
   obfuscate: ObfPackages.obfuscate,
   global: false,
-  include: ['**/license/LicenseManager.ts'],
+  // NOTE: `include` (which files get obfuscated) is intentionally NOT declared here. This file is
+  // part of the shared `config/` dir that is copied to the PUBLIC repo, so a file list would be a
+  // source-level roadmap to the private license code. The list is supplied as `policy` by the
+  // consuming package's (private) vite.config.ts via `createLibraryConfig({ obfuscate: [...] })`.
+  // Only the generic strength options below live here — the technique itself is not a secret.
   options: {
     // https://github.com/javascript-obfuscator/javascript-obfuscator#javascript-obfuscator-options
     stringArray: true,
@@ -31,7 +34,12 @@ const defaultOptions = {
 export function obfuscator(override?: any): Plugin {
   const options = mergeConfig(defaultOptions, override);
 
-  const filter = createFilter(options.include, options.exclude);
+  // Guard: @rollup/pluginutils `createFilter` treats a missing/empty `include` as "match everything".
+  // Obfuscating an entire bundle is never intended here (and would be enormous), so require an explicit,
+  // non-empty include list; without one the plugin is an inert no-op rather than a bundle-wide transform.
+  const include = Array.isArray(options.include) ? options.include.filter(Boolean) : options.include;
+  const enabled = Array.isArray(include) ? include.length > 0 : !!include;
+  const filter = enabled ? createFilter(include, options.exclude) : () => false;
 
   return {
     name: 'vite-plugin-obfuscator',

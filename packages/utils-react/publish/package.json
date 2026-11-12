@@ -5,12 +5,11 @@
       "types": "./types/index.d.ts",
       "browser": "./browser/esm/index.mjs",
       "node": "./node/esm/index.mjs",
-      "import": "./browser/esm/index.mjs",
-      "require": "./browser/cjs/index.cjs"
+      "default": "./browser/esm/index.mjs"
     }
   },
   "types": "./types/index.d.ts",
   "module": "./browser/esm/index.mjs",
-  "main": "./browser/cjs/index.cjs",
+  "main": "./browser/esm/index.mjs",
   "sideEffects": false
 }

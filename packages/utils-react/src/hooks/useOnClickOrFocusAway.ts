@@ -1,6 +1,5 @@
-import React, {
-  useEffect,
-} from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { useCallbackRef } from './useCallbackRef';
 
 export interface ClickOrFocusAwayOptions {
@@ -22,19 +21,20 @@ export function useOnClickOrFocusAway(ref: React.RefObject<any>, listenerArg: Cl
       // console.log('onHandle click away', event, ref.current);
       listener(event);
     };
+    const domHandler = handler as EventListener;
     if (!options || options.mouseEvents !== false) {
-      document.addEventListener("mousedown", handler);
-      document.addEventListener("touchstart", handler);
+      document.addEventListener("mousedown", domHandler);
+      document.addEventListener("touchstart", domHandler);
     }
     if (!options || options.focusEvents !== false) {
       // console.log('add listener focus');
-      document.addEventListener("focus", handler);
+      document.addEventListener("focus", domHandler);
     }
     return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("touchstart", handler);
+      document.removeEventListener("mousedown", domHandler);
+      document.removeEventListener("touchstart", domHandler);
 
-      document.removeEventListener("focus", handler);
+      document.removeEventListener("focus", domHandler);
     };
   }, [ref]);
 }

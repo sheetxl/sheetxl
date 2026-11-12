@@ -10,17 +10,26 @@
   "bugs": {
     "url": "https://github.com/sheetxl/sheetxl/issues"
   },
-  "license": "SEE LICENSE IN <LICENSE>",
-  "private": false,
+  "license": "MIT",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
+      "development": "./src/.generated/index.ts",
       "types": "./build/types/index.d.ts",
       "import": {
         "node": "./build/node/esm/index.mjs",
         "browser": "./build/browser/esm/index.mjs",
         "default": "./build/browser/esm/index.mjs"
+      }
+    },
+    "./declarations": {
+      "development": "./src/.generated/declarations.ts",
+      "types": "./build/types/declarations.d.ts",
+      "import": {
+        "node": "./build/node/esm/declarations.mjs",
+        "browser": "./build/browser/esm/declarations.mjs",
+        "default": "./build/browser/esm/declarations.mjs"
       }
     }
   },
@@ -32,17 +41,17 @@
     "clean:all": "git clean -fdX .",
     "release:package": "cd build && pnpm publish --no-git-checks --access public",
     "lint": "eslint .",
-    "test": "vitest"
+    "test": "echo No tests here - this package is definitions only. Its tests live in @sheetxl/sdk."
   },
   "dependencies": {
     "@sheetxl/primitives": "workspace:*",
-    "bahttext": "^2.3.0",
-    "bessel": "^1.0.2",
-    "jstat": "^1.9.6"
+    "@sheetxl/scripting": "^1.0.0",
+    "bahttext": "^2.4.0",
+    "bessel": "^1.0.2"
   },
   "optionalDependencies": {
-    "@xmldom/xmldom": "^0.9.8",
-    "fontoxpath": "^3.33.2"
+    "@xmldom/xmldom": "^0.9.12",
+    "fontoxpath": "^3.34.0"
   },
   "sideEffects": false,
   "keywords": [
@@ -54,5 +63,6 @@
     "excel",
     "xlsx",
     "formulas"
-  ]
+  ],
+  "privateRepo": false
 }

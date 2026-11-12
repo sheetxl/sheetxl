@@ -5,27 +5,26 @@ Provides a storage agnostic api for storing state.
 ```ts Provider Example
 
 // App entry (web, localStorage)
-import { PersistenceStateProvider, LocalStorageStore } from '@sheetxl/utils-react';
+import { PersistentStateProvider, LocalStorageStore } from '@sheetxl/utils-react';
 
 export default function AppRoot() {
   return (
-    <PersistenceStateProvider
+    <PersistentStateProvider
       store={typeof window !== "undefined" ? new LocalStorageStore() : undefined}
       namespace="sheetxl"
       debounceMs={150}
-      crossTabSync={true}
     >
       <App />
-    </PersistenceStateProvider>
+    </PersistentStateProvider>
   );
 }
 ```
 
 ``` tsx In a component
-import { usePersistenceState } from '@sheetxl/utils-react';
+import { usePersistentState } from '@sheetxl/utils-react';
 
 function ThemeToggle() {
-  const [theme, setTheme, clearTheme] = usePersistenceState<"light"|"dark"|"system">(
+  const [theme, setTheme, clearTheme] = usePersistentState<"light"|"dark"|"system">(
     "ui.theme" /* key */,
     "system" /* defaultValue */
   );

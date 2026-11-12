@@ -1,0 +1,145 @@
+name: CI
+
+# ⚠️ UNIT-TEST CI IS PARKED (2026-07-28) — MANUAL-ONLY so it never auto-reddens.
+# The suite has a batch of PRE-EXISTING failures to triage before this can gate anything (surfaced on
+# the first-ever CI run, ~500 of ~7700 tests in): the `from-res.test.ts` pollution flake, plus real
+# failures concentrated in scripting (`scripting/runContext.node.test.ts`) and mcp
+# (`mcp/.../runReport.test.ts`), among others. Formula-manifest build + throttle design below are kept.
+#
+# TO RE-ENABLE once the suite is green, replace `on:` with the throttled triggers (free private repo,
+# 2000 min/mo, ~30 commits/day → gate merges, not every commit):
+#   on:
+#     pull_request: { branches: [main] }         # gate every merge INTO main
+#     schedule: [{ cron: '0 7 * * *' }]           # nightly; `gate` job skips it if no commit in 24h
+#     workflow_dispatch:
+on:
+  workflow_dispatch:
+
+# One in-flight run per ref; a newer trigger cancels the older run instead of queueing both.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Cheap guard so a quiet nightly costs ~nothing: on the scheduled trigger, run the suite only if a
+  # commit landed in the last 24h. PRs and manual dispatch always proceed. Uses HEAD's timestamp, so
+  # a default (shallow) checkout is enough — no full history fetch.
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: decide
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            AGE=$(( $(date +%s) - $(git log -1 --format=%ct) ))
+            if [ "$AGE" -gt 86400 ]; then
+              echo "run=false" >> "$GITHUB_OUTPUT"
+              echo "HEAD is $((AGE/3600))h old — no new commits in 24h, skipping nightly."
+            else
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  validate:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The sdk's wasm tests load packages/sdk/src/.generated/wasm/, which is generated, not committed.
+      - name: Setup Rust
+        uses: ./.github/actions/setup-rust
+
+      - name: Build wasm and glue
+        run: pnpm rust:wasm
+
+      # Tests import @sheetxl/* SOURCE (vitest `resolve.tsconfigPaths` + each package's `development`
+      # export condition). The only source that is GENERATED rather than committed is the formula
+      # manifest — `@sheetxl/formulas` / `-enterprise` resolve to `./src/.generated/index.ts` (gitignored),
+      # emitted by the FormulaCompilerPlugin during their `vite build`.
+      #
+      # The trailing `...` builds each package's workspace DEPENDENCIES too (utils, primitives,
+      # scripting). Required: `vite build` loads its config in PRODUCTION mode, where deps resolve via
+      # the `import`/`node` export condition to `./build/*` — NOT the `development` src entry — so those
+      # deps must be built first or config load fails ("Failed to resolve entry for @sheetxl/primitives").
+      # Still only ~5 packages (~30s), not the full 26-package monorepo build. If another package gains
+      # a generated source entry, add it here with its own `...`.
+      - name: Build formula packages (+ deps) to emit generated manifests
+        run: pnpm --filter "@sheetxl/formulas..." --filter "@sheetxl/formulas-extended..." build
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        # `test:all` — `pnpm test` now skips the formula conformance fixtures for the local
+        # edit-test loop (see config/vitest.shared.config.ts). CI runs the whole suite.
+        run: pnpm test:all
+
+  # The Rust workspace (root Cargo.toml, crates/): format, lint, native tests, the wasm build, and the
+  # Node proof that the built `.wasm` loads and answers (packages/sdk/src/__tests__/wasm/). Toolchain
+  # and targets come from rust-toolchain.toml; the wasm-bindgen CLI must match the crate version pinned
+  # in Cargo.toml exactly. Design and the tooling log: private-assets/design/rust, crates/README.md.
+  rust:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Rust
+        uses: ./.github/actions/setup-rust
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format and lint
+        run: pnpm rust:lint
+
+      # The metric twins, so tests/twins.rs runs for real rather than returning quietly
+      # (crates/README.md, step 1). Office fonts are not installable here, so
+      # tests/excel_defaults.rs stays a developer-machine test.
+      - name: Metric-twin fonts
+        run: sudo apt-get install -y --no-install-recommends fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation
+
+      - name: Native tests
+        run: pnpm rust:test
+
+      - name: Build wasm and glue
+        run: pnpm rust:wasm
+
+      - name: Size report
+        run: ls -l packages/sdk/src/.generated/wasm/ && wc -c packages/sdk/src/.generated/wasm/sdk_bg.wasm
+
+      - name: Node loads the wasm
+        run: npx vitest run packages/sdk/src/__tests__/wasm/text.wasm.node.test.ts
+
+      - name: Captured measures tables agree with fontkit
+        run: npx vitest run packages/sdk/src/__tests__/font/metricsTable.fontkit.node.test.ts
+
+      - name: Rust wrap agrees with TextWrapper (sample)
+        run: npx vitest run packages/sdk/src/__tests__/wasm/wrap.differential.node.test.ts

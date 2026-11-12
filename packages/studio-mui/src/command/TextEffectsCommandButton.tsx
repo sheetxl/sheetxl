@@ -1,14 +1,12 @@
-import React, {
-  useMemo, memo, forwardRef, useCallback
+import {
+  memo, forwardRef, useCallback
 } from 'react';
 
-import {
-  ICommands, useCommands, Command, CommandButtonType
-} from '@sheetxl/utils-react';
+import { useCommands, useCommandButtonRegistry, CommandButtonType } from '@sheetxl/utils-react';
 
 import {
-  CommandButton, CommandPopupButton, CommandPopupButtonProps,
-  defaultCreatePopupPanel, ExhibitPopupPanelProps
+  CommandButton, CommandPopupButton, defaultRenderPopupPanel,
+  type CommandPopupButtonProps, type ExhibitPopupPanelProps
 } from '@sheetxl/utils-mui';
 
 /**
@@ -17,10 +15,8 @@ import {
 export const TextEffectsCommandButton = memo(
   forwardRef<HTMLElement, CommandPopupButtonProps>((props, refForwarded) => {
   const {
-    commands: propCommands,
-    commandHook: propCommandHook,
-    scope,
-    disabled: propDisabled = false,
+    groupKey,
+    disabled: propDisabled,
     ...rest
   } = props;
 
@@ -29,55 +25,60 @@ export const TextEffectsCommandButton = memo(
     'formatSuperscriptToggle',
     'formatSubscriptToggle'
   ];
-  const resolvedCommands = useCommands(propCommands, commandKeys);
+  const resolvedCommands = useCommands(commandKeys);
 
-  const activeCommand = useMemo(() => {
-    const resolvedCommandsLength = resolvedCommands.length;
-    for (let i=0; i<resolvedCommandsLength; i++) {
-      const command = resolvedCommands[i];
-      if ((command as Command<boolean>)?.getState()) {
-        return command;
-      }
+  // Chrome comes from this component's own registered entry (SheetCommandGroups), where it
+  // resolves through the language service; the literals here are only a not-registered fallback.
+  const entry = useCommandButtonRegistry().get('textEffectsOptions');
+  const label = (entry?.getLabel?.() as React.ReactNode) ?? 'Text Effects';
+  const tooltip = entry?.getDescription?.() ?? 'Style your text to differentiate it.';
+
+  let activeCommand: string | null = null;
+  let anyEnabled = false;
+  const resolvedCommandsLength = resolvedCommands.length
+  for (let i=0; !activeCommand && i<resolvedCommandsLength; i++) {
+    const command = resolvedCommands[i];
+    if (!command || command.disabled()) continue;
+    anyEnabled = true;
+    if (command.getState()) {
+      activeCommand = commandKeys[i];
     }
-    // default
-    return resolvedCommands[0];
-  }, [resolvedCommands])
+  }
+  if (!activeCommand) {
+    activeCommand = commandKeys[0];
+  }
 
-  const createPopupPanel = useCallback((props: ExhibitPopupPanelProps, commands: ICommands.IGroup) => {
+  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
     const commandButtonProps = {
       variant: CommandButtonType.Menuitem,
-      // parentFloat: props.floatReference,
-      commandHook: propCommandHook,
-      scope: 'textEffects',
+      groupKey: 'textEffectsOptions',
       disabled: propDisabled
     }
     const children = (<>
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('formatStrikeThroughToggle') as Command<boolean>}
+        commandKey={'formatStrikeThroughToggle'}
       />
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('formatSuperscriptToggle') as Command<boolean>}
+        commandKey={'formatSuperscriptToggle'}
       />
       <CommandButton
         {...commandButtonProps}
-        command={commands.getCommand('formatSubscriptToggle') as Command<boolean>}
+        commandKey={'formatSubscriptToggle'}
       />
     </>);
-    return defaultCreatePopupPanel({...props, children});
-  }, [propDisabled, propCommandHook, scope]);
+    return defaultRenderPopupPanel({...props, children});
+  }, [propDisabled, groupKey]);
 
   return (
     <CommandPopupButton
       ref={refForwarded}
-      quickCommand={activeCommand?.getKey()}
-      commands={propCommands}
-      commandHook={propCommandHook}
-      createPopupPanel={createPopupPanel}
-      label="Text Effects"
-      tooltip="Style your text to differentiate it."
-      icon={activeCommand?.getIcon() ?? 'TextStrike'}
+      quickCommand={activeCommand}
+      disabled={propDisabled ?? !anyEnabled}
+      renderPopupPanel={renderPopupPanel}
+      label={label}
+      tooltip={tooltip}
       {...rest}
     />
   )

@@ -10,8 +10,8 @@
   "bugs": {
     "url": "https://github.com/sheetxl/sheetxl/issues"
   },
-  "license": "SEE LICENSE IN <LICENSE>",
-  "private": false,
+  "license": "MIT",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -28,14 +28,12 @@
     "build:node": "cross-env BUILD_ENV=node vite build",
     "build:browser": "vite build",
     "build": "pnpm run build:node && pnpm run build:browser",
-    "build:tsdocs:json": "typedoc --json ../../build/docs/primitives.json --excludeInternal --tsconfig ./tsconfig.build.json",
+    "build:tsdocs:json": "pnpm -w exec typedoc --options packages/primitives/typedoc.json --json build/docs-json/primitives.json --tsconfig packages/primitives/tsconfig.build.json",
     "clean": "rimraf ./build",
     "clean:all": "git clean -fdX .",
     "release:package": "cd build && pnpm publish --no-git-checks --access public",
     "lint": "eslint .",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "test": "echo No tests here - this package is definitions only. Its tests live in @sheetxl/sdk."
   },
   "sideEffects": false,
   "keywords": [
@@ -50,5 +48,6 @@
     "vector-api",
     "formulas",
     "primitives"
-  ]
+  ],
+  "privateRepo": false
 }

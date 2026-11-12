@@ -1,0 +1,6 @@
+.formula-bar {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 100%;
+  align-items: start;
+}

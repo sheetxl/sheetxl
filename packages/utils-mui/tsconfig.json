@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "../..",
-    "baseUrl": ".",
     "paths": {
       "@sheetxl/utils": [
         "../utils/src"
@@ -17,14 +16,7 @@
   "include": [
     "./src",
     "../utils/src",
-    "../utils-react/src"
-  ],
-  "exclude": [
-    "**.test.**",
-    "**/__tests__/**",
-    "**/.pnpm",
-    "**/build",
-    "**/dist",
-    "**/node_modules"
+    "../utils-react/src",
+    "../utils-react/src/icons/packs/*.json"
   ]
 }

@@ -1,0 +1,302 @@
+{
+  "$schema": "../../../utils-react/command-catalog.schema.json",
+  "scope": "ui",
+  "label": "Interface",
+  "tag": "en",
+  "version": 1,
+  "commands": {
+    "anomalies": {
+      "label": "Anomalies",
+      "icon": "Anomalies"
+    },
+    "appearanceOptions": {
+      "label": "Appearance",
+      "description": "Change the light/dark mode to match your viewing preference. This does not affect the view for others."
+    },
+    "borderOptions": {
+      "label": "Borders",
+      "description": "Apply borders to the selected cells."
+    },
+    "calculationOptions": {
+      "label": "Calculation Options",
+      "description": "Choose when formulas are recalculated and how circular references are resolved.",
+      "icon": "Calculate"
+    },
+    "cellsFormatOptions": {
+      "description": "Change row and column sizes or visibility, or open the Format Cells pane.",
+      "label": "Format",
+      "icon": "CellsFormat"
+    },
+    "clearOptions": {
+      "description": "Clear everything in the cell, or remove just the formatting or contents.",
+      "label": "Clear",
+      "icon": "ClearAll"
+    },
+    "commentOptions": {
+      "label": "Comment",
+      "description": "Add, show, and move between the comments on the sheet.",
+      "icon": "CommentManage"
+    },
+    "comments": {
+      "label": "Comments",
+      "icon": "CommentManage"
+    },
+    "conditionalFormatDetails": {
+      "label": "Conditional Formatting",
+      "icon": "FormatPaint"
+    },
+    "conditionalFormatOptions": {
+      "label": "Conditional Formatting",
+      "description": "Easily spot trends and patterns in your data using bars, colors and icons to visually highlight important values.",
+      "icon": "ConditionalFormatOptions"
+    },
+    "conditionalFormatHighlightOptions": {
+      "label": "Highlight Cells Rules",
+      "description": "Highlight cells that match a condition."
+    },
+    "conditionalFormatTopBottomOptions": {
+      "label": "Top/Bottom Rules",
+      "description": "Highlight the highest or lowest ranked values."
+    },
+    "conditionalFormatClearOptions": {
+      "label": "Clear Rules",
+      "description": "Remove conditional formatting rules."
+    },
+    "dataValidationOptions": {
+      "label": "Data Validation",
+      "description": "Limit what can be entered in cells, and mark the values that break the rules.",
+      "icon": "DataValidation"
+    },
+    "dataValidationClearOptions": {
+      "label": "Clear Rules",
+      "description": "Remove data validation rules."
+    },
+    "darkModeOptions": {
+      "description": "Options available when in dark mode",
+      "label": "Dark Mode Option",
+      "icon": "DarkMode"
+    },
+    "dataTextToColumnsOptions": {
+      "description": "Split a single columns of text into multiple columns",
+      "label": "Text to Columns"
+    },
+    "dataToolbar": {
+      "label": "Data"
+    },
+    "dataValidationDetails": {
+      "label": "Data Validation",
+      "icon": "DataValidation"
+    },
+    "deleteCellsOptions": {
+      "description": "Delete cells, rows, columns or sheets from your workbook.\nTo delete multiple rows or columns at a time, select multiple rows or columns in the sheet and click Delete."
+    },
+    "deleteSheetOptions": {
+      "description": "Delete cells, rows, columns or sheets from your workbook.\nTo delete multiple rows or columns at a time, select multiple rows or columns in the sheet and click Delete."
+    },
+    "externalLinks": {
+      "label": "Workbook Links",
+      "icon": "ExternalLinked"
+    },
+    "fileOptions": {
+      "description": "Options for saving and loading the workbook.",
+      "label": "File"
+    },
+    "fillOptions": {
+      "description": "Fill the selected cells with the value from one of the corners.",
+      "label": "Fill",
+      "icon": "FillDown"
+    },
+    "filterOptions": {
+      "label": "Filter",
+      "description": "Organize your data so it's easier to analyze.\nYou can sort the selected data from smallest to largest or largest to smallest."
+    },
+    "findOptions": {
+      "description": "Find and replace cells or go to a specific location.",
+      "label": "Find & Select",
+      "icon": "Find"
+    },
+    "formatCells": {
+      "label": "Format Cells",
+      "description": "Change how the selected cells look — number, alignment, font, fill and borders.",
+      "icon": "CellsFormat"
+    },
+    "formulaToolbar": {
+      "label": "Formulas"
+    },
+    "freezeOptions": {
+      "description": "Freeze a portion of the sheet to keep it visible while you scroll through the rest of the sheet.\n\nUseful for viewing data in other parts of your worksheet without losing your headers or labels.",
+      "label": "Freeze Panes",
+      "icon": "Freeze"
+    },
+    "gridlinesOptions": {
+      "description": "Configure how the lines between rows and columns in the sheet are displayed.",
+      "label": "Gridlines"
+    },
+    "headingsOptions": {
+      "description": "Configure how the column and rows headings in the sheet are displayed.",
+      "label": "Headings"
+    },
+    "helpOptions": {
+      "description": "Help, feedback, and keyboard shortcuts.",
+      "label": "Help"
+    },
+    "hideUnhideOptions": {
+      "label": "Hide & Unhide"
+    },
+    "groupOptions": {
+      "label": "Group",
+      "description": "Group rows or columns so they can be collapsed and expanded together.\nSelect entire rows or columns and click Group, or choose which from the menu."
+    },
+    "homeToolbar": {
+      "label": "Home"
+    },
+    "horizontalAlignOptions": {
+      "description": "Configure how text is placed in the horizontal direction of the cell.",
+      "label": "Horizontal Alignment"
+    },
+    "insertCellsOptions": {
+      "description": "Insert new cells, rows or columns to your workbook.\nTo insert multiple rows or columns at a time, select multiple rows or columns in the sheet and click Insert."
+    },
+    "insertChartOptions": {
+      "label": "Insert Chart",
+      "description": "Add a chart to visualize the selected data."
+    },
+    "insertDataOptions": {
+      "description": "Import a file or web workbook and add its sheets as new tabs.",
+      "label": "Import Data",
+      "icon": "DataInsert"
+    },
+    "insertFunctionSumOptions": {
+      "description": "More functions.",
+      "label": "Quick Function"
+    },
+    "insertCellControlOptions": {
+      "description": "Insert a checkbox, or another registered cell control, in the selected cells.",
+      "icon": "CheckboxInsert"
+    },
+    "insertImageInCellOptions": {
+      "label": "Place in Cell",
+      "description": "Insert a picture as the value of the selected cell. It moves, sorts and filters with the cell.",
+      "icon": "InsertImageInCell"
+    },
+    "insertImageOptions": {
+      "label": "Pictures",
+      "description": "Insert a picture in a cell or over the cells.",
+      "icon": "InsertImage"
+    },
+    "insertImageOverCellsOptions": {
+      "label": "Place over Cells",
+      "description": "Insert a picture that floats over the cells. It can be moved and resized on its own.",
+      "icon": "InsertImageOverCells"
+    },
+    "insertSheetOptions": {
+      "description": "Insert new cells, rows or columns to your workbook.\nTo insert multiple rows or columns at a time, select multiple rows or columns in the sheet and click Insert."
+    },
+    "insertSparklineOptions": {
+      "label": "Sparklines",
+      "description": "Draw a small chart of the selected data in the cells beside it.",
+      "icon": "SparklineLine"
+    },
+    "insertToolbar": {
+      "label": "Insert"
+    },
+    "languageOptions": {
+      "label": "Language & Region",
+      "description": "Choose the language for the interface, and the regional formatting used by this workbook.",
+      "icon": "Language"
+    },
+    "managedNames": {
+      "label": "Names",
+      "description": "Define and manage the names used in place of addresses in formulas.",
+      "icon": "NamedManager"
+    },
+    "mergeOptions": {
+      "description": "Combine or split cells.",
+      "icon": "MergeAll"
+    },
+    "pasteOptions": {
+      "description": "Add content to the clipboard to your document.",
+      "label": "Paste"
+    },
+    "pivotToolbar": {
+      "label": "PivotTable"
+    },
+    "protectionOptions": {
+      "description": "Protect the sheet, choose what stays editable, and manage workbook protection."
+    },
+    "reviewToolbar": {
+      "label": "Review"
+    },
+    "sheetBackgroundOptions": {
+      "description": "Tile a picture behind the sheet's cells. A background is shown on screen only — it is never printed.",
+      "label": "Background",
+      "icon": "BackgroundImage"
+    },
+    "sheetZoomOptions": {
+      "label": "Zoom",
+      "description": "Set the zoom level of the current sheet."
+    },
+    "sortFilterOptions": {
+      "label": "Sort & Filter",
+      "description": "Organize your data so it's easier to analyze.\nYou can sort the selected data from smallest to largest or largest to smallest.",
+      "icon": "SortFilter"
+    },
+    "sortOptions": {
+      "label": "Sort",
+      "description": "Organize your data so it's easier to analyze.\nYou can sort the selected data from smallest to largest or largest to smallest."
+    },
+    "sparklineMarkerColorOptions": {
+      "label": "Marker Color",
+      "description": "Color the points the sparklines highlight.",
+      "icon": "fill.colored"
+    },
+    "sparklineOptions": {
+      "label": "Sparklines",
+      "description": "Edit or clear the sparklines of the selected cells."
+    },
+    "sparklineToolbar": {
+      "label": "Sparkline"
+    },
+    "tableDetails": {
+      "label": "Table Details",
+      "icon": "Table"
+    },
+    "tableToolbar": {
+      "label": "Table"
+    },
+    "textEffectsOptions": {
+      "description": "Style your text to differentiate it.",
+      "label": "Text Effects"
+    },
+    "textOverflowOptions": {
+      "description": "Configure how text behaves when it doesn't fit within a cell.",
+      "label": "Text Overflow"
+    },
+    "textRotateOptions": {
+      "description": "Rotate your text diagonally or vertically. This is a great way to label narrow columns.",
+      "label": "Text Orientation"
+    },
+    "underlineOptions": {
+      "description": "All underline stylings.",
+      "label": "Underline"
+    },
+    "ungroupOptions": {
+      "label": "Ungroup",
+      "description": "Remove rows or columns from their group."
+    },
+    "verticalAlignOptions": {
+      "description": "Configure how text is placed in the vertical direction of the cell.",
+      "label": "Vertical Alignment"
+    },
+    "viewToolbar": {
+      "label": "View"
+    },
+    "workbookViewOptions": {
+      "description": "Options to configure how the workbook is displayed.",
+      "label": "Workbook View",
+      "groupLabels": {
+        "viewToolbar": "Workbook"
+      }
+    }
+  }
+}

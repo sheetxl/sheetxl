@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>SheetXL Studio - Zero Install Demo</title>
+  <link rel="icon" href="https://www.sheetxl.com/favicon.ico" crossorigin="anonymous" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#4a90e2" />
+  <meta name="description" content="SheetXL Studio - Advanced spreadsheet component for web applications" />
+  <link rel="apple-touch-icon" href="https://www.sheetxl.com/img/logo_x192.png" crossorigin="anonymous" />
+  <!-- TODO - make this a global link to sheetxl for portability -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>
+      <a href="https://www.sheetxl.com" target="_blank" rel="noopener noreferrer">
+        <img src="https://www.sheetxl.com/logo-text.svg" alt="SheetXL" />
+      </a>
+      Zero Install - Simple Integration
+    </h1>
+
+    <div class="info full-height">
+      <div id="sheetxl">
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    // Copy this snippet to initialize SheetXL Studio
+    // A dist-tag url (`@latest`) is cached by the browser for up to a week, but the chunks it imports
+    // resolve against whatever the tag points at now. After a release the two no longer match, so
+    // resolve the tag to an exact version and load everything from there.
+    async function resolveVersion(url) {
+      const match = url.match(/^(https:\/\/cdn\.jsdelivr\.net\/npm\/@[^/@]+\/[^/@]+)(?:@([^/]+))?(\/.*)$/);
+      if (!match) return url;
+      const [, base, specifier = 'latest', path] = match;
+      if (/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(specifier)) return url;
+      try {
+        const name = base.slice('https://cdn.jsdelivr.net/npm/'.length);
+        const response = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${name}/resolved?specifier=${specifier}`);
+        const { version } = await response.json();
+        return version ? `${base}@${version}${path}` : url;
+      } catch {
+        return url;
+      }
+    }
+
+    async function importSheetXL(url) {
+      const resolved = await resolveVersion(url);
+      try {
+        return await import(resolved);
+      } catch {
+        // If the version lookup failed, a stale cached entry may be the cause. Retry once with a fresh copy.
+        return await import(`${resolved}${resolved.includes('?') ? '&' : '?'}t=${Date.now()}`);
+      }
+    }
+
+    async function initializeSheetXL() {
+      // const moduleUrl = 'https://esm.sh/@sheetxl/studio-vanilla';
+      const moduleUrl = 'https://cdn.jsdelivr.net/npm/@sheetxl/studio-vanilla@latest/cdn/index.js';
+      try {
+        const module = await importSheetXL(moduleUrl);
+        const { SheetXL } = module;
+        await SheetXL.attachStudio({
+          selector: "#sheetxl",
+          // A license key can also be available at the local url as well.
+          licenseKey: `visit https://my.sheetxl.com to generate a license key.`,
+          // loading: {
+          //   message: 'Initializing SheetXL Studio...'
+          // }
+        });
+      } catch (error) {
+        console.error('❌ Error loading SheetXL:', error);
+        const container = document.getElementById('sheetxl');
+        container.innerHTML = `
+          <div class="error full-height">
+            ❌ Failed to load SheetXL Studio at '${moduleUrl}'
+            <div class="error content">
+              <strong>Error:</strong> ${error.message}
+              ${error.details ? `<br><small>${error.details}</small>` : ''}
+              <br><br>
+              <strong>Troubleshooting:</strong>
+              <ul>
+                <li>Check if the url is accessible</li>
+                <li>Verify your internet connection</li>
+                <li>Try refreshing the page</li>
+              </ul>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Initialize when DOM is ready
+    initializeSheetXL();
+  </script>
+</body>
+
+</html>

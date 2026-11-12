@@ -1,4 +1,4 @@
-import { TopLeft, Rectangle, Bounds } from './Types';
+import { type TopLeft, type Rectangle, type Bounds } from './Types';
 
 /**
  * Frozen TopLeft for easy comparisons.
@@ -27,11 +27,3 @@ export const EmptyBounds: Bounds = Object.freeze({
   width: 0,
   height: 0
 });
-
-// /**
-//  * DimensionsFlags with both options set.
-//  */
-// export const DimensionsFlagBoth: DimensionsFlags = Object.freeze({
-//   width: true,
-//   height: true
-// });

@@ -1,0 +1,21 @@
+{
+  // Shared policy for the per-package `tsconfig.test.json` files. Tests are EXCLUDED from every
+  // normal/build tsconfig (base excludes `**.test.**` + `**/__tests__/**`), so nothing typechecked
+  // them — `strict: true` then showed ~hundreds of strict-null "possibly undefined" errors in the IDE
+  // on test assertions that are benign in context. These configs give test files their own project so
+  // the IDE (and an optional `typecheck:tests`) checks them for REAL drift (interface changes, wrong
+  // args, unknown properties) WITHOUT the strict-null pedantry.
+  //
+  // `strict: false` (not just strictNullChecks) — also drops noImplicitAny noise in fixtures; the
+  // trade-off is it relaxes strictFunctionTypes, but genuine mismatches (TS2345/TS2322/TS2353) still
+  // surface. `composite/noEmit` — typecheck only; `composite: false` avoids the "file not listed"
+  // (TS6307) that `composite` demands when only test files are in `include`.
+  "compilerOptions": {
+    "strict": false,
+    "composite": false,
+    "noEmit": true,
+    // Base sets `types: []` (node packages opt in). Vitest tests run under node and some import
+    // `node:fs`/`os`/`path`, so make node's ambient types available across all test configs.
+    "types": ["node"]
+  }
+}

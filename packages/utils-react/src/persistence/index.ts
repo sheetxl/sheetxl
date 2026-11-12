@@ -1,7 +1,7 @@
 export * from './Types';
 
-export * from './usePersistenceState';
-export * from './PersistenceStateProvider';
+export * from './usePersistentState';
+export * from './PersistentStateProvider';
 
 export * from './InMemoryStore';
 export * from './LocalStorageStore';

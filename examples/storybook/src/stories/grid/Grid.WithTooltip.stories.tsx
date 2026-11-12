@@ -1,14 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 
-import { Tooltip } from '@mui/material';
-
-import { SelectionCoords } from '@sheetxl/utils';
+import { Tooltip, type PopperProps } from '@mui/material';
 
 import {
-  ScrollableGrid as Grid, useSelection, IGridElement
+  SelectionLayer, DefaultSelection, type IGrid
 } from '@sheetxl/grid-react';
 
-import { sharedCellRenderer } from '../../components';
+import { sharedCellRenderer, ScrollableGrid as Grid, asStory } from '../../components';
+
+type PopperInstance = NonNullable<PopperProps['popperRef']> extends React.Ref<infer I> ? I : never;
 
 
 /**
@@ -21,11 +21,16 @@ import { sharedCellRenderer } from '../../components';
  */
 const Template: React.FC = (props) => {
   const {
+    columnCount = 200,
+    rowCount = 200,
     ...rest
   } = props as any;
 
-  const gridRef = useRef<IGridElement>(null);
-  const [selection, setSelection] = useState<SelectionCoords>(null);
+  const gridRef = useRef<IGrid>(null);
+
+  const selection = useMemo(() => new DefaultSelection({
+    getBounds: () => ({ rowStart: 0, colStart: 0, rowEnd: rowCount - 1, colEnd: columnCount - 1 })
+  }), [rowCount, columnCount]);
 
   const [hoverText, setHoverText] = useState<string>();
 
@@ -38,22 +43,23 @@ const Template: React.FC = (props) => {
     // bottom: 0
   });
 
-  const popperRef = React.useRef(null);
+  const popperRef = React.useRef<PopperInstance | null>(null);
 
   const handlePointerMove = (e: React.PointerEvent<any>):void => {
-    const view = gridRef.current.getViewFromClient(e.clientX, e.clientY);
+    const view = gridRef.current!.getPaneFromClient(e.clientX, e.clientY);
     // now we get the offset since we are adding menu as absolute
     if (!view) return;
     // get the coords to display
-    const coords = view.getCellCoordsFromClient(e.clientX, e.clientY);
-    const point = view.getRelativePointFromClient(0,0);//e.clientX, e.clientY);
+    const coords = view.getCellFromPointer(e.clientX, e.clientY);
+    const point = view.getPanePointFromPointer(0,0);//e.clientX, e.clientY);
+    if (!coords || !point) return;
 
-    const layout = view.getLayout();
+    const metrics = view.getMetrics();
     // We want our tooltip to snap to be to the right or the cell
-    const x = layout.getColOffset(coords.colIndex) - point.x;
-    const y = layout.getRowOffset(coords.rowIndex) - point.y;
-    const right = layout.getColOffset(coords.colIndex + 1) - point.x;
-    const bottom = layout.getRowOffset(coords.rowIndex + 1) - point.y;
+    const x = metrics.getColOffset(coords.colIndex) - point.x;
+    const y = metrics.getRowOffset(coords.rowIndex) - point.y;
+    const right = metrics.getColOffset(coords.colIndex + 1) - point.x;
+    const bottom = metrics.getRowOffset(coords.rowIndex + 1) - point.y;
 
     positionRef.current = {
       x: x,
@@ -68,71 +74,60 @@ const Template: React.FC = (props) => {
     }
   };
 
-  const {
-    // commands: commandsSelection,
-    renderOverlay: renderSelection,
-    ...selectionProps // used for callbacks
-  } = useSelection({
-    gridRef,
-    selection,
-    onSelectionChange: (selection: SelectionCoords) => setSelection(selection),
-  });
-
   return (
     <Tooltip
       arrow
       // disableInteractive
       title={<a href="https://www.sheetxl.com">Hover over {hoverText}</a>}
       placement="right"//right"
-      PopperProps={{
-        // style: { pointerEvents: 'none' },
-        popperRef,
-        anchorEl: {
-          getBoundingClientRect: () => {
-            return new DOMRect(
-              positionRef.current.x,
-              positionRef.current.y,
-              positionRef.current.width,
-              positionRef.current.height,
-            );
+      slotProps={{
+        popper: {
+          // style: { pointerEvents: 'none' },
+          popperRef,
+          anchorEl: {
+            getBoundingClientRect: () => {
+              return new DOMRect(
+                positionRef.current.x,
+                positionRef.current.y,
+                positionRef.current.width,
+                positionRef.current.height,
+              );
+            },
           },
-        },
-        modifiers: [
-          {
-              name: "offset",
-              options: {
-                  offset: [0, 10], // We offset so that we can mouse away in the tooltip's direction
-              },
-          },
-      ],
+          modifiers: [
+            {
+                name: "offset",
+                options: {
+                    offset: [0, 10], // We offset so that we can mouse away in the tooltip's direction
+                },
+            },
+          ],
+        }
       }}
     >
       <div className="storybook-container">
         <Grid
           {...rest}
           ref={gridRef}
-          renderCell={sharedCellRenderer}
-          // onKeyDown={(e: React.KeyboardEvent<any>) => {
-          //   commandsSelection.onKeyDown(e);
-          // }}
-          onPointerDown={(e: React.PointerEvent<any>) => {
-            selectionProps.onPointerDown(e);
-          }}
+          columnCount={columnCount}
+          rowCount={rowCount}
+          renderCells={sharedCellRenderer}
           onPointerMove={handlePointerMove}
-          renderOverlays={[renderSelection]}
-        />
+        >
+          <SelectionLayer key="selection" selection={selection} />
+        </Grid>
       </div>
     </Tooltip>
   );
 };
 
-export const GridWithTooltip = Template.bind({});
+export const GridWithTooltip = asStory(Template);
 GridWithTooltip.args = {
   columnCount: 200,
   rowCount: 200
 };
 
-GridWithTooltip.storyName = "with Tooltip";
+GridWithTooltip.storyName = "Tooltip";
 
 const Story = {
   title: 'Grid',

@@ -1,4 +1,4 @@
-import { DefaultCellRenderer, CellRendererProps } from '@sheetxl/grid-react';
+import { DefaultCellRenderer, type CellRendererProps } from '@sheetxl/grid-react';
 
 export const sharedCellRenderer = (props: CellRendererProps) => {
   const {
@@ -10,7 +10,7 @@ export const sharedCellRenderer = (props: CellRendererProps) => {
     <DefaultCellRenderer
       key={key}
       {...rest}
-      value={`${props.range.rowStart}:${props.range.colStart}`}
+      value={`${props.range!.rowStart}:${props.range!.colStart}`}
     />
   );
 };

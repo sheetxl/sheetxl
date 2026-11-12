@@ -1,8 +1,10 @@
 import React from 'react';
 
 import {
-  DefaultCellRenderer, CellRendererProps, ScrollableGrid as Grid
+  DefaultCellRenderer, type CellRendererProps
 } from '@sheetxl/grid-react';
+
+import { asStory, ScrollableGrid as Grid } from '../../components';
 
 const sharedCellRenderer = (props: CellRendererProps) => {
   const {
@@ -18,9 +20,9 @@ const sharedCellRenderer = (props: CellRendererProps) => {
       style={{
         ...propStyle,
         //background: `${(range.colStart % 4 === 0 ? 'rgb(232 246 255)' : range.rowStart % 3 === 0 ? '#eee' : 'transparent')}`
-        background: `${(range.colStart % 4 === 0 ? 'rgba(30, 167, 253, 0.1)' : range.rowStart % 3 === 0 ? '#eee' : 'transparent')}`
+        background: `${(range!.colStart % 4 === 0 ? 'rgba(30, 167, 253, 0.1)' : range!.rowStart % 3 === 0 ? '#eee' : 'transparent')}`
       }}
-      value={`${props.range.rowStart}:${props.range.colStart}`}
+      value={`${props.range!.rowStart}:${props.range!.colStart}`}
     />
   )
 }
@@ -34,7 +36,7 @@ const Template: React.FC = (props) => {
     <div className="storybook-container">
       <Grid
         {...rest}
-        renderCell={sharedCellRenderer}
+        renderCells={sharedCellRenderer}
         getColumnWidth={(index: number): number => {
           if (index % 4 === 0) return 180;
           return 60;
@@ -48,13 +50,13 @@ const Template: React.FC = (props) => {
   );
 };
 
-export const GridWithVariableSizes = Template.bind({});
+export const GridWithVariableSizes = asStory(Template);
 GridWithVariableSizes.args = {
   columnCount: 200,
   rowCount: 200
 };
 
-GridWithVariableSizes.storyName = "with Variable Sizes";
+GridWithVariableSizes.storyName = "Variable Sizes";
 
 const Story = {
   title: 'Grid',

@@ -35,7 +35,7 @@ export function deepEqual(a: any, b: any): boolean {
       length = (a as any).length;
       if (length != (b as any).length) return false;
       for (i = length; i-- !== 0;)
-        if (a[i] !== b[i]) return false;
+        if ((a as any)[i] !== (b as any)[i]) return false;
       return true;
     }
 

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { addHook } from './components/SingletonHooksContainer';
 import { batch } from './utils/env';
 
@@ -12,7 +13,7 @@ type ReactSingletonHook<T=any, S=any> = (
   options?: SingletonHookOptions
 ) => React.SetStateAction<S>
 
-let _singletonHook: ReactSingletonHook = null;
+let _singletonHook: ReactSingletonHook | null = null;
 
 // uncomment or add to global if we want this dedup at runtime.
 // _singletonHook = (React as any)._singletonHook as ReactSingletonHook;
@@ -46,7 +47,7 @@ if (!_singletonHook) {
     };
 
     return () => {
-      const [state, setState] = useState(stateInitializer);
+      const [state, setState] = useState<S>(stateInitializer as () => S);
 
       useEffect(() => {
         if (!mounted) {
@@ -56,12 +57,12 @@ if (!_singletonHook) {
 
         consumers.push(setState);
         if (lastKnownState !== state) {
-          setState(lastKnownState);
+          setState(lastKnownState as S);
         }
         return () => {
           consumers.splice(consumers.indexOf(setState), 1);
           if (consumers.length === 0 && unmountIfNoConsumers) {
-            removeHook();
+            removeHook?.();
             mounted = false;
           }
         };
@@ -79,4 +80,4 @@ export const singletonHook:<T=any, S=any>(
   initValue: T,
   useHookBody: () => S,
   options?: SingletonHookOptions
-) => React.SetStateAction<S> = _singletonHook;
+) => React.SetStateAction<S> = _singletonHook!;

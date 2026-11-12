@@ -11,8 +11,6 @@ import { Container } from '@mui/material';
 // import { Box } from '@mui/material';
 // import { IconButton } from '@mui/material';
 
-// import { GitHub as GitHubIcon } from '@mui/icons-material';
-
 const DefaultSVG = require('@site/static/img/undraw_spreadsheet_1.svg').default;
 const MEDIA_PROPS = {
   padding: `4px 8px`,

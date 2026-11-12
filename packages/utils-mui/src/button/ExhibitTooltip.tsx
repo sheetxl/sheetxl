@@ -1,15 +1,15 @@
-import React, { useState, useEffect, memo, forwardRef } from 'react';
+import type React from 'react';
+import { useState, useEffect, memo, forwardRef } from 'react';
 
 import { alpha } from '@mui/system';
-import { Theme } from '@mui/material/styles';
-
+import { type Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { Typography } from '@mui/material';
 import { type TooltipProps } from '@mui/material';
 
 import { CommonUtils } from '@sheetxl/utils';
 
-import { IKeyStroke, KeyModifiers, ReactUtils } from '@sheetxl/utils-react';
+import { type IKeyStroke, KeyModifiers, ReactUtils, useTranslator, type TranslateFn } from '@sheetxl/utils-react';
 
 import { ChipStrip, SimpleTooltip } from '../components';
 
@@ -102,14 +102,15 @@ const ModifierKeyIcon = memo((props: any) => {
   );
 });
 
-const CTRL_KEY_DESCRIPTION = (CommonUtils.getOS() === CommonUtils.OSType.MacOS || CommonUtils.getOS() === CommonUtils.OSType.IOS) ? `Cmd` : `Ctrl`;
+const _isAppleKeyboard = (): boolean =>
+  CommonUtils.getPlatform() === CommonUtils.OSType.MacOS || CommonUtils.getPlatform() === CommonUtils.OSType.IOS;
 
-export const toShortcutElements = (keyStroke: IKeyStroke | IKeyStroke[], modifierSymbol: boolean=false, key: string=null): React.ReactElement => {
+export const toShortcutElements = (keyStroke: IKeyStroke | IKeyStroke[], t: TranslateFn, modifierSymbol: boolean=false, key: string | null=null): React.ReactElement | null => {
   if (Array.isArray(keyStroke)) {
     let elements = [];
     let asArray = keyStroke;
     for (let i=0; i<asArray.length; i++) {
-      elements.push(toShortcutElements(asArray[i], modifierSymbol, key ?? '' + i));
+      elements.push(toShortcutElements(asArray[i], t, modifierSymbol, key ?? '' + i));
       // if (i < asArray.length - 1)
       //   elements.push(<div style={{marginRight: '8px'}}>,</div>);
     }
@@ -128,28 +129,33 @@ export const toShortcutElements = (keyStroke: IKeyStroke | IKeyStroke[], modifie
   }
 
   if (!keyStroke?.key) return null;
-  const modifiersAsMap = {};
+  const modifiersAsMap: Record<string, boolean> = {};
   for (let i=0;keyStroke.modifiers && i<keyStroke.modifiers.length; i++)
     modifiersAsMap[keyStroke.modifiers[i]] = true;
 
   const elements = [];
 
+  // Modifier NAMES localize (de: Strg/Umschalt); the Mac SYMBOLS (^ ⌥ ⇧ ⌘) are
+  // universal. Ctrl reads as 'Cmd' on Apple keyboards. `t` is threaded in from the
+  // caller's `useTranslator()` so a live language switch re-renders and re-labels.
+  const ctrlText = _isAppleKeyboard() ? t('shortcut.modifier.cmd') : t('shortcut.modifier.ctrl');
+
   // Always the same order.
   // TODO - use symbol svg icons. the text doesn't layout nicely/controlled
   if (modifiersAsMap?.[KeyModifiers.Ctrl]) {
-    elements.push(<ModifierKeyIcon key="ctrl" modifier={modifierSymbol ? '^' : <div style={{paddingRight: '1px' }}>{CTRL_KEY_DESCRIPTION}</div>}/>);
+    elements.push(<ModifierKeyIcon key="ctrl" modifier={modifierSymbol ? '^' : <div style={{paddingRight: '1px' }}>{ctrlText}</div>}/>);
     elements.push('+');
   }
   if (modifiersAsMap?.[KeyModifiers.Alt]) {
-    elements.push(<ModifierKeyIcon key="alt" modifier={modifierSymbol ? '⌥' : 'Alt'}/>);
+    elements.push(<ModifierKeyIcon key="alt" modifier={modifierSymbol ? '⌥' : t('shortcut.modifier.alt')}/>);
     elements.push('+');
   }
   if (modifiersAsMap?.[KeyModifiers.Shift]) {
-    elements.push(<ModifierKeyIcon key="shift" modifier={modifierSymbol ? '⇧' : <div style={{paddingRight: '1px' }}>Shift</div>}/>);
+    elements.push(<ModifierKeyIcon key="shift" modifier={modifierSymbol ? '⇧' : <div style={{paddingRight: '1px' }}>{t('shortcut.modifier.shift')}</div>}/>);
     elements.push('+');
   }
   if (modifiersAsMap?.[KeyModifiers.Meta]) {
-    elements.push(<ModifierKeyIcon key="meta" modifier={modifierSymbol ? <div style={{paddingTop: '1px' }}>⌘</div> : 'Meta'}/>);
+    elements.push(<ModifierKeyIcon key="meta" modifier={modifierSymbol ? <div style={{paddingTop: '1px' }}>⌘</div> : t('shortcut.modifier.meta')}/>);
     elements.push('+');
   }
   elements.push(<ModifierKeyIcon key="character" modifier={ReactUtils.toPrettyKeyCode(keyStroke.key)}/>);
@@ -158,7 +164,10 @@ export const toShortcutElements = (keyStroke: IKeyStroke | IKeyStroke[], modifie
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        // The keys never wrap or shrink; the label beside them gives way instead.
+        flexShrink: 0,
+        whiteSpace: 'nowrap'
       }}
       key={key}
     >
@@ -183,10 +192,11 @@ export const ExhibitTooltip: React.FC<ExhibitTooltipProps & { ref?: any }> = mem
     sx: sxProp,
     ...rest
   } = props;
+  const t = useTranslator();
 
   let shortCutLabel = null;
   if (shortcut) {
-    shortCutLabel = toShortcutElements(shortcut, useModifierSymbols);
+    shortCutLabel = toShortcutElements(shortcut, t, useModifierSymbols);
     // shortCutLabel = (
     //   <Typography variant="subtitle1" sx={{marginLeft: '6px'}}>
     //     {' (' + toShortcutString(shortcut, useModifierSymbols) + ')'}
@@ -217,7 +227,9 @@ export const ExhibitTooltip: React.FC<ExhibitTooltipProps & { ref?: any }> = mem
         <Typography
           variant="subtitle1"
           component="div"
-          flex="1 1 100%"
+          sx={{
+            flex: "1 1 100%"
+          }}
 
         >
           {label}

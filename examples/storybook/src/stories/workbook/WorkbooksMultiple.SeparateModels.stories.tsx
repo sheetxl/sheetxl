@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { WorkbookElement } from '@sheetxl/studio-mui';
+import { WorkbookElement } from '@sheetxl/react';
+
+import { asStory } from '../../components';
 
 const Template: React.FC = (props) => {
   const {
@@ -45,7 +47,7 @@ const Template: React.FC = (props) => {
   return <App />;
 };
 
-export const multipleWorkbooksSeparateModels = Template.bind({});
+export const multipleWorkbooksSeparateModels = asStory(Template);
 multipleWorkbooksSeparateModels.storyName = "Separate Models";
 
 const Story = {

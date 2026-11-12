@@ -31,7 +31,7 @@ function cloneUnlessOtherwiseSpecified(value: any, options?: any): any {
 }
 
 function defaultArrayMerge(target: any, source: any, options?: any): any {
-  return target.concat(source).map(function (element) {
+  return target.concat(source).map(function (element: any) {
     return cloneUnlessOtherwiseSpecified(element, options)
   })
 }
@@ -72,7 +72,7 @@ function propertyIsUnsafe(target: any, key: any): boolean {
 }
 
 function mergeObject(target: any, source: any, options?: any): any {
-  const destination = {}
+  const destination: any = {}
   if (options.isMergeableObject(target)) {
     getKeys(target).forEach(function (key) {
       destination[key] = cloneUnlessOtherwiseSpecified(target[key], options)

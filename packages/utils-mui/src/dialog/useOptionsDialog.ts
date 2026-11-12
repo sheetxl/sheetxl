@@ -1,24 +1,22 @@
-import React from 'react';
-
 import { useModal } from 'mui-modal-provider';
 
-import type { ShowOptionsOptions } from '@sheetxl/utils-react';
-import type { InternalWindowProps } from './InternalWindow';
+import { type ShowOptionsOptions, type OptionInput } from '@sheetxl/utils-react';
+import { type InternalWindowProps } from './InternalWindow';
 
-const Dialog = React.lazy(() => import(/* webpackPrefetch: true */'./OptionsDialog'));
+import OptionsDialog from './OptionsDialog';
 
 export interface OptionsDialogProps<T=any, C=any> extends ShowOptionsOptions<T,C>, Omit<InternalWindowProps<T, C>, 'style' | 'onInput' | 'autoFocus' | 'onKeyDown'> {};
 
-const useOptionsDialog = (propsDefault?: OptionsDialogProps): (options: OptionsDialogProps) => Promise<string> => {
+const useOptionsDialog = (propsDefault?: OptionsDialogProps): (options: OptionsDialogProps) => Promise<OptionInput> => {
   const { showModal } = useModal();
-  const showWindow = (options: OptionsDialogProps): Promise<string> => {
-    return new Promise<string>((resolve) => {
+  const showWindow = (options: OptionsDialogProps): Promise<OptionInput> => {
+    return new Promise<OptionInput>((resolve) => {
 
-      const modal = showModal(Dialog, {
+      const modal = showModal(OptionsDialog, {
         ...propsDefault as any,
         ...options,
-        onOption(option) {
-          options?.onOption?.(option, option === options.cancelOption, option === options.defaultOption);
+        onOption(option: OptionInput, isCancel: boolean, isDefault: boolean) {
+          options?.onOption?.(option, isCancel, isDefault);
           resolve(option);
         },
         onDone: () => {

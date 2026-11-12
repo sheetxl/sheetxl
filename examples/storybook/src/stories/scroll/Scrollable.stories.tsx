@@ -1,11 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 
-import { TopLeft } from '@sheetxl/utils';
 import {
-  ScrollPane, ScrollPaneProps, IScrollPaneElement, Scrollbar, ScrollbarProps, ScrollableViewport
+  Scrollbar, ScrollPane, Viewport, useBoundSyncExternalStore, type ScrollPaneProps,
+  type IScrollPaneElement, type ScrollbarProps, type ScrollCornerProps
 } from '@sheetxl/utils-react';
 
-const createRedScrollbar = (props: ScrollbarProps) => {
+import { asStory } from '../../components';
+
+const renderRedScrollbar = (props: ScrollbarProps) => {
   return (
     <Scrollbar
       style={{border: 'red solid 3px'}}
@@ -14,19 +16,21 @@ const createRedScrollbar = (props: ScrollbarProps) => {
    );
 }
 
-const createCustomCorner = ({ width, height }) => {
+const renderScrollCorner = (props: ScrollCornerProps) => {
+  const { size: _size, ...rest } = props;
+  // The corner is a grid cell sized by the scrollbar gutters — just fill it.
   return (
-    <button style={{
-      minWidth: `${width}px`,
-      width: `${width}px`,
-      minHeight: `${height}px`,
-      height: `${height}px`,
-      background: 'green',
-      border: 'blue solid 2px'
-    }}/>
+    <button
+      style={{
+        width: '100%',
+        height: '100%',
+        background: 'green',
+        border: 'blue solid 2px'
+      }}
+      {...rest}
+    />
   );
 };
-
 /**
  * Uses scrollableGrid to provide default scrollbars.
  */
@@ -36,7 +40,7 @@ const Template: React.FC = (props) => {
     showHorizontalScrollbar,
     renderScrollbarHorizontal,
     renderScrollbarVertical,
-    createScrollCorner,
+    renderScrollCorner,
     ...rest
   } = props as any;
 
@@ -44,34 +48,27 @@ const Template: React.FC = (props) => {
 
   const refScrollPane = useRef<IScrollPaneElement>(null);
 
-  const [viewport, setViewport] = useState<ScrollableViewport>({
-    left: 0,
-    top: 0,
-    width: 100,
-    height: 100,
-    totalWidth: 1000,
-    totalHeight: 1000,
-  });
+  // A standalone ScrollPane (no grid): drive arbitrary content from a Viewport. The sizes
+  // (a 100×100 view over 1000×1000 content) are pushed once; the ScrollPane subscribes for position +
+  // sizes and drives scroll into it.
+  const viewport = useMemo(() => {
+    const controller = new Viewport();
+    controller.setSizes(100, 100, 1000, 1000);
+    controller.setBounds({ minLeft: 0, maxLeft: 900, minTop: 0, maxTop: 900 });
+    return controller;
+  }, []);
+  const vp = useBoundSyncExternalStore(viewport, (s) => s.getMetrics());
   return (
     <div className="storybook-container">
       <ScrollPane
         {...propsScrollPane}
         viewport={viewport}
-        onScrollViewport={(scrollPoint: Partial<TopLeft>) => {
-          setViewport((prev: ScrollableViewport) => {
-            return {
-              ...prev,
-              top: scrollPoint.top ?? prev.top,
-              left: scrollPoint.left ?? prev.left,
-            }
-          })
-        }}
         ref={refScrollPane}
         showVerticalScrollbar={showVerticalScrollbar}
         showHorizontalScrollbar={showHorizontalScrollbar}
         renderScrollbarHorizontal={renderScrollbarHorizontal}
         renderScrollbarVertical={renderScrollbarVertical}
-        createScrollCorner={createScrollCorner}
+        renderScrollCorner={renderScrollCorner}
       >
         <div
          style={{
@@ -85,8 +82,8 @@ const Template: React.FC = (props) => {
           <button
             style={{
               position: 'relative',
-              left: `${650 - viewport.left}px`,
-              top: `${550 - viewport.top}px`,
+              left: `${250 - vp.left}px`,
+              top: `${150 - vp.top}px`,
               width: '100px',
               height: '20px'
             }}
@@ -105,18 +102,22 @@ const Template: React.FC = (props) => {
 };
 
 
-export const ScrollPaneTemplate = Template.bind({});
-ScrollPaneTemplate.args = {
-  renderScrollbarHorizontal: createRedScrollbar,
-  renderScrollbarVertical: createRedScrollbar,
-  createScrollCorner: createCustomCorner,
+export const ScrollPaneFloating = asStory(Template);
+ScrollPaneFloating.args = {
+  renderScrollbarHorizontal: renderRedScrollbar,
+  renderScrollbarVertical: renderRedScrollbar,
+  renderScrollCorner: renderScrollCorner,
   showVerticalScrollbar: true,
   showHorizontalScrollbar: true,
 };
+
+ScrollPaneFloating.storyName = 'Floating'
 
 const Story = {
   title: 'Scrollable',
   component: ScrollPane,
   parameters: { controls: { sort: 'requiredFirst' } }
 };
+
+
 export default Story;

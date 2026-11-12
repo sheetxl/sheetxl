@@ -3,26 +3,30 @@ import { describe, expect, it } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs'; // for write outputs
 import * as os from 'os';
+import { fileURLToPath } from 'url';
 
-import { IWorkbook } from '@sheetxl/sdk';
+import { WorkbookIO, type IWorkbook, type IWorksheet } from '@sheetxl/sdk';
 
-import { WorkbookIO } from '..';
+import { IOPlugin } from '..';
+
+WorkbookIO.install(IOPlugin);
 
 import createSimpleWorkbook from './helpers/createSimpleWorkbook';
+
+const TEST_PATH = path.dirname(fileURLToPath(import.meta.url));
 
 describe("JSON Import/Export", () => {
 
   it("Import", async () => {
-    const buffer:ArrayBuffer = fs.readFileSync(path.resolve(__dirname, './json/simple.json'), {flag:'r'}) as unknown as ArrayBuffer;
+    const buffer: ArrayBuffer = fs.readFileSync(path.resolve(TEST_PATH, './json/simple.json'), {flag:'r'}) as unknown as ArrayBuffer;
 
-    const workbook:IWorkbook = await WorkbookIO.read({
+    const workbook: IWorkbook = (await WorkbookIO.read({
       source: buffer,
-      // format: 'json',
-      name: 'simple.json'
-    });
+      format: 'json' // a bare buffer carries no extension, so the format must be explicit
+    }))!;
 
-    const ws = workbook.getSheets().getByName('Data');
-    expect(ws?.getRange('A1').getCell().getValue()).toEqual('this has spaces');
+    const ws: IWorksheet = workbook.getWorksheets().getByName('Sheet1')!;
+    expect(ws?.getRange('B2').getCell().getValue()).toEqual('hello world');
   });
 
   it("Export", async () => {
@@ -35,11 +39,8 @@ describe("JSON Import/Export", () => {
     try {
       const dirName = path.resolve(os.tmpdir(), 'json');
       fs.mkdirSync(dirName, { recursive: true });
-      success = await WorkbookIO.writeFile(
-        path.resolve(dirName, 'simple.json'),
-        workbook,
-        // { format: 'json' }
-      );
+      const details = await WorkbookIO.write(workbook, path.resolve(dirName, 'simple.json'));
+      success = !!details;
     } catch (err) {
       console.log(err);
     }

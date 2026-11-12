@@ -1,110 +1,453 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Global styles. The classic preset bundles Infima; everything here overrides its variables
+ * so the docs share the landing site's look: Inter, the same blue, soft surfaces, rounded
+ * corners, and the navy dark mode.
+ *
+ * Tokens mirror landing/src/css/style.css. Keep the two in step.
  */
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #1976d2;
-  --ifm-color-primary-dark: #1565c0;
-  --ifm-color-primary-darker: #1565c0;
-  --ifm-color-primary-darkest: #1565c0;
-  --ifm-color-primary-light: #42a5f5;
-  --ifm-color-primary-lighter: #42a5f5;
-  --ifm-color-primary-lightest: #42a5f5;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* Palette (landing: --color-primary, --color-black, --color-dark, --color-light-bg) */
+  --sxl-primary: #3e7dff;
+  --sxl-black: #080321;
+  --sxl-navy: #131b4d;
+  --sxl-light-bg: #f5f8ff;
+  --sxl-body: #4b5563;
+  --sxl-muted: #637381;
+  --sxl-line: #e4e9f5;
 
-  --ifm-color-secondary-dark: rgb(212, 213, 216);
-  --ifm-color-secondary-darker: rgb(200, 201, 204);
-  --ifm-color-secondary-darkest: rgb(164, 166, 168);
-  --ifm-color-secondary-light: rgb(238, 240, 242);
-  --ifm-color-secondary-lighter: rgb(241, 242, 245);
-  --ifm-color-secondary-lightest: rgb(245, 246, 248);
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --ifm-font-family-monospace: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.7;
+  --ifm-font-weight-semibold: 600;
+  --ifm-heading-font-weight: 700;
+  --ifm-heading-color: var(--sxl-black);
+  --ifm-font-color-base: var(--sxl-body);
+  --ifm-font-color-secondary: var(--sxl-muted);
+  --ifm-h1-font-size: 2.5rem;
+  --ifm-h2-font-size: 1.75rem;
+  --ifm-h3-font-size: 1.3rem;
 
-  --ifm-footer-background-color:#1565c0;
+  --ifm-color-primary: var(--sxl-primary);
+  --ifm-color-primary-dark: #2a6cf5;
+  --ifm-color-primary-darker: #1f61ee;
+  --ifm-color-primary-darkest: #124fd4;
+  --ifm-color-primary-light: #5a90ff;
+  --ifm-color-primary-lighter: #6e9cff;
+  --ifm-color-primary-lightest: #9cbcff;
+  --ifm-link-color: var(--sxl-primary);
+  --ifm-link-hover-decoration: underline;
 
-  .footer {
-    background-color: #1565c0;/*var(--ifm-footer-background-color)*/;
-    color: var(--ifm-footer-color);
-    padding: var(--ifm-footer-padding-vertical)
-      var(--ifm-footer-padding-horizontal);
-  }
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-color-emphasis-100: var(--sxl-light-bg);
+  --ifm-color-emphasis-200: #eaeffb;
+  --ifm-color-emphasis-300: var(--sxl-line);
 
-  .footer--dark {
-    --ifm-footer-background-color: #42a5f5;
-    --ifm-footer-color: var(--ifm-footer-link-color);
-    --ifm-footer-link-color: var(--ifm-color-secondary);
-    --ifm-footer-title-color: var(--ifm-color-white);
-  }
+  --ifm-global-radius: 0.75rem;
+  --ifm-code-border-radius: 0.5rem;
+  --ifm-code-font-size: 90%;
+  --ifm-code-background: var(--sxl-light-bg);
+  --ifm-code-padding-horizontal: 0.35rem;
+  --ifm-pre-border-radius: 0.75rem;
+  --ifm-alert-border-radius: 0.75rem;
+  --ifm-card-border-radius: 0.75rem;
+  --ifm-button-border-radius: 999px;
+  --ifm-global-shadow-lw: 0 1px 2px rgba(7, 16, 45, 0.06);
+  --ifm-global-shadow-md: 0 11px 30px rgba(7, 16, 45, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(62, 125, 255, 0.1);
 
-  .section--odd {
-    background: linear-gradient(245deg, rgba(47,172,255,0.3) 0%, rgba(47,172,255,0.2) 25%, rgba(255,255,255,1) 90%, rgba(255,255,255,1) 97%);
-  }
+  --ifm-navbar-height: 4rem;
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.85);
+  --ifm-navbar-shadow: inset 0 -1px 0 0 rgba(7, 16, 45, 0.08);
+  --ifm-navbar-link-color: var(--sxl-muted);
+  --ifm-navbar-link-hover-color: var(--sxl-primary);
+  --ifm-navbar-search-input-background-color: var(--sxl-light-bg);
+  --ifm-navbar-search-input-color: var(--sxl-black);
+
+  --ifm-menu-color: var(--sxl-muted);
+  --ifm-menu-color-active: var(--sxl-primary);
+  --ifm-menu-color-background-active: rgba(62, 125, 255, 0.1);
+  --ifm-menu-color-background-hover: var(--sxl-light-bg);
+  --ifm-menu-link-padding-vertical: 0.4rem;
+  --ifm-menu-link-padding-horizontal: 0.75rem;
+
+  --ifm-toc-border-color: var(--sxl-line);
+  --ifm-toc-link-color: var(--sxl-muted);
+  --ifm-breadcrumb-item-background-active: rgba(62, 125, 255, 0.1);
+  --ifm-breadcrumb-color-active: var(--sxl-primary);
+
+  --ifm-footer-background-color: var(--sxl-light-bg);
+  --ifm-footer-color: var(--sxl-muted);
+  --ifm-footer-link-color: var(--sxl-muted);
+  --ifm-footer-link-hover-color: var(--sxl-primary);
+  --ifm-footer-title-color: var(--sxl-black);
+
+  --ifm-table-border-color: var(--sxl-line);
+  --ifm-table-stripe-background: var(--sxl-light-bg);
+  --ifm-blockquote-border-color: var(--sxl-primary);
+  --ifm-hr-background-color: var(--sxl-line);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #90caf9;
-  --ifm-color-primary-dark: #42a5f5;
-  --ifm-color-primary-darker: #42a5f5;
-  --ifm-color-primary-darkest: #42a5f5;
-  --ifm-color-primary-light: #e3f2fd;
-  --ifm-color-primary-lighter: #e3f2fd;
-  --ifm-color-primary-lightest: #e3f2fd;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+/* `html[data-theme]` because the theme's own dark rules use that selector and would win on
+   specificity otherwise. */
+html[data-theme='dark'] {
+  --sxl-body: #b5b3bc;
+  --sxl-muted: #9b99a6;
+  --sxl-line: #232b5c;
 
-  /** we switch text with contrast on dark mode */
-  --ifm-font-color-base: var(--ifm-color-content-secondary);
-  --ifm-font-color-secondary: var(--ifm-color-content);
+  --ifm-heading-color: #ffffff;
+  --ifm-color-primary: #6e9cff;
+  --ifm-color-primary-dark: #5a90ff;
+  --ifm-color-primary-darker: #3e7dff;
+  --ifm-color-primary-darkest: #2a6cf5;
+  --ifm-color-primary-light: #82abff;
+  --ifm-color-primary-lighter: #9cbcff;
+  --ifm-color-primary-lightest: #c2d6ff;
+  --ifm-link-color: #82abff;
 
-  --ifm-font-color-base-inverse: var(--ifm-color-content-inverse);
+  --ifm-background-color: var(--sxl-black);
+  --ifm-background-surface-color: var(--sxl-navy);
+  --ifm-color-emphasis-100: #10174a;
+  --ifm-color-emphasis-200: #1b2459;
+  --ifm-color-emphasis-300: var(--sxl-line);
+  --ifm-code-background: #151d55;
+  --docusaurus-highlighted-code-line-bg: rgba(110, 156, 255, 0.15);
 
-  .section--odd {
-    background: linear-gradient(245deg, rgba(144,202,249,0.3) 0%, rgba(144,202,249,0.2) 75%, rgba(255,255,255,0) 97%);
-  }
+  --ifm-navbar-background-color: rgba(19, 27, 77, 0.85);
+  --ifm-navbar-shadow: inset 0 -1px 0 0 rgba(255, 255, 255, 0.08);
+  --ifm-navbar-link-color: #d1d5e8;
+  --ifm-navbar-link-hover-color: #ffffff;
+  --ifm-navbar-search-input-background-color: #1e2763;
+  --ifm-navbar-search-input-color: #ffffff;
+
+  --ifm-menu-color: var(--sxl-body);
+  --ifm-menu-color-active: #9cbcff;
+  --ifm-menu-color-background-active: rgba(110, 156, 255, 0.14);
+  --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.05);
+
+  --ifm-breadcrumb-item-background-active: rgba(110, 156, 255, 0.14);
+  --ifm-breadcrumb-color-active: #9cbcff;
+
+  --ifm-footer-background-color: var(--sxl-navy);
+  --ifm-footer-color: var(--sxl-body);
+  --ifm-footer-link-color: var(--sxl-body);
+  --ifm-footer-link-hover-color: #ffffff;
+  --ifm-footer-title-color: #ffffff;
+
+  --ifm-table-stripe-background: rgba(255, 255, 255, 0.03);
 }
+
+/* ---------- Navbar ---------- */
+
+.navbar {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* A backdrop filter makes the navbar the containing block for its fixed descendants, and the
+   mobile sidebar is one: left on, it would be clipped to the navbar's height. */
+.navbar.navbar-sidebar--show {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Infima paints the sidebar with the navbar color, which is translucent here. */
+.navbar-sidebar {
+  background-color: var(--ifm-background-surface-color);
+}
+
+.navbar__logo {
+  height: 2.1rem;
+}
+
+.navbar__link {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.navbar__link--active {
+  color: var(--ifm-color-primary);
+}
+
+.navbar__search-input {
+  border-radius: 999px;
+  font-family: inherit;
+}
+
+/* ---------- Sidebar ---------- */
+
+.theme-doc-sidebar-container {
+  border-right-color: var(--sxl-line) !important;
+}
+
+.menu {
+  padding: 0.75rem 0.75rem 2rem !important;
+  font-size: 0.9rem;
+}
+
+.menu__link {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  font-weight: 600;
+}
+
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible > .menu__link,
+.theme-doc-sidebar-item-link-level-1 > .menu__link {
+  font-weight: 600;
+  color: var(--ifm-heading-color);
+}
+
+.menu__list-item-collapsible:hover {
+  background: var(--ifm-menu-color-background-hover);
+  border-radius: 0.5rem;
+}
+
+.menu__list .menu__list {
+  border-left: 1px solid var(--sxl-line);
+  margin-left: 0.85rem;
+  padding-left: 0.35rem;
+}
+
+.menu__list .menu__list .menu__link {
+  padding-left: 0.65rem;
+}
+
+.menu__caret:before,
+.menu__link--sublist-caret:after {
+  background-size: 1rem 1rem;
+  opacity: 0.8;
+}
+
+/* ---------- Doc page ---------- */
+
+.markdown h1:first-child {
+  --ifm-h1-font-size: 2.5rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.markdown > h2 {
+  letter-spacing: -0.015em;
+  margin-top: 2.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--sxl-line);
+}
+
+.markdown > h3 {
+  margin-top: 2rem;
+}
+
+.markdown p,
+.markdown li {
+  font-weight: 400;
+}
+
+.markdown strong {
+  color: var(--ifm-heading-color);
+  font-weight: 600;
+}
+
+.markdown code {
+  border: none;
+  font-weight: 500;
+  color: var(--ifm-heading-color);
+}
+
+/* The Prism theme sets its background as an inline variable on the block, so the surface
+   color is pinned here instead to sit on our palette. */
+.theme-code-block {
+  --sxl-code-bg: var(--sxl-light-bg);
+  box-shadow: none !important;
+  border: 1px solid var(--sxl-line);
+}
+
+html[data-theme='dark'] .theme-code-block {
+  --sxl-code-bg: #0d1340;
+  border-color: #1f2a6b;
+}
+
+.theme-code-block pre,
+.theme-code-block pre code {
+  background-color: var(--sxl-code-bg) !important;
+}
+
+.theme-code-block .prism-code {
+  font-size: 0.875rem;
+}
+
+.theme-code-block > div:first-child:not(.codeBlockContent) {
+  font-weight: 600;
+  font-size: 0.8rem;
+  border-bottom: 1px solid var(--sxl-line);
+  background: var(--ifm-color-emphasis-100);
+}
+
+.tabs__item {
+  border-radius: 0.5rem 0.5rem 0 0;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+}
+
+.theme-admonition {
+  border-left-width: 3px;
+  box-shadow: none;
+}
+
+.breadcrumbs__link {
+  font-size: 0.85rem;
+}
+
+.theme-doc-breadcrumbs {
+  margin-bottom: 1.25rem;
+}
+
+.table-of-contents__link {
+  font-size: 0.85rem;
+}
+
+.table-of-contents__link--active {
+  font-weight: 600;
+}
+
+.pagination-nav__link {
+  border: 1px solid var(--sxl-line);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: var(--ifm-global-shadow-md);
+}
+
+.pagination-nav__label {
+  font-weight: 600;
+}
+
+.card {
+  border: 1px solid var(--sxl-line);
+  box-shadow: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: var(--ifm-global-shadow-md);
+  transform: translateY(-2px);
+}
+
+.theme-edit-this-page,
+.theme-last-updated {
+  font-size: 0.85rem;
+}
+
+table {
+  font-size: 0.95rem;
+}
+
+table thead tr {
+  background: var(--ifm-color-emphasis-100);
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+  font-weight: 600;
+  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.button--primary {
+  box-shadow: 0 11px 20px rgba(62, 125, 255, 0.25);
+  color: #fff;
+}
+
+.button--primary:hover {
+  box-shadow: 0 11px 24px rgba(62, 125, 255, 0.35);
+}
+
+/* Keep the landing's saturated blue under white text in dark mode; the lighter dark-mode
+   primary is for links and accents, not fills. */
+html[data-theme='dark'] .button--primary {
+  --ifm-button-background-color: var(--sxl-primary);
+  --ifm-button-border-color: var(--sxl-primary);
+}
+
+html[data-theme='dark'] .button--primary:hover {
+  --ifm-button-background-color: #2a6cf5;
+  --ifm-button-border-color: #2a6cf5;
+}
+
+.button--outline {
+  --ifm-button-color: var(--ifm-color-primary);
+  background: var(--ifm-background-color);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 11px 20px rgba(7, 16, 45, 0.08);
+}
+
+.button--outline:hover {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  border-top: 1px solid var(--sxl-line);
+  padding-top: 3.5rem;
+  padding-bottom: 2.5rem;
+}
+
+.footer__title {
+  font-size: 1rem;
+}
+
+.footer__link-item {
+  font-size: 0.95rem;
+  line-height: 2;
+}
+
+.footer__copyright {
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+
+/* ---------- Announcement bar ---------- */
+
+/* The announcement bar paints its own background, but infima styles `code` with a
+   near-white fill and `color: inherit` - so inline code there renders white on white. */
+.theme-announcement-bar code {
+  background-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ---------- Utilities ---------- */
 
 .hidden {
   display: none !important;
 }
 
 .container {
-    max-width: var(--ifm-container-width);
+  max-width: var(--ifm-container-width);
 }
 
 @media (min-width: 1440px) {
   .container {
-      max-width: var(--ifm-container-width-xl);
+    max-width: var(--ifm-container-width-xl);
   }
 }
 
 .full-width {
   width: 100%;
-  table {
-    display: table;
-    width: 100%;
-  }
 }
 
-
-.algolia-autocomplete .algolia-docsearch-suggestion--category-header {
-  background-color: var(--ifm-color-primary-darker, #373940) !important;
-}
-
-.algolia-autocomplete .algolia-docsearch-suggestion--category-header span {
-  text-transform: none;
-}
-
-.algolia-docsearch-footer {
-  height: 0px !important
-}
-
-.algolia-autocomplete .ds-dropdown-menu:before {
-  background-color: var(--ifm-color-primary-darker, #373940);
-  border-right: 1px solid var(--ifm-color-primary-darkest, #373940);
-  border-top: 1px solid var(--ifm-color-primary-darkest, #373940);
+.full-width table {
+  display: table;
+  width: 100%;
 }
 
 /* Responsive banner images for documentation pages */
@@ -118,11 +461,10 @@
 .doc-animated-banner img {
   width: 100%;
   max-width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 11px 30px rgba(7, 16, 45, 0.15);
 }
 
-/* On larger screens, limit width to 70% */
 @media (min-width: 768px) {
   .doc-animated-banner img {
     width: 70%;
@@ -130,7 +472,5 @@
 }
 
 [data-theme='dark'] .doc-animated-banner img {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 11px 30px rgba(0, 0, 0, 0.4);
 }
-
-

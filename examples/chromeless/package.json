@@ -1,0 +1,44 @@
+{
+  "name": "example-chromeless",
+  "description": "Example project for the chromeless (framework-neutral) SheetXL WorkbookElement",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rimraf ./build",
+    "clean:all": "git clean -fdX .",
+    "lint": "eslint ."
+  },
+  "sheetxl": {
+    "demo": {
+      "title": "Chromeless",
+      "description": "Just the grid. WorkbookElement with no toolbar, menus or MUI: the starting point for a file preview or an editor pane in your own design.",
+      "thumb": "demo-thumb.png",
+      "source": "./loan-calculator.xlsx"
+    }
+  },
+  "dependencies": {
+    "@sheetxl/grid-react": "^1.0.0",
+    "@sheetxl/io": "workspace:*",
+    "@sheetxl/primitives": "workspace:*",
+    "@sheetxl/react": "^1.0.0",
+    "@sheetxl/scripting": "^1.0.0",
+    "@sheetxl/sdk": "^1.0.0",
+    "@sheetxl/utils": "workspace:*",
+    "@sheetxl/utils-react": "workspace:*",
+    "csstype": "^3.2.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.14.0",
+    "vite": "~8.1.6"
+  }
+}

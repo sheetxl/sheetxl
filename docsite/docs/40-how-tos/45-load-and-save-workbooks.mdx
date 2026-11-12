@@ -1,0 +1,204 @@
+---
+sidebar_position: 45
+title: Load and Save Workbooks
+---
+
+## Loading and Saving State
+
+Most models can save their state as JSON with `toJSON()` and accept a `json` option in their
+constructor that matches the type it returns. On a workbook `toJSON()` is async, because pending
+calculations are settled first.
+
+```typescript title="Save to JSON"
+const asJSON: IWorkbook.JSON = await workbook.toJSON();
+// save asJSON to local storage or db
+```
+
+```typescript title="Read from JSON"
+const json: IWorkbook.JSON = { /* Json loaded from db, local storage, or other location */ };
+const workbook: IWorkbook = new Workbook({ json });
+```
+
+#### Create a workbook with initial data
+
+A common use case is to display a workbook with initial data. Create a blank workbook and set
+values on a range — `setValues` takes a 2D array of [Scalar](https://api.sheetxl.com/types/_sheetxl_primitives.Scalar.html)s:
+
+```typescript
+const workbook: IWorkbook = new Workbook();
+workbook.getWorksheet().getRange('A1:C3').setValues([
+  [1,2,3],
+  [4,5,6],
+  [7,8,9]
+]);
+```
+
+## Importing and Exporting
+
+### Using the SDK
+
+`WorkbookIO` lives in [@sheetxl/sdk](https://www.npmjs.com/package/@sheetxl/sdk). To read and write file formats other than the native SheetXL JSON type, register the format handlers from [@sheetxl/io](https://www.npmjs.com/package/@sheetxl/io) once at startup:
+
+```typescript title="Register the format handlers"
+import { WorkbookIO } from '@sheetxl/sdk';
+import { IOPlugin } from '@sheetxl/io';
+
+// Installs the sxl, csv, and xlsx handlers into WorkbookIO.
+await WorkbookIO.install(IOPlugin);
+```
+
+The formats currently supported are:
+- SheetXL (`.sxl`, native; smaller and faster to load than xlsx)
+- SheetXL JSON (`.json`)
+- CSV (`.csv`)
+- Excel (`.xlsx`)
+
+### From the command line
+
+No code is needed to convert between formats. Name the input and an output:
+
+```bash
+npx sheetxl book.xlsx --out book.csv
+npx sheetxl data.csv --out data.xlsx --in.csv.delimiter=";"
+```
+
+Any SDK call on this page also works as a CLI one-liner, with the workbook loaded as `wb`:
+
+```bash
+npx sheetxl -e "wb.getWorksheet().getRange('A1:C3').setValues([[1,2,3],[4,5,6],[7,8,9]])" --out seeded.xlsx
+```
+
+See the [CLI guide](../20-getting-started/4-cli.mdx) for `--save`, `--in.*` and `--out.*` options.
+
+### Reading
+
+```typescript title="WorkbookIO.read"
+/**
+ * Resolves bytes from many source types and decodes them into an IWorkbook.
+ * The source can be a File, a Promise<File>, an ArrayBuffer, a { base64 }
+ * object, or a string (URL or file path). A bare string is shorthand for
+ * { source }. When the format cannot be inferred (e.g. a raw ArrayBuffer),
+ * pass it explicitly via `format`.
+ *
+ * @returns A promise that resolves to an IWorkbook, or null when no source was
+ *   acquired (e.g. the user cancelled an open dialog).
+ */
+WorkbookIO.read(
+  sourceOrOptions?: string | IWorkbookIO.Origin | IWorkbookIO.ReadOptions
+): Promise<IWorkbook | null>;
+
+// Import from a URL (string shorthand)
+const wb1 = await WorkbookIO.read(
+  'https://www.sheetxl.com/docs/examples/loan-calculator.xlsx'
+);
+
+// Import from a File
+const wb2 = await WorkbookIO.read({ source: myFile });
+
+// Import from base64 (explicit disambiguation)
+const wb3 = await WorkbookIO.read({ source: { base64: 'iVBORw0KGgo...' }, format: 'xlsx' });
+
+// Import from an ArrayBuffer (no extension to sniff, so the format is explicit)
+const wb4 = await WorkbookIO.read({ source: myArrayBuffer, format: 'csv' });
+```
+
+#### The Origin — a virtual file handle
+
+A workbook read from a source knows where it came from. Every workbook carries an
+[Origin](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbookIO.Origin.html) — a light
+virtual file handle (think of a browser `FileSystemFileHandle`, or a URI) with the path, display
+name, format, and size:
+
+```typescript
+const wb = await WorkbookIO.read('./reports/loan-calculator.xlsx');
+
+wb.getName();                  // 'loan-calculator'
+wb.getOrigin().getPath();      // './reports/loan-calculator.xlsx'
+wb.getOrigin().getFormat();    // the resolved format key (e.g. 'Excel')
+wb.getOrigin().getSize();      // last-known size in bytes
+```
+
+The origin is what makes a plain `write(workbook)` save back to the right place — see below. A
+new in-memory workbook has an *unbound* origin (no path yet); its first save resolves one.
+
+### Writing
+
+`write` behaves like the save actions of any document app:
+
+- **Save** — `write(workbook)` writes back to the workbook's own origin. If the workbook has
+  never been saved (or came from a read-only source such as a URL), the backing store resolves
+  a destination — a save dialog in the browser — and remembers it, so the next save is silent.
+- **Export** ("save a copy") — `write(workbook, target)` writes a copy to an explicit
+  destination. The workbook itself still points at its original file.
+- **Save As** — `writeAs(workbook, target)` moves the workbook *to* the new destination and
+  saves; subsequent saves go there.
+
+```typescript title="WorkbookIO.write"
+/**
+ * Encodes the workbook and persists it through the active IBackingStore.
+ *
+ * @returns A promise resolving to the Origin (file handle) that was written,
+ *   or null if the write was cancelled.
+ */
+WorkbookIO.write(
+  workbook: IWorkbook,
+  target?: string | IWorkbookIO.Origin | IWorkbookIO.WriteOptions,
+  options?: IWorkbookIO.WriteOptions
+): Promise<IWorkbookIO.Origin | null>;
+
+// Save — back to where it was read from (the workbook's origin)
+await WorkbookIO.write(workbook);
+
+// Export a copy — the extension drives the format
+await WorkbookIO.write(workbook, 'report-copy.xlsx');
+
+// Export with an explicit format (e.g. no extension on the target)
+await WorkbookIO.write(workbook, 'data', { format: 'csv' });
+
+// Save As — the workbook now lives at (and saves to) the new destination
+await WorkbookIO.writeAs(workbook, 'renamed.xlsx');
+```
+
+:::tip
+Want to send workbooks somewhere other than the local file system — a backend, a database, or a VSCode host? See [Configure a Backing Store](./50-configure-a-backing-store.mdx).
+:::
+
+:::tip
+The full source documentation is available at [IWorkbookIO API](https://api.sheetxl.com/interfaces/_sheetxl_sdk.IWorkbookIO.html)
+:::
+
+### Using Studio
+
+If using the Studio React component these capabilities are wrapped in the `workbook` prop.
+
+```tsx title="Studio Import/Export"
+import { useMemo } from 'react';
+
+import { type IWorkbook } from '@sheetxl/sdk';
+import { Studio } from '@sheetxl/studio-mui';
+
+// Instead of a live model we can pass read options with a source URL.
+// Wrap in a memo so the identity is stable across renders (a new object
+// identity would trigger a reload).
+const workbookSource = useMemo(() => {
+  return {
+    // Lots of options available
+    source: 'https://www.sheetxl.com/docs/examples/loan-calculator.xlsx',
+    // Not required but useful if the viewer is meant to be readonly
+    readonly: true
+  }
+}, []);
+
+// onWorkbookChange fires when the workbook loads — and again if the user
+// opens a different file from within the Studio.
+<Studio
+  workbook={workbookSource}
+  onWorkbookChange={(workbook: IWorkbook | null) => {
+    console.log('workbook changed', workbook?.getName());
+  }}
+/>
+```
+
+:::note
+Need another format, or something missing? [Let us know](https://github.com/sheetxl/public/issues).
+:::

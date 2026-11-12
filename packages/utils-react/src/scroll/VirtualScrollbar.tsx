@@ -1,11 +1,14 @@
-import React, {
-  memo, forwardRef, useCallback, useState, useMemo
+import type React from 'react';
+import {
+  memo, forwardRef, useCallback, useState, useMemo, useRef
 } from 'react';
 
 import { ReactUtils } from '../utils';
+import { useCallbackRef } from '../hooks';
+import { RenderSlot, type RenderSlotFn } from '../components';
 
-import { useCallbackRef } from '../hooks/useCallbackRef';
-import type { IScrollbarElement, ScrollbarProps } from './IScrollbar';
+import { type IScrollbarElement, type ScrollbarProps, type ThumbDragEvent } from './IScrollbar';
+import { type TrackEdgeTick } from './TrackDrag';
 
 import { defaultRenderScrollbar } from './Utils';
 
@@ -49,7 +52,7 @@ export interface VirtualScrollbarProps extends Omit<ScrollbarProps, "onScroll"> 
    */
   precisionFactor?: number;
 
-  renderScrollbar?: (props: ScrollbarProps) => React.ReactNode,
+  renderScrollbar?: RenderSlotFn<ScrollbarProps>,
 }
 
 const DEFAULT_GAP = 300;
@@ -97,6 +100,7 @@ export const VirtualScrollbar = memo(forwardRef<IScrollbarElement, VirtualScroll
     endScrollIncrement = DEFAULT_SCROLL_INCREMENT,
     style: propStyle = ReactUtils.EmptyCssProperties,
     onMouseDown: propOnMouseDown,
+    onThumbDrag: propOnThumbDrag,
     onScrollOffset: propOnScrollOffset,
     //@ts-ignore
     onScroll: propOnScroll,
@@ -111,12 +115,23 @@ export const VirtualScrollbar = memo(forwardRef<IScrollbarElement, VirtualScroll
     console.warn('onScroll not supported for VirtualScrollbar. Use onScrollOffset instead');
   }
 
-  const onMouseDown = useCallbackRef(propOnMouseDown, [propOnMouseDown]);
+  const onMouseDown = useCallbackRef(propOnMouseDown ?? (() => {}), [propOnMouseDown]);
 
   const [isDraggingScroll, setDraggingScroll] = useState(false);
 
+  // The elastic region never SHRINKS mid-drag (it may still grow — the edge-hold extend). A shrinking
+  // region re-maps the remaining offset to a higher thumb position on every move, eating an upward drag
+  // (a treadmill that makes the top/left edge near-unreachable from deep past the data end). While
+  // dragging the mapping stays pinned (linear, predictable); on release it recomputes freely — the
+  // elastic "bounce back".
+  const refDragTotal = useRef<number>(0);
+
   const bounds: VirtualBounds = useMemo(() => {
-    const virtualTotal = scaleLimit === 0 ? propTotalSize : Math.min(propTotalSize ?? 0, Math.max(minSize ?? 0, (propOffset ?? 0) + (propViewportSize ?? 0)) + (endGap ?? 0));
+    let virtualTotal = scaleLimit === 0 ? propTotalSize : Math.min(propTotalSize ?? 0, Math.max(minSize ?? 0, (propOffset ?? 0) + (propViewportSize ?? 0)) + (endGap ?? 0));
+    if (isDraggingScroll) {
+      virtualTotal = Math.max(virtualTotal, refDragTotal.current);
+    }
+    refDragTotal.current = virtualTotal;
     const effectiveFactor = scaleLimit !== 0 && virtualTotal > scaleLimit ? scaleFactor : 1;
     const effectivePrecision = effectiveFactor / precisionFactor;
 
@@ -146,6 +161,29 @@ export const VirtualScrollbar = memo(forwardRef<IScrollbarElement, VirtualScroll
     propOnScrollOffset?.(offsetPhysical * bounds.factor, offset, bounds.viewportSize);
   }, [propOnScrollOffset, bounds]);
 
+  // Thumb dragged to the track end and HELD: extend past the elastic region toward the real end. The
+  // drag engine supplies the heartbeat (and hold metadata) — the elastic policy lives entirely here:
+  // each tick advances the REAL offset by endScrollIncrement, accelerating with hold time, and the
+  // region re-derives from the new offset (the thumb stays pinned under the pointer). Returns false at
+  // the real clamp so the ticking stops.
+  const handleThumbEdgeHold = useCallbackRef((edge: -1 | 1, tick: TrackEdgeTick): boolean => {
+    // 1× → 4× across the first 3 s of hold — long sheets speed up, a short hold stays precise.
+    const accel = 1 + Math.min(3, tick.heldMs / 1000);
+    const maxOffset = Math.max(0, bounds.scaledTotalSize - bounds.scaledViewportSize);
+    const next = Math.min(maxOffset, Math.max(0, bounds.scaledOffset + edge * endScrollIncrement * accel));
+    if (next === bounds.scaledOffset) return false; // parked at the real end (or start)
+    propOnScrollOffset?.(next, bounds.scaledViewportSize, bounds.scaledTotalSize);
+    return true;
+  }, [bounds, endScrollIncrement, propOnScrollOffset]);
+
+  // Consume the drag lifecycle for the elastic pin AND pass it through — it's a generic event the
+  // client also observes (e.g. the sheet anchors a "Row: N" tooltip to event.element during any
+  // thumb/grip drag).
+  const handleThumbDrag = useCallbackRef((event: ThumbDragEvent) => {
+    setDraggingScroll(event.dragging);
+    propOnThumbDrag?.(event);
+  }, [propOnThumbDrag]);
+
   const handleMouseMove = useCallback((_e: globalThis.MouseEvent) => {
   }, []);
   /**
@@ -159,10 +197,10 @@ export const VirtualScrollbar = memo(forwardRef<IScrollbarElement, VirtualScroll
     setDraggingScroll(false);
   }, []);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     setDraggingScroll(true);
 
-    onMouseDown?.(e);
+    onMouseDown?.(event);
 
     document.addEventListener("mousemove", handleMouseMove, {
       passive: true,
@@ -172,7 +210,7 @@ export const VirtualScrollbar = memo(forwardRef<IScrollbarElement, VirtualScroll
     });
   }, [handleMouseMove, handleMouseUp]);
 
-  return renderScrollbar({
+  return <RenderSlot render={renderScrollbar} props={{
     style: propStyle,
     ...rest,
     offset: bounds.offset,
@@ -180,8 +218,13 @@ export const VirtualScrollbar = memo(forwardRef<IScrollbarElement, VirtualScroll
     viewportSize: bounds.viewportSize,
     onMouseDown: handleMouseDown,
     onScrollOffset: handleOnScrollOffset,
+    onThumbEdgeHold: handleThumbEdgeHold,
+    // Explicit drag lifecycle (desktop thumb + touch grip): pins the elastic region for the drag's
+    // duration and forwards to the client. The mouse-event path above stays as a belt-and-suspenders
+    // for track interactions.
+    onThumbDrag: handleThumbDrag,
     ref: refForwarded
-  });
+  }} />;
 }));
 
 VirtualScrollbar.displayName = 'VirtualScrollbar';

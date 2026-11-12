@@ -18,6 +18,7 @@
     }
   ],
   "compilerOptions": {
+    "strict": false,
     "jsx": "react-jsx"
   },
   "include": [

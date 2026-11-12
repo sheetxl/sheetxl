@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sheetxl.com/schema/command-catalog.schema.json",
+  "title": "SheetXL Command Catalog",
+  "description": "A per-(scope, language) command chrome catalog: <name>.cmd.<tag>.json. The English default is <name>.cmd.en.json; each shipped locale file is a COMPLETE pack.",
+  "type": "object",
+  "required": ["scope", "tag", "version", "commands"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "scope": {
+      "type": "string",
+      "description": "The CommandRegistry scope name these commands OWN (e.g. sheet, workbook, selection, movable, editor, app, scriptEditor)."
+    },
+    "label": {
+      "type": "string",
+      "description": "Localizable display name for the scope (e.g. the shortcut-keys dialog grouping)."
+    },
+    "tag": {
+      "type": "string",
+      "description": "BCP-47 language tag; 'en' is the default."
+    },
+    "version": {
+      "type": "integer",
+      "description": "Envelope format version, for forward-compatible migrations.",
+      "minimum": 1
+    },
+    "commands": {
+      "type": "object",
+      "description": "commandKey -> chrome record.",
+      "additionalProperties": { "$ref": "#/definitions/chromeRecord" }
+    }
+  },
+  "definitions": {
+    "chromeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "groupLabels": {
+          "type": "object",
+          "description": "Per-surface label overrides keyed by groupKey (the label@<groupKey> variants).",
+          "additionalProperties": { "type": "string" }
+        },
+        "icon": { "type": "string", "description": "Icon glyph key (string only)." },
+        "shortcut": {
+          "description": "Compact VSCode-style binding string ('ctrl+shift+h'), or an array of alternatives. In a LOCALE catalog, null means explicitly unbound in this locale (absence inherits the English binding).",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } },
+            { "type": "null" }
+          ]
+        },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "borrow": {
+          "type": "array",
+          "description": "Other scopes that borrow this command (in addition to the file's owner scope).",
+          "items": { "type": "string" }
+        },
+        "params": {
+          "type": "object",
+          "description": "RESERVED: placeholder name -> context accessor path.",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

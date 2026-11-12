@@ -2,9 +2,8 @@ import { useState, memo, forwardRef, useCallback, isValidElement } from 'react';
 
 import clsx from 'clsx';
 
-import { useSnackbar, SnackbarContent, CustomContentProps } from 'notistack';
+import { useSnackbar, SnackbarContent, type CustomContentProps } from 'notistack';
 
-import { useTheme } from '@mui/material/styles';
 import { Collapse } from '@mui/material';
 import { Typography } from '@mui/material';
 import { Card } from '@mui/material';
@@ -12,7 +11,7 @@ import { CardActions } from '@mui/material';
 import { IconButton } from '@mui/material';
 
 import { ErrorUtils, ExpectedError } from '@sheetxl/utils';
-import { DynamicIcon } from '@sheetxl/utils-react';
+import { DynamicIcon, useTranslator } from '@sheetxl/utils-react';
 import { StackTrace } from '@sheetxl/utils-mui';
 
 import styles from './ToastError.module.css';
@@ -33,11 +32,12 @@ const ToastError = memo(forwardRef<HTMLDivElement, ToastErrorProps>((props, ref)
       hideIconVariant,
       ...rest
     } = props;
+
+    const t = useTranslator();
     const { closeSnackbar } = useSnackbar();
-    const theme = useTheme();
     const [expanded, setExpanded] = useState(false);
 
-    const rootError = ErrorUtils.collectErrorChain(propError, true)?.[0]?.error;
+    const rootError = propError ? ErrorUtils.collectErrorChain(propError, true)?.[0]?.error : undefined;
     const isUnexpectedError = rootError && !(rootError instanceof ExpectedError);
     const handleExpandClick = useCallback(() => {
       setExpanded((oldExpanded) => !oldExpanded);
@@ -67,8 +67,9 @@ const ToastError = memo(forwardRef<HTMLDivElement, ToastErrorProps>((props, ref)
         <Card
           className={styles.card}
           style={{
-            backgroundColor: theme.palette.error.dark,
-            border: `1px solid ${theme.palette.error.dark}`,
+            backgroundColor: 'var(--sxl-color-error)',
+            color: 'var(--sxl-color-error-content)',
+            border: `1px solid var(--sxl-color-error)`,
           }}
         >
           <CardActions className={styles.actionRoot}>
@@ -86,7 +87,7 @@ const ToastError = memo(forwardRef<HTMLDivElement, ToastErrorProps>((props, ref)
             <div className={styles.icons}>
               {isUnexpectedError ?
                 <IconButton
-                  aria-label="Show more"
+                  aria-label={t('toast.showMore')}
                   size="small"
                   className={clsx(styles.expand, {
                     [styles.expandOpen]: expanded
@@ -110,12 +111,13 @@ const ToastError = memo(forwardRef<HTMLDivElement, ToastErrorProps>((props, ref)
             <div
               className={styles.stackTraceContainer}
               style={{
-                backgroundColor: theme.palette.error.light,
-                borderTop: `1px solid ${theme.palette.error.main}`,
+                // a faint error tint over the base surface (adapts per mode), accented by an error rule
+                backgroundColor: 'color-mix(in srgb, var(--sxl-color-error) 90%, var(--sxl-color-base-100))',
+                borderTop: `1px solid var(--sxl-color-error)`,
               }}
             >
               <StackTrace
-                error={propError}
+                error={propError!}
                 hideLineNumbers={true}
               />
             </div>

@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "noEmit": true,
+    "composite": false,
+    "tsBuildInfoFile": "./build/.tsbuildinfo.example-cli"
+  },
+  "files": [
+    "./node_modules/@sheetxl/sdk/build/types/scripting.d.ts"
+  ],
+  "include": [
+    "**/*.ts"
+  ]
+}

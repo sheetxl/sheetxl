@@ -1,0 +1,29 @@
+name: Setup Rust
+description: >
+  The Rust toolchain pinned in rust-toolchain.toml, the wasm32 target, and the wasm-bindgen CLI at the
+  exact version Cargo.toml pins. Any job that builds @sheetxl/sdk needs this: its `build` runs
+  `pnpm rust:wasm` first (crates/README.md).
+
+runs:
+  using: composite
+  steps:
+    - name: Rust toolchain (matches rust-toolchain.toml)
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.99.0
+        targets: wasm32-unknown-unknown
+        components: clippy, rustfmt
+
+    - name: Cargo cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: |
+          . -> target
+          . -> target-wasm
+
+    # Must equal the `wasm-bindgen` crate version in Cargo.toml, or the glue and the .wasm disagree at
+    # load time.
+    - name: wasm-bindgen CLI (pinned to Cargo.lock)
+      uses: taiki-e/install-action@v2
+      with:
+        tool: wasm-bindgen-cli@0.2.129

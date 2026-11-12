@@ -1,0 +1,6 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "readme": "README.md",
+  "name": "@sheetxl/scripting-mui",
+  "extends": ["../../typedoc.base.json"]
+}

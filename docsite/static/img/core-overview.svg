@@ -377,7 +377,7 @@
 			</g>
 		</g>
 		<rect x="4987.5" y="1910.5" width="1072" height="326" stroke="#4A7EBB" stroke-width="3.4375" stroke-linejoin="round" stroke-miterlimit="10" fill="url(#fill35)"/>
-		<text fill="#FFFFFF" font-family="Calibri,Calibri_MSFontService,sans-serif" font-weight="400" font-size="147" transform="matrix(1 0 0 1 5249.92 2122)">IStyle</text>
+		<text fill="#FFFFFF" font-family="Calibri,Calibri_MSFontService,sans-serif" font-weight="400" font-size="147" transform="matrix(1 0 0 1 5249.92 2122)">ICellStyle</text>
 		<text fill="var(--ifm-font-color-base)" font-family="Calibri,Calibri_MSFontService,sans-serif" font-weight="400" font-size="128" transform="matrix(1 0 0 1 4306.06 2060)">getStyle</text>
 		<g clip-path="url(#clip36)">
 			<g filter="url(#fx10)" transform="translate(2798 2684)">

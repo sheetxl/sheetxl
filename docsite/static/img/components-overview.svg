@@ -1480,7 +1480,7 @@
        font-weight="400"
        font-size="147"
        transform="matrix(1 0 0 1 3963.22 2356)"
-       id="text119">&lt;SheetCellRenderer/&gt;</text><g
+       id="text119">&lt;CellTextRenderer/&gt;</text><g
        clip-path="url(#clip56)"
        id="g124"><g
          filter="url(#fx24)"

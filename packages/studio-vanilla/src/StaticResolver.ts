@@ -6,10 +6,10 @@ import * as StudioMUI from '@sheetxl/studio-mui';
 
 export type * from './Types';
 
-import type { InitializationOptions } from './Types';
+import { type InitializationOptions } from './Types';
 import { doInitialize } from './Instance';
 
-import type { ResolvedDependencies } from './_Types'; // Import the Runtime interface
+import { type ResolvedDependencies } from './_Types'; // Import the Runtime interface
 
 let _resolved: ResolvedDependencies;
 

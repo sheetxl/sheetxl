@@ -1,0 +1,13 @@
+/* The task-pane resizer. The bar is masked down to a grip glyph (the mask itself is set inline in
+   StudioSplitPane, where the glyph depends on the orientation), so this background IS the grip. */
+.styled-resizer {
+  background-color: var(--sxl-color-neutral, grey);
+}
+
+.styled-resizer:hover {
+  background-color: var(--sxl-color-primary, blue);
+}
+
+:global(.sxl-splitPane.sxl-dragging) .styled-resizer {
+  background-color: var(--sxl-color-primary, blue);
+}

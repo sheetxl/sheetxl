@@ -1,5 +1,5 @@
 import React, { useState, memo, useMemo } from 'react';
-import { type Theme } from '@mui/material/styles';
+import { type Theme } from '@mui/material';
 
 import { Box } from '@mui/material';
 import { Link } from '@mui/material';
@@ -11,16 +11,17 @@ import { type IWorkbook, type ICellRange } from '@sheetxl/sdk';
 
 import { DynamicIcon } from '@sheetxl/utils-react';
 
-import { type IWorkbookElement, useRangeListener } from '@sheetxl/studio-mui';
+import { type IWorkbookElement, useRangeListener } from '@sheetxl/react';
 
 export interface BoundedWidgetElementProps extends FormControlProps {
-  range: ICellRange;
-  refIWorkbookElement: React.RefObject<IWorkbookElement>;
+  /** The bound range; `null` until a cell is linked. */
+  range: ICellRange | null;
+  refIWorkbookElement: React.RefObject<IWorkbookElement | null>;
 }
 
 export interface BoundedWidgetProps extends FormControlProps {
-  workbook: IWorkbook;
-  refIWorkbookElement: React.RefObject<IWorkbookElement>;
+  workbook: IWorkbook | null;
+  refIWorkbookElement: React.RefObject<IWorkbookElement | null>;
   initialAddress?: string;
 
   createWidget(props: BoundedWidgetElementProps): React.ReactElement;
@@ -38,8 +39,8 @@ export const BoundedWidget = memo((props: BoundedWidgetProps) => {
     ...rest
   } = props;
 
-  const [address, setAddress] = useState<string>(null);
-  const [range, setRange] = useState<ICellRange>(null);
+  const [address, setAddress] = useState<string | null>(null);
+  const [range, setRange] = useState<ICellRange | null>(null);
 
   useRangeListener(workbook, address, (event: ICellRange.Event) => {
     setRange(event.getSource());
@@ -69,10 +70,10 @@ export const BoundedWidget = memo((props: BoundedWidgetProps) => {
           disabled={!workbook}
           onClick={() => {
             // act-like a toggle link the the currently selected cell
-            setAddress(address === null ? workbook.getSelectedCell().getA1() : null);
+            setAddress(address === null ? workbook?.getSelectedCell().getAddress() ?? null : null);
           }}
         >
-          <DynamicIcon iconKey='DataSetLinked'/>
+          <DynamicIcon iconKey='ExternalLinked'/>
         </IconButton>
       </Box>
       <FormHelperText>
@@ -96,7 +97,7 @@ export const BoundedWidget = memo((props: BoundedWidgetProps) => {
             }
           }}
           onClick={() => {
-            range.select();
+            range?.select();
           }}
         >
           {range ? `${range.toString()}` : `Unlinked`}
