@@ -44,12 +44,10 @@ async function myPlugin(_context, _opts) {
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-// The docsite is served from a different place on each channel. Stable lives under
-// www.sheetxl.com/docs, where the landing app proxies that path through to this origin, so the
-// build has to carry a `/docs/` prefix. Beta is its own host with nothing in front of it and
-// serves at the root. Defaults are the stable values, so a plain `pnpm build` is unchanged.
-const siteUrl = process.env.DOCS_URL || 'https://www.sheetxl.com';
-const siteBaseUrl = process.env.DOCS_BASE_URL || '/docs/';
+// Each channel's docsite is its own host, served at the root: docs.sheetxl.com for stable and
+// docs.beta.sheetxl.com for beta. Defaults are the stable values.
+const siteUrl = process.env.DOCS_URL || 'https://docs.sheetxl.com';
+const siteBaseUrl = process.env.DOCS_BASE_URL || '/';
 // Beta duplicates the production docs and documents an unreleased API, so every page carries
 // `<meta name="robots" content="noindex, nofollow">`. The deploy pairs this with an
 // X-Robots-Tag header for the assets that have no HTML head.
@@ -69,8 +67,8 @@ const siteVersion = (process.env.DOCS_VERSION || '').replace(/^v/, '');
 // than in the content keeps one copy of each page across channels. Only `link` nodes are
 // visited, so a URL shown inside a code sample stays literal.
 //
-// A link to the docsite itself is the exception to the host swap: on stable it is a path under
-// `www`, on beta it is its own host at the root, so it resolves to wherever this build is served.
+// A link to the docsite itself is written as `https://www.sheetxl.com/docs/...`, the address
+// that redirects to the stable docs. It resolves to wherever this build is served.
 const siteDocsRoot = `${siteUrl}${siteBaseUrl}`.replace(/\/$/, '');
 function remarkChannelLinks() {
   return (tree) => {

@@ -1,12 +1,14 @@
 {
-  "rewrites": [
+  "redirects": [
+    { "source": "/docs", "destination": "https://docs.sheetxl.com/", "permanent": true },
+    { "source": "/docs/(.*)", "destination": "https://docs.sheetxl.com/$1", "permanent": true }
+  ],
+  "headers": [
     {
-      "source": "/docs/(.*)",
-      "destination": "/$1"
-    },
-    {
-      "source": "/docs",
-      "destination": "/"
+      "source": "/examples/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
     }
   ]
 }

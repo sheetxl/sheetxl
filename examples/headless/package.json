@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@sheetxl/io": "workspace:*",
-    "@sheetxl/sdk": "^1.0.0"
+    "@sheetxl/sdk": "^1.0.2"
   },
   "devDependencies": {
     "tsx": "^4.23.15"

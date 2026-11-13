@@ -32,8 +32,8 @@
   "dependencies": {
     "@sheetxl/io": "workspace:*",
     "@sheetxl/primitives": "workspace:*",
-    "@sheetxl/scripting": "^1.0.0",
-    "@sheetxl/sdk": "^1.0.0",
+    "@sheetxl/scripting": "^1.0.2",
+    "@sheetxl/sdk": "^1.0.2",
     "@sheetxl/utils": "workspace:*",
     "tsx": "^4.23.15"
   },

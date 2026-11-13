@@ -78,24 +78,24 @@ Each picture opens that workbook in the live demo. Nothing to install, and every
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://demo.beta.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard">
+      <a href="https://demo.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/sales-dashboard.dark.webp?v=2026-11-10">
-          <img alt="A sales dashboard with KPI tiles, a heatmap table and charts" width="400" src="https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/sales-dashboard.webp?v=2026-11-10">
+          <source media="(prefers-color-scheme: dark)" srcset="https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/sales-dashboard.dark.webp?v=2026-11-10">
+          <img alt="A sales dashboard with KPI tiles, a heatmap table and charts" width="400" src="https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/sales-dashboard.webp?v=2026-11-10">
         </picture>
       </a>
       <br>
       <b>Sales dashboard.</b> 600 orders behind KPI tiles, tables, a heatmap,
-      <a href="https://demo.beta.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Charts">charts</a>,
-      a <a href="https://demo.beta.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Pivot">pivot table</a>,
-      <a href="https://demo.beta.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Analysis">dynamic arrays</a> and
-      <a href="https://demo.beta.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Performance">conditional formats</a>.
+      <a href="https://demo.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Charts">charts</a>,
+      a <a href="https://demo.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Pivot">pivot table</a>,
+      <a href="https://demo.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Analysis">dynamic arrays</a> and
+      <a href="https://demo.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/sales-dashboard.sxl&title=Sales%20Dashboard#Performance">conditional formats</a>.
     </td>
     <td width="50%" valign="top">
-      <a href="https://demo.beta.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/mandelbrot.sxl&title=Mandelbrot">
+      <a href="https://demo.sheetxl.com/?source=https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/mandelbrot.sxl&title=Mandelbrot">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/mandelbrot.dark.webp?v=2026-11-10">
-          <img alt="The Mandelbrot set drawn in spreadsheet cells" width="400" src="https://unpkg.com/@sheetxl/templates-workbook@beta/dist/templates-workbook/demos/mandelbrot.webp?v=2026-11-10">
+          <source media="(prefers-color-scheme: dark)" srcset="https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/mandelbrot.dark.webp?v=2026-11-10">
+          <img alt="The Mandelbrot set drawn in spreadsheet cells" width="400" src="https://unpkg.com/@sheetxl/templates-workbook@latest/dist/templates-workbook/demos/mandelbrot.webp?v=2026-11-10">
         </picture>
       </a>
       <br>
@@ -104,16 +104,16 @@ Each picture opens that workbook in the live demo. Nothing to install, and every
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://demo.beta.sheetxl.com/">
-        <img alt="SheetXL Studio, a blank workbook with the template gallery open" width="400" src="https://demos.beta.sheetxl.com/studio-mui/demo-thumb.png">
+      <a href="https://demo.sheetxl.com/">
+        <img alt="SheetXL Studio, a blank workbook with the template gallery open" width="400" src="https://demos.sheetxl.com/studio-mui/demo-thumb.png">
       </a>
       <br>
       <b>Start from scratch.</b> The whole app, a blank workbook and the template gallery. Paste from
       Excel, drop in an xlsx, or type a formula.
     </td>
     <td width="50%" valign="top">
-      <a href="https://storybook.beta.sheetxl.com">
-        <img alt="Storybook" width="400" src="https://www.beta.sheetxl.com/images/demos/storybook.png">
+      <a href="https://storybook.sheetxl.com">
+        <img alt="Storybook" width="400" src="https://www.sheetxl.com/images/demos/storybook.png">
       </a>
       <br>
       <b>Storybook.</b> Every component on its own, with the props to try. The quickest way to see

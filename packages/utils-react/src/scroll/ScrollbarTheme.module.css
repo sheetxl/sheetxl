@@ -13,7 +13,6 @@
   --scrollbar-button-color: color-mix(in srgb, var(--sxl-color-base-content) 26%, transparent);
   --scrollbar-active-color: var(--sxl-color-primary);
   --scrollbar-corner-color: var(--sxl-color-base-100);
-  --scrollbar-border-color: color-mix(in srgb, var(--sxl-color-base-content) 5%, transparent);
 }
 
 .scrollbar-themed {
@@ -57,7 +56,9 @@
   background-color: var(--scrollbar-thumb-color);
   min-height: var(--scrollbar-min-thumb-size);
   min-width: var(--scrollbar-min-thumb-size);
-  border: var(--scrollbar-border-width) solid var(--scrollbar-border-color);
+  /* The transparent border insets the thumb inside the track, as the custom Scrollbar does. */
+  border: var(--scrollbar-border-width) solid transparent;
+  background-clip: padding-box;
 }
 
 .scrollbar-themed::-webkit-scrollbar-thumb:active,
