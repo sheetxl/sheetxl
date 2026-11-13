@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@sheetxl/runner": "workspace:*",
-    "@sheetxl/sdk": "^1.0.2"
+    "@sheetxl/sdk": "^1.0.3"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "sheetxl": "^1.0.2"
+    "sheetxl": "^1.0.3"
   }
 }

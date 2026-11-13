@@ -21,12 +21,12 @@
     }
   },
   "dependencies": {
-    "@sheetxl/grid-react": "^1.0.2",
+    "@sheetxl/grid-react": "^1.0.3",
     "@sheetxl/io": "workspace:*",
     "@sheetxl/primitives": "workspace:*",
-    "@sheetxl/react": "^1.0.2",
-    "@sheetxl/scripting": "^1.0.2",
-    "@sheetxl/sdk": "^1.0.2",
+    "@sheetxl/react": "^1.0.3",
+    "@sheetxl/scripting": "^1.0.3",
+    "@sheetxl/sdk": "^1.0.3",
     "@sheetxl/utils": "workspace:*",
     "@sheetxl/utils-react": "workspace:*",
     "csstype": "^3.2.3",

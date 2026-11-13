@@ -38,9 +38,9 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@sheetxl/react": "^1.0.2",
-    "@sheetxl/scripting-react": "^1.0.2",
-    "@sheetxl/sdk": "^1.0.2",
+    "@sheetxl/react": "^1.0.3",
+    "@sheetxl/scripting-react": "^1.0.3",
+    "@sheetxl/sdk": "^1.0.3",
     "@sheetxl/studio-mui": "workspace:*",
     "@sheetxl/utils": "workspace:*",
     "@sheetxl/utils-mui": "workspace:*",

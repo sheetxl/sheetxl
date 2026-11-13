@@ -126,7 +126,7 @@ function remarkChannelPackages() {
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   // og:title is using this too
-  title: 'SheetXL - Spreadsheet power in your app—in minutes.',
+  title: 'SheetXL Docs',
   tagline: `Spreadsheet Power, Excel Compatibility.`,
   favicon: 'favicon.ico',
   // staticDirectories: ['public'], // default is ['static']
