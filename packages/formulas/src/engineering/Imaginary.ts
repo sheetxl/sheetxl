@@ -1,7 +1,7 @@
 /* cspell: disable */
 import {
-  FormulaContext, FormulaError,
-  type AcceptError, type Omittable, type Scalar, type NoLift
+  FormulaContext, FormulaError, ValueKind,
+  type AcceptError, type Omittable, type Scalar, type NoLift, type IRange, type IFormulaContext
 } from '@sheetxl/primitives';
 
 import { MAX_TRIG_ARGUMENT, x87Cos, x87Sin } from '../_utils/X87';
@@ -39,20 +39,20 @@ export function COMPLEX(
     if (i === -1) {
       return '-' + suffix;
     }
-    return FormulaContext.toText(i) + suffix;
+    return FormulaContext.toText(i, _literal) + suffix;
   }
   if (i === 0) {
-    return FormulaContext.toText(real);
+    return FormulaContext.toText(real, _literal);
   }
 
   let sign = (i > 0) ? '+' : '';
   if (i === 1) {
-    return FormulaContext.toText(real) + sign + suffix;
+    return FormulaContext.toText(real, _literal) + sign + suffix;
   }
   if (i === -1) {
-    return FormulaContext.toText(real) + sign + '-' + suffix;
+    return FormulaContext.toText(real, _literal) + sign + '-' + suffix;
   }
-  return FormulaContext.toText(real) + sign + FormulaContext.toText(i) + suffix;
+  return FormulaContext.toText(real, _literal) + sign + FormulaContext.toText(i, _literal) + suffix;
 }
 
 /**
@@ -150,11 +150,27 @@ type IMParts = { real: number, im: number };
  * the library's — see {@link _tanIM}.
  */
 const _cosh = (x: number): number => (Math.exp(x) + Math.exp(-x)) / 2;
-const _sinh = (x: number): number => (Math.exp(x) - Math.exp(-x)) / 2;
+/**
+ * The sine of the HYPERBOLIC names. Under {@link SinhExponentialFloor} the exponentials cancel
+ * and the function is taken whole: `IMSINH("1E-16")` is 1E-16 and `IMCSCH("1E-20")` is 1E+20.
+ */
+const _sinh = (x: number): number =>
+  Math.abs(x) < SinhExponentialFloor ? Math.sinh(x) : (Math.exp(x) - Math.exp(-x)) / 2;
+/**
+ * The sine the CIRCULAR names take of their imaginary part: one exponential and its reciprocal,
+ * which cancel to nothing where the argument is under an ulp of one — `IMSIN("1E-16i")` is 0 and
+ * `IMSIN("1E-15i")` is 1.11022302462516E-15i.
+ */
+const _sinhOfReciprocal = (x: number): number => {
+  const e = Math.exp(x);
+  return (e - 1 / e) / 2;
+};
+/** Where the hyperbolic names stop taking their sine as two exponentials; between 0.01 and 0.03. */
+const SinhExponentialFloor = 0.02;
 const _cosIM = (real: number, im: number): IMParts =>
-  ({ real: x87Cos(real) * _cosh(im), im: -x87Sin(real) * _sinh(im) });
+  ({ real: x87Cos(real) * _cosh(im), im: -x87Sin(real) * _sinhOfReciprocal(im) });
 const _sinIM = (real: number, im: number): IMParts =>
-  ({ real: x87Sin(real) * _cosh(im), im: x87Cos(real) * _sinh(im) });
+  ({ real: x87Sin(real) * _cosh(im), im: x87Cos(real) * _sinhOfReciprocal(im) });
 const _coshIM = (real: number, im: number): IMParts =>
   ({ real: x87Cos(im) * _cosh(real), im: x87Sin(im) * _sinh(real) });
 const _sinhIM = (real: number, im: number): IMParts =>
@@ -457,35 +473,29 @@ export function IMPOWER(
  * Returns the product of 1 to 255 complex numbers
  * @param inumber are from 1 to 255 complex numbers to multiply.
  */
-export function IMPRODUCT(inumber: Scalar[]): Scalar {
-  const inumberLength = inumber.length;
-  if (inumberLength === 0) return COMPLEX(0, 0, 'i');
+export function IMPRODUCT(inumber: AcceptError<IRange>[]): Scalar {
+  const members = complexMembers(inumber);
+  if (members.length === 0) return COMPLEX(0, 0, 'i');
 
-  const first: IM = parseIM(inumber[0] as string | number);
-  // A single argument is still an ANSWER and not the text the caller wrote: `IMPRODUCT("10%")`
-  // is 0.1 and `IMPRODUCT(" 2 ")` is 2.
-  let result: Scalar = COMPLEX(first.real, first.im, first.unit);
-  for (let i=1; i<inumberLength; i++) {
-    const item = inumber[i];
-    const res1: IM = parseIM(result);
-    const res2: IM = parseIM(item);
-    const unit1: string = res1.unit;
-    const unit2: string = res2.unit;
-    if (unit1 !== unit2) throw FormulaError.BuiltIn.Value;
-    const real1: number = res1.real;
-    const im1: number = res1.im;
-    const real2: number = res2.real;
-    const im2: number = res2.im;
+  // The running product is kept as numbers and written once: a product read back from its own
+  // text at every step is rounded to fifteen digits that many times.
+  let unit: string | undefined;
+  let real = 1;
+  let im = 0;
+  for (let i = 0; i < members.length; i++) {
+    const item = members[i]!;
+    unit = sharedUnit(unit, item);
     const product = {
-      real: real1 * real2 - im1 * im2,
-      im: real1 * im2 + im1 * real2
+      real: real * item.real - im * item.im,
+      im: real * item.im + im * item.real
     };
     // A component past the top of the range is #VALUE! here and not the #NUM! the rest of the
     // family raises — `IMPRODUCT("1E307+1E307i","1E307+1E307i")` is `#VALUE!`.
     if (!Number.isFinite(product.real) || !Number.isFinite(product.im)) throw FormulaError.BuiltIn.Value;
-    result = COMPLEX(product.real, product.im, unit1);
+    real = product.real;
+    im = product.im;
   }
-  return result;
+  return COMPLEX(real, im, unit ?? 'i');
 }
 
 /**
@@ -580,21 +590,18 @@ export function IMSUB(
  * Returns the sum of complex numbers
  * @param inumber are from 1 to 255 complex numbers to add
  */
-export function IMSUM(inumber: Scalar[]): Scalar {
+export function IMSUM(inumber: AcceptError<IRange>[]): Scalar {
   let realSum: number = 0;
   let imSum: number = 0;
-  let prevUnit: string | undefined;
-  const inumberLength: number = inumber.length;
-  for (let i=0; i<inumberLength; i++) {
-    const item = inumber[i];
-    const { real, im, unit } = parseIM(item);
-    if (!prevUnit) prevUnit = unit;
-    if (prevUnit !== unit)
-      throw FormulaError.BuiltIn.Value;
-    realSum += real;
-    imSum += im;
+  let unit: string | undefined;
+  const members = complexMembers(inumber);
+  for (let i=0; i<members.length; i++) {
+    const item = members[i]!;
+    unit = sharedUnit(unit, item);
+    realSum += item.real;
+    imSum += item.im;
   }
-  return COMPLEX(realSum, imSum, prevUnit);
+  return COMPLEX(realSum, imSum, unit ?? 'i');
 }
 
 /**
@@ -656,7 +663,49 @@ interface IM {
   real: number;
   im: number;
   unit: string;
+  /** Set when the text carried no unit of its own: a real number, which sides with either suffix. */
+  unitless?: boolean;
 }
+
+/**
+ * The members of the names that take a LIST, in order. Every cell of every argument is one —
+ * a blank cell is the complex zero, so `IMPRODUCT(7,A1)` over a blank A1 is 0 — and the first
+ * that faults decides: `IMSUM({1," ",#NAME?})` is the `#NUM!` of the text that is no complex
+ * number, ahead of the error behind it.
+ */
+const complexMembers = (list: readonly (IRange | Scalar)[]): IM[] => {
+  const kinds = FormulaContext.getArgs().getRepeatingArgsAt(0);
+  const members: IM[] = [];
+  const add = (value: Scalar): void => {
+    if (FormulaError.isError(value)) throw value;
+    const parsed = parseIM(value);
+    if (typeof value !== 'string' || !/[ij]\s*$/.test(value)) parsed.unitless = true;
+    members.push(parsed);
+  };
+  for (let i = 0; i < list.length; i++) {
+    if (kinds.getKindAt(i) === ValueKind.Omitted) continue; // no member: `IMPRODUCT("i",)` is `i`
+    const argument = list[i]!;
+    if (!(argument as IRange)?.isIRange) {
+      add(argument as Scalar);
+      continue;
+    }
+    const { rows, columns } = (argument as IRange).getShape();
+    for (let row = 0; row < rows; row++) {
+      for (let column = 0; column < columns; column++) add((argument as IRange).getValueAt(row, column));
+    }
+  }
+  return members;
+};
+
+/**
+ * The suffix a list answers in: the first one written. Two that differ are `#VALUE!`, and a real
+ * number has none to differ by — `IMSUM("2","j")` is `2+j`.
+ */
+const sharedUnit = (unit: string | undefined, member: IM): string | undefined => {
+  if (member.unitless) return unit;
+  if (unit !== undefined && unit !== member.unit) throw FormulaError.BuiltIn.Value;
+  return member.unit;
+};
 
 function parseIM(textOrNumber: Scalar): IM {
   let real: number = 0;
@@ -699,3 +748,8 @@ function parseIM(textOrNumber: Scalar): IM {
   }
   throw FormulaError.BuiltIn.Num;
 }
+
+// helper
+
+/** A complex number's parts are written as Excel writes a number literal: plain up to 21 characters. */
+const _literal: IFormulaContext.ToTextOptions = { literal: true };

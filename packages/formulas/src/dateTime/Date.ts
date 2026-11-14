@@ -1,6 +1,6 @@
 /* cspell: disable */
 import {
-  FormulaError, FormulaContext,
+  FormulaError, FormulaContext, ValueKind,
   type AcceptError, type Scalar, type Volatile, type Flatten, type Omittable, type NoLift, type ReportType
 } from '@sheetxl/primitives';
 
@@ -491,10 +491,21 @@ export function NETWORKDAYS_INTL(
   const holidaySerials = toHolidaySerials(holidays);
   const anchor = dayOfWeekAnchor();
 
+  // A holiday written as ONE VALUE — a date text, `DATE(…)`, `+B1` — is judged against Saturday
+  // and Sunday whatever the weekend is: under a Thursday and Friday weekend a Thursday holiday
+  // still costs a day and a Saturday one costs none. From a reference or an array it is judged
+  // against the weekend given, as WORKDAY.INTL always does.
+  const kind = FormulaContext.getArgs().getKindAt(3);
+  const holidayWeekend = holidaySerials.size > 0 && kind !== ValueKind.Reference && kind !== ValueKind.Array
+    ? _WeekendSaturdaySunday : weekendDays;
+
   let numWorkDays = 0;
   for (let serial = start; serial <= end; serial++) {
-    if (weekendDays.includes(dayOfWeek(serial, anchor))) continue;
-    if (holidaySerials.has(serial)) continue;
+    const day = dayOfWeek(serial, anchor);
+    if (holidaySerials.has(serial)) {
+      if (!holidayWeekend.includes(day)) numWorkDays--;
+    }
+    if (weekendDays.includes(day)) continue;
     numWorkDays++;
   }
   return sign * numWorkDays;
@@ -724,7 +735,7 @@ enum WeekNumType {
  */
 export function WEEKNUM(
   serialNumber: NoLift<Omittable<Scalar>>,
-  returnType: NoLift<Omittable<WeekNumType | Scalar>> = WeekNumType.Sunday
+  returnType: NoLift<Omittable<AcceptError<WeekNumType | Scalar>>> = WeekNumType.Sunday
 ): number {
   if (serialNumber === undefined) throw FormulaError.BuiltIn.NA;
   let serial: number;
@@ -742,6 +753,9 @@ export function WEEKNUM(
   // TRUNCATED like ISOWEEKNUM, not shifted like WEEKDAY: `WEEKNUM(44940 + (86400-0.25)/86400)` is
   // still the Saturday's week where WEEKDAY on the same serial answers for the Sunday.
   serial = _serialDay(serial);
+  // The serial is judged first: a bad one is its own fault ahead of an error return_type
+  // (`WEEKNUM("abc",1/0)` is #VALUE!, `WEEKNUM(-1,NA())` #NUM!).
+  if (FormulaError.isError(returnType)) return returnType as unknown as number;
   const rt: number = returnType === null ? 0 : _returnTypeIndex(FormulaContext.parseAsNumber(returnType));
   if (rt === 21) {
     return ISOWEEKNUM(serial);
@@ -770,7 +784,7 @@ export function WEEKNUM(
 export function WORKDAY(
   startDate: NoLift<Omittable<Scalar>>, // date
   days: NoLift<Omittable<Scalar>>,
-  holidays?: Omittable<Flatten<Scalar>>
+  holidays?: Omittable<Flatten<AcceptError<Scalar>>>
 ): number {
   return WORKDAY_INTL(startDate, days, 1, holidays);
 }
@@ -787,7 +801,7 @@ export function WORKDAY_INTL(
   startDate: NoLift<Omittable<Scalar>>, // date
   days: NoLift<Omittable<Scalar>>,
   weekend: NoLift<Omittable<AcceptError<Weekend | Scalar>>>=Weekend.SaturdaySunday,
-  holidays?: Omittable<Flatten<Scalar>>
+  holidays?: Omittable<Flatten<AcceptError<Scalar>>>
 ): number {
   // Read LEFT TO RIGHT — the opposite of NETWORKDAYS.INTL, which reads its weekend before either
   // date. `WORKDAY.INTL(NA(),10,"x")` is #N/A and `WORKDAY.INTL(-1,10,"x")` is #NUM!, so the
@@ -799,6 +813,11 @@ export function WORKDAY_INTL(
   // `WORKDAY(x,1E-9)` stands still, which makes this the file's third integerization
   // (`_dateField` floors after a 2^-22 shift, `_monthOffset` truncates toward zero).
   const walk = Math.floor(_anyRequired(days, _anyNumber));
+  // An ERROR among the holidays is the call's, ahead of the weekend's and whatever the walk —
+  // unless a member that cannot be read at all comes before it: over `TRUE,"1",<blank>,#N/A` the
+  // answer is the boolean's #VALUE!, raised where the holidays are read below.
+  const holidayError = _holidayErrorAhead(holidays);
+  if (holidayError !== null) throw holidayError;
   // No walk, no calendar: the weekend and holidays are not read at all, so
   // `WORKDAY(45000,0,"test")` is the start date rather than the holidays' #VALUE!.
   if (walk === 0) return start;
@@ -919,6 +938,24 @@ function dayOfWeek(serial: number, anchor: number): number {
 /** The 0 = Sunday index of serial 0 in the workbook's date system. Read once per call. */
 function dayOfWeekAnchor(): number {
   return FormulaContext.getDateParts(0).dow % 7;
+}
+
+/** Saturday and Sunday, as `dayOfWeek` numbers them. */
+const _WeekendSaturdaySunday: readonly number[] = [6, 0];
+
+/** The first error among the holidays, or `null` when a member that cannot be read precedes it. */
+function _holidayErrorAhead(holidays: AcceptError<Scalar>[] | undefined): FormulaError.Known | null {
+  for (let i = 0; i < (holidays?.length ?? 0); i++) {
+    const member = holidays![i];
+    if (member === null || member === undefined) continue;
+    if (FormulaError.isError(member)) return member;
+    try {
+      _anyDate(member);
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 /** Holiday arguments as a set of whole-day serials; anything unparseable is ignored. */

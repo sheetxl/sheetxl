@@ -70,10 +70,19 @@ export function DGET(
 ): Scalar { // number
   const matched = dbMatch(database, field, criteria); // DGET returns the member as-is, error included
   if (FormulaError.isError(matched)) return matched;
-  const { rows } = matched.getShape();
-  if (rows === 0) return FormulaError.BuiltIn.Value!;
-  if (rows > 1) return FormulaError.BuiltIn.Num!;
-  return matched.getValueAt(0, 0);
+  // The one record is the one with something IN the field: matching rows whose field is blank
+  // are passed over, so two matches of which one is filled answer the filled one, and a match
+  // with nothing in the field is `#VALUE!` like no match at all. The empty string is something.
+  let found: Scalar = null;
+  let count = 0;
+  // Blank members are not visited, and the second filled one ends the read.
+  matched.forEach((value: Scalar): { break: true } | void => {
+    if (++count > 1) return { break: true };
+    found = value;
+  });
+  if (count > 1) return FormulaError.BuiltIn.Num!;
+  if (count === 0) return FormulaError.BuiltIn.Value!;
+  return found;
 }
 
 /**
@@ -272,9 +281,7 @@ function dbMatch(
   const colIdx = resolveFieldIndex(database, field as Scalar);
   if (colIdx < 0) return FormulaError.BuiltIn.Value!;
 
-  return database
-    .take(matchingRows(database, criteria))
-    .slice({ colStart: colIdx, colEnd: colIdx });
+  return FormulaContext.dbQuery(database, criteria).slice({ colStart: colIdx, colEnd: colIdx });
 }
 
 /**
@@ -311,18 +318,21 @@ function countRecords(
   const fault = readFault(database, undefined, criteria);
   if (fault) return fault;
   if (database.getShape().rows < 2 || criteria.getShape().rows < 2) return FormulaError.BuiltIn.Value!;
-  return matchingRows(database, criteria).length;
+  return FormulaContext.dbQuery(database, criteria).getRowCount();
 }
 
 /**
  * The index of the first column whose HEADER is `value`, or -1.
  *
  * @remarks
- * A header matches by VALUE, comparing text case-insensitively and NOT trimming it:
+ * A header matches by its TEXT, compared case-insensitively and NOT trimmed:
  * `DSUM(db,"yield",…)` reads the `Yield` column and `DSUM(db," Yield ",…)` is `#VALUE!`. The
  * padding rule is the one that is easy to get backwards, and it holds in both directions —
  * over a database whose two headers are `" Yield "` and `"YIELD"`, the field `"YIELD"` reads the
  * SECOND column.
+ *
+ * A number or a logical on either side is read as the text it displays, so `"1"` names a column
+ * headed by the number 1 and `"true"` one headed by `TRUE`.
  *
  * The first match wins when two columns share a header.
  */
@@ -330,17 +340,22 @@ function matchHeaderIndex(
   database: IRange,
   value: Scalar
 ): number {
-  const { columns } = database.getShape();
-  const wanted = typeof value === 'string' ? value.toUpperCase() : value;
-  for (let col = 0; col < columns; col++) {
-    const header = database.getValueAt(0, col);
-    if (typeof wanted === 'string') {
-      if (typeof header === 'string' && header.toUpperCase() === wanted) return col;
-    } else if (header === wanted && header !== null && header !== undefined) {
-      return col;
+  const wanted = headerText(value);
+  if (wanted === null) return -1;
+  const found = database.slice({ rowStart: 0, rowEnd: 0 }).forEach(
+    (header: Scalar, coords: IRange.CellCoords): { break: number } | void => {
+      if (headerText(header) === wanted) return { break: coords.colIndex };
     }
-  }
-  return -1;
+  );
+  return found ?? -1;
+}
+
+/** A header as the text it is matched by — an error by its name — or `null` for a blank, which names nothing. */
+function headerText(value: Scalar): string | null {
+  if (typeof value === 'string') return value.toUpperCase();
+  if (typeof value === 'number' || typeof value === 'boolean') return FormulaContext.toText(value).toUpperCase();
+  if (FormulaError.isError(value)) return String(value);
+  return null;
 }
 
 /**
@@ -373,82 +388,4 @@ function resolveFieldIndex(
   if (typeof field === 'string') return matchHeaderIndex(database, field);
 
   return -1;
-}
-
-/**
- * The criteria table compiled to one predicate list per condition ROW: `null` for a row that can
- * never match, otherwise the pairs that all have to hold.
- *
- * @remarks
- * Criteria row 0 is headers and rows 1+ are OR'd condition rows; within a row every column is
- * AND'd. Three rules, all about a piece that is MISSING:
- *
- * * a BLANK condition cell is no constraint, so a wholly blank condition row matches every record
- *   — and because the rows are OR'd, one blank row anywhere makes the whole table match
- *   everything;
- * * a header that names no column of the database KILLS its condition row when there is a
- *   criterion under it (`Zzz`/`Apple` selects nothing, even beside a `Tree`/`Apple` column that
- *   would have matched) and is IGNORED when the cell under it is blank, which is what lets a
- *   criteria table be wider than the database;
- * * a header that is blank, or an error, names no column either, so it takes the same path.
- */
-function buildCriteriaRows(
-  database: IRange,
-  criteria: IRange
-): Array<Array<{ dbColIndex: number; evaluator: (v: Scalar) => boolean }> | null> {
-  const { rows: cRows, columns: cCols } = criteria.getShape();
-
-  // Map criteria header -> database column index. A criteria header is a header VALUE and never a
-  // column position, which is where it parts from the `field` slot.
-  const colMap: number[] = [];
-  for (let cc = 0; cc < cCols; cc++) {
-    colMap[cc] = matchHeaderIndex(database, criteria.getValueAt(0, cc));
-  }
-
-  const conditionRows: Array<Array<{ dbColIndex: number; evaluator: (v: Scalar) => boolean }> | null> = [];
-
-  for (let cr = 1; cr < cRows; cr++) {
-    const pairs: { dbColIndex: number; evaluator: (v: Scalar) => boolean }[] = [];
-    let dead = false;
-    for (let cc = 0; cc < cCols; cc++) {
-      const criteriaValue = criteria.getValueAt(cr, cc);
-      if (criteriaValue === null || criteriaValue === undefined) continue; // blank cell = no constraint
-      const dbColIndex = colMap[cc];
-      if (dbColIndex < 0) { dead = true; break; }
-      pairs.push({
-        dbColIndex,
-        // The one thing the D functions' criteria table does differently from COUNTIF's argument:
-        // a criterion that stays TEXT matches a PREFIX, so `appl` takes `Apple` and the empty
-        // criterion takes every text cell.
-        evaluator: FormulaContext.createCriteria(criteriaValue, { anchor: 'start' }),
-      });
-    }
-    conditionRows.push(dead ? null : pairs);
-  }
-
-  return conditionRows;
-}
-
-/**
- * The 1-based data row indices (row 0 is the header) that match the criteria.
- */
-function matchingRows(
-  database: IRange,
-  criteria: IRange
-): number[] {
-  const { rows: dbRows } = database.getShape();
-  const conditionRows = buildCriteriaRows(database, criteria);
-
-  const result: number[] = [];
-  for (let row = 1; row < dbRows; row++) {
-    // OR across condition rows; AND across the columns within one. A row with no pairs left
-    // constrains nothing and therefore matches — which is how a blank condition row behaves.
-    const matched = conditionRows.some(pairs =>
-      pairs !== null && pairs.every(({ dbColIndex, evaluator }) =>
-        evaluator(database.getValueAt(row, dbColIndex))
-      )
-    );
-    if (matched) result.push(row);
-  }
-  return result;
 }

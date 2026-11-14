@@ -10,7 +10,7 @@
  */
 import {
   betaln, betafn, erfc, erfcinv, gammaLogPdf, gammaln, ibeta, ibetaAt, ibetainv, lowRegGamma,
-  upRegGamma, gammapinv, StirlingFloor
+  upRegGamma, gammapinv, gammaqinv, StirlingFloor
 } from './SpecialFunctions';
 import { factorialKernel, binomialKernel } from './Combinatorics';
 
@@ -80,6 +80,9 @@ export function chisquareCdfUpper(x: number, dof: number): number {
 
 export const chisquareInv = (p: number, dof: number): number => 2 * gammapinv(p, 0.5 * dof);
 
+/** The quantile for an UPPER tail of `q`, searched on that tail — see {@link gammaqinv}. */
+export const chisquareInvUpper = (q: number, dof: number): number => 2 * gammaqinv(q, 0.5 * dof);
+
 export function centralFPdf(x: number, df1: number, df2: number): number {
   if (x < 0) return 0;
   if (x === 0 && df1 < 2) return Infinity;
@@ -113,6 +116,14 @@ export function centralFCdfUpper(x: number, df1: number, df2: number): number {
 
 export const centralFInv = (p: number, df1: number, df2: number): number =>
   df2 / (df1 * (1 / ibetainv(p, df1 / 2, df2 / 2) - 1));
+
+/**
+ * The quantile for an UPPER tail of `q`, through the incomplete beta's other tail — see
+ * {@link centralFCdfUpper}. A far tail is a quantile near infinity, which this reads off a beta
+ * argument near zero where {@link centralFInv} would need one within an ulp of one.
+ */
+export const centralFInvUpper = (q: number, df1: number, df2: number): number =>
+  df2 * (1 / ibetainv(q, df2 / 2, df1 / 2) - 1) / df1;
 
 export function studenttPdf(x: number, dof: number): number {
   dof = dof > 1e100 ? 1e100 : dof;

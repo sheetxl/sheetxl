@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@sheetxl/primitives": "workspace:*",
-    "@sheetxl/scripting": "^1.0.3",
+    "@sheetxl/scripting": "^1.0.4",
     "bahttext": "^2.4.0",
     "bessel": "^1.0.2"
   },

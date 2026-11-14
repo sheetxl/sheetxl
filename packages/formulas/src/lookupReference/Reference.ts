@@ -180,13 +180,30 @@ export function CHOOSEROWS(
 }
 
 /**
+ * The range an omitted reference stands for when it is more than the formula's cell, else `null`.
+ *
+ * @remarks
+ * With no argument `ROW` and `COLUMN` describe the range their formula occupies. That is one cell
+ * and one number, except for an array-entered formula, which occupies its whole block:
+ * `{=COLUMN()}` entered over F6:H6 is `COLUMN(F6:H6)` — 6, 7, 8 — and `{=SUM(COLUMN())}` is 21 in
+ * each of the three cells.
+ */
+function ownBlock(): IReferenceRange | null {
+  if (FormulaContext.isImplicitIntersect()) return null; // value mode: never an array-entered block
+  const own = FormulaContext.getReference();
+  return own.size > 1 ? own : null;
+}
+
+/**
  * Returns the column number of a reference.
  * @param reference is the cell or range of contiguous cells for which you want the column number. If omitted, the cell containing the COLUMN function is used.
  * @returnKind number
  */
 export function COLUMN(reference?: Flatten<IReferenceRange>): number | number[] {
   if (!reference || reference.length === 0) {
-    return FormulaContext.getColumn() + 1;
+    const own = ownBlock();
+    if (own === null) return FormulaContext.getColumn() + 1;
+    reference = [own];
   }
   // A union has no single position to describe — `#REF!`.
   if (reference.length > 1) return FormulaError.BuiltIn.Ref! as unknown as number[];
@@ -375,11 +392,11 @@ const _filter = (
   const includeRows = include.getRowCount();
   const includeCols = include.getColumnCount();
 
-  const filterRows = includeCols === 1;
-  const filterCols = includeRows === 1;
-
-  if (filterRows && includeRows !== arrayRows) throw FormulaError.BuiltIn.Value;
-  if (filterCols && includeCols !== arrayCols) throw FormulaError.BuiltIn.Value;
+  // The include is a column as tall as the array or a row as wide as it. A single value is
+  // whichever of the two it fits: `FILTER(B1:B3,TRUE)` keeps the one column, and so the whole
+  // array, `FILTER(B1:B3,FALSE)` keeps nothing, and `FILTER(A1:B3,TRUE)` fits neither.
+  const filterRows = includeCols === 1 && includeRows === arrayRows;
+  const filterCols = !filterRows && includeRows === 1 && includeCols === arrayCols;
   if (!filterRows && !filterCols) throw FormulaError.BuiltIn.Value;
 
   /** performance optimization - but not much as getValueAt is already internally optimized */
@@ -465,25 +482,26 @@ export function FORMULATEXT(reference: Flatten<IReferenceRange>): string {
  * @param fieldItem.item field item to refer to.
  */
 export function GETPIVOTDATA(
-  dataField: string,
-  pivotTable: Flatten<IReferenceRange>,
+  // Both read as what arrived: the older form puts the pivot first, as a reference that must
+  // neither be read nor lift, and its text second.
+  dataField: ReportType<IRange>,
+  pivotTable: ReportType<IRange>,
   fieldItem?: Repeating<[field: string, item?: Scalar]>
 ): Scalar {
   // The group's last slot is optional because Excel accepts a LONE trailing field: the accepted
   // counts are 2,3,4,6,8,10,12 — pairs, plus 3, which answers #REF!.
-  const reference = pivotTable.length === 1 ? pivotTable[0] : null;
-  const view = reference ? FormulaContext.getPivotAt(reference) : null;
-  // No pivot table there, or it was deleted.
-  if (!view) return FormulaError.BuiltIn.Ref!;
-  if (view.isComputed?.() === false) {
-    // A table whose values are not computed here answers with the value the cell was saved with:
-    // Excel answers from the pivot, which only changes on a refresh. Writing a formula clears that
-    // value, so an edited or new one is `#REF!`.
-    const kept = FormulaContext.getValueAt(FormulaContext.getRow(), FormulaContext.getColumn());
-    if (kept !== null && kept !== undefined) return kept;
-    return FormulaError.BuiltIn.Ref!;
+  const args = FormulaContext.getArgs();
+  // Excel 2000's form, `GETPIVOTDATA(pivot, "Region[East] Apple")`: two arguments with a reference
+  // first. `GETPIVOTDATA(H2, pivot)` with H2 holding a data field's name is this form too, and `#REF!`.
+  if (args.getLength() === 2 && args.getKindAt(0) === ValueKind.Reference) {
+    return pivotDataByName(args.getRawAt(0), pivotTable);
   }
-  const dataIndex = findDataField(view, String(dataField ?? ''));
+  const found = pivotViewOf(pivotTable);
+  if ('answer' in found) return found.answer;
+  const view = found.view;
+  const name = textOf(dataField);
+  if (FormulaError.isError(name)) return name;
+  const dataIndex = findDataField(view, name);
   if (dataIndex === -1) return FormulaError.BuiltIn.Ref!;
 
   const items = new Map<number, number>();
@@ -513,7 +531,7 @@ const findDataField = (view: IFormulaContext.PivotView, name: string): number =>
 
 /**
  * An item by value for a number or a logical; for text, by the text it shows, which is its caption
- * when it has one: a renamed number no longer answers to its value as text (`probe-pivot-items.ps1`, I05b).
+ * when it has one: a renamed number no longer answers to its value as text.
  */
 const findItem = (items: readonly IFormulaContext.PivotViewItem[], item: Scalar): number => {
   if (typeof item === 'string') {
@@ -527,6 +545,124 @@ const findItem = (items: readonly IFormulaContext.PivotViewItem[], item: Scalar)
 };
 
 /**
+ * The pivot table a GETPIVOTDATA argument names, or what the call answers instead: `#REF!` when
+ * there is none, and the cell's saved value when its values are not computed here — Excel answers
+ * from the pivot, which only changes on a refresh, and writing the formula clears that value.
+ */
+const pivotViewOf = (pivotTable: unknown): { view: IFormulaContext.PivotView } | { answer: Scalar } => {
+  const reference = Array.isArray(pivotTable) ? (pivotTable.length === 1 ? pivotTable[0] : null) : pivotTable;
+  const view = (reference as IReferenceRange | null)?.isIReferenceRange ? FormulaContext.getPivotAt(reference as IReferenceRange) : null;
+  if (!view) return { answer: FormulaError.BuiltIn.Ref! };
+  if (view.isComputed?.() === false) {
+    const kept = FormulaContext.getValueAt(FormulaContext.getRow(), FormulaContext.getColumn());
+    return { answer: kept !== null && kept !== undefined ? kept : FormulaError.BuiltIn.Ref! };
+  }
+  return { view };
+};
+
+/** The text of a one-cell argument; an error is answered as is. */
+const textOf = (value: IRange | IRange[]): string | FormulaError.Known => {
+  const range = Array.isArray(value) ? value[0] : value;
+  if (!range || range.size !== 1) return FormulaError.BuiltIn.Value!;
+  const single = range.getValueAt(0, 0);
+  if (FormulaError.isError(single)) return single as FormulaError.Known;
+  return single === null || single === undefined ? '' : String(single);
+};
+
+/**
+ * Excel 2000's `GETPIVOTDATA(pivot_table, name)`: `name` describes the cell in words, in any order
+ * and case — items, `Field[Item]`, a data field by either of its names, field names and
+ * `Grand Total`, which ask for nothing — and a multi-word item is quoted (`'New York'`, or
+ * `Name['Wendy   ']` to keep its spaces). A word that names nothing is `#N/A`; a cell the pivot
+ * does not show is `#REF!`.
+ */
+const pivotDataByName = (pivot: unknown, nameArg: IRange | IRange[]): Scalar => {
+  const found = pivotViewOf(pivot);
+  if ('answer' in found) return found.answer;
+  const pivotView = found.view;
+  const name = textOf(nameArg);
+  if (FormulaError.isError(name)) return name;
+
+  const fields = pivotView.getFields();
+  const dataFields = pivotView.getDataFields();
+  const items = new Map<number, number>();
+  let dataIndex = -1;
+  const setItem = (fieldIndex: number, itemIndex: number): boolean => {
+    const before = items.get(fieldIndex);
+    items.set(fieldIndex, itemIndex);
+    return before === undefined || before === itemIndex;
+  };
+  const unquote = (text: string): string => text.startsWith("'") && text.endsWith("'") && text.length > 1
+    ? text.slice(1, -1).replace(/''/g, "'")
+    : text.trim();
+
+  // `Field[Item]` first: the field is the longest run of words before the bracket that names one,
+  // and the words ahead of it join the loose ones.
+  const loose: string[] = [];
+  const bracket = /\[('(?:[^']|'')*'|[^\]]*)\]/g;
+  let last = 0;
+  let conflict = false;
+  for (let match = bracket.exec(name); match; match = bracket.exec(name)) {
+    const words = wordsOf(name.slice(last, match.index));
+    last = match.index + match[0].length;
+    let fieldIndex = -1;
+    let used = words.length;
+    while (used > 0) {
+      const candidate = words.slice(words.length - used).join(' ').toLowerCase();
+      fieldIndex = fields.findIndex((field) => field.name.toLowerCase() === candidate);
+      if (fieldIndex !== -1) break;
+      used--;
+    }
+    if (fieldIndex === -1) return FormulaError.BuiltIn.NA!;
+    loose.push(...words.slice(0, words.length - used));
+    const itemIndex = findItem(fields[fieldIndex].items, unquote(match[1]));
+    if (itemIndex === -1) return FormulaError.BuiltIn.NA!;
+    conflict ||= !setItem(fieldIndex, itemIndex);
+  }
+  loose.push(...wordsOf(name.slice(last)));
+
+  // The loose words, longest phrase first from the left: a quoted phrase is one word.
+  const phraseIs = (phrase: string): (() => boolean) | null => {
+    const wanted = phrase.toLowerCase();
+    if (wanted === 'grand total') return () => true;
+    if (fields.some((field) => field.name.toLowerCase() === wanted)) return () => true;
+    const shown = dataFields.findIndex((field) => field.name.toLowerCase() === wanted);
+    const data = shown !== -1 ? shown : dataFields.findIndex((field) => field.sourceName.toLowerCase() === wanted);
+    if (data !== -1) return () => { dataIndex = data; return true; };
+    const holders: [number, number][] = [];
+    fields.forEach((field, fieldIndex) => {
+      const itemIndex = findItem(field.items, phrase);
+      if (itemIndex !== -1) holders.push([fieldIndex, itemIndex]);
+    });
+    if (holders.length === 0) return null;
+    // An item two fields share names no one cell.
+    if (holders.length > 1) return () => false;
+    return () => setItem(holders[0][0], holders[0][1]);
+  };
+  for (let at = 0; at < loose.length;) {
+    let matched: (() => boolean) | null = null;
+    let take = loose.length - at;
+    while (take > 0) {
+      const words = loose.slice(at, at + take);
+      matched = phraseIs(take === 1 ? unquote(words[0]) : words.join(' '));
+      if (matched) break;
+      take--;
+    }
+    if (!matched) return FormulaError.BuiltIn.NA!;
+    conflict ||= !matched();
+    at += take;
+  }
+  if (conflict) return FormulaError.BuiltIn.Ref!;
+  // No data field named: the table's first.
+  if (dataIndex === -1) dataIndex = 0;
+  if (dataIndex >= dataFields.length) return FormulaError.BuiltIn.Ref!;
+  return pivotView.getValue(dataIndex, items) ?? FormulaError.BuiltIn.Ref!;
+};
+
+/** The words of a legacy name, a quoted phrase kept whole with its quotes. */
+const wordsOf = (text: string): string[] => text.match(/'(?:[^']|'')*'|[^\s']+/g) ?? [];
+
+/**
  * Looks for a value in the top row of a table or array of values and returns the value in the same column from a row you specify.
  * @param lookupValue is the value to be found in the first row of the table and can be a value, a reference, or a text string.
  * @param tableArray is a table of text, numbers, or logical values in which data is looked up. tableArray can be a reference to a range or a range name.
@@ -536,100 +672,37 @@ const findItem = (items: readonly IFormulaContext.PivotViewItem[], item: Scalar)
 export function HLOOKUP(
   lookupValue: Scalar,
   tableArray: Flatten<IRange>,
-  rowIndexNum: number,
+  rowIndexNum: AcceptError<number>,
   rangeLookup: boolean = true
 ): Scalar {
   if (FormulaError.isError(lookupValue)) return lookupValue;
+  // A blank lookup value, an empty cell or an omitted argument, is looked up as 0.
+  if (lookupValue === null || lookupValue === undefined) lookupValue = 0;
   if (tableArray.length > 1) return FormulaError.BuiltIn.NA!; // a union is not a table
   const table = tableArray[0];
-  if (_isScalarTable()) return FormulaError.BuiltIn.NA!;
-  const rowIndex = _lookupIndex(rowIndexNum);
-  if (rowIndex < 1) return FormulaError.BuiltIn.Value!;
-  // The index is judged only once the key is FOUND: a missing key is #N/A whatever the index,
-  // and a found one past the table is #REF!.
+  if (_isScalarTable()) return _scalarTableAnswer(table);
+  // A bad index from a CELL — an error, or text that is not a number — is judged with the
+  // index, after the search: #REF! for a found key. A literal one is the argument's own fault.
+  let indexFault: FormulaError.Known | null = null;
+  if (FormulaError.isError(rowIndexNum)) {
+    if (FormulaContext.getArgs().getKindAt(2) !== ValueKind.Reference) return rowIndexNum;
+    indexFault = FormulaError.BuiltIn.Ref!;
+  }
+  const rowIndex = indexFault ? 1 : _lookupIndex(rowIndexNum as number);
+  // The index is judged only once the key is FOUND: a missing key is #N/A whatever the index, and
+  // a found one is #VALUE! below the table and #REF! past it.
   const pastEnd = rowIndex > table.getRowCount();
   const pick = (at: number): Scalar =>
-    pastEnd ? FormulaError.BuiltIn.Ref! : (table.getValueAt(rowIndex - 1, at) ?? null);
+    indexFault ?? (rowIndex < 1 ? FormulaError.BuiltIn.Value! : pastEnd ? FormulaError.BuiltIn.Ref! : (table.getValueAt(rowIndex - 1, at) ?? null));
 
-  const lookupType = typeof lookupValue;
   // See VLOOKUP — same rules, transposed.
   const asWildCard = _lookupWildCard(lookupValue);
 
   if (rangeLookup) {
-    // NOTE: The trailing prevValue pointer deliberately replicates Excel and
-    // Google Sheets behavior on unsorted input, including returning "incorrect"
-    // floor values that match what both platforms produce. Do not replace with
-    // a clean floor scan — it will break on unsorted arrays. The rule is the
-    // platforms' actual behavior, not the documented spec.
-    //
-    // Only the COMPARISONS route through `_lookupCompare` — see VLOOKUP.
-    let prevValue: Scalar | null = null;
-    let prevColIdx = -1;
-    let firstOfType = true;
-    let seenExceeding = false;
-
-    const iter = table.entries({ axis: IRange.Axis.Row, includeEmpty: true });
-    let next = iter.next();
-
-    while (!next.done) {
-      const { value, coords } = next.value;
-
-      if (coords.rowIndex !== 0) break;
-
-      const colIdx = coords.colIndex;
-      const type = typeof value;
-
-      if (type !== lookupType) {
-        next = iter.next();
-        continue;
-      }
-
-      const cmp = _lookupCompare(value, lookupValue);
-
-      if (firstOfType) {
-        prevValue = value;
-        prevColIdx = colIdx;
-        firstOfType = false;
-        if (cmp > 0) seenExceeding = true;
-        next = iter.next();
-        continue;
-      }
-
-      const prevCmp = _lookupCompare(prevValue, lookupValue);
-
-      // Track if we've seen any value exceeding lookupValue
-      if (cmp > 0) seenExceeding = true;
-
-      // Both prev and curr exceed lookupValue — #N/A
-      if (prevCmp > 0 && cmp > 0) {
-        return FormulaError.BuiltIn.NA!;
-      }
-
-      // After an exact match, if we previously saw an exceeding value and
-      // the next same-type value drops below lookupValue, we have passed
-      // the peak — return the exact match position.
-      // This handles descending runs like {65,63,61} correctly while
-      // allowing {3,2,1} to fall through to the end.
-      if (seenExceeding && prevCmp === 0 && cmp < 0) {
-        return pick(prevColIdx);
-      }
-
-      // Floor crossover — prev <= lookupValue and curr > lookupValue
-      if (prevValue != null && cmp > 0 && prevCmp <= 0) {
-        return pick(prevColIdx);
-      }
-
-      // Update trailing pointer and keep scanning - handles exact match and last match wins
-      prevValue = value;
-      prevColIdx = colIdx;
-      next = iter.next();
-    }
-
-    // Nothing was ever crossed over, so the trailing pointer is the answer only if it is AT or
-    // BELOW the target: with one candidate of the type there is no pair for the rule above to
-    // catch, and a lone value that exceeds has no floor. `HLOOKUP(5,A1:A1,1,TRUE)` is #N/A.
-    if (firstOfType || _lookupCompare(prevValue, lookupValue) > 0) return FormulaError.BuiltIn.NA!;
-    return pick(prevColIdx);
+    // MATCH's bisection over the first row, wildcards read as text: an unsorted
+    // `BLA16,BLA23567,BLA245,BLA,BLATST234,MEIER3456,SOMEBLA` finds BLA for "Bla?45".
+    const index = _approximateIndex(table.slice({ rowStart: 0, rowEnd: 0 }), lookupValue);
+    return index === -1 ? FormulaError.BuiltIn.NA! : pick(index);
   }
 
   // Exact match with wildcard support
@@ -894,9 +967,10 @@ export function INDEX(
     if (rows === 1) {
       colIndex = rowIndex;
       rowIndex = 1;
-    } else if (cols !== 1) {
+    } else if (cols !== 1 && (range as IReferenceRange).isIReferenceRange) {
       return FormulaError.BuiltIn.Ref;
     }
+    // A 2-D ARRAY answers the whole row: `INDEX({1,2;3,4},2)` is {3,4}.
   }
 
   if (rowIndex > rows || colIndex > cols) return FormulaError.BuiltIn.Ref;
@@ -953,6 +1027,8 @@ export function LOOKUP(
   resultVector?: Omittable<IRange | null, null>
 ): Scalar {
   if (FormulaError.isError(lookupValue)) return lookupValue;
+  // A blank lookup value, an empty cell or an omitted argument, is looked up as 0.
+  if (lookupValue === null || lookupValue === undefined) lookupValue = 0;
   if (lookupVector.length > 1) return FormulaError.BuiltIn.NA!; // a union is not a table
   const vector = lookupVector[0];
   if (resultVector === null) return FormulaError.BuiltIn.Value!;
@@ -969,12 +1045,12 @@ export function LOOKUP(
     const searchByRow = cols > rows;
     if (searchByRow) {
       // Search first row, return value from last row at matching column index
-      const colIdx = _lookupLinear(lookupValue, vector, /* byRow= */ true);
+      const colIdx = _approximateIndex(vector.slice({ rowStart: 0, rowEnd: 0 }), lookupValue);
       if (colIdx === -1) return FormulaError.BuiltIn.NA!;
       return vector.getValueAt(rows - 1, colIdx) ?? null;
     } else {
       // Search first column, return value from last column at matching row index
-      const rowIdx = _lookupLinear(lookupValue, vector, /* byRow= */ false);
+      const rowIdx = _approximateIndex(vector.slice({ colStart: 0, colEnd: 0 }), lookupValue);
       if (rowIdx === -1) return FormulaError.BuiltIn.NA!;
       return vector.getValueAt(rowIdx, cols - 1) ?? null;
     }
@@ -984,7 +1060,8 @@ export function LOOKUP(
   // A 1D vector searches along whichever axis it occupies; a 2D one (only reachable
   // here with a resultVector) searches its leading row/column the way the array form does.
   const byRow = is2D ? cols > rows : rows === 1; // true = iterate columns, false = iterate rows
-  const matchIdx = _lookupLinear(lookupValue, vector, byRow);
+  const matchIdx = _approximateIndex(
+    byRow ? vector.slice({ rowStart: 0, rowEnd: 0 }) : vector.slice({ colStart: 0, colEnd: 0 }), lookupValue);
   if (matchIdx === -1) return FormulaError.BuiltIn.NA!;
 
   if (!resultVector) {
@@ -1067,6 +1144,10 @@ export function MATCH(
   matchType: Omittable<ReportType<MatchType>, 0> = MatchType.LessThan
 ): Scalar {
   if (lookupArray.length > 1 || _isScalarTable()) return FormulaError.BuiltIn.NA!; // a union is not a table
+  // Nor is a 2-D range: `MATCH(1,{1,2;3,4},0)` is #N/A, where XMATCH's is #VALUE!.
+  if (lookupArray[0].getRowCount() > 1 && lookupArray[0].getColumnCount() > 1) return FormulaError.BuiltIn.NA!;
+  // A blank lookup value, an empty cell or an omitted argument, is looked up as 0.
+  if (lookupValue === null || lookupValue === undefined) lookupValue = 0;
   const matchMode = matchType === 0 ? 0 : matchType > 0 ? -1 : 1;
   // matchType ±1 requires sorted input; binary search on unsorted data is undefined behavior
   const searchMode = matchType === 0 ? 1 : matchType > 0 ? 2 : -2;
@@ -1109,7 +1190,9 @@ export function OFFSET(
  */
 export function ROW(reference?: Flatten<IReferenceRange>): number | number[] | number[][] {
   if (!reference || reference.length === 0) {
-    return FormulaContext.getRow() + 1;
+    const own = ownBlock();
+    if (own === null) return FormulaContext.getRow() + 1;
+    reference = [own];
   }
   // A union has no single position to describe — `#REF!`.
   if (reference.length > 1) return FormulaError.BuiltIn.Ref! as unknown as number[];
@@ -1621,95 +1704,36 @@ export function UNIQUE(
 export function VLOOKUP(
   lookupValue: Scalar,
   tableArray: Flatten<IRange>,
-  colIndexNum: number,
+  colIndexNum: AcceptError<number>,
   rangeLookup: boolean = true
 ): Scalar {
   if (FormulaError.isError(lookupValue)) return lookupValue;
+  // A blank lookup value, an empty cell or an omitted argument, is looked up as 0.
+  if (lookupValue === null || lookupValue === undefined) lookupValue = 0;
   if (tableArray.length > 1) return FormulaError.BuiltIn.NA!; // a union is not a table
   const table = tableArray[0];
-  if (_isScalarTable()) return FormulaError.BuiltIn.NA!;
-  const colIndex = _lookupIndex(colIndexNum);
-  if (colIndex < 1) return FormulaError.BuiltIn.Value!;
-  // The index is judged only once the key is FOUND: a missing key is #N/A whatever the index,
-  // and a found one past the table is #REF!.
+  if (_isScalarTable()) return _scalarTableAnswer(table);
+  // A bad index from a CELL — an error, or text that is not a number — is judged with the
+  // index, after the search: #REF! for a found key. A literal one is the argument's own fault.
+  let indexFault: FormulaError.Known | null = null;
+  if (FormulaError.isError(colIndexNum)) {
+    if (FormulaContext.getArgs().getKindAt(2) !== ValueKind.Reference) return colIndexNum;
+    indexFault = FormulaError.BuiltIn.Ref!;
+  }
+  const colIndex = indexFault ? 1 : _lookupIndex(colIndexNum as number);
+  // The index is judged only once the key is FOUND: a missing key is #N/A whatever the index, and
+  // a found one is #VALUE! below the table and #REF! past it.
   const pastEnd = colIndex > table.getColumnCount();
   const pick = (at: number): Scalar =>
-    pastEnd ? FormulaError.BuiltIn.Ref! : (table.getValueAt(at, colIndex - 1) ?? null);
+    indexFault ?? (colIndex < 1 ? FormulaError.BuiltIn.Value! : pastEnd ? FormulaError.BuiltIn.Ref! : (table.getValueAt(at, colIndex - 1) ?? null));
 
-  const lookupType = typeof lookupValue;
   const asWildCard = _lookupWildCard(lookupValue);
 
   if (rangeLookup) {
-    // NOTE: The trailing prevValue pointer deliberately replicates Excel and
-    // Google Sheets behavior on unsorted input, including returning "incorrect"
-    // floor values that match what both platforms produce. Do not replace with
-    // a clean floor scan — it will break on unsorted arrays. The rule is the
-    // platforms' actual behavior, not the documented spec.
-    let prevValue: Scalar | null = null;
-    let prevRowIdx = -1;
-    let firstOfType = true;
-    let seenExceeding = false;
-
-    const iter = table.entries({ axis: IRange.Axis.Column, includeEmpty: true });
-    let next = iter.next();
-
-    while (!next.done) {
-      const { value, coords } = next.value;
-
-      if (coords.colIndex !== 0) break;
-
-      const rowIdx = coords.rowIndex;
-      const type = typeof value;
-
-      if (type !== lookupType) {
-        next = iter.next();
-        continue;
-      }
-
-      const cmp = _lookupCompare(value, lookupValue);
-
-      if (firstOfType) {
-        prevValue = value;
-        prevRowIdx = rowIdx;
-        firstOfType = false;
-        if (cmp > 0) seenExceeding = true;
-        next = iter.next();
-        continue;
-      }
-
-      const prevCmp = _lookupCompare(prevValue, lookupValue);
-
-      // Track if we've seen any value exceeding lookupValue
-      if (cmp > 0) seenExceeding = true;
-
-      // Both prev and curr exceed lookupValue — #N/A
-      if (prevCmp > 0 && cmp > 0) {
-        return FormulaError.BuiltIn.NA!;
-      }
-
-      // After an exact match, if we previously saw an exceeding value and
-      // the next same-type value drops below lookupValue, we have passed
-      // the peak — return the exact match position.
-      // This handles descending runs like {65,63,61} correctly while
-      // allowing {3,2,1} to fall through to the end.
-      if (seenExceeding && prevCmp === 0 && cmp < 0) {
-        return pick(prevRowIdx);
-      }
-
-      // Floor crossover — prev <= lookupValue and curr > lookupValue
-      if (prevValue != null && cmp > 0 && prevCmp <= 0) {
-        return pick(prevRowIdx);
-      }
-
-      // Update trailing pointer and keep scanning - last match wins
-      prevValue = value;
-      prevRowIdx = rowIdx;
-      next = iter.next();
-    }
-
-    // See HLOOKUP — a lone candidate above the target has no floor.
-    if (firstOfType || _lookupCompare(prevValue, lookupValue) > 0) return FormulaError.BuiltIn.NA!;
-    return pick(prevRowIdx);
+    // MATCH's bisection over the first column, wildcards read as text: an unsorted
+    // `BLA16,BLA23567,BLA245,BLA,BLATST234,MEIER3456,SOMEBLA` finds BLA for "Bla?45".
+    const index = _approximateIndex(table.slice({ colStart: 0, colEnd: 0 }), lookupValue);
+    return index === -1 ? FormulaError.BuiltIn.NA! : pick(index);
   }
 
   // Exact match with wildcard support
@@ -1866,6 +1890,12 @@ enum MatchMode {
    * @name Wildcard character match
    */
   Wildcard = 2,
+  /**
+   * The lookup value is a regular expression, matched case-sensitively against any part of each
+   * item's text.
+   * @name Regular expression match
+   */
+  Regex = 3,
 }
 
 /**
@@ -1915,10 +1945,14 @@ export function XLOOKUP(
   matchMode: ReportType<MatchMode> = MatchMode.Exact,
   searchMode: Omittable<ReportType<SearchMode>> = SearchMode.FirstToLast
 ): IReferenceRange {
-  if (![0, -1, 1, 2].includes(matchMode)) throw FormulaError.BuiltIn.Value;
+  // Both modes are FLOORED before they are judged: 0.5 is the exact match, -0.5 the next smaller
+  // (`XLOOKUP(2,{1;5;3},{10;20;30},,-0.5)` is 10) and -1.5 is the refused -2.
+  matchMode = Math.floor(matchMode);
+  searchMode = Math.floor(searchMode);
+  if (![0, -1, 1, 2, 3].includes(matchMode)) throw FormulaError.BuiltIn.Value;
   if (![1, -1, 2, -2].includes(searchMode)) throw FormulaError.BuiltIn.Value;
 
-  if (matchMode === 2 && (searchMode === 2 || searchMode === -2)) throw FormulaError.BuiltIn.Value;
+  if (matchMode >= 2 && (searchMode === 2 || searchMode === -2)) throw FormulaError.BuiltIn.Value;
   // A union at either array slot is not a table — `#N/A`.
   if (lookupArray.length > 1 || returnArray.length > 1) return FormulaError.BuiltIn.NA! as unknown as IReferenceRange;
   const lookup = lookupArray[0];
@@ -1933,13 +1967,20 @@ export function XLOOKUP(
     if (result.getRowCount() === 1) searchByColumn = false;
     else if (result.getColumnCount() !== 1) throw FormulaError.BuiltIn.Value;
   }
+  // The return array runs the lookup array's length, or the call is #VALUE! before anything is
+  // searched, found or not.
+  const lookupLength = searchByColumn ? lookup.getColumnCount() : lookup.getRowCount();
+  if ((searchByColumn ? result.getColumnCount() : result.getRowCount()) !== lookupLength) throw FormulaError.BuiltIn.Value;
 
   let idx: number;
-  if (lookupValue === null || lookupValue === undefined) {
+  if (matchMode === 3) {
+    idx = _scanRegex(lookup, _lookupRegex(lookupValue), searchMode === -1);
+  } else if (lookupValue === null || lookupValue === undefined) {
     idx = _searchBlank(lookup, matchMode, searchMode);
   } else if ((matchMode === 0 || matchMode === 2) && (searchMode === 1 || searchMode === -1)) {
     // Exact, scanned: it stops at the hit rather than opening the whole vector (`_scanExact`).
-    idx = _scanExact(lookup, lookupValue, searchMode === -1, _lookupWildCard(lookupValue, matchMode === 2));
+    // Only mode 2 reads a pattern: `XLOOKUP("a?b*",…)` in exact mode looks for that text.
+    idx = _scanExact(lookup, lookupValue, searchMode === -1, matchMode === 2 ? _lookupWildCard(lookupValue, true) : null);
   } else {
     // The index is a POSITION into result, so the flatten must include empty cells — iteration
     // skips them by default, which would compact the array and shift every position after a gap.
@@ -1999,6 +2040,8 @@ export function XMATCH(
   searchMode: Omittable<ReportType<SearchMode>> = SearchMode.FirstToLast
 ): Scalar {
   if (lookupArray.length > 1) return FormulaError.BuiltIn.NA!; // a union is not a table
+  matchMode = Math.floor(matchMode); // floored, as XLOOKUP's are
+  searchMode = Math.floor(searchMode);
   return _matchCore(lookupValue, lookupArray[0], matchMode, searchMode, matchMode === 2);
 }
 
@@ -2022,11 +2065,15 @@ function _matchCore(
   allowWildcards: boolean,
   legacy: boolean = false
 ): Scalar {
-  if (![0, -1, 1, 2].includes(matchMode)) throw FormulaError.BuiltIn.Value;
+  if (![0, -1, 1, 2, 3].includes(matchMode)) throw FormulaError.BuiltIn.Value;
   if (![1, -1, 2, -2].includes(searchMode)) throw FormulaError.BuiltIn.Value;
-  // Wildcard mode on a binary search is refused as a MODE PAIR — #VALUE.
-  if (matchMode === 2 && (searchMode === 2 || searchMode === -2)) throw FormulaError.BuiltIn.Value;
+  // Wildcard and regex modes on a binary search are refused as a MODE PAIR — #VALUE.
+  if (matchMode >= 2 && (searchMode === 2 || searchMode === -2)) throw FormulaError.BuiltIn.Value;
   if (lookupArray.getColumnCount() > 1 && lookupArray.getRowCount() > 1) throw FormulaError.BuiltIn.Value;
+  if (matchMode === 3) {
+    const position = _scanRegex(lookupArray, _lookupRegex(lookupValue), searchMode === -1);
+    return position === -1 ? FormulaError.BuiltIn.NA! : position + 1;
+  }
   if (lookupValue === null || lookupValue === undefined) {
     if (legacy) return FormulaError.BuiltIn.NA!;
     const position = _searchBlank(lookupArray, matchMode, searchMode);
@@ -2041,6 +2088,12 @@ function _matchCore(
   }
 
   const positional: Scalar[] = lookupArray.getValuesFlat(IncludeEmpty); // flattens row oriented.
+  if (legacy && (searchMode === 2 || searchMode === -2)) {
+    // A blank cell keeps its place, as it does for VLOOKUP: `MATCH(2,{1;<blank>;3;<blank>;5},1)`
+    // bisects five positions, not three.
+    const position = _approximateMatch(positional, lookupValue, searchMode === 2);
+    return position === -1 ? FormulaError.BuiltIn.NA! : position + 1;
+  }
   const compact: Scalar[] = [];
   const positionOf: number[] = [];
   for (let i=0; i<positional.length; i++) {
@@ -2048,15 +2101,13 @@ function _matchCore(
     compact.push(positional[i]);
     positionOf.push(i);
   }
-  const idx = legacy && (searchMode === 2 || searchMode === -2)
-    ? _approximateMatch(compact, lookupValue, searchMode === 2)
-    : searchArray(
-      lookupValue,
-      compact,
-      matchMode as 0 | -1 | 1 | 2,
-      searchMode as 1 | -1 | 2 | -2,
-      allowWildcards
-    );
+  const idx = searchArray(
+    lookupValue,
+    compact,
+    matchMode as 0 | -1 | 1 | 2,
+    searchMode as 1 | -1 | 2 | -2,
+    allowWildcards
+  );
   return idx === -1 ? FormulaError.BuiltIn.NA! : positionOf[idx] + 1;
 }
 
@@ -2070,20 +2121,50 @@ function _matchCore(
  * @returns The 0-based index, or -1.
  *
  * @remarks
- * A bisection, but not the one {@link _binarySearch} runs for XMATCH, which ranks an error above
- * everything and so misses `=MATCH(2,1/{0,1,0,1,0})`, the "last non-error" idiom.
+ * `match_type` -1 is a scan (below). `match_type` 1 is a bisection, but not the one
+ * {@link _binarySearch} runs for XMATCH, which ranks an error above everything and so misses
+ * `=MATCH(2,1/{0,1,0,1,0})`, the "last non-error" idiom.
  *
  * - A midpoint that cannot be compared with the target — an error, or a member of another type —
  *   is stepped past: UPWARD to the first comparable member still inside the window, else downward.
- *   A window with none ends the search.
+ *   A window with none ends the search. The window then narrows from the member that was READ,
+ *   not from the midpoint, when it closes downward: over `0,4,_,_,_,_,1,10,2,_,7,2,6` a search
+ *   for 3 steps from the blank tenth position to the 7 after it and keeps positions eight to
+ *   ten, finding the 2 at nine.
  * - An exact hit ends the search at the END of its run of equal members, scanned forward and
  *   stopped by the first member that is not equal, an error included: `MATCH(1,1/{1,1,1,1})` is 4
  *   and `MATCH(1,1/{0,1,0,1})` is 2.
  *
- * LOOKUP answers the same table through its own scan (`_lookupLinear`).
+ * LOOKUP searches the same way.
  */
+/**
+ * {@link _approximateMatch} ascending over one row or column; the 0-based position, or -1.
+ *
+ * A blank cell keeps its PLACE and is stepped past like any member that cannot be compared, so
+ * the midpoints are the range's own: `HLOOKUP("STRING",…,TRUE)` over
+ * `INTEGRAL,DOUBLE,BLANK,STRING,REF,AREA,<blank>` opens on STRING, where the six texts alone
+ * would open on BLANK and end on AREA.
+ */
+function _approximateIndex(vector: IRange, target: Scalar): number {
+  return _approximateMatch(vector.getValuesFlat(IncludeEmpty), target, true);
+}
+
 function _approximateMatch(values: Scalar[], target: Scalar, ascending: boolean): number {
-  const comparable = (i: number): boolean => typeof values[i] === typeof target;
+  const comparable = (i: number): boolean => values[i] != null && typeof values[i] === typeof target;
+  if (!ascending) {
+    // `match_type` -1 scans from the front: an equal member answers, the first smaller one ends
+    // the search on the member before it. `MATCH(110,{110;110;110},-1)` is 1, and an ascending
+    // `{"aaaa","bbbb"}` is 1 for "aaaa" and #N/A for "bbbb".
+    let bound = -1;
+    for (let i = 0; i < values.length; i++) {
+      if (!comparable(i)) continue;
+      const cmp = _lookupCompare(values[i], target);
+      if (cmp === 0) return i;
+      if (cmp < 0) return bound;
+      bound = i;
+    }
+    return bound;
+  }
   let lo = 0, hi = values.length - 1, bound = -1;
   while (lo <= hi) {
     const mid = (lo + hi) >>> 1;
@@ -2105,7 +2186,7 @@ function _approximateMatch(values: Scalar[], target: Scalar, ascending: boolean)
       bound = at;
       lo = Math.max(mid, at) + 1;
     } else {
-      hi = Math.min(mid, at) - 1;
+      hi = at - 1;
     }
   }
   return bound;
@@ -2156,6 +2237,14 @@ function _lookupCompare(a: Scalar, b: Scalar): number {
 function _isScalarTable(): boolean {
   const kind = FormulaContext.getArgs().getKindAt(1);
   return kind !== ValueKind.Reference && kind !== ValueKind.Array;
+}
+
+/**
+ * What VLOOKUP and HLOOKUP answer at a scalar table: `#N/A`, except text, which is `#VALUE!` —
+ * `VLOOKUP(1,"foo",2,TRUE)`.
+ */
+function _scalarTableAnswer(table: IRange): Scalar {
+  return typeof table.getValueAt(0, 0) === 'string' ? FormulaError.BuiltIn.Value! : FormulaError.BuiltIn.NA!;
 }
 
 function _lookupIndex(indexNum: number): number {
@@ -2276,6 +2365,44 @@ function _searchBlank(
 }
 
 /**
+ * The pattern of match_mode 3: the lookup value's text as a regular expression, case-sensitive, a
+ * leading `(?i)`-style group setting its flags. An invalid pattern is #VALUE!.
+ */
+function _lookupRegex(target: Scalar): RegExp {
+  let source = FormulaContext.toText(target);
+  let flags = '';
+  const inline = /^\(\?([ims]+)\)/.exec(source);
+  if (inline) {
+    flags = [...new Set(inline[1])].join('');
+    source = source.slice(inline[0].length);
+  }
+  try {
+    return new RegExp(source, flags);
+  } catch {
+    throw FormulaError.BuiltIn.Value;
+  }
+}
+
+/**
+ * The first member (or last, `reverse`) whose text the pattern finds anywhere in: `"a"` finds
+ * `"cat"`, and a number or a logical is matched as its text (`"4"` finds 142).
+ */
+function _scanRegex(lookupArray: IRange, pattern: RegExp, reverse: boolean): number {
+  const isRowVector = lookupArray.getRowCount() === 1;
+  const iter = lookupArray.entries<Scalar>({
+    axis: isRowVector ? IRange.Axis.Row : IRange.Axis.Column,
+    includeEmpty: false,
+    reverse
+  });
+  for (let next = iter.next(); !next.done; next = iter.next()) {
+    const { value, coords } = next.value;
+    if (FormulaError.isError(value)) continue;
+    if (pattern.test(FormulaContext.toText(value))) return isRowVector ? coords.colIndex : coords.rowIndex;
+  }
+  return -1;
+}
+
+/**
  * The exact-match search of {@link searchArray}, run over the range itself rather than a
  * flattened copy of it.
  *
@@ -2387,76 +2514,6 @@ function _shouldIgnore(v: Scalar, ignore: number): boolean {
   if (ignore === 1 || ignore === 3) { if (v === null) return true; }
   if (ignore === 2 || ignore === 3) { if (FormulaError.isError(v)) return true; }
   return false;
-}
-
-/**
- * Approximate binary-search lookup (largest value ≤ lookupValue) along either
- * the first row (byRow=true) or first column (byRow=false) of `range`.
- *
- * Returns the 0-based index of the matching position (column index when byRow,
- * row index otherwise), or -1 if lookupValue is smaller than all values of the
- * correct type.
- *
- * Implements LOOKUP / VLOOKUP(rangeLookup=true) / HLOOKUP(rangeLookup=true) semantics:
- *   - Type mismatch entries are skipped
- *   - String comparison is case-insensitive
- *   - Scans forward; last candidate where candidate <= lookupValue is the match
- *
- * SKIPPING a type mismatch is this family's own rule.
- * Ordering WITHIN a type is the shared rule -- see {@link _lookupCompare}.
- */
-function _lookupLinear(
-  lookupValue: Scalar,
-  range: IRange,
-  byRow: boolean
-): number {
-  const lookupType = typeof lookupValue;
-
-  let bestIdx = -1;
-  let bestVal: Scalar | null = null;
-  let seenExceeding = false;
-
-  const axis = byRow ? IRange.Axis.Row : IRange.Axis.Column;
-  const iter = range.entries({ axis, includeEmpty: false });
-  let next = iter.next();
-
-  while (!next.done) {
-    const { value, coords } = next.value;
-
-    if (byRow && coords.rowIndex !== 0) { next = iter.next(); continue; }
-    if (!byRow && coords.colIndex !== 0) { next = iter.next(); continue; }
-
-    const idx = byRow ? coords.colIndex : coords.rowIndex;
-
-    if (typeof value !== lookupType || FormulaError.isError(value)) {
-      next = iter.next();
-      continue;
-    }
-
-    // Both are the same type by the filter above. Not a bare `localeCompare`: with no locale it
-    // reads the HOST's, never the workbook's, and skips the word sort besides (see
-    // `ScalarCollation`). Numbers still compare exactly (see `_lookupCompare`).
-    const candidate = _lookupCompare(value, lookupValue);
-
-    if (candidate > 0) {
-      seenExceeding = true;
-    }
-
-    if (candidate <= 0) {
-      // `bestVal === lookupValue` asked "was the best so far an exact hit?" by IDENTITY, which
-      // missed a text hit differing only in case. `bestVal` is null only before the first
-      // candidate, and a blank never gets here, so the guard is a not-yet test.
-      const bestWasExact = bestVal !== null && _lookupCompare(bestVal, lookupValue) === 0;
-      if (!(seenExceeding && bestWasExact)) {
-        bestIdx = idx;
-        bestVal = value;
-      }
-    }
-
-    next = iter.next();
-  }
-
-  return bestIdx;
 }
 
 /**

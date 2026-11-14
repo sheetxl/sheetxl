@@ -32,7 +32,7 @@ export const PROMPTS = {
   terminal: goal('work with my spreadsheet files from the terminal'),
 
   vscode: upgrade(
-    ['code --install-extension sheetxl.sheetxl-vscode --pre-release'],
+    ['code --install-extension sheetxl.sheetxl-vscode'],
     'tell me how to open a spreadsheet with it and work on it together.',
   ),
   mcp: upgrade(

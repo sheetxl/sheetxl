@@ -134,6 +134,7 @@
       "@types/react": "^19",
       "rolldown": "~1.2.0",
       "terser": "5.49.0",
+      "serialize-javascript": "^7.1.4",
       "conventional-changelog-conventionalcommits>@conventional-changelog/template": "1.2.1"
     },
     "peerDependencyRules": {

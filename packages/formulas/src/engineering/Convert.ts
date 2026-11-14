@@ -1,6 +1,6 @@
 /* cspell: disable */
 import {
-  FormulaContext, FormulaError,
+  FormulaContext, FormulaError, ValueKind,
   type AcceptError, type Scalar, type NoLift
 } from '@sheetxl/primitives';
 
@@ -19,7 +19,9 @@ export function CONVERT(
   // #VALUE! and not the #N/A a later slot would raise. The unit slots therefore take their errors
   // as values and this body raises them, in order, once the number has been read.
   //
-  // A blank cell is zero, not a refusal: `CONVERT(<blank>,"km","m")` is 0.
+  // A blank cell is zero, not a refusal: `CONVERT(<blank>,"km","m")` is 0. An empty comma is one:
+  // `CONVERT(,"km","m")` is #N/A.
+  if (FormulaContext.getArgs().getKindAt(0) === ValueKind.Omitted) throw FormulaError.BuiltIn.NA;
   number = (number === null || number === undefined) ? 0 : FormulaContext.parseAsNumber(number);
   fromUnit = readUnit(fromUnit);
   toUnit = readUnit(toUnit);

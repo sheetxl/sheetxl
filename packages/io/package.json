@@ -43,8 +43,8 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@sheetxl/io-xlsx": "^1.0.3",
-    "@sheetxl/sdk": "^1.0.3",
+    "@sheetxl/io-xlsx": "^1.0.4",
+    "@sheetxl/sdk": "^1.0.4",
     "@sheetxl/utils": "workspace:*",
     "papaparse": "^5.7.0",
     "web-streams-polyfill": "^4.5.1"

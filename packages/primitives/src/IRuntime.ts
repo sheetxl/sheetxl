@@ -40,6 +40,19 @@ export interface IRuntime {
   isR1C1(): boolean;
 
   /**
+   * Returns the compatibility version formulas are calculated under: `1` or `2`.
+   *
+   * @remarks
+   * Version 2 counts a character outside the Basic Multilingual Plane (an emoji, a CJK Extension
+   * B ideograph) as one character, so `LEN(UNICHAR(128514))` is 1. Version 1 counts its two UTF-16
+   * units, so the same `LEN` is 2 and `MID` can cut the character in half. `LEN`, `MID`, `FIND`,
+   * `SEARCH` and `REPLACE` follow it; `LEFT` and `RIGHT` count characters under both.
+   *
+   * A new workbook is version 2. A workbook read from a file is whatever the file says.
+   */
+  getCompatibilityVersion(): number;
+
+  /**
    * Returns the resolved regional behavior for {@link IRuntime.getLocale}.
    *
    * @remarks

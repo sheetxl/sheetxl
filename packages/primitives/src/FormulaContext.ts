@@ -202,11 +202,15 @@ export class StubbedFormulaContext implements IFormulaContext {
    * plausibly and wrongly, where throwing names the actual mistake (evaluating criteria outside an
    * installed scope).
    */
-  createCriteria(
-    criteria: Scalar,
-    options?: IFormulaContext.CriteriaOptions
-  ): IFormulaContext.CriteriaEvaluator {
+  createCriteria(criteria: Scalar): IFormulaContext.CriteriaEvaluator {
     throw outsideEvaluation('createCriteria');
+  }
+
+  /**
+   * Unimplemented. See {@link IFormulaContext.dbQuery}.
+   */
+  dbQuery(database: IRange, criteria: IRange): IRange {
+    throw outsideEvaluation('dbQuery');
   }
 
   /**
@@ -262,7 +266,7 @@ export class StubbedFormulaContext implements IFormulaContext {
    * instead of throwing. Anything that needs the full rule is running in the engine, and
    * the engine never lands here.
    */
-  toText(value: Scalar | undefined): string {
+  toText(value: Scalar | undefined, _options?: IFormulaContext.ToTextOptions): string {
     if (typeof value === 'string') return value;
     if (value === null || value === undefined) return '';
     if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
@@ -350,6 +354,7 @@ const defaultRuntimeDetails: IRuntime = {
   getLocale: () => DEFAULT_LOCALE_PROFILE.tag,
   getLocaleProfile: () => DEFAULT_LOCALE_PROFILE,
   isR1C1: () => false,
+  getCompatibilityVersion: () => 2,
   getNow: () => 0,
   getRandom: () => Math.random(),
   getLocation: () => 'unknown',
@@ -432,11 +437,14 @@ export class ScopedFormulaContext implements IFormulaContext {
   }
 
   /** @inheritdoc IFormulaContext.createCriteria */
-  createCriteria(
-    criteria: Scalar,
-    options?: IFormulaContext.CriteriaOptions
-  ): IFormulaContext.CriteriaEvaluator {
-    return this._getScope().createCriteria!(criteria, options);
+  createCriteria(criteria: Scalar): IFormulaContext.CriteriaEvaluator {
+    return this._getScope().createCriteria!(criteria);
+  }
+
+  /** @inheritdoc IFormulaContext.dbQuery */
+  dbQuery(database: IRange, criteria: IRange): IRange {
+    const scope = this._getScope();
+    return scope.dbQuery ? scope.dbQuery(database, criteria) : _stubContext.dbQuery(database, criteria);
   }
 
   /** @inheritdoc IFormulaContext.createPivot */
@@ -462,8 +470,8 @@ export class ScopedFormulaContext implements IFormulaContext {
   }
 
   /** @inheritdoc IFormulaContext.toText */
-  toText(value: Scalar | undefined): string {
-    return this._getScope().toText!(value);
+  toText(value: Scalar | undefined, options?: IFormulaContext.ToTextOptions): string {
+    return this._getScope().toText!(value, options);
   }
 
   /** @inheritdoc IFormulaContext.isValidDate */

@@ -60,7 +60,7 @@
     "@mui/styled-engine": "^9.5.0",
     "@mui/system": "^9.5.0",
     "@mui/utils": "^9.5.0",
-    "@sheetxl/sdk": "^1.0.3",
+    "@sheetxl/sdk": "^1.0.4",
     "@sheetxl/studio-mui": "workspace:*",
     "csstype": "^3.2.3",
     "http-server": "^14.1.1",

@@ -16,8 +16,8 @@ import { gammafn, gammaln } from '../_utils/SpecialFunctions';
 import { CombinMax } from '../_utils/Combinatorics';
 import {
   betaCdf, betaInv, betaPdf, binomialCdf, binomialPdf, centralFCdf, centralFCdfUpper,
-  centralFInv, centralFPdf,
-  chisquareCdf, chisquareCdfUpper, chisquareInv, chisquarePdf, exponentialCdf, exponentialPdf,
+  centralFInv, centralFInvUpper, centralFPdf,
+  chisquareCdf, chisquareCdfUpper, chisquareInv, chisquareInvUpper, chisquarePdf, exponentialCdf, exponentialPdf,
   gammaCdf, gammaInv,
   gammaPdf, lognormalCdf, lognormalInv, lognormalPdf, negbinCdf, negbinPdf, normalCdf,
   normalConfidence, normalInv, normalPdf, poissonCdf, poissonPdf, studenttCdf, studenttCdfUpper,
@@ -30,6 +30,9 @@ import {
  * RIGHT-tail inverse is the one member with no such ceiling.
  */
 const DegFreedomMax = 1e10;
+
+/** The probability under which `1 - p` has too few digits left to carry a quantile. */
+const FarTail = 1e-4;
 
 /** The smallest normal double, 2^-1022: below it a value is zero, because there are no subnormals. */
 const MinNormal = 2.2250738585072014e-308;
@@ -113,6 +116,15 @@ export function BETA_DIST(
 ): number {
   if (alpha <= 0 || beta <= 0 || x < a || x > b || a === b) return Number.NaN; // #NUM!
 
+  if (!cumulative) {
+    // The density's two refusals read `x` itself, not its place in the interval: 0 where
+    // `alpha` is 1 or less and 1 where `beta` is — `BETA.DIST(0,1,1,FALSE,-1,1)` is #NUM! in
+    // the middle of its interval, and `BETA.DIST(1,2,1,FALSE,1,3)` is #NUM! at its lower end.
+    if ((x === 0 && alpha <= 1) || (x === 1 && beta <= 1)) return Number.NaN; // #NUM!
+    // Otherwise either end of the interval is 0, whatever the shape:
+    // `BETA.DIST(0.6,1,1,FALSE,0.6,0.7)` is 0 where the uniform density is 10.
+    if (x === a || x === b) return 0;
+  }
   x = (x - a) / (b - a);
   return cumulative ? betaCdf(x, alpha, beta) : betaPdf(x, alpha, beta) / (b - a);
 }
@@ -193,11 +205,18 @@ export function BINOM_DIST(
   probabilityS: number,
   cumulative: boolean
 ): number {
+  // A negative count is refused as written: `BINOM.DIST(-0.00001,1,1,FALSE)` is #NUM!, not the
+  // zero successes it truncates to.
+  if (numberS < 0 || trials < 0) return Number.NaN; // #NUM!
   // Both counts are made whole before they are compared with each other or with the ceiling.
   numberS = Math.trunc(numberS);
   trials = Math.trunc(trials);
   if (trials < 0 || probabilityS < 0 || probabilityS > 1 || numberS < 0 || numberS > trials) return Number.NaN; // #NUM!
   if (trials > CombinMax) return Number.NaN; // #NUM! — a count stops one short of INT_MAX
+  // The mass at no successes under a certain one is refused, where every other corner answers:
+  // `BINOM.DIST(0,5,1,FALSE)` is #NUM!, `BINOM.DIST(5,5,1,FALSE)` is 1, `BINOM.DIST(0,5,0,FALSE)` is 1
+  // and so is no success in no trials, `BINOM.DIST(0,0,1,FALSE)`.
+  if (!cumulative && numberS === 0 && trials > 0 && probabilityS === 1) return Number.NaN; // #NUM!
 
   return cumulative
     ? binomialCdf(numberS, trials, probabilityS)
@@ -375,13 +394,18 @@ export function CHISQ_INV_RT(
   degFreedom: number
 ): number {
   degFreedom = Math.trunc(degFreedom);
-  // The right tail is the left tail at `1 - probability`, so 1 answers 0 and 0 is refused. The
-  // complement is formed in double, and a probability under 2^-54 reaches the left tail as 1
-  // and is refused with it. Excel's floor is near that at one degree of freedom and far below it
-  // at every other, so a vanishing probability can refuse here where Excel answers.
-  if (probability <= 0 || probability > 1 || degFreedom < 1 || degFreedom > DegFreedomMax) return Number.NaN;
-
-  return chisquareInv(1 - probability, degFreedom);
+  // 1 answers 0 and 0 is refused. Under a half the search runs on the tail as given:
+  // `CHISQ.INV.RT(1E-12,5)` is 65.2386362133678, where `1 - 1E-12` has four of its digits left.
+  if (probability <= 0 || probability > 1 || degFreedom < 1) return Number.NaN;
+  if (probability >= 0.5) return chisquareInv(1 - probability, degFreedom);
+  // At ONE degree of freedom the tail is the one `1 - probability` leaves behind in a double:
+  // `CHISQ.INV.RT(1E-12,1)` is 50.8441713, the quantile of 0.99997788E-12, and a probability
+  // under 2^-54 leaves nothing and is refused.
+  if (degFreedom === 1) {
+    probability = 1 - (1 - probability);
+    if (probability === 0) return Number.NaN;
+  }
+  return chisquareInvUpper(probability, degFreedom);
 }
 
 /**
@@ -780,7 +804,11 @@ export function F_INV_RT(
   degFreedom2 = Math.trunc(degFreedom2);
   if (degFreedom1 > DegFreedomMax || degFreedom2 > DegFreedomMax) return Number.NaN; // #NUM!
 
-  return centralFInv(1.0 - probability, degFreedom1, degFreedom2);
+  // A far tail is searched as given: `F.INV.RT(1E-13,1,1)` is 4.05E+25, and `1 - 1E-13` cannot
+  // say which quantile that far out is meant.
+  return probability < FarTail
+    ? centralFInvUpper(probability, degFreedom1, degFreedom2)
+    : centralFInv(1.0 - probability, degFreedom1, degFreedom2);
 }
 
 /**
@@ -1010,6 +1038,9 @@ export function GAMMA_DIST(
   // Two intermediates have to fit a double: the shape's log-gamma, and the scaled argument
   // DOUBLED — the kernel forms `2 * (x / beta)`, so the refusal sits at half a double, not at one.
   if (!Number.isFinite(gammaln(alpha)) || !Number.isFinite(2 * (x / beta))) return Number.NaN; // #NUM!
+  // The density at zero is refused for a shape of 1 or less, the exponential's finite 1/beta
+  // included: `GAMMA.DIST(0,1,1,FALSE)` is #NUM! and `GAMMA.DIST(0,2,1,FALSE)` is 0.
+  if (!cumulative && x === 0 && alpha <= 1) return Number.NaN; // #NUM!
 
   return cumulative
     ? gammaCdf(x, alpha, beta)
@@ -1777,9 +1808,15 @@ export function POISSON_DIST(
 ): number {
   // A mean of ZERO is legal: the whole mass sits at zero occurrences, so the density is 1 there
   // and 0 above it, and the distribution is 1 everywhere.
-  if (x < 0 || mean < 0) return Number.NaN; // #NUM!
-
+  // A NEGATIVE mean is refused only above zero occurrences: at zero both forms answer
+  // `EXP(-mean)` as it stands — `POISSON.DIST(0,-1,FALSE)` is e.
+  if (x < 0) return Number.NaN; // #NUM!
   x = Math.trunc(x);
+  if (mean < 0) {
+    const atZero = x === 0 ? Math.exp(-mean) : Number.NaN;
+    return Number.isFinite(atZero) ? atZero : Number.NaN; // #NUM!
+  }
+
   // The count's log-factorial has to fit a double; where it cannot, the answer is a refusal
   // rather than the limit the walk would settle on.
   if (!Number.isFinite(gammaln(x + 1))) return Number.NaN; // #NUM!
@@ -2197,9 +2234,16 @@ export function T_DIST(
   degFreedom: number,
   cumulative: boolean
 ): number {
-  // The degrees of freedom are read raw and truncated — 2.5 is two.
+  // The degrees of freedom are read raw and truncated — 2.5 is two. Under one the cumulative is
+  // #NUM!; over the ceiling, only the cumulative is refused.
   degFreedom = Math.trunc(degFreedom);
-  if (degFreedom < 1 || degFreedom > DegFreedomMax) return Number.NaN; // #NUM!
+  if (degFreedom < 1) {
+    // The density is taken as written: `1 + x^2/df` divides by a zero df, and is then raised
+    // to a power — zero is #DIV/0! again (`T.DIST(1,-1,FALSE)`) and a negative is #NUM!.
+    if (!cumulative && (degFreedom === 0 || 1 + (x * x) / degFreedom === 0)) throw FormulaError.BuiltIn.Div0;
+    return Number.NaN; // #NUM!
+  }
+  if (cumulative && degFreedom > DegFreedomMax) return Number.NaN; // #NUM!
 
   if (cumulative) {
     if (x === 0) return 0.5; // exact by symmetry
@@ -2314,7 +2358,11 @@ export function T_INV_2T(
   degFreedom = Math.trunc(degFreedom);
   if (degFreedom > DegFreedomMax) return Number.NaN; // #NUM!
 
-  if (degFreedom === 1) return Math.tan(Math.PI * (0.5 - probability / 2)); // exact Cauchy
+  // Exact Cauchy. A small probability is taken as a cotangent: `0.5 - 1E-12` keeps four digits
+  // of the angle and `T.INV.2T(2E-12,1)` is 318309886183.79.
+  if (degFreedom === 1) {
+    return probability < 0.5 ? 1 / Math.tan(Math.PI * probability / 2) : Math.tan(Math.PI * (0.5 - probability / 2));
+  }
   // T.INV.2T(p,df) = T.INV(1-p/2, df), taken on the LOWER side and reflected: `1 - p/2` is 1 for
   // any probability under 1E-16, and the whole answer is in the part that rounds away.
   return -studenttInv(probability / 2, degFreedom);

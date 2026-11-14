@@ -1,12 +1,22 @@
 /* cspell: disable */
 import { FormulaContext, FormulaError, type IFormulaContext } from '@sheetxl/primitives';
 
+/** The most characters a cell's text holds. */
+const MaxTextLength = 32767;
+
 /**
  * Returns a URL-encoded string.
  * @param text is a string to be URL encoded.
  */
 export function ENCODEURL(text: string): string {
-  return encodeURIComponent(text);
+  // Letters, digits and `-`, `_`, `.` are the only characters kept: `ENCODEURL("~!*'()")` is
+  // `%7E%21%2A%27%28%29`.
+  const encoded = encodeURIComponent(text).replace(/[!*'()~]/g,
+    (character: string): string => '%' + character.charCodeAt(0).toString(16).toUpperCase());
+  // The answer has to be SHORTER than a cell's 32,767 characters, so 32,767 letters are refused
+  // although nothing in them is encoded.
+  if (encoded.length >= MaxTextLength) throw FormulaError.BuiltIn.Value;
+  return encoded;
 }
 
 /**

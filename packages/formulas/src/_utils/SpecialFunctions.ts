@@ -84,7 +84,7 @@ export function gammafn(x: number): number {
   let res: number;
   if (x > 171.6243769536076) return Infinity;
   if (y <= 0) {
-    res = y % 1 + 3.6e-16;
+    res = y % 1;
     if (res) {
       fact = (!((y as any) & 1) ? 1 : -1) * Math.PI / Math.sin(Math.PI * res);
       y = 1 - y;
@@ -210,6 +210,10 @@ export const erfc = (x: number): number => (x >= 0) ? erfcCheb(x) : 2 - erfcCheb
 export function erfcinv(p: number): number {
   if (p >= 2) return -100;
   if (p <= 0) return 100;
+  // Beside the median the answer is the series in the distance from it, which is exact there
+  // and keeps the digits a quantile scaled by a large deviation needs.
+  const y = 1 - p;
+  if (Math.abs(y) < 1e-4) return 0.886226925452758 * y * (1 + 0.2617993877991494 * y * y);
   const pp = (p < 1) ? p : 2 - p;
   const t = Math.sqrt(-2 * Math.log(pp / 2));
   let x = -0.70711 * ((2.30753 + t * 0.27061) / (1 + t * (0.99229 + t * 0.04481)) - t);
@@ -314,6 +318,7 @@ function temmeQ(a: number, x: number): number {
 
 function regGamma(a: number, x: number, upper: boolean): number {
   if (x < 0 || a <= 0) return Number.NaN;
+  if (x === 0) return upper ? 1 : 0;
   if (a >= TemmeShape) {
     const q = temmeQ(a, x);
     return upper ? q : 1 - q;
@@ -362,7 +367,18 @@ function regGamma(a: number, x: number, upper: boolean): number {
 const NewtonMax = 100;
 
 /** The inverse of {@link lowRegGamma} in its second argument. */
-export function gammapinv(p: number, a: number): number {
+export const gammapinv = (p: number, a: number): number => regGammaInv(p, a, false);
+
+/**
+ * The inverse of {@link upRegGamma} in its second argument.
+ *
+ * Asked with the tail itself: `gammapinv(1 - q, a)` has no answer left once `q` is under an ulp
+ * of one, and loses a digit of the quantile for every digit `q` sits below 1E-16 before that.
+ */
+export const gammaqinv = (q: number, a: number): number => regGammaInv(q, a, true);
+
+/** `p` is the lower tail, or the upper one when `upper` is set; the search runs on the one given. */
+function regGammaInv(p: number, a: number, upper: boolean): number {
   const EPS = 4 * Number.EPSILON;
   const a1 = a - 1;
   const gln = gammaln(a);
@@ -370,25 +386,29 @@ export function gammapinv(p: number, a: number): number {
   let lna1 = 0;
   let afac = 0;
   // The ends are the quantile's own limits, not a bracket for the search to stop at.
-  if (p >= 1) return Infinity;
-  if (p <= 0) return 0;
+  if (p >= 1) return upper ? 0 : Infinity;
+  if (p <= 0) return upper ? Infinity : 0;
+  const below = upper ? p > 0.5 : p < 0.5; // under the median
   if (a > 1) {
     lna1 = Math.log(a1);
     afac = Math.exp(a1 * (lna1 - 1) - gln);
     const pp = (p < 0.5) ? p : 1 - p;
     const t = Math.sqrt(-2 * Math.log(pp));
     x = (2.30753 + t * 0.27061) / (1 + t * (0.99229 + t * 0.04481)) - t;
-    if (p < 0.5) x = -x;
+    if (below) x = -x;
     x = Math.max(1e-3, a * Math.pow(1 - 1 / (9 * a) - x / (3 * Math.sqrt(a)), 3));
   } else {
     const t = 1 - a * (0.253 + a * 0.12);
-    if (p < t) x = Math.pow(p / t, 1 / a);
+    if (upper) {
+      if (p > 1 - t) x = Math.pow((1 - p) / t, 1 / a);
+      else x = 1 - Math.log(p / (1 - t));
+    } else if (p < t) x = Math.pow(p / t, 1 / a);
     else x = 1 - Math.log(1 - (p - t) / (1 - t));
   }
 
   for (let j = 0; j < NewtonMax; j++) {
     if (x <= 0) return 0;
-    const err = lowRegGamma(a, x) - p;
+    const err = upper ? p - upRegGamma(a, x) : lowRegGamma(a, x) - p;
     let t: number;
     if (a > 1) t = afac * Math.exp(-(x - a1) + a1 * (Math.log(x) - lna1));
     else t = Math.exp(-x + a1 * Math.log(x) - gln);
@@ -498,6 +518,9 @@ export function ibetainv(p: number, a: number, b: number): number {
   let t: number;
   if (p <= 0) return 0;
   if (p >= 1) return 1;
+  // Closed forms: `I_x(a, 1) = x^a` and `I_x(1, b) = 1 - (1-x)^b`.
+  if (b === 1) return Math.pow(p, 1 / a);
+  if (a === 1) return -Math.expm1(Math.log1p(-p) / b);
   if (a >= 1 && b >= 1) {
     const pp = (p < 0.5) ? p : 1 - p;
     t = Math.sqrt(-2 * Math.log(pp));

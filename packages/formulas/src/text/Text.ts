@@ -1,6 +1,6 @@
 /* cspell: disable */
 import {
-  Scalar, FormulaContext, FormulaError, ScalarType, WildCard,
+  Scalar, FormulaContext, FormulaError, ScalarType, ValueKind, WildCard,
   type IRange, type IReferenceRange, type AcceptError, type Flatten, type Omittable, type Repeating
 } from '@sheetxl/primitives';
 
@@ -112,10 +112,9 @@ export function ARRAYTOTEXT(
  */
 export function CHAR(number: number): string {
   /*
-   * Desktop Excel maps through the system ANSI code page, so CHAR(128) is the euro
-   * sign on a 1252 machine. There is no system code page in a browser and Excel
-   * Online resolves that the same way we do, by treating the code as Unicode, so
-   * 0x80-0x9F disagree with the desktop by design.
+   * The code is a Windows-1252 byte, as desktop Excel reads it: CHAR(128) is the euro sign and
+   * CHAR(149) a bullet. The five codes 1252 leaves unassigned (129, 141, 143, 144, 157) are
+   * themselves.
    *
    * The range is checked after the code is read, and the code is one of the SHIFTED counts
    * (`excelCount`): CHAR(255.9) is "ÿ" but CHAR(255.9999999) is #VALUE!, because it counts as 256.
@@ -125,7 +124,7 @@ export function CHAR(number: number): string {
   const code = excelCount(number);
   if (!(code >= 1 && code <= 255)) // negated so a NaN falls out here rather than downstream
     throw FormulaError.BuiltIn.Value;
-  return String.fromCharCode(code);
+  return String.fromCharCode(_CP1252_TO_UNICODE.get(code) ?? code);
 }
 
 /**
@@ -133,22 +132,40 @@ export function CHAR(number: number): string {
  * @param text is the text you want to clean.
  */
 export function CLEAN(text: string): string {
-  // Both control blocks, C0 and C1 — a C1 is nonprintable under CHAR's Unicode reading.
+  // Both control blocks, C0 and C1. CHAR never makes a C1 (its 128-159 are 1252 punctuation), but
+  // UNICHAR and typed text can.
   // eslint-disable-next-line no-control-regex
   return text.replace(/[\x00-\x1F\x80-\x9F]/g, '');
 }
 
 /**
- * Returns the Unicode value of the first character in a text string.
- * @param text is the text string whose Unicode value you want.
+ * Returns a numeric code for the first character in a text string, in the Windows-1252 character
+ * set.
+ * @param text is the text for which you want the code of the first character.
  */
 export function CODE(text: string): number {
-  // The inverse of CHAR, and Unicode for the same reason. Reads a UTF-16 code unit, so
-  // an astral character reports its leading surrogate; UNICODE is the one that pairs.
+  // The inverse of CHAR: a 1252 byte. A code unit below 256 is itself, 1252's punctuation is its
+  // byte (`CODE("€")` is 128), and anything the page cannot hold is 63, the code of "?" — an
+  // astral character's surrogate and a combining mark included.
   if (text.length === 0)
     throw FormulaError.BuiltIn.Value;
-  return text.charCodeAt(0);
+  const unit = text.charCodeAt(0);
+  if (unit < 256) return unit;
+  return _UNICODE_TO_CP1252.get(unit) ?? 63;
 }
+
+/** Windows-1252's 0x80-0x9F, where it differs from Latin-1: byte → UTF-16 code unit. */
+const _CP1252_TO_UNICODE: ReadonlyMap<number, number> = new Map([
+  [128, 0x20AC], [130, 0x201A], [131, 0x0192], [132, 0x201E], [133, 0x2026], [134, 0x2020],
+  [135, 0x2021], [136, 0x02C6], [137, 0x2030], [138, 0x0160], [139, 0x2039], [140, 0x0152],
+  [142, 0x017D], [145, 0x2018], [146, 0x2019], [147, 0x201C], [148, 0x201D], [149, 0x2022],
+  [150, 0x2013], [151, 0x2014], [152, 0x02DC], [153, 0x2122], [154, 0x0161], [155, 0x203A],
+  [156, 0x0153], [158, 0x017E], [159, 0x0178]
+]);
+
+const _UNICODE_TO_CP1252: ReadonlyMap<number, number> = new Map(
+  [..._CP1252_TO_UNICODE].map(([byte, unit]): [number, number] => [unit, byte])
+);
 
 /**
  * Concatenates a list or range of text strings.
@@ -290,8 +307,8 @@ export function EXACT(
  *
  * @remarks
  * Case-sensitive, and wildcards are literal here — `FIND("*","a*b")` is 2 — which is the
- * difference from SEARCH. Positions are in code points, so they compose with LEN and MID over
- * astral text. `startNum` may be one past the end of the text, which matters only for an empty
+ * difference from SEARCH. Positions are in code points (UTF-16 units under compatibility version
+ * 1), so they compose with LEN and MID over astral text. `startNum` may be one past the end of the text, which matters only for an empty
  * `findText`: that matches wherever it starts and reports it (`FIND("","hello",6)` is 6), while a
  * real one simply finds nothing. Outside that bound, and when the text is not found, the answer is
  * #VALUE!. A fractional `startNum` is shifted before truncating, as LEFT's count is.
@@ -302,7 +319,7 @@ export function FIND(
   startNum: number=1
 ): number {
   startNum = excelCount(startNum);
-  const astral = hasSurrogatePair(withinText);
+  const astral = countsByCodePoint(withinText);
   const length = astral ? codePointLength(withinText) : withinText.length;
   // LEN + 1, one further than there is text; SEARCH's bound is LEN.
   if (startNum < 1 || startNum > length + 1)
@@ -426,7 +443,8 @@ export function LEFTB(
  * @param text is the text whose length you want to find. Spaces count as characters.
  *
  * @remarks
- * Counts CODE POINTS, so an astral character counts once. Numbers and booleans are rendered first,
+ * Counts CODE POINTS, so an astral character counts once; under compatibility version 1 it counts
+ * UTF-16 units, so the same character counts twice. Numbers and booleans are rendered first,
  * in the same General form a cell shows (`LEN(1/3)` is 17, `LEN(TRUE)` is 4), and a blank cell is
  * 0. An unpaired high surrogate at the very end of the text counts as nothing — it is half a
  * character; one anywhere else counts.
@@ -435,7 +453,7 @@ export function LEN(text: string): number {
   // The slow path is taken for a trailing HIGH surrogate as well as for a pair, because that one
   // is not counted either (see `codePointLength`) — and a string can end in one without holding a
   // pair at all, which is what MIDB produces.
-  return RE_COUNTS_BY_CODE_POINT.test(text) ? codePointLength(text) : text.length;
+  return RE_COUNTS_BY_CODE_POINT.test(text) && countsCharacters() ? codePointLength(text) : text.length;
 }
 
 /**
@@ -469,7 +487,8 @@ export function LOWER(text: string): string {
  * @param numChars specifies how many characters to return from Text.
  *
  * @remarks
- * A character is a CODE POINT, as in LEFT. The two counts are read from the double as they stand —
+ * A character is a CODE POINT, as in LEFT; under compatibility version 1 it is a UTF-16 unit, and
+ * the cut can return half of an astral character. The two counts are read from the double as they stand —
  * LEFT's `4.9999999`-is-five shift does not happen here (`MID("hello",0.9999999,1)` is #VALUE!) —
  * and both are judged before truncation, so a `startNum` under 1 or a negative `numChars` is
  * #VALUE! even where truncation would have made them 0. A start past the end is the empty string
@@ -486,7 +505,7 @@ export function MID(
   if (startNum < 1 || numChars < 0) return FormulaError.BuiltIn.Value; // throw FormulaError.BuiltIn.Value;
   startNum = Math.trunc(startNum);
   numChars = Math.trunc(numChars);
-  if (!hasSurrogatePair(text)) {
+  if (!countsByCodePoint(text)) {
     if (startNum > text.length)
       return '';
     return text.slice(startNum - 1, startNum + numChars - 1);
@@ -625,7 +644,7 @@ export function REPLACE(
   startNum = excelCount(startNum);
   numChars = excelCount(numChars);
   if (startNum < 1) return FormulaError.BuiltIn.Value;
-  if (!hasSurrogatePair(oldText))
+  if (!countsByCodePoint(oldText))
     return oldText.slice(0, startNum - 1) + newText + oldText.slice(startNum - 1 + numChars);
   return oldText.slice(0, unitOffsetOf(oldText, startNum - 1)) + newText +
     oldText.slice(unitOffsetOf(oldText, startNum - 1 + numChars));
@@ -731,7 +750,7 @@ export function SEARCH(
   startNum: number=1
 ): number {
   startNum = excelCount(startNum);
-  const astral = hasSurrogatePair(withinText);
+  const astral = countsByCodePoint(withinText);
   const length = astral ? codePointLength(withinText) : withinText.length;
   // LEN, where FIND's bound is LEN + 1.
   if (startNum < 1 || startNum > length) throw FormulaError.BuiltIn.Value;
@@ -793,7 +812,7 @@ export function SPLIT(
     ? delimiter.split('')       // each character is its own delimiter
     : [delimiter];              // treat the whole string as one delimiter
 
-  return TEXTSPLIT(text, delimiters, undefined, removeEmptyText);
+  return _textSplit(text, delimiters, [], removeEmptyText, 0, () => FormulaError.BuiltIn.NA!);
 }
 
 /**
@@ -986,6 +1005,43 @@ export function TEXTJOIN(
   return result;
 }
 
+/** Every member of a TEXTSPLIT delimiter argument in order, blank cells and errors included. */
+const _delimiterMembers = (areas: AcceptError<IRange>[] | undefined): AcceptError<Scalar>[] => {
+  const members: AcceptError<Scalar>[] = [];
+  if (!areas) return members;
+  for (const area of areas) {
+    if (area === null || area === undefined) continue;
+    if (FormulaError.isError(area)) { members.push(area); continue; }
+    const { rows, columns } = area.getShape();
+    for (let row = 0; row < rows; row++) {
+      for (let column = 0; column < columns; column++) {
+        members.push(area.getValueAt(row, column, _OptionsRawMember) ?? null);
+      }
+    }
+  }
+  return members;
+};
+const _OptionsRawMember: IRange.ValueOptions = Object.freeze({ type: null });
+
+/**
+ * TEXTSPLIT's pad, read only where the split is ragged.
+ *
+ * @remarks
+ * The pad keeps its TYPE: `FALSE` pads with the logical, 5 with the number, `""` with the empty
+ * string, and an error with itself. An absent argument is `#N/A`; an empty one (`…,0,)`) and a
+ * blank cell are the number 0. It has to be ONE value that is not an array — a multi-cell
+ * reference and an array constant, `{7}` included, are `#VALUE!`.
+ */
+const _padValue = (padWith: AcceptError<IRange> | undefined): Scalar => {
+  const args = FormulaContext.getArgs();
+  if (padWith === undefined) {
+    return args.getLength() > 5 && args.getKindAt(5) === ValueKind.Omitted ? 0 : FormulaError.BuiltIn.NA!;
+  }
+  if (FormulaError.isError(padWith)) return padWith;
+  if (padWith.size !== 1 || args.getKindAt(5) === ValueKind.Array) throw FormulaError.BuiltIn.Value;
+  return padWith.getValueAt(0, 0) ?? 0;
+};
+
 /**
  * Splits text into rows or columns using delimiters.
  * @param text The text to split.
@@ -997,16 +1053,30 @@ export function TEXTJOIN(
  */
 export function TEXTSPLIT(
   text: string,
-  colDelimiter: Flatten<string>,
-  rowDelimiter?: Omittable<Flatten<string>>,
+  // Taken as ranges, so a blank cell inside a delimiter range is still a member to refuse.
+  colDelimiter: Omittable<Flatten<AcceptError<IRange>>>,
+  rowDelimiter?: Omittable<Flatten<AcceptError<IRange>>>,
   ignoreEmpty: boolean=false,
   matchMode: number=0,
   // `AcceptError` for the same reason `TEXTAFTER.ifNotFound` has it — the pad is only READ where
   // the split is ragged: a square split ignores an error pad entirely, and a ragged one PADS
   // WITH IT (`TEXTSPLIT("a,b;c",",",";",FALSE,0,1/0)` fills the missing cell with `#DIV/0!`), so
   // the error must reach the body raw either way.
-  padWith: AcceptError<string> | undefined=undefined
+  padWith?: Omittable<AcceptError<IRange>>
 ): Scalar[][] { // IRange
+  return _textSplit(text, _delimiterMembers(colDelimiter), _delimiterMembers(rowDelimiter),
+    ignoreEmpty, matchMode, () => _padValue(padWith));
+}
+
+/** TEXTSPLIT over its delimiters' members; `pad` is asked only where the split is ragged. */
+const _textSplit = (
+  text: string,
+  colMembers: AcceptError<Scalar>[],
+  rowMembers: AcceptError<Scalar>[],
+  ignoreEmpty: boolean,
+  matchMode: number,
+  pad: () => Scalar
+): Scalar[][] => {
   // An empty text is #VALUE!, not an empty result — Excel refuses the call rather than returning
   // one empty cell, and refuses it before it looks at the delimiters.
   if (!text) throw FormulaError.BuiltIn.Value;
@@ -1015,14 +1085,28 @@ export function TEXTSPLIT(
   if (matchMode !== 0 && matchMode !== 1) throw FormulaError.BuiltIn.Value;
   // Nothing to split BY is #VALUE! rather than the text back: at least one of the two delimiters
   // has to be there, though either alone is enough.
-  if (colDelimiter.length === 0 && (!rowDelimiter || rowDelimiter.length === 0))
+  if (colMembers.length === 0 && rowMembers.length === 0)
     throw FormulaError.BuiltIn.Value;
+  // An error standing ALONE at a delimiter slot is the call's: `TEXTSPLIT(t,<blank>,<#NAME?>)`
+  // is #NAME?, ahead of the empty delimiter before it. Among several members the first fault in
+  // order wins instead (`buildDelimiterRegex`).
+  for (const delimiters of [colMembers, rowMembers]) {
+    if (delimiters?.length === 1 && FormulaError.isError(delimiters[0])) throw delimiters[0];
+  }
 
-  const buildDelimiterRegex = (delimiters: string[]): RegExp | null => {
-    if (delimiters.length === 0) return null; // No split if no delimiters provided
+  const buildDelimiterRegex = (members: AcceptError<Scalar>[]): RegExp | null => {
+    if (members.length === 0) return null; // No split if no delimiters provided
     // An EMPTY delimiter is #VALUE!, not "split between every character" — including one empty
-    // member among several, and including the blank cell that reaches here as one.
-    if (delimiters.some(d => d.length === 0)) throw FormulaError.BuiltIn.Value;
+    // member among several, and including the blank cell that reaches here as one. Members are
+    // judged in order, so a blank ahead of an error is #VALUE! and an error ahead of it is that
+    // error.
+    const delimiters: string[] = [];
+    for (const member of members) {
+      if (FormulaError.isError(member)) throw member;
+      const delimiter = member === null || member === undefined ? '' : FormulaContext.toText(member as Scalar);
+      if (delimiter.length === 0) throw FormulaError.BuiltIn.Value;
+      delimiters.push(delimiter);
+    }
     // Overlapping delimiters resolve LONGEST-first, not first-listed: `TEXTSPLIT("aXXb",{"X","XX"})`
     // is two columns, so "XX" wins where it starts, as TEXTAFTER's delimiter set does. Regex
     // alternation takes the first branch that matches, so branch order is the rule — and it is not
@@ -1033,12 +1117,12 @@ export function TEXTSPLIT(
   const splitByDelimiters = (input: string, regex: RegExp | null): string[] => {
     return regex ? input.split(regex) : [input];
   };
-  const colRegex = buildDelimiterRegex(colDelimiter);
+  const colRegex = buildDelimiterRegex(colMembers);
 
-  // Split rows first if rowDelimiter is provided
+  // Split rows first if rowMembers is provided
   let rows: string[] = [text];
-  if (rowDelimiter) {
-    rows = splitByDelimiters(text, buildDelimiterRegex(rowDelimiter));
+  if (rowMembers.length > 0) {
+    rows = splitByDelimiters(text, buildDelimiterRegex(rowMembers));
   }
 
   // Filter empty rows if ignoreEmpty is true
@@ -1081,7 +1165,7 @@ export function TEXTSPLIT(
 
   // Pad rows to ensure rectangular result
   if (result.length > 0 && minColumns !== maxColumns) {
-    const padValue = padWith || FormulaError.BuiltIn.NA;
+    const padValue = pad();
     for (let i=0; i<result.length; i++) {
       const row = result[i];
       while (row.length < maxColumns) {
@@ -1091,7 +1175,7 @@ export function TEXTSPLIT(
   }
 
   return result.length > 0 ? result : [[""]]; // Return at least an empty cell
-}
+};
 
 /**
  * Translate a text string from one language to another using the Microsoft Translator service.
@@ -1243,6 +1327,17 @@ function escapeRegex(str: string): string {
 const RE_SURROGATE_PAIR = /[\uD800-\uDBFF][\uDC00-\uDFFF]/;
 
 const hasSurrogatePair = (text: string): boolean => RE_SURROGATE_PAIR.test(text);
+
+/*
+ * The workbook's compatibility version decides what LEN, MID, FIND, SEARCH and REPLACE count.
+ * Under version 2 a surrogate pair is one character, as described above. Under version 1 it is its
+ * two units: `LEN("ab" & UNICHAR(128514))` is 4, and `MID` of it at 3 for 1 is the lone high
+ * surrogate. LEFT and RIGHT count characters under both versions and never split a pair.
+ */
+const countsCharacters = (): boolean => FormulaContext.getRuntime().getCompatibilityVersion() >= 2;
+
+/** Whether positions in `text` differ from its UTF-16 offsets: it holds a pair, counted as one. */
+const countsByCodePoint = (text: string): boolean => RE_SURROGATE_PAIR.test(text) && countsCharacters();
 
 /** A pair, or a trailing high surrogate — the two cases where LEN is not the code-unit count. */
 const RE_COUNTS_BY_CODE_POINT = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF]$/;

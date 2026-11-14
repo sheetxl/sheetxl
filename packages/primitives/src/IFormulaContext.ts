@@ -39,7 +39,7 @@ import { type IRichData } from './IRichData';
  * | Function lookup | `getFunction` |
  * | Dates | `getNow`, `toSerialDate`, `fromSerialDate`, `getDateParts`, `getSerialDate`, `parseAsDate`, `parseAsSerialDate`, `isValidDate` |
  * | Coercion | `parseAsNumber`, `parseAsLiteral`, `toText`, `compare` |
- * | Criteria | `createCriteria` |
+ * | Criteria | `createCriteria`, `dbQuery` |
  * | Grouping | `createPivot`, `getPivotAt` |
  * | Sheet introspection | `getSheetCount`, `getSheetIndex`, `getAddress`, `getNumberFormat` |
  *
@@ -151,7 +151,8 @@ export interface IFormulaContext {
    * as `INDIRECT`, `OFFSET`, and `SUMIF` do.
    *
    * @param coords The coordinates or address string of the range to resolve. If not provided
-   * the current location is used.
+   * the range the formula being calculated occupies: its cell, or the whole block of an
+   * array-entered formula.
    * @param r1c1 If `true`, the string is interpreted in R1C1 format.
    * @returns An {@link IReferenceRange} representing the resolved range.
    * @throws `#REF!` If the range cannot be parsed or resolved.
@@ -346,13 +347,11 @@ export interface IFormulaContext {
    *
    * @param criteria The criteria, exactly as the user wrote it — a comparison (`">10"`, `"<>x"`),
    * a wildcard pattern (`"a*"`), or a literal of any type.
-   * @param options How the criteria is matched. See {@link IFormulaContext.CriteriaOptions}.
    * @returns A predicate to test cell values with. Call it once per cell.
    *
    * @remarks
-   * This is the rule behind `COUNTIF`/`SUMIF`/`AVERAGEIF`, their `*IFS` forms, and the `D`
-   * functions' criteria table, so reach for it in any function that takes a criteria rather than
-   * parsing one — a criteria touches all three localization planes at once (a number in the
+   * This is the rule behind `COUNTIF`/`SUMIF`/`AVERAGEIF` and their `*IFS` forms, so reach for it
+   * in any function that takes a criteria rather than parsing one — a criteria touches all three localization planes at once (a number in the
    * workbook's locale, a boolean word or error label in its language, text in its collation), and
    * they are easy to get subtly wrong one at a time.
    *
@@ -368,10 +367,39 @@ export interface IFormulaContext {
    * const count = range.reduce((total, value) => matches(value) ? total + 1 : total, 0);
    * ```
    */
-  createCriteria(
-    criteria: Scalar,
-    options?: IFormulaContext.CriteriaOptions
-  ): IFormulaContext.CriteriaEvaluator;
+  createCriteria(criteria: Scalar): IFormulaContext.CriteriaEvaluator;
+
+  /**
+   * Returns the records of a database that a criteria table selects.
+   *
+   * @param database The list: a header row over one record per row.
+   * @param criteria The criteria table: a header row over one or more rows of conditions.
+   * @returns The matching records, in the database's order and with all of its columns. The header
+   * row is not among them. No match is a range of no rows.
+   *
+   * @remarks
+   * This is the query behind the `D` functions (`DSUM`, `DGET`, `DCOUNT`, …), and it reads a
+   * criteria table as they do:
+   *
+   * * A criteria header names a database column by its text, ignoring case. A number or a logical
+   *   on either side is read as the text it shows.
+   * * The conditions in one row all have to hold; a record matching any row is selected.
+   * * A blank condition cell constrains nothing, so a wholly blank row selects every record.
+   * * A condition is a criteria as {@link createCriteria} reads one (`">10"`, `"a*"`, `5`), except
+   *   that plain text matches as a prefix: `appl` selects `Apple`.
+   * * Under a header that names no column a condition is COMPUTED. A value there is read as a
+   *   logical and holds for every record or for none. A formula is asked once per record: written
+   *   for the first record, its relative references follow each record in turn, so `=B2>15` over a
+   *   database whose first record is on row 2 selects the records whose column B is over 15.
+   *
+   * @example
+   * ```typescript
+   * // The sum of one column over the records the criteria selects.
+   * const records = FormulaContext.dbQuery(database, criteria);
+   * const total = records.slice({ colStart: 2, colEnd: 2 }).getStats().getAggregates().sum;
+   * ```
+   */
+  dbQuery(database: IRange, criteria: IRange): IRange;
 
   /**
    * Groups the records of a range two ways at once — by row keys and by column keys — at every
@@ -462,8 +490,13 @@ export interface IFormulaContext {
    * fitted to the column and round much harder — `TEXT(2^0.5, "General")` is `1.414213562`
    * where coercion gives `1.4142135623731`. Use {@link getNumberFormat} when you want what
    * the user sees.
+   *
+   * @param options `literal` renders a number the way Excel writes one into formula text and into
+   * a complex number's parts: plain decimal while it fits in 21 characters rather than 20, so
+   * `0.0000117836687482814` and `100000000000000000000` stay plain where coercion turns them
+   * scientific. Nothing but numbers changes.
    */
-  toText(value: Scalar | undefined): string;
+  toText(value: Scalar | undefined, options?: IFormulaContext.ToTextOptions): string;
 
   /**
    * Orders two values the way the comparison operators do.
@@ -734,6 +767,18 @@ export interface IFormulaContext {
 export namespace IFormulaContext {
 
   /**
+   * Options for {@link IFormulaContext.toText}.
+   */
+  export interface ToTextOptions {
+    /**
+     * Render a number as Excel writes a literal: plain decimal up to 21 characters, as in formula
+     * text and the parts of a complex number.
+     * @defaultValue `false`
+     */
+    literal?: boolean;
+  }
+
+  /**
    * Options for {@link IFormulaContext.filterHidden}.
    */
   export interface FilterHiddenOptions {
@@ -771,27 +816,6 @@ export namespace IFormulaContext {
    * there.
    */
   export type CriteriaEvaluator = (value: Scalar) => boolean;
-
-  /**
-   * How a criteria is matched — see {@link IFormulaContext.createCriteria}.
-   */
-  export interface CriteriaOptions {
-    /**
-     * Where a TEXT criteria has to line up with the cell: `'whole'` (the default) for the whole
-     * cell, `'start'` for a prefix.
-     *
-     * @remarks
-     * The `D` functions' criteria table is the prefix form and the `*IF` family is not: the
-     * criterion `appl` takes the row whose value is `Apple` at `DSUM` and no row at all at
-     * `COUNTIF`, and the empty criterion — a prefix of everything — takes every TEXT cell at
-     * `DSUM` where `COUNTIF` takes only a cell that IS an empty string.
-     *
-     * It applies to a criteria that stays TEXT and to nothing else. An OPERATOR turns it off
-     * (`=appl` selects no row), and so does a criteria that reads as a number, a boolean or an
-     * error — `1` does not reach a cell holding `12`.
-     */
-    anchor?: 'whole' | 'start';
-  }
 
   /**
    * Options for {@link IFormulaContext.createPivot}.

@@ -1,6 +1,6 @@
 /* cspell: disable */
 import {
-  FormulaContext, FormulaError,
+  FormulaContext, FormulaError, ValueKind,
   type AcceptError, type Omittable, type Scalar, type NoLift
 } from '@sheetxl/primitives';
 
@@ -32,6 +32,10 @@ export function ERF(
   // The required slot's third position: an empty comma is #N/A, where a blank CELL is zero.
   if (lowerLimit === undefined) throw FormulaError.BuiltIn.NA;
   const lower = bound(lowerLimit); // left to right
+  // The optional slot has three answers: absent is the one-argument form, a blank cell is zero
+  // and an empty comma is #N/A — `ERF(1,)`.
+  const args = FormulaContext.getArgs();
+  if (args.getLength() > 1 && args.getKindAt(1) === ValueKind.Omitted) throw FormulaError.BuiltIn.NA;
   if (upperLimit === undefined) return erf(lower);
   return erf(bound(upperLimit)) - erf(lower);
 }

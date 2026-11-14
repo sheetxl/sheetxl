@@ -1,8 +1,7 @@
 <a id="readme-top"></a>
 
 <p align="center">
-  <img alt="SheetXL" src="./static/img/social-light.png#gh-light-mode-only">
-  <img alt="SheetXL" src="./static/img/social-dark.png#gh-dark-mode-only">
+  <img alt="SheetXL — the agent-first spreadsheet engine" src="./static/img/social.png">
 </p>
 
 <h1 align="center">SheetXL — the agent-first spreadsheet engine</h1>
@@ -66,10 +65,9 @@ npx -y skills add sheetxl/skills -g --all
 Then give me a quick intro to the new things you can do.
 ```
 
-<!-- TODO(recording): replace with the VS Code agent clip, e.g. ./static/img/vscode-agent-demo.gif -->
-![An agent highlighting a range in a workbook open in VS Code](./static/img/vscode-agent-highlight.png)
+![A 30 second tour: an agent reformats a table in VS Code and marks what it changed, the same workbook runs in a browser and inside an invoice app, and a terminal session edits it and reads the recalculated total](./static/img/sheetxl-tour.gif)
 
-*The agent highlights the cells it means and asks you in the grid, not in a sidebar.*
+*One engine, three ways in: an agent in your editor, a spreadsheet in your app, a scriptable engine in your backend.*
 
 ## See it running
 
@@ -196,7 +194,7 @@ codex plugin marketplace add sheetxl/skills
 codex plugin add sheetxl@sheetxl
 
 # VS Code — the grid, the engine and the MCP server. No Node, no terminal.
-code --install-extension sheetxl.sheetxl-vscode --pre-release
+code --install-extension sheetxl.sheetxl-vscode
 
 # Any MCP client
 npx -y @sheetxl/mcp

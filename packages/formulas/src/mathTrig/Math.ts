@@ -396,6 +396,10 @@ export function BASE(
   return digits.padStart(pad, '0');
 }
 
+/** Whether `number` is a whole count of `step`s, read at fifteen digits as CEILING and FLOOR read it. */
+const isMultiple = (number: number, step: number): boolean =>
+  round15(Math.abs(number) / Math.abs(step)) % 1 === 0;
+
 /**
  * Rounds a number up, to the nearest multiple of significance.
  * @param number is the value you want to round.
@@ -449,8 +453,9 @@ export function CEILING_MATH(
 
   const up = CEILING(number, significance);
   // mode does not affect a positive number, and it does not affect an EXACT multiple at either
-  // sign: `CEILING.MATH(-9,3,1)` is -9, not -12.
-  if (number >= 0 || !mode || up === number) return up;
+  // sign: `CEILING.MATH(-9,3,1)` is -9, not -12. Exact is judged the way CEILING judges it, on
+  // the quotient, so `CEILING.MATH(-7.1,0.1,1)` is the same 71 tenths as without the mode.
+  if (number >= 0 || !mode || isMultiple(number, significance)) return up;
   // nonzero mode rounds away from zero
   return up - significance;
 }
@@ -686,8 +691,9 @@ export function FLOOR_MATH(
   const step = Math.abs(significance);
   const down = FLOOR(number, step);
   // mode does not affect a positive number, and it does not affect an EXACT multiple at either
-  // sign: `FLOOR.MATH(-9,3,1)` is -9, not -6.
-  if (number >= 0 || !mode || down === number) return down;
+  // sign: `FLOOR.MATH(-9,3,1)` is -9, not -6. Exact is judged the way FLOOR judges it, on the
+  // quotient, so `FLOOR.MATH(-7.1,0.1,1)` is the same 71 tenths as without the mode.
+  if (number >= 0 || !mode || isMultiple(number, step)) return down;
   // toward zero
   return down + step;
 };
@@ -713,6 +719,7 @@ export function FLOOR_PRECISE(
  */
 export function GCD(number: NoFilter<number>[]): number {
   _atpArity(number);
+  _refuseUnion();
   let x: number = number[0];
   if (x < 0 || x > _binaryStein64) {
     return Number.NaN; // #NUM!
@@ -769,6 +776,7 @@ export function ISO_CEILING(
  */
 export function LCM(number: NoFilter<number>[]): number {
   _atpArity(number);
+  _refuseUnion();
   let x = number[0];
   if (x < 0 || x > _binaryStein64) {
     return Number.NaN; // #NUM!
@@ -982,9 +990,9 @@ export function MOD(
   // (`MOD(EXP(-745),EXP(-745))` is #DIV/0!), which is why it is second.
   if (number !== 0 && flushSubnormal(number) === 0) return Number.NaN; // #NUM!
   // Excel refuses rather than return a remainder it cannot resolve: the cut is on the RATIO and
-  // it is 2^40 exactly — `MOD(2^40,1)` is 0 and `MOD(2^41,1)` is #NUM!, and so are the same two
-  // ratios reached as `MOD(2^41*0.001,0.001)` and `MOD(1,2^-41)`.
-  if (Math.abs(number / divisor) > ModRatioMax) return Number.NaN; // #NUM!
+  // it is 1,125,900,000,000 — `MOD(1125899999999,1)` is 0 and `MOD(1125900000000,1)` is #NUM!,
+  // and so are `MOD(2^41*0.001,0.001)` and `MOD(1,2^-41)`.
+  if (Math.abs(number / divisor) >= ModRatioCut) return Number.NaN; // #NUM!
 
   // The EXACT remainder, not `number - divisor * INT(number / divisor)`: `MOD(1,0.1)` is
   // 0.09999999999999995 because ten of the doubles nearest 0.1 overshoot 1, and the floored
@@ -997,8 +1005,8 @@ export function MOD(
   return remainder === divisor ? 0 : remainder;
 };
 
-/** The largest `|number / divisor|` MOD will answer for; above it the answer is `#NUM!`. */
-const ModRatioMax = 1099511627776; // 2^40
+/** The `|number / divisor|` from which MOD answers `#NUM!`. */
+const ModRatioCut = 1125900000000;
 
 /**
  * Reads an Analysis-ToolPak scalar slot — one declared `any` — as a number.
@@ -1222,8 +1230,15 @@ export function PRODUCT(number: IRange<number>[]): number {
   // `EXP(-745)` that is returned whole (`PRODUCT(A1)` is 5E-324 and `PRODUCT(A1,1)` is 0).
   let product = 0;
   let multiplied = false;
-  for (const range of number) {
-    for (const value of range.values<number>()) {
+  // An EMPTY argument is passed over, where SUM and COUNT read one as a zero: `PRODUCT(2,,3)`
+  // is 6 and `PRODUCT(,)` is the empty product.
+  const args = FormulaContext.getArgs().getRepeatingArgsAt(0);
+  const length = args.getLength();
+  for (let i = 0; i < number.length; i++) {
+    // One range per argument, so the two line up — except under a union, which hands over one
+    // per area and holds no empty argument to find.
+    if (length === number.length && args.getKindAt(i) === ValueKind.Omitted) continue;
+    for (const value of number[i].values<number>()) {
       product = multiplied ? flushSubnormal(product * value) : value;
       multiplied = true;
     }
@@ -1399,8 +1414,9 @@ export function ROUND(
   number: number,
   numDigits: number
 ): number {
-  // Unlike its siblings ROUND reads the count shifted (`excelCount`): `ROUND(1.25,0.9999998)` is 1.3.
-  const digits = excelCount(numDigits);
+  // Unlike its siblings ROUND reads the count shifted (`excelCount`), its magnitude on either side
+  // of zero: `ROUND(1.25,0.9999998)` is 1.3 and `ROUND(15,-0.9999998)` is 20.
+  const digits = numDigits < 0 ? -excelCount(-numDigits) : excelCount(numDigits);
   if (digits >= RoundDigitsMax) return 0;
   const sign = number > 0 ? 1 : -1;
   const abs = Math.abs(number);
@@ -2080,6 +2096,14 @@ const sumAligned = (first: IRange, others: (IRange | null)[], kernel: (values: n
 const _atpArity = (members: number[]): void => {
   if (FormulaContext.getArgs().getRepeatingArgsAt(0).getKindAt(0) === ValueKind.Omitted) throw FormulaError.BuiltIn.NA;
   if (members.length === 0) throw FormulaError.BuiltIn.Value;
+};
+
+/** GCD and LCM refuse a union at any argument: `GCD(5,2,(A1,A2))` is #VALUE! where SUM adds both areas. */
+const _refuseUnion = (): void => {
+  const args = FormulaContext.getArgs().getRepeatingArgsAt(0);
+  for (let i = 0, length = args.getLength(); i < length; i++) {
+    if (args.getAreaCountAt(i) > 1) throw FormulaError.BuiltIn.Value;
+  }
 };
 
 /**
