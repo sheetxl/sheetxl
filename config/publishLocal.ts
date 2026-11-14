@@ -8,7 +8,8 @@
  *
  * The version is the current npm beta plus `.local.<timestamp>` (`0.8.0-beta.17.local.20261108143000`):
  * newer than the beta it was built on, older than the next real one, and on the same `beta` tag, so a
- * consumer that asks for `beta` gets it. The builds are dev builds: only their manifests carry the
+ * consumer that asks for `beta` gets it. With no beta ahead of the stable release, the base is the
+ * first beta of the next patch (`1.0.5-beta.0.local.<timestamp>`). The builds are dev builds: only their manifests carry the
  * version (`SHEETXL_PUBLISH_VERSION`), and nothing is signed with release keys.
  */
 import fs from 'node:fs';
@@ -20,14 +21,40 @@ import { LOCAL_REGISTRY_URL, isLocalRegistryUp, localRegistryToken } from './loc
 
 const noBuild = process.argv.includes('--no-build');
 
-/** The beta on npm, as the base of the local version; a fixed base when npm is unreachable. */
+const coreOf = (version: string): number[] => version.split('-')[0].split('.').map(Number);
+
+/** Whether `a`'s `major.minor.patch` is ahead of `b`'s. */
+function isCoreAhead(a: string, b: string): boolean {
+  const [x, y] = [coreOf(a), coreOf(b)];
+  for (let i = 0; i < 3; i++) {
+    if (x[i] !== y[i]) return x[i] > y[i];
+  }
+  return false;
+}
+
+/**
+ * The prerelease the local version extends; a fixed base when npm is unreachable.
+ *
+ * The npm beta, while it is ahead of the stable release. Otherwise — the beta was promoted, so the
+ * `beta` dist-tag sits on a stable version or behind `latest` — the first beta of the next patch.
+ * The base always carries a prerelease part: `.local.<timestamp>` is only valid semver after one.
+ */
 async function npmBeta(): Promise<string> {
   try {
     const res = await fetch('https://registry.npmjs.org/@sheetxl%2fsdk', {
       headers: { accept: 'application/vnd.npm.install-v1+json' }
     });
-    const beta = res.ok ? ((await res.json()) as any)['dist-tags']?.beta : undefined;
-    if (typeof beta === 'string') return beta;
+    const tags = res.ok ? ((await res.json()) as any)['dist-tags'] : undefined;
+    const beta: unknown = tags?.beta;
+    const latest: unknown = tags?.latest;
+    if (typeof beta === 'string' && beta.includes('-') && (typeof latest !== 'string' || isCoreAhead(beta, latest))) {
+      return beta;
+    }
+    const stable = typeof latest === 'string' ? latest : typeof beta === 'string' ? beta : undefined;
+    if (stable) {
+      const [major, minor, patch] = coreOf(stable);
+      return `${major}.${minor}.${patch + 1}-beta.0`;
+    }
   } catch {
     /* offline: fall through */
   }

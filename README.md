@@ -1,7 +1,7 @@
 <a id="readme-top"></a>
 
 <p align="center">
-  <img alt="SheetXL — the agent-first spreadsheet engine" src="./static/img/social.png">
+  <a href="https://www.sheetxl.com"><img alt="SheetXL — the agent-first spreadsheet engine" src="./static/img/social.png"></a>
 </p>
 
 <h1 align="center">SheetXL — the agent-first spreadsheet engine</h1>
@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://demo.sheetxl.com">▶ Live demo</a> ·
+  <a href="https://marketplace.visualstudio.com/items?itemName=sheetxl.sheetxl-vscode">🧩 VS Code extension</a> ·
   <a href="https://www.sheetxl.com/docs/guides">📘 Docs</a> ·
   <a href="https://www.sheetxl.com/docs/guides/benchmarks/performance">⚡ Benchmarks</a> ·
   <a href="https://api.sheetxl.com">🔌 API reference</a> ·
@@ -19,6 +20,7 @@
 
 <p align="center">
   <a href="https://discord.gg/NTKdwUgK9p"><img alt="Discord" src="https://img.shields.io/discord/1141404921246257223"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=sheetxl.sheetxl-vscode"><img alt="VS Code Marketplace" src="https://img.shields.io/badge/VS%20Code-extension-blue"></a>
   <a href="https://www.npmjs.com/package/sheetxl"><img alt="npm (cli)" src="https://img.shields.io/npm/v/sheetxl/latest?color=blue&label=sheetxl%20cli"></a>
   <a href="https://www.npmjs.com/package/@sheetxl/studio-mui"><img alt="npm (studio-mui)" src="https://img.shields.io/npm/v/@sheetxl/studio-mui/latest?color=blue&label=studio-mui"></a>
   <a href="https://www.npmjs.com/package/@sheetxl/studio-mui"><img alt="npm downloads" src="https://img.shields.io/npm/dt/@sheetxl/studio-mui"></a>
@@ -65,13 +67,13 @@ npx -y skills add sheetxl/skills -g --all
 Then give me a quick intro to the new things you can do.
 ```
 
-![A 30 second tour: an agent reformats a table in VS Code and marks what it changed, the same workbook runs in a browser and inside an invoice app, and a terminal session edits it and reads the recalculated total](./static/img/sheetxl-tour.gif)
+[![A 30 second tour: an agent reformats a table in VS Code and marks what it changed, the same workbook runs in a browser and inside an invoice app, and a terminal session edits it and reads the recalculated total](./static/img/sheetxl-tour.gif)](https://www.sheetxl.com/agent)
 
 *One engine, three ways in: an agent in your editor, a spreadsheet in your app, a scriptable engine in your backend.*
 
 ## See it running
 
-Each picture opens that workbook in the live demo. Nothing to install, and every cell is editable.
+Each picture opens what it shows. The demos run in your browser with nothing to install, and every cell is editable.
 
 <table>
   <tr>
@@ -118,6 +120,19 @@ Each picture opens that workbook in the live demo. Nothing to install, and every
       what you would build with.
     </td>
   </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top">
+      <a href="https://marketplace.visualstudio.com/items?itemName=sheetxl.sheetxl-vscode">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="./static/img/vscode-card.dark.png">
+          <img alt="A workbook open in VS Code with the agent's reply beside it and the cells it changed marked in the grid" width="400" src="./static/img/vscode-card.png">
+        </picture>
+      </a>
+      <br>
+      <b>In VS Code.</b> Open an xlsx beside your agent, ask for a change and watch it land in the grid.
+      <a href="https://marketplace.visualstudio.com/items?itemName=sheetxl.sheetxl-vscode">Install the extension</a>.
+    </td>
+  </tr>
 </table>
 
 The workbooks are templates from the demo's New Workbook gallery; they live in
@@ -156,8 +171,8 @@ The workbooks are templates from the demo's New Workbook gallery; they live in
       <sub>Each one checked against what Excel actually returns.</sub><br><br>
     </td>
     <td align="center" width="33%" valign="top">
-      <h3>475+</h3>
-      <b>shortcut keys and gestures</b><br>
+      <h3>500+</h3>
+      <b>shortcut and UI gestures</b><br>
       <sub>As in Excel, so your fingers already know them.</sub><br><br>
     </td>
   </tr>
@@ -205,9 +220,13 @@ What is in the box:
 * **The skill** — teaches the agent to query a workbook like a database and run TypeScript inside the engine. MIT.
 * **The MCP server** — sessions, commits, undo and an audit log. Finds the workbooks you have open.
 * **The CLI** — the same engine from a shell. What the agent runs when there is no server.
-* **The VS Code extension** — a grid beside the agent, so a person stays in the loop.
+* **The [VS Code extension](https://marketplace.visualstudio.com/items?itemName=sheetxl.sheetxl-vscode)** — a grid beside the agent, so a person stays in the loop.
 
-[Agent quickstart →](https://www.sheetxl.com/docs/guides/getting-started/agent)
+[![Opening an xlsx in VS Code, asking the agent to make a table easier to read, and saving the result](./static/img/vscode-tour.gif)](https://marketplace.visualstudio.com/items?itemName=sheetxl.sheetxl-vscode)
+
+*The VS Code extension: the workbook, the grid and your agent in one window.*
+
+[Install from the VS Code Marketplace →](https://marketplace.visualstudio.com/items?itemName=sheetxl.sheetxl-vscode) · [VS Code guide →](https://www.sheetxl.com/docs/guides/getting-started/vscode) · [Agent quickstart →](https://www.sheetxl.com/docs/guides/getting-started/agent)
 
 ### 2. For apps — a React component
 
@@ -280,7 +299,7 @@ npx sheetxl -f transform.ts book.xlsx --out result.csv  # run a script, write th
 npx sheetxl book.xlsx --out book.csv                    # convert; no code needed
 ```
 
-![CLI Demo](./static/img/cli-demo.gif)
+[![CLI Demo](./static/img/cli-demo.gif)](https://www.sheetxl.com/docs/guides/getting-started/cli)
 
 [Node guide →](https://www.sheetxl.com/docs/guides/getting-started/node) · [CLI guide →](https://www.sheetxl.com/docs/guides/getting-started/cli)
 
@@ -317,13 +336,12 @@ vendor does it inside their own product: on their servers, or with their AI, not
 * **Scriptable.** A range-based TypeScript API, live scripting with no build step, and custom functions in a few lines.
 * **Files in and out.** `xlsx`, `csv`, `json` and `sxl` (SheetXL's own format); `parquet` in progress. Formulas, names, formats, charts and pivots survive the xlsx round trip.
 
-![Live Scripting Demo](./static/img/live-scripting-demo.gif)
+[![Live Scripting Demo](./static/img/live-scripting-demo.gif)](https://www.sheetxl.com/docs/guides/concepts/scripting)
 
 <details>
 <summary><b>The full list of spreadsheet features...</b></summary>
 
-* Dynamic arrays
-* 475+ shortcut keys and gestures, as in Excel
+* 500+ shortcut and UI gestures, as in Excel
 * Formatted Copy/Paste (Compatible with Microsoft Excel and Google Sheets)
 * Live Scripting (Office Scripts-style, with user-defined functions)
 * Tables (Filtering, Formatting)
@@ -333,6 +351,7 @@ vendor does it inside their own product: on their servers, or with their AI, not
 * Slicers
 * Data Validation
 * Conditional formatting
+* Dynamic arrays
 * Cell Styles (Themes and Formatting), Preset Cell Style Selector
 * Office Theme (Color Picker, Theme Selector)
 * Borders, Overflow, Word-wrap
@@ -358,7 +377,7 @@ source in this repository and in [sheetxl/skills](https://github.com/sheetxl/ski
 engine, the xlsx reader/writer, the MCP server and the React toolkits are commercially licensed.
 Every package and its license is listed below.
 
-* **SheetXL for Agents** (skills, MCP server, CLI, VS Code extension) has a free tier and a paid tier, and the paid tier is free during launch. It works with your own AI subscription. Your workbooks never leave your machine; the Free and Pro tiers send usage stats to SheetXL, and Business turns that off.
+* **SheetXL for Agents** (skills, MCP server, CLI, VS Code extension) is free and works with your own AI subscription. Pro adds unlimited agent runs. Your workbooks never leave your machine; the Free and Pro tiers send usage stats to SheetXL, and Business turns that off.
 * **SheetXL for Apps** and **SheetXL for Servers** are free to evaluate, watermarked outside localhost, and licensed per app for production.
 * **Files are never hostage.** Workbooks always open, edit and save, on every tier, forever.
 
@@ -368,7 +387,7 @@ See [Pricing](https://www.sheetxl.com/pricing), [LICENSE.md](./LICENSE.md) and
 <details>
 <summary><b>Every package and its license...</b></summary>
 
-![SheetXL Module Architecture](./static/img/modules-overview.png)
+[![SheetXL Module Architecture](./static/img/modules-overview.png)](https://www.sheetxl.com/docs/guides/licensing-pricing)
 
 `Items marked with 💎 are commercially licensed.`
 

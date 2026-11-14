@@ -16,6 +16,9 @@
 }
 
 .scrollbar-themed {
+  /* A host that sets `scrollbar-color` on an ancestor (a VS Code webview does, on `html`) switches
+     Chromium to standard scrollbars, which ignore the `::-webkit-scrollbar` rules below. */
+  scrollbar-color: auto;
   --scrollbar-width: 13px;
   --scrollbar-height: 13px;
   --scrollbar-border-radius: 9999px;

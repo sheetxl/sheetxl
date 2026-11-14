@@ -42,7 +42,7 @@ const completed = [
     bullets: [
       `17.1+ billion cells (The same as Excel)`,
       `545+ builtin functions — 120,000+ test fixtures`,
-      `475+ shortcut keys`,
+      `500+ shortcut and UI gestures`,
       `Full fidelity Excel import/export (Data, Formulas, Styles, Tables, etc)`,
       `Live Scripting (Office Scripts like with UDF support)`,
       `Fast. Autofill 1,048,576 rows with formulas in 0.7s (10M+ formulas/second)`,

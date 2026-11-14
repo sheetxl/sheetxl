@@ -1,5 +1,9 @@
 # Release notes
 
+Optional. Without a file, a release gets the generated notes: `feat`, `fix`, `perf`, `revert`
+and breaking commits since the last release (`config/release.config.ts`). Write one only when a
+release deserves hand-written notes.
+
 `v<version>.md` here replaces the generated notes when that version syncs to the public repo
 (`config/publishPublicRepo.ts`). The public GitHub release is what www.sheetxl.com/changelog
 shows.
