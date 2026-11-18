@@ -12,7 +12,7 @@ import {
 import {
   defaultRenderMovableMenu, defaultRenderColumnMenu, defaultRenderPivotMenu, defaultRenderContextMenu, defaultRenderFillMenu,
   defaultRenderWorkbookLoading, defaultRenderTabs, defaultRenderCommentCard, defaultRenderHyperlinkCard,
-  defaultRenderTableToolbar, defaultRenderPivotToolbar, defaultRenderOutlineButton, defaultRenderOutlineLevelButton, defaultRenderTooltip
+  defaultRenderTableToolbar, defaultRenderPivotToolbar, defaultRenderMovableToolbar, defaultRenderOutlineButton, defaultRenderOutlineLevelButton, defaultRenderTooltip
 } from './DefaultRenderers';
 
 /**
@@ -47,6 +47,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
       renderHyperlinkCard = defaultRenderHyperlinkCard,
       renderTableToolbar = defaultRenderTableToolbar,
       renderPivotToolbar = defaultRenderPivotToolbar,
+      renderMovableToolbar = defaultRenderMovableToolbar,
       propsOutline,
       ...restSheet
     } = propPropsSheet ?? {};
@@ -56,6 +57,7 @@ export const WorkbookElement = memo(forwardRef<IWorkbookElement, WorkbookElement
       renderHyperlinkCard,
       renderTableToolbar,
       renderPivotToolbar,
+      renderMovableToolbar,
       propsOutline: {
         ...propsOutline,
         renderButton: propsOutline?.renderButton === undefined ? defaultRenderOutlineButton : propsOutline.renderButton,

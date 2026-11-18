@@ -10,7 +10,7 @@ import { AccountingStyleCommandButton } from './AccountingStyleCommandButton';
 
 /**
  * The registry key the number-format popup is registered under — and the scope its members' labels
- * resolve against: `formatCells` reads as "More Number Formats…" there, "Format Cells" elsewhere,
+ * resolve against: `format` reads as "More Number Formats…" there, "Format Cells" elsewhere,
  * and the quick buttons below resolve their compact labels against it.
  */
 export const NUMBER_FORMAT_GROUP_KEY = 'numberFormatOptions';

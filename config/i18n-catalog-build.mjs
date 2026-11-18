@@ -109,7 +109,7 @@ function reconcile(en, loc) {
     // it, because absence means inherit: hand-deleting a locale shortcut looks right, ships, and
     // then comes straight back on the next sync (or dev/build, which runs this same reconcile).
     // It is needed whenever a localized mnemonic takes a chord English uses elsewhere — de Bold is
-    // ctrl+shift+F, so de `formatCellsFont` cannot also claim it and must say so explicitly.
+    // ctrl+shift+F, so de `formatFont` cannot also claim it and must say so explicitly.
     if (enRec.shortcut === undefined) {
       delete locRec.shortcut;
     } else if (locRec.shortcut === null) {

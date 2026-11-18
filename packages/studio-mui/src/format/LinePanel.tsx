@@ -35,8 +35,6 @@ export interface LineSelection {
   autoColor: IColor;
   /** The workbook's style collection — theme swatches and recent colors for the picker. */
   styles: IStyleCollection;
-  /** Theme color resolution for the color picker. */
-  schemeLookup: IColor.SchemeLookup;
   /** Whether the GRID renders dark (not the app chrome) — swatches follow the grid. */
   darkMode: boolean;
   /** True when the line cannot be changed (a protected sheet). */
@@ -112,7 +110,8 @@ export const LinePanel = memo((props: LinePanelProps) => {
   } = props;
 
   const t = useTranslator();
-  const { stroke, stated, autoColor, applyStroke, schemeLookup, styles, darkMode } = selection;
+  const { stroke, stated, autoColor, applyStroke, styles, darkMode } = selection;
+  const schemeLookup = styles.schemeLookup();
   const disabled = propDisabled || selection.disabled;
 
   const visible = stroke.isVisible();

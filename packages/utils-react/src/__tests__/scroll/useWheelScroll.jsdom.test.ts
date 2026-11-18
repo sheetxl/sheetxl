@@ -95,7 +95,7 @@ describe('useWheelScroll — ctrl/⌘+wheel zoom routing', () => {
 
 describe('useWheelScroll — scrolling elements inside the pane', () => {
   /** A list inside the pane, 100 px tall over 300 px of content, scrolled to `scrollTop`. */
-  const list = (pane: HTMLElement, scrollTop: number, style: Partial<CSSStyleDeclaration> = {}): HTMLDivElement => {
+  const list = (pane: HTMLElement, scrollTop: number, style: Partial<CSSStyleDeclaration> = {}): HTMLElement => {
     const el = document.createElement('div');
     Object.assign(el.style, { overflowY: 'auto', ...style });
     Object.defineProperty(el, 'clientHeight', { value: 100 });

@@ -46,9 +46,11 @@ describe('useCommands — quickAction opts out of dismiss-on-execute', () => {
     };
 
     const node: ReactElement = createElement(CommandScopeProvider, { scope: app },
-      createElement(CommandAnchorProvider, { tracker: new ManualActivation(app), keyBindings: false },
-        createElement(FloatStackProvider, { value: float }, createElement(Probe))
-      )
+      createElement(CommandAnchorProvider, {
+        tracker: new ManualActivation(app),
+        keyBindings: false,
+        children: createElement(FloatStackProvider, { value: float }, createElement(Probe))
+      })
     );
 
     const container = document.createElement('div');

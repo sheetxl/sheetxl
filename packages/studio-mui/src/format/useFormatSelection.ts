@@ -41,8 +41,6 @@ export interface FormatSelection {
   style: ICellStyle;
   /** The workbook's style collection — theme swatches and recent colors for the pickers. */
   styles: IStyleCollection;
-  /** Theme color resolution for the color pickers. */
-  schemeLookup: IColor.SchemeLookup;
   /**
    * The color a border draws in when it has none of its own — the pickers' **Automatic** swatch.
    *
@@ -192,7 +190,6 @@ export const useFormatSelection = (sheet: IWorksheet): FormatSelection => {
     cell,
     style: cell.getStyle(),
     styles,
-    schemeLookup: styles.schemeLookup(),
     autoColor: styles.getNormal().getFont().getColor(),
     darkMode: gridColorScheme === 'dark',
     disabled: boldCommand?.disabled() ?? false,

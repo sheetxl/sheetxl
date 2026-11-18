@@ -78,7 +78,7 @@ export interface ChromeRecord {
    * the default, `null` = exclude it). A locale pack inherits English shortcuts by *absence*, so
    * `null` is the only way for a locale to drop one — needed when a localized mnemonic claims a
    * chord English gives to some other command (de Bold takes `ctrl+shift+F`, so de
-   * `formatCellsFont` must give it up). See `config/i18n-catalog-build.mjs`.
+   * `formatFont` must give it up). See `config/i18n-catalog-build.mjs`.
    */
   shortcut?: string | string[] | null;
   /** Accumulated metadata tags (e.g. `'mutator'`, `'quickAction'`). */

@@ -48,7 +48,7 @@ export * from './slicer';
 export * from './fill';
 export * from './format/NumberFormatOption';
 export * from './format/FormatPlugin';
-export type { FormatTab, FormatPaneArgs } from './format/FormatTaskPane';
+export type { FormatTab } from './format/FormatTaskPane';
 export * from './protection/PasswordField';
 export * from './protection/ProtectionPlugin';
 

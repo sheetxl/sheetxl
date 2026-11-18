@@ -5,6 +5,7 @@ import { IColor, Color } from '@sheetxl/sdk';
 
 import { SimpleTooltip } from '@sheetxl/utils-mui';
 
+import { COLOR_BLOCK_RADIUS } from './ColorSetSwatch';
 import { Swatch, type SwatchProps } from './Swatch';
 
 export interface ColorButtonProps extends React.HTMLAttributes<HTMLElement> {
@@ -131,6 +132,8 @@ export const ColorButton = memo((props: ColorButtonProps) => {
             borderColor: markerColor,
             borderWidth: '2px',
             borderStyle: 'solid',
+            // Rounded as the block it marks is, so that it is a ring inside it and not a square.
+            borderRadius: `${COLOR_BLOCK_RADIUS}px`,
             boxSizing: 'border-box',
             opacity: isSelected ? '1' : '0'
           }}

@@ -90,7 +90,7 @@ export const NumberFormatCommandButton = memo(
 
   const commandKeys:string[] = [
     'formatNumberFormat',
-    'formatCells'
+    'format'
   ];
   const resolvedCommands = useCommands<string, ICell>(commandKeys);
   const command = resolvedCommands[0];

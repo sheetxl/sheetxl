@@ -7,9 +7,9 @@ import { Workbook, IFill, type IWorkbook } from '@sheetxl/sdk';
 
 import { PersistentStateProvider, InMemoryStore, type PersistenceStore } from '@sheetxl/utils-react';
 
-import { WorkbookProvider } from '@sheetxl/react';
+import { WorkbookProvider, type FormatPaneArgs } from '@sheetxl/react';
 
-import { FormatTaskPane, type FormatPaneArgs } from '../format';
+import { FormatTaskPane } from '../format';
 
 /**
  * The format pane end to end: mounted on a real workbook, driven the way a user drives it, and
@@ -60,7 +60,7 @@ describe('FormatTaskPane (mount)', () => {
       await act(async () => {
         root.render(createElement(PersistentStateProvider as never, { store, debounceMs: 0 } as never,
           createElement(WorkbookProvider as never, { workbook } as never,
-            createElement(FormatTaskPane as never, { entryKey: 'formatCells', model: workbook, args } as never))));
+            createElement(FormatTaskPane as never, { entryKey: 'format', model: workbook, args } as never))));
       });
     };
     await render(initialArgs);

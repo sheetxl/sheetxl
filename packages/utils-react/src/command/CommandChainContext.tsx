@@ -15,6 +15,12 @@ import { type CommandScope } from './CommandScope';
 export interface CommandChain {
   /** Join `scope` to the chain at `order` (reparent-on-insert). Returns an unregister that re-chains the rest. */
   register(scope: CommandScope, order: number): RemoveListener;
+  /**
+   * Chain a registered `scope` on the ancestor scope named `ancestor` instead of on the layer below it —
+   * the layers below drop out of its resolution while layers above still stack on it. `null` restores
+   * the ordinary place. A name with no matching ancestor chains as usual.
+   */
+  setAttach(scope: CommandScope, ancestor: string | null): void;
 }
 
 /**

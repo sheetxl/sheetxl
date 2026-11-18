@@ -38,6 +38,16 @@ export interface SplitPaneProps extends React.HTMLAttributes<HTMLDivElement> {
    */
   fixedPane?: 'before' | 'after'| null;
   /**
+   * If `true` the {@link fixedPane} is hidden and there is no resizer; the other pane fills the split.
+   *
+   * @remarks
+   * The hidden pane stays mounted, so its content keeps its state. The position is kept too, so
+   * clearing it restores the pane to the size it had. Ignored without a `fixedPane`.
+   *
+   * @defaultValue false
+   */
+  collapsed?: boolean;
+  /**
    * The position. Can be either a string with px or %.
    * If it is a number it will be interpreted based on whether there is a fixed pane or not.
    */
@@ -261,6 +271,7 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
 
       splitDirection = 'row',
       fixedPane: propFixedPane = null, /* proportional */
+      collapsed: propCollapsed = false,
       position: propPosition = undefined,
       onPositionChange: propOnPositionChange,
       minBefore,
@@ -292,6 +303,7 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
     const isDoubleElement = useMemo(() => {
       return isValidElement(elementAfter) && isValidElement(elementBefore);
     }, [elementAfter, elementBefore]);
+    const collapsed = propCollapsed && isDoubleElement && !!propFixedPane;
 
     const limits:CalcedLimits = useMemo(() => {
       let fixedPaneOffset:number|null = null; // null, 0 before, 1 after
@@ -311,7 +323,7 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
         minAfter: parseCalcSize(minAfter, isPercent),
         maxAfter: parseCalcSize(maxAfter, isPercent)
       }
-    }, [minBefore, maxBefore, minAfter, maxAfter]);
+    }, [propFixedPane, minBefore, maxBefore, minAfter, maxAfter]);
 
     const onPositionChange = useCallbackRef(propOnPositionChange ?? (() => {}), [propOnPositionChange]);
     const [position, setPosition] = useState<CalcedSize | null>(() => parseCalcSize(propPosition, propFixedPane === null));
@@ -463,7 +475,7 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
 
     const refResizerMerged = useMergeRefs([refMeasureResizer, refResizer]);
     const resizer = useMemo(() => {
-      if (!isDoubleElement) return null;
+      if (!isDoubleElement || collapsed) return null;
       return <RenderSlot key="resizer" render={renderResizer} props={{
         ref: refResizerMerged as React.Ref<HTMLDivElement>,
         className: clsx('sxl-resizer', resizerClassName),
@@ -481,12 +493,16 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
         disabled,
         ...restResizer
       }} />;
-    }, [isDoubleElement, refResizerMerged, resizerClassName, restResizer, splitDirection, resizerStyle, disabled]);
+    }, [isDoubleElement, collapsed, refResizerMerged, resizerClassName, restResizer, splitDirection, resizerStyle, disabled]);
 
     const sizeDim = splitDirection === 'row' ? 'Width' : 'Height';
     const paneBefore = useMemo(() => {
       if (!elementBefore) return null;
-      const stylePaneBefore = {
+      const stylePaneBefore = collapsed ? {
+        ...defaultPaneStyle,
+        ...paneStyleBefore,
+        ...(limits.fixedPaneOffset === 0 ? { display: 'none' } : { flex: '1 1 100%' }),
+      } : {
         ...defaultPaneStyle,
         ...paneStyleBefore,
         flex: (limits.fixedPaneOffset === 0 && dimensions?.pixels[0] !== null) ? `0 0 ${Math.round(dimensions?.pixels[0] ?? 0)}px` : `1 1 ${Math.round(dimensions?.percents[0] ?? 100)}%`,
@@ -506,11 +522,15 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
           {elementBefore}
         </div>
       );
-    }, [elementBefore, propsPane, propsPaneBefore, limits, dimensions]);
+    }, [elementBefore, propsPane, propsPaneBefore, limits, dimensions, collapsed, sizeDim]);
 
     const paneAfter = useMemo(() => {
       if (!elementAfter) return null;
-      const stylePaneAfter = {
+      const stylePaneAfter = collapsed ? {
+        ...defaultPaneStyle,
+        ...paneStyleAfter,
+        ...(limits.fixedPaneOffset === 1 ? { display: 'none' } : { flex: '1 1 100%' }),
+      } : {
         ...defaultPaneStyle,
         ...paneStyleAfter,
         flex: (limits.fixedPaneOffset === 1 && dimensions?.pixels[1] !== null) ? `0 0 ${Math.round(dimensions?.pixels[1] ?? 0)}px` : `1 1 ${Math.round(dimensions?.percents[1] ?? 100)}%`,
@@ -530,7 +550,7 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
           {elementAfter}
         </div>
       );
-    }, [elementAfter, propsPane, propsPaneAfter, limits, dimensions]);
+    }, [elementAfter, propsPane, propsPaneAfter, limits, dimensions, collapsed, sizeDim]);
 
     const refMerged = useMergeRefs([refMeasureTotal, refLocal]);
     return (
@@ -541,6 +561,7 @@ export const SplitPane = memo(forwardRef<ISplitPaneElement, SplitPaneProps>(
             'sxl-splitPane',
             splitDirection === 'row' ? 'sxl-vertical' : 'sxl-horizontal', {
               'sxl-dragging': isDragging,
+              'sxl-collapsed': collapsed,
             },
             propClassName
           )

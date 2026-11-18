@@ -171,7 +171,7 @@ export function normalizePackInput(input: IconPackInput | IconPack): IconPack {
     label: input.meta?.label ?? "Unnamed",
     version: input.meta?.version ?? "1.0.0",
     license: input.meta?.license ?? "MIT",
-    defaultViewBox: "0 0 24 24",
+    defaultViewBox: input.meta?.defaultViewBox ?? "0 0 24 24",
     extends: input.meta?.extends ?? [],
   };
 

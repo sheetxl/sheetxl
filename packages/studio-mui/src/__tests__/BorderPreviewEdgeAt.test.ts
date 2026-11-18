@@ -19,7 +19,7 @@ import { edgesAt } from '../format/BorderPreview';
 describe('border diagram aiming', () => {
   const W = 240;
   const H = 84;
-  const all = () => true;
+  const all = (_edge: IBorders.Edge): boolean => true;
   const INSIDE = [IBorders.Edge.Horizontal, IBorders.Edge.Vertical];
   /** The single edge aimed at, or `null` — most cases aim at one line or at nothing. */
   const one = (edges: readonly IBorders.Edge[]): IBorders.Edge | null => {

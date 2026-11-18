@@ -4,7 +4,9 @@ import { createElement, act, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { CommandScope } from '../../command/CommandScope';
-import { CommandScopeProvider, useCommandScope } from '../../command/CommandScopeContext';
+import { CommandScopeProvider, CommandScopeContext, useCommandScope } from '../../command/CommandScopeContext';
+import { CommandChainContext } from '../../command/CommandChainContext';
+import { LayerActivation } from '../../command/LayerActivation';
 
 /**
  * `CommandScopeProvider` is **"a scope and its element"**, in two forms: `spec` CREATES a child of the
@@ -127,5 +129,76 @@ describe('CommandScopeProvider (scope + element)', () => {
 
     anywhere.remove();
     await unmount();
+  });
+
+  it('a new order moves the layer in the chain and keeps it alive', async () => {
+    const app = new CommandScope('app');
+    const base = app.createChild('pane:c');
+    const layers = new LayerActivation(base);
+    const other = base.createChild('layer:other');
+    layers.register(other, 50);
+    const contributor = { dynamic: (contribution: any) => { contribution.updateCommand('fill', { label: 'Fill', callback: () => {} }); } };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const renderAt = async (order: number): Promise<void> => {
+      await act(async () => {
+        root.render(createElement(CommandChainContext.Provider, { value: layers },
+          createElement(CommandScopeContext.Provider, { value: base },
+            createElement(CommandScopeProvider, { spec: { scopeName: 'layer:mine', contributor }, order })
+          )
+        ));
+      });
+    };
+
+    await renderAt(100);
+    const mine = layers.getAnchor();
+    expect(mine.key).toBe('layer:mine');
+
+    await renderAt(10);                           // now below `other`
+    expect(layers.getAnchor()).toBe(other);
+    expect(other.getParent()).toBe(mine);
+    expect(app.resolve('fill', layers.getAnchor())?.getLabel()).toBe('Fill'); // not disposed
+
+    await renderAt(100);
+    expect(layers.getAnchor()).toBe(mine);
+    expect(app.resolve('fill', layers.getAnchor())?.getLabel()).toBe('Fill');
+
+    await act(async () => { root.unmount(); });
+    container.remove();
+    expect(layers.getAnchor()).toBe(other);
+    expect(app.resolve('fill', layers.getAnchor())).toBeUndefined();
+  });
+
+  it('attachTo chains a layer on a named ancestor, switchable live', async () => {
+    const app = new CommandScope('app');
+    const sheet = app.createChild('sheet');
+    const base = sheet.createChild('cells').createChild('pane:c');
+    const layers = new LayerActivation(base);
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const renderAt = async (attachTo: string | null): Promise<void> => {
+      await act(async () => {
+        root.render(createElement(CommandChainContext.Provider, { value: layers },
+          createElement(CommandScopeContext.Provider, { value: base },
+            createElement(CommandScopeProvider, { spec: { scopeName: 'layer:movable' }, order: 50, attachTo })
+          )
+        ));
+      });
+    };
+
+    await renderAt('sheet');
+    const movable = layers.getAnchor();
+    expect(movable.key).toBe('layer:movable');
+    expect(movable.getParent()).toBe(sheet);
+
+    await renderAt(null);
+    expect(layers.getAnchor()).toBe(movable);    // same scope, not re-created
+    expect(movable.getParent()).toBe(base);
+
+    await act(async () => { root.unmount(); });
+    container.remove();
+    expect(layers.getAnchor()).toBe(base);
   });
 });

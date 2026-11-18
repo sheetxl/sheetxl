@@ -86,7 +86,7 @@ const STICKY_NOTE_TOOLBAR: Command.CommandButtonEntry & { key: string } = {
     'stickyNoteColorOptions',
     '-',
     'arrangeOptions',
-    'formatMovable'
+    'format'
   ]
 };
 

@@ -14,10 +14,7 @@ import {
   ExhibitIconButton, SimpleTooltip, type ExhibitIconButtonProps
 } from '@sheetxl/utils-mui'
 
-import { ColorButton } from '../color';
-
-// private
-import { createLabeledColorDef } from '../color/_Utils';
+import { ColorSetSwatch } from '../color';
 
 
 export interface ThemeSelectButtonProps extends ExhibitIconButtonProps {
@@ -67,45 +64,25 @@ export const ThemeSelectButton: React.FC<ThemeSelectButtonProps> = (props) => {
   const appTheme = useTheme();
   const t = useTranslator();
 
+  // The theme's colors as two sets of chips: what its text and backgrounds are, then its six accents,
+  // which are the colors a chart's series take in turn.
   const colorStrip = useMemo(() => {
-    let colors = [];
-    for (let i=0; i<THEME_COLOR_SCHEME.length; i++) {
-      const scheme = THEME_COLOR_SCHEME[i];
-      const colorDef = createLabeledColorDef(
-        t(scheme.labelKey, scheme.n !== undefined ? { n: scheme.n } : undefined), scheme.val
-      );
-      colors.push((
-        <ColorButton
-          schemeColorLookup={docTheme.schemeLookup()}
-          colorDef={colorDef}
-          darkMode={darkMode}
-          key={ i + '-colorDef'}
-          selectedColor={null as any}
-          // propsSwatch={localPropsSwatch}
+    const chips = (from: number, to: number): React.ReactElement => {
+      const schemes = THEME_COLOR_SCHEME.slice(from, to);
+      return (
+        <ColorSetSwatch
+          colors={schemes.map(scheme => docTheme.parseColor(scheme.val).toRGBA(darkMode).toString())}
+          labels={schemes.map(scheme => t(scheme.labelKey, scheme.n !== undefined ? { n: scheme.n } : undefined))}
         />
-      ));
-    }
+      );
+    };
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          flex: 'none',
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            boxShadow: (theme: Theme) => {
-              return theme.shadows[2];
-            }
-          }}
-        >
-          {colors}
-        </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'row', flex: 'none', gap: '4px' }}>
+        {chips(0, 4)}
+        {chips(4, THEME_COLOR_SCHEME.length)}
       </Box>
-    )
-  }, [docTheme, appTheme]);
+    );
+  }, [docTheme, appTheme, darkMode, t]);
 
   return (
     <ExhibitIconButton

@@ -11,6 +11,7 @@ import { ReactUtils } from '@sheetxl/utils-react';
 
 import { type SwatchProps } from './Swatch';
 import { ColorButton } from './ColorButton';
+import { colorBlockEdge } from './ColorSetSwatch';
 
 export interface ColorButtonListProps extends React.HTMLAttributes<HTMLElement> {
   title?: string;
@@ -89,15 +90,13 @@ export const ColorButtonList: React.FC<ColorButtonListProps> = memo((props: Colo
         let buttonCol = (
           <Box
             className="button-col"
-            sx={{
+            // One color is a chip and a column of shades a ramp, finished as every set of colors is.
+            sx={(theme: Theme) => ({
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              //border: `solid ${theme.palette.divider} 1px`,
-              boxShadow: (theme: Theme) => theme.shadows[2],
-              borderRadius: `${2}px`,
-              overflow: 'hidden'
-             }}
+              ...colorBlockEdge(theme)
+            })}
             key={'' + i}
           >
             {buttonRows}

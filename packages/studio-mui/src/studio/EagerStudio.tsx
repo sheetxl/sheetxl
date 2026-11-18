@@ -1,6 +1,6 @@
 import type React from 'react';
 import {
-  useEffect, useCallback, memo, forwardRef, useState, useRef, useMemo
+  useEffect, useCallback, memo, forwardRef, useState, useRef, useMemo, createContext, useContext
 } from 'react';
 
 import { mergeRefs } from 'react-merge-refs';
@@ -48,7 +48,6 @@ import { StudioToolbar, type StudioToolbarProps } from './StudioToolbar';
 import { CommandsWrapper } from './CommandsWrapper';
 import { StudioNotifierProvider } from './StudioNotifierProvider';
 import { StudioTaskPaneArea } from './StudioTaskPaneArea';
-import { StudioSplitPane } from './StudioSplitPane';
 import { resolveFormulaBarPlacement, orderStudioChrome } from './formulaBarPlacement';
 
 import { TablePlugin } from '../table';
@@ -138,18 +137,43 @@ const muiOptionsForMode = (base: ThemeOptions | undefined, isDark: boolean): The
 };
 
 /**
- * Persistence keys for the studio's self-managed task-pane layout.
+ * Persistence keys for the studio's layout.
  *
  * @remarks
- * Owned via `usePersistentState` against the surrounding `PersistentStateProvider`. Kept as separate
- * keys so position and visibility can be opted into persistence independently (see {@link ThemeStateKey}).
+ * Stored against the surrounding `PersistentStateProvider`.
  */
 const LayoutStateKey = {
-  /** The task-pane split position, as a percent (`number`). */
-  TaskPanePosition: 'taskPanePosition',
-  /** Whether a task pane is open. */
-  TaskPaneVisible: 'taskPaneVisible',
+  /** The task pane area's layout: the panes in its strip, the selected one, collapsed, its size. */
+  TaskPanes: 'taskPanes',
 } as const;
+
+/** What {@link PaneScopeBridge} wraps each task pane in. */
+interface PaneScopeBridgeValue {
+  scope: Command.CommandScope | null;
+  wrapper?: React.ComponentType<{ children?: React.ReactNode }>;
+}
+
+const PaneScopeBridgeContext = createContext<PaneScopeBridgeValue>({ scope: null });
+
+/**
+ * Bridges the shown workbook's command scope to the task panes, so their buttons resolve workbook
+ * commands. The panes sit beside the grid, outside its scope.
+ *
+ * @remarks
+ * A module-level component that reads the scope from context, so the frame wrapper keeps one identity
+ * and a workbook swap re-scopes the open panes instead of remounting them. Deliberately no
+ * `elementRef`: the panes RESOLVE workbook commands but are not part of the workbook's region — a
+ * keystroke born in a task-pane field must not reach them, which is the whole reason the workbook
+ * scope bounds itself to the grid.
+ */
+const PaneScopeBridge = ({ children }: { children?: React.ReactNode }): React.ReactElement => {
+  const { scope, wrapper: Wrapper } = useContext(PaneScopeBridgeContext);
+  return (
+    <Command.CommandScopeProvider scope={scope}>
+      {Wrapper ? <Wrapper>{children}</Wrapper> : children}
+    </Command.CommandScopeProvider>
+  );
+};
 
 /**
  * The studio's content, rendered into a root element owned by {@link Studio}.
@@ -720,33 +744,14 @@ export const EagerStudio = memo(forwardRef<IStudioElement, EagerStudioProps>(
     }
   }, []);
 
-  // TODO - roll this into StudioSplitPane and convert to a DockingPaneManager
-  const [sideBar, setSideBar] = useState<React.ReactElement | null>(null);
+  const paneScopeBridge: PaneScopeBridgeValue = useMemo(() => ({
+    scope: shownWorkbookScope,
+    wrapper: propsTaskPaneArea?.wrapperFrame
+  }), [shownWorkbookScope, propsTaskPaneArea?.wrapperFrame]);
 
-  // Task-pane layout is kept as two INDEPENDENT persisted states so we can decide (after living with it)
-  // whether each should survive a session:
-  //  - position: the resized split. Self-managed by StudioSplitPane via `persistKey` below (stored as a
-  //    per-slot map so a horizontal drag is remembered separately from a vertical one).
-  //  - visibility: whether a pane is open. Intentionally NOT persisted yet (key `null` = plain useState);
-  //    flip the key on to opt in. NOTE: restoring visibility also needs the TaskPaneProvider to reopen the
-  //    last pane(s) on load, so this should become the ordered array of open pane names (panes activate by
-  //    name) rather than a boolean; for now it just records that something is open.
-  const [, setTaskPaneVisible] = usePersistentState<boolean>(/* LayoutStateKey.TaskPaneVisible */ null, false);
-  useEffect(() => {
-    setTaskPaneVisible(sideBar != null);
-  }, [sideBar, setTaskPaneVisible]);
-  const renderTaskArea = useCallback((props: TaskPaneAreaProps) => {
-    return propRenderTaskPaneArea({
-      model: shownWorkbook,
-      side: taskPaneSide,
-      ...props,
-      ...propsTaskPaneArea
-    })
-  }, [shownWorkbook, taskPaneSide, propsTaskPaneArea]);
-
-  // NOTE: the task-pane split pane is no longer a per-grid `wrapperMain`. It is rendered once at the
-  // content level (see `localRenderWorkbook`) so the task-pane area lives OUTSIDE the workbook-keyed
-  // grids and survives a workbook swap. Both grids render plain into its shared main slot.
+  // NOTE: the task pane area is rendered once at the content level (see `localRenderWorkbook`), around
+  // the grid slot, so it lives OUTSIDE the workbook-keyed grids and survives a workbook swap. Both grids
+  // render plain into its main content.
 
   // The studio root (`host`, rendered by Studio) is its own DOM element that *contains* the workbook
   // grid (held by `refWorkbook`, assigned where the WorkbookElement is rendered). The handle delegates the ergonomic accessors to
@@ -949,24 +954,16 @@ export const EagerStudio = memo(forwardRef<IStudioElement, EagerStudioProps>(
           }}
         >
           {orderStudioChrome(formulaBarPlacement, { toolbar, formulaBar, statusBar, main: (
-          /* The task-pane split pane lives HERE (outside the workbook-keyed grids) so the task-pane
-              area persists across a workbook swap. Its main slot holds the grid slot; the sidebar is
-              the (stable) task-pane element. `sidebarElement` is null until a pane is first opened. */
-          <StudioSplitPane
-            taskSide={taskPaneSide}
-            persistKey={LayoutStateKey.TaskPanePosition}
-            // Bridge the shown workbook's command scope to the hoisted sidebar so its panes resolve
-            // workbook commands (the sidebar renders outside the grid's scope). Only wrap when a pane
-            // is open (a non-null provider element would otherwise read as a populated sidebar).
-            // Deliberately NO `elementRef`: the sidebar RESOLVES workbook commands (its buttons) but is
-            // not part of the workbook's region — a keystroke born in a task-pane field must not reach
-            // them, which is the whole reason the workbook scope bounds itself to the grid.
-            sidebarElement={sideBar ? (
-              <Command.CommandScopeProvider scope={shownWorkbookScope}>
-                {sideBar}
-              </Command.CommandScopeProvider>
-            ) : undefined}
-            mainElement={(
+          /* The task pane area lives HERE (outside the workbook-keyed grids) so it persists across a
+              workbook swap. Its main content is the grid slot. */
+          <PaneScopeBridgeContext.Provider value={paneScopeBridge}>
+          <RenderSlot render={propRenderTaskPaneArea} props={{
+            model: shownWorkbook,
+            side: taskPaneSide,
+            persistKey: LayoutStateKey.TaskPanes,
+            ...propsTaskPaneArea,
+            wrapperFrame: PaneScopeBridge,
+            children: (
               /* The grid slot: the shown grid fills it (flex child); a pending grid overlays the same
                  box hidden until its first paint promotes it. Rendered as an ARRAY so React matches the
                  children by key across positions — promotion moves the pending element to the shown
@@ -997,8 +994,9 @@ export const EagerStudio = memo(forwardRef<IStudioElement, EagerStudioProps>(
                   }}
                 />
               </div>
-            )}
-          />
+            )
+          }} />
+          </PaneScopeBridgeContext.Provider>
           ) })}
         </div>
       );
@@ -1065,7 +1063,7 @@ export const EagerStudio = memo(forwardRef<IStudioElement, EagerStudioProps>(
   }, [
     status, shownWorkbook, pendingWorkbook, workbookLoaded, titleWorkbook, propRenderLoading, propsLoading,// commandsStudio,
     propsWorkbook, propsSquare, propElevation, propVariant, helpCommandPopup,
-    propRenderDocumentError, propsDocumentError, renderToolbar, localSX, sideBar, taskPaneSide, shownWorkbookScope, // sidebar hoisted into content
+    propRenderDocumentError, propsDocumentError, renderToolbar, localSX, taskPaneSide, paneScopeBridge, propRenderTaskPaneArea, propsTaskPaneArea, // task pane area hoisted into content
     propShowFormulaBar, propsFormulaBar, propRenderFormulaBar, formulaBarPlacement, editable, propShowStatusBar, propsStatusBar,
     propRenderStatusBar, propsToolbar, propRenderToolbar, keyboardRoom, viewportInset, viewportOffsetTop,
     resolvedThemes, isDarkMode // theme drives the appTheme
@@ -1113,12 +1111,7 @@ export const EagerStudio = memo(forwardRef<IStudioElement, EagerStudioProps>(
         <WorkbookProvider
           workbook={shownWorkbook as IWorkbook}
         >
-        <TaskPaneProvider // moved down
-          renderArea={renderTaskArea}
-          onUpdateArea={(areaElement) => {
-            setSideBar(areaElement as any);
-          }}
-        >
+        <TaskPaneProvider>
           <ModalProvider>
             <StudioNotifierProvider>
               <UncaughtErrorBoundary>

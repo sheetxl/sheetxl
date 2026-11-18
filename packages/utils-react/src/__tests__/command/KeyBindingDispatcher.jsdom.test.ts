@@ -173,12 +173,12 @@ describe('KeyBindingDispatcher', () => {
 
       const sheet = app.createChild('sheet');
       const removeBounds = sheet.attachBounds(sheetEl);
-      sheet.updateCommand('clearContents', { callback: () => fired.push('clearContents'), shortcut: { key: 'Delete' } });
-      sheet.updateCommand('commit', { callback: () => fired.push('commit'), shortcut: { key: 'Enter' } });
+      sheet.updateCommand('clearContents', { callback: () => { fired.push('clearContents'); }, shortcut: { key: 'Delete' } });
+      sheet.updateCommand('commit', { callback: () => { fired.push('commit'); }, shortcut: { key: 'Enter' } });
       const pane = sheet.createChild('pane');
       pane.attachElement(paneEl);
-      pane.updateCommand('navDown', { callback: () => fired.push('navDown'), shortcut: { key: 'ArrowDown' } });
-      app.updateCommand('save', { callback: () => fired.push('save'), shortcut: ctrlS });
+      pane.updateCommand('navDown', { callback: () => { fired.push('navDown'); }, shortcut: { key: 'ArrowDown' } });
+      app.updateCommand('save', { callback: () => { fired.push('save'); }, shortcut: ctrlS });
 
       const taskPaneInput = document.createElement('input');
       document.body.appendChild(taskPaneInput); // sibling of `sheetEl`, not inside it

@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { useMergeRefs } from 'react-merge-refs';
 
 import { type Theme } from '@mui/material';
-import { Paper, Box, Typography } from '@mui/material';
+import { Paper, Box } from '@mui/material';
 
 import {
   type ITable, type ITableStyle, type ICalculation, type IStyleCollection, type INamedCollection
@@ -20,7 +20,7 @@ import {
 
 import { CommandButton, ExhibitDivider } from '@sheetxl/utils-mui';
 
-import { useModelListener, type ReferenceDoneArgs, type EditDoneArgs } from '@sheetxl/react';
+import { useModelListener, TaskPaneEmpty, type ReferenceDoneArgs, type EditDoneArgs } from '@sheetxl/react';
 
 import { FormulaField, InputField } from '../form';
 import { PresetTableStylesCommandButton } from '../command';
@@ -128,23 +128,7 @@ export const TableDetailsPanel =
 
   let overlay = null;
   if (!table) {
-    overlay = (
-    <Typography
-      component="div"
-      style={{
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      {t('table.noneSelected')}
-    </Typography>
-    )
+    overlay = <TaskPaneEmpty>{t('table.noneSelected')}</TaskPaneEmpty>;
   }
 
   const refMerged = useMergeRefs([refLocal, refContentMeasure, refForwarded]);
@@ -295,9 +279,6 @@ export const TableDetailsPanel =
                   cellHeight={30}
                   isLive={true}
                 />
-                {/*
-                  TODO - we need the float parent to allow the menu to close
-                */}
                 <PresetTableStylesCommandButton
                   commandKey={'formatTableStyle'}
                   disabledQuickKey={true}

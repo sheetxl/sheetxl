@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, beforeAll, vi } from 'vitest';
+import { describe, it, expect, afterEach, beforeAll, vi, type Mock } from 'vitest';
 
 import { createElement, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -45,13 +45,13 @@ describe('PivotMenu', () => {
   });
 
   interface StubField extends IPivotTable.IField {
-    setVisibleItems: ReturnType<typeof vi.fn>;
-    setCurrentPage: ReturnType<typeof vi.fn>;
-    applyFilter: ReturnType<typeof vi.fn>;
-    clearFilter: ReturnType<typeof vi.fn>;
-    clearAllFilters: ReturnType<typeof vi.fn>;
-    sortByLabels: ReturnType<typeof vi.fn>;
-    sortByValues: ReturnType<typeof vi.fn>;
+    setVisibleItems: Mock<IPivotTable.IField['setVisibleItems']>;
+    setCurrentPage: Mock<IPivotTable.IField['setCurrentPage']>;
+    applyFilter: Mock<IPivotTable.IField['applyFilter']>;
+    clearFilter: Mock<IPivotTable.IField['clearFilter']>;
+    clearAllFilters: Mock<IPivotTable.IField['clearAllFilters']>;
+    sortByLabels: Mock<IPivotTable.IField['sortByLabels']>;
+    sortByValues: Mock<IPivotTable.IField['sortByValues']>;
   }
 
   interface StubOptions {

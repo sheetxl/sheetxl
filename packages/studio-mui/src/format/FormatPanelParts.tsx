@@ -48,8 +48,8 @@ export interface FormatNumberFieldProps {
   step?: number;
   /** Accept fractions (a line width in points). Default: whole numbers only. */
   decimals?: boolean;
-  /** Width in px. These sit in rows beside buttons, not in a form column. */
-  width: number;
+  /** Width in px, for a field in a row beside buttons, or a CSS width (`'100%'`) for one in a form column. */
+  width: number | string;
   disabled?: boolean;
   /** A value to apply — typed, stepped, or re-committed with Enter. Already clamped to `min…max`. */
   onChange: (value: number) => void;

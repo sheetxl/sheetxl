@@ -22,6 +22,8 @@ import {
 
 import { ExhibitTooltip, SimpleTooltip } from '@sheetxl/utils-mui';
 
+import styles from './StudioTaskPaneArea.module.css';
+
 /**
  * The field border — `--sxl-color-input-border`, the same token the formula bar and the field widgets read, so
  * a pane frame and the toolbar above it stay one control. Read at FULL strength (not `alpha(divider, .2)`,
@@ -45,12 +47,17 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
     registry = DefaultTaskPaneRegistry,
     style: propsStyle,
     iconsOnly,
+    rotateIcons,
+    orientation = 'vertical',
     side = 'right',
     className: propClassName,
     ...rest
   } = props;
 
   const isLeft = side !== 'right';
+  const isHorizontal = orientation === 'horizontal';
+  // A vertical strip on the left reads bottom to top: text first, turned.
+  const isFlipped = isLeft && !isHorizontal;
   // Subscribe to language: entry titles resolve through the catalog, so a switch must rebuild.
   const language = useLanguage();
   const elements = useMemo(() => {
@@ -71,7 +78,7 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
             display: 'inline-block',
             // Icons don't auto-rotate with the vertical writing mode (only glyphs do),
             // so rotate them to match the text direction on each side.
-            transform: isLeft ? `rotate(-90deg)` : `rotate(90deg)`,
+            transform: rotateIcons && !isHorizontal ? (isLeft ? `rotate(-90deg)` : `rotate(90deg)`) : undefined,
             transformOrigin: 'center',
             color: (theme: Theme) => {
               return theme.palette.text.secondary;
@@ -111,8 +118,8 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
               sx={{
                 textTransform: 'none',
                 whiteSpace: 'nowrap', // clip while collapsing; never re-wrap
-                transform: isLeft ? `rotate(180deg)` : undefined,
-                padding: '4px 0px',
+                transform: isFlipped ? `rotate(180deg)` : undefined,
+                padding: isHorizontal ? '0px 4px' : '4px 0px',
                 color: (theme: Theme) => {
                   return isSelected ? theme.palette.primary.main : theme.palette.text.secondary;
                 }
@@ -132,12 +139,12 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
             <SimpleTooltip
               disableInteractive
               title={entry.getTitle() ?? ''}
-              placement='left-start'
+              placement={isHorizontal ? 'top' : 'left-start'}
             >
               <Box
                 sx={{
                   padding: '0px 0px',
-                  writingMode: isLeft ? 'vertical-lr' : 'vertical-rl',
+                  writingMode: isHorizontal ? 'horizontal-tb' : (isLeft ? 'vertical-lr' : 'vertical-rl'),
                   textOrientation: 'mixed',
                   display: 'flex',
                   alignItems: 'center',
@@ -148,8 +155,8 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
                   }
                 }}
               >
-                { isLeft ? elementText : elementIcon }
-                { isLeft ? elementIcon : elementText }
+                { isFlipped ? elementText : elementIcon }
+                { isFlipped ? elementIcon : elementText }
               </Box>
             </SimpleTooltip>
           )}
@@ -162,11 +169,13 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
           className={clsx('taskpane-strip-item', {
             'Mui-selected': isSelected
           })}
-          onClick={() => props.onSelect(key)}
+          // The one selection path: `Tabs.onChange` skips the selected tab, which is the click that
+          // collapses the area, and runs alongside this for every other tab.
+          onClick={() => onSelect(key)}
         />
       );
     });
-  }, [taskPanes, propSelected, onSelect, registry, isLeft, iconsOnly, language]);
+  }, [taskPanes, propSelected, onSelect, registry, isLeft, isHorizontal, isFlipped, iconsOnly, rotateIcons, language]);
 
   const refLocal = useImperativeElement<ITaskPaneStrip, TaskPaneStripAttributes>(refForwarded, () => {
     return {
@@ -175,36 +184,39 @@ const StudioTaskPaneStrip = memo(forwardRef<ITaskPaneStrip, TaskPaneStripProps>(
   }, []);
 
   const className = useMemo(() => {
-    return clsx('taskpane-strip', propClassName);
-  }, [propClassName]);
+    return clsx('taskpane-strip', `sxl-${orientation}`, propClassName);
+  }, [propClassName, orientation]);
 
   return (
     <Box
       ref={refLocal}
       className={className}
       sx={{
-        paddingLeft: isLeft ? undefined : '2px',
-        paddingRight: isLeft ? '2px' : undefined,
-        paddingTop: '4px',
+        paddingLeft: '2px',
+        paddingRight: '2px',
+        paddingTop: isHorizontal ? '0px' : '4px',
+        minWidth: 0,
         ...propsStyle
       }}
       {...rest}
     >
       <Tabs
-        orientation='vertical'
+        orientation={orientation}
         variant='scrollable'
-        value={propSelected}
-        onChange={(_, newValue) => {
-          onSelect(newValue);
-        }}
+        value={propSelected ?? false}
+        sx={{ minHeight: 0 }}
         slotProps={{
           list: {
             sx: {
               gap: '2px',
             }
           },
+          // On the side the panes are on: the inner edge beside them, across the strip's top below them.
           indicator: {
-            sx: {
+            sx: isHorizontal ? {
+              top: isLeft ? undefined : '0px',
+              bottom: isLeft ? '0px' : 'unset'
+            } : {
               left: isLeft ? undefined : '0px',
               right: isLeft ? undefined : 'unset',
               bottom: isLeft ? '0px' : undefined
@@ -313,7 +325,7 @@ export const StudioTaskPaneArea = forwardRef<ITaskPaneAreaElement, StudioTaskPan
   (props: StudioTaskPaneAreaProps, refForwarded) => {
   const {
     model: workbook,
-    side,
+    className,
     ...rest
   } = props;
   const disabled = false;//!protection.isStructureAllowed();
@@ -325,8 +337,8 @@ export const StudioTaskPaneArea = forwardRef<ITaskPaneAreaElement, StudioTaskPan
 
   return (
     <TaskPaneArea
-      model={workbook}
       ref={refForwarded}
+      model={workbook}
       propsFrame={{
         style: {
           border,
@@ -337,16 +349,8 @@ export const StudioTaskPaneArea = forwardRef<ITaskPaneAreaElement, StudioTaskPan
       alwaysShowStrip={true}
       componentTitle={StudioTaskPaneTitle}
       componentStrip={StudioTaskPaneStrip}
-      side={side}
-      {...props}
-      onOpen={() => {
-        props?.onOpen?.();
-      }}
-      onClose={() => {
-        props?.onClose?.();
-      }}
+      className={clsx(styles.StudioTaskPaneArea, className)}
       {...rest}
-    >
-    </TaskPaneArea>
-  )
+    />
+  );
 });

@@ -49,7 +49,8 @@ describe('FillMenu (mount)', () => {
       direction: IRange.Direction.Down,
       offered,
       fill: async (options: CommandContext.FillMenuOptions): Promise<void> => { filled.push(options); },
-      series: (): void => { seriesOpened++; }
+      series: (): void => { seriesOpened++; },
+      cancel: (): void => {}
     };
     const floatReference: any = { close: () => { closed++; return null; } };
 

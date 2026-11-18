@@ -1,5 +1,5 @@
 import { defineLazyModule } from '@sheetxl/utils';
-import { DefaultTaskPaneRegistry, TaskPaneKey } from '@sheetxl/react';
+import { registerFormatCellsPane, registerFormatPane } from '@sheetxl/react';
 import { lazyPanel } from '@sheetxl/utils-mui';
 
 const FormatTaskPane = lazyPanel(
@@ -9,12 +9,10 @@ const FormatTaskPane = lazyPanel(
 );
 
 /**
- * Registers the Format Cells task pane. Called from the studio bootstrap alongside the other
- * built-in panes.
+ * Supplies the cells' body of the Format task pane, and registers the pane. Called from the studio
+ * bootstrap alongside the other built-in panes.
  */
 export const FormatPlugin = (): (() => void) => {
-  return DefaultTaskPaneRegistry.registerTaskPane({
-    key: TaskPaneKey.FormatCells,
-    component: FormatTaskPane
-  }, true);
+  registerFormatPane();
+  return registerFormatCellsPane(FormatTaskPane);
 };

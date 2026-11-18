@@ -40,8 +40,12 @@ export interface CommandContribution {
    * e.g. a sheet's protection reducer does `for (const key of getKeysByTag('mutator')) updateCommand(key,
    * { disabledReasons })`, so the tag authored in the catalog is the single source of truth (the
    * resolved `disabled()` then accumulates the reasons — no new resolve-time machinery needed).
+   *
+   * With `own`, only the keys this scope itself holds: its own contributions and its name's catalog
+   * entries, nothing up the chain. A scope that shares a rule with a parent (each gating its own
+   * commands) reads its half this way, so a key is gated once.
    */
-  getKeysByTag(tag: string): string[];
+  getKeysByTag(tag: string, options?: { own?: boolean }): string[];
   /** Remove every command + middleware this contribution touched. Idempotent. */
   remove(): void;
 }
@@ -342,10 +346,19 @@ export class CommandScope {
         if (node === this) throw new Error('setParent would create a cycle.');
       }
     }
-    this._parent?._children.delete(this.key);
+    this._parent?._detachChild(this);
     this._parent = parent;
     parent?._children.set(this.key, this);
     this._root._bump();
+  }
+
+  /**
+   * Drop `child` from the children map only if it is the entry under its key: scopes re-parented onto a
+   * shared ancestor (one layer per pane, each attached to the same `sheet`) can share a key, and one
+   * leaving must not evict another.
+   */
+  protected _detachChild(child: CommandScope): void {
+    if (this._children.get(child.key) === child) this._children.delete(child.key);
   }
 
   /**
@@ -366,7 +379,7 @@ export class CommandScope {
     this._middleware.length = 0;
     this._registryUnsub?.();
     this._registryUnsub = undefined;
-    this._parent?._children.delete(this.key);
+    this._parent?._detachChild(this);
     this._root._bump();
   }
 
@@ -459,10 +472,10 @@ export class CommandScope {
       use(middleware: CommandMiddleware<any, any, any>): void {
         middlewareRemovers.push(scope.use(middleware));
       },
-      getKeysByTag(tag: string): string[] {
+      getKeysByTag(tag: string, options?: { own?: boolean }): string[] {
         // Read from the owning scope's chain (this scope → root) — the tag is typically authored on the
         // root catalog, so the walk must start here, not at the root.
-        return scope.collectKeysByTag(tag, scope);
+        return scope.collectKeysByTag(tag, scope, options?.own ? scope : undefined);
       },
       remove(): void {
         for (const key of keys) scope._removeLayer(key, owner);
@@ -522,9 +535,10 @@ export class CommandScope {
    * Like {@link collectKeys}, but only keys whose contribution **somewhere along the chain** carries
    * `tag` (tags accumulate across scopes, so a match at any scope on the chain counts). Enables
    * cross-cutting, tag-driven rules — e.g. "disable every `mutator` command when the sheet is
-   * protected" — without a hand-maintained parallel key list. Order unspecified; deduped.
+   * protected" — without a hand-maintained parallel key list. Order unspecified; deduped. `root` stops
+   * the walk there (inclusive), as {@link collectKeys}'s does.
    */
-  collectKeysByTag(tag: string, anchor: CommandScope = this._root): string[] {
+  collectKeysByTag(tag: string, anchor: CommandScope = this._root, root?: CommandScope): string[] {
     const keys = new Set<string>();
     const registry = this._root._registry;
     let node: CommandScope | null = anchor;
@@ -535,6 +549,7 @@ export class CommandScope {
       // Tags authored in the catalog (e.g. `mutator`) now live in the registry prototype, not on the
       // scope's own defs — fold them in so a contributor's cross-cutting, tag-driven rule still finds them.
       if (registry) for (const key of registry.collectKeysByTag(node.name, tag)) keys.add(key);
+      if (node === root) break; // bounded terminal (inclusive)
       node = node._parent;
     }
     return [...keys];

@@ -40,8 +40,6 @@ export interface FillSelection {
   fill: IFill;
   /** The workbook's style collection — theme swatches and recent colors for the pickers. */
   styles: IStyleCollection;
-  /** Theme color resolution for the color pickers. */
-  schemeLookup: IColor.SchemeLookup;
   /** Whether the GRID renders dark (not the app chrome) — swatches follow the grid. */
   darkMode: boolean;
   /** True when the fill cannot be changed (a protected sheet). */
@@ -61,7 +59,6 @@ export interface FillSelection {
 export const fillSelectionOf = (selection: FormatSelection): FillSelection => ({
   fill: selection.style.getFill(),
   styles: selection.styles,
-  schemeLookup: selection.schemeLookup,
   darkMode: selection.darkMode,
   disabled: selection.disabled,
   createCell: selection.createCell,
@@ -112,7 +109,8 @@ export const FillPanel = memo((props: FillPanelProps) => {
   } = props;
 
   const t = useTranslator();
-  const { fill, applyFill, createCell, schemeLookup, styles, darkMode } = selection;
+  const { fill, applyFill, createCell, styles, darkMode } = selection;
+  const schemeLookup = styles.schemeLookup();
   const disabled = propDisabled || selection.disabled;
 
   const applyStyle = useCallbackRef((update: { fill: IFill.Update }, description?: string): void => {

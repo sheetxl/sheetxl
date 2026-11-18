@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import clsx from 'clsx';
 
 import { ButtonBase, Box, Link, Paper, styled, tooltipClasses, useTheme } from '@mui/material';
 
-import { DynamicIcon, useTranslator } from '@sheetxl/utils-react';
+import { DynamicIcon, useTranslator, CommandButtonType } from '@sheetxl/utils-react';
 
 import {
   WorksheetElement, type WorksheetElementProps,
   SheetTab, type SheetTabProps, type SheetTabSurfaceProps, type CommentCardRenderProps, type HyperlinkCardRenderProps,
-  type RangeToolbarRenderProps, type TableToolbarRenderProps, type PivotToolbarRenderProps, LinkPreviewImage,
+  type RangeToolbarRenderProps, type TableToolbarRenderProps, type PivotToolbarRenderProps, type MovableToolbarRenderProps,
+  LinkPreviewImage,
   type OutlineButtonProps, type OutlineLevelButtonProps
 } from '@sheetxl/react';
 
@@ -17,7 +18,7 @@ import { type TooltipRenderProps } from '@sheetxl/grid-react';
 
 import {
   AnimatedLoadingPanel, type AnimatedLoadingPanelProps, StackTraceErrorPanel, type StackTraceErrorPanelProps,
-  ExhibitIconButton
+  ExhibitIconButton, CommandButton, CommandPopupButton
 } from '@sheetxl/utils-mui';
 
 import { FormulaBar, MobileFormulaBar, type FormulaBarProps } from '../formulaBar';
@@ -233,6 +234,39 @@ export const PivotToolbar: React.FC<PivotToolbarRenderProps> = (props) => {
 
 export const defaultRenderPivotToolbar = (props: PivotToolbarRenderProps): React.ReactElement => {
   return <PivotToolbar {...props} />;
+};
+
+/**
+ * The toolbar beside the selected drawing when its kind has one, as the {@link TableToolbar table's}:
+ * the quick press is the kind's quick command (a chart's details), the dropdown its commands.
+ */
+export const MovableToolbar: React.FC<MovableToolbarRenderProps> = (props) => {
+  const { movable, toolbar, setHeld } = props;
+  const { quickKey, commandKeys: menuKeys } = toolbar;
+  const menuKey = menuKeys.join(',');
+  const renderPopupPanel = useCallback(() => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', paddingY: '4px' }}>
+      {menuKeys.map((key: string) => (
+        <CommandButton key={key} variant={CommandButtonType.Menuitem} commandKey={key}/>
+      ))}
+    </Box>
+  ), [menuKey]);
+  return (
+    <RangeToolbarPaper props={props} label={movable.getName?.() ?? ''}>
+      <CommandPopupButton
+        quickCommand={quickKey}
+        renderPopupPanel={menuKeys.length > 0 ? renderPopupPanel : undefined}
+        outlined={SOLE_BUTTON_OUTLINE}
+        propsButton={SOLE_BUTTON_ROOT}
+        onPopupOpen={() => setHeld(true)}
+        onPopupClose={() => setHeld(false)}
+      />
+    </RangeToolbarPaper>
+  );
+};
+
+export const defaultRenderMovableToolbar = (props: MovableToolbarRenderProps): React.ReactElement => {
+  return <MovableToolbar {...props} />;
 };
 
 /** The collapse / expand button of a row or column group, in the outline gutter. */

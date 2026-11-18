@@ -63,7 +63,7 @@ export const FontSizeCommandButton = memo(
   const [command] = useCommands([commandKey ?? '']);
 
   const committedFontSize = () => {
-    return command?.getState()?.toString() || '11';
+    return command?.getState()?.toString() ?? '';
   }
 
   const [fontSize, setFontSize] = useState<string>(committedFontSize);

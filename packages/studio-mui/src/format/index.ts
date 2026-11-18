@@ -11,5 +11,7 @@ export * from './LinePanel';
 export * from './BorderPanel';
 export * from './BorderPreview';
 
+export * from './editor';
+
 export * from './FormatTaskPane';
 export * from './FormatPlugin';

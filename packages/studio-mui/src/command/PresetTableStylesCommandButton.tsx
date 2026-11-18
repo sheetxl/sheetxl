@@ -287,9 +287,12 @@ export const PresetTableStylesCommandButton = memo(
   }, [command, propOnSelectTableStyleName]);
 
   const refCanvas = useRef<HTMLCanvasElement>(null);
-  const renderPopupPanel = useCallback((props: ExhibitPopupPanelProps) => {
+  const renderPopupPanel = useCallback(({ closeFloatAll }: ExhibitPopupPanelProps) => {
     const propsStyleButton = {
-      onSelectTableStyleName: handleOnSelectStyleName,
+      onSelectTableStyleName: (styleName: string) => {
+        closeFloatAll?.();
+        handleOnSelectStyleName(styleName);
+      },
       styles,
     }
 

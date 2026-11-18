@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { Command } from '@sheetxl/utils-react';
-import { DefaultTaskPaneRegistry, DefaultSheetLayersRegistry } from '@sheetxl/react';
+import { DefaultTaskPaneRegistry, DefaultSheetLayersRegistry, TaskPaneKey, hasFormatCellsPane } from '@sheetxl/react';
 
 import { AnomaliesCommands } from '../anomalies/AnomaliesCommands';
 import { AnomaliesPlugin } from '../anomalies/AnomaliesPlugin';
@@ -33,7 +33,6 @@ describe('Studio plugins return their disposer', () => {
     { name: 'ConditionalFormat', plugin: ConditionalFormatPlugin, panes: ['conditionalFormatDetails'] },
     { name: 'DataValidation', plugin: DataValidationPlugin, panes: ['dataValidationDetails'] },
     { name: 'ExternalLinks', plugin: ExternalLinksPlugin, panes: ['externalLinks'] },
-    { name: 'Format', plugin: FormatPlugin, panes: ['formatCells'] },
     { name: 'Named', plugin: NamedPlugin, panes: ['managedNames'] },
     { name: 'Pivot', plugin: PivotPlugin, panes: ['pivotTableFields'] },
     { name: 'Protection', plugin: ProtectionPlugin, panes: ['manageProtection', 'protectedRangeDetails'] },
@@ -55,6 +54,17 @@ describe('Studio plugins return their disposer', () => {
     });
   }
 
+  it('Format: supplies the cells body of the format pane, and its disposer removes only that', () => {
+    const dispose = FormatPlugin();
+    expect(hasFormatCellsPane()).toBe(true);
+    expect(DefaultTaskPaneRegistry.getRegisteredTaskPane(TaskPaneKey.Format)).not.toBeNull();
+    dispose();
+    expect(hasFormatCellsPane()).toBe(false);
+    // The pane is this package's to keep: it formats drawings without the cells' body.
+    expect(DefaultTaskPaneRegistry.getRegisteredTaskPane(TaskPaneKey.Format)).not.toBeNull();
+    expect(() => dispose()).not.toThrow();
+  });
+
   it('Anomalies: its disposer also removes its sheet layer and its workbook commands', () => {
     const dispose = AnomaliesPlugin();
     expect(Command.DefaultCommandRegistry.getDynamic('workbook')).toContain(AnomaliesCommands);
@@ -64,10 +74,17 @@ describe('Studio plugins return their disposer', () => {
     expect(DefaultSheetLayersRegistry.unregister('anomalies')).toBe(false);
   });
 
-  it('Chart: returns a disposer', () => {
+  it('Chart: its galleries join the chart tab, and its disposer removes them', () => {
     const dispose = ChartPlugin();
     expect(typeof dispose).toBe('function');
+    expect(buttons(['chartChangeTypeOptions', 'chartStyleOptions', 'chartColorsOptions'])).toEqual([true, true, true]);
+    // At the head of the chart's tab: how it is drawn, the style it is drawn in, then its colors.
+    const removeTab = Command.DefaultCommandButtonRegistry.register({ key: 'chartToolbar', members: ['format', 'chartDetails'] }, true);
+    const members = Command.DefaultCommandButtonRegistry.resolveMembers('chartToolbar')!.map(member => typeof member === 'string' ? member : member?.key ?? member);
+    expect(members).toEqual(['chartChangeTypeOptions', 'chartStyleOptions', 'chartColorsOptions', '-', 'format', 'chartDetails']);
+    removeTab();
     dispose();
+    expect(buttons(['chartChangeTypeOptions', 'chartStyleOptions', 'chartColorsOptions'])).toEqual([false, false, false]);
   });
 
   it('a remover leaves a later registration of the same key alone', () => {

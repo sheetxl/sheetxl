@@ -43,7 +43,7 @@
     },
     "conditionalFormatDetails": {
       "label": "Bedingte Formatierung",
-      "icon": "FormatPaint"
+      "icon": "ConditionalFormatOptions"
     },
     "conditionalFormatOptions": {
       "label": "Bedingte Formatierung",
@@ -114,11 +114,6 @@
       "label": "Suchen und Auswählen",
       "description": "Zellen suchen und ersetzen oder zu einer bestimmten Position wechseln.",
       "icon": "Find"
-    },
-    "formatCells": {
-      "label": "Zellen formatieren",
-      "description": "Ändern Sie das Aussehen der ausgewählten Zellen — Zahl, Ausrichtung, Schrift, Füllung und Rahmen.",
-      "icon": "CellsFormat"
     },
     "formulaToolbar": {
       "label": "Formeln"
@@ -256,6 +251,9 @@
     },
     "tableDetails": {
       "label": "Tabellendetails",
+      "groupLabels": {
+        "taskPane": "Tabelle"
+      },
       "icon": "Table"
     },
     "tableToolbar": {

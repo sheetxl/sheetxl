@@ -1,7 +1,7 @@
 {
   "name": "@sheetxl/monorepo",
   "description": "SheetXL monorepo.",
-  "version": "1.0.5+sites.254.6a96ffe73",
+  "version": "0.0.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "private": true,
   "type": "module",

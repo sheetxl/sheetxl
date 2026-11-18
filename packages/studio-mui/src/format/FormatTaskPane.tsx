@@ -13,7 +13,7 @@ import { type IWorkbook, type IWorksheet, NumberFormat } from '@sheetxl/sdk';
 
 import { useTranslator, usePersistentState } from '@sheetxl/utils-react';
 
-import { type TaskPaneProps, useModelSync } from '@sheetxl/react';
+import { type FormatPaneArgs, type TaskPaneProps, TaskPaneEmpty, useModelSync } from '@sheetxl/react';
 
 import { useFormatSelection } from './useFormatSelection';
 import { FormatCellPreview } from './FormatCellPreview';
@@ -33,15 +33,7 @@ export const FormatTab = {
 } as const;
 export type FormatTab = typeof FormatTab[keyof typeof FormatTab];
 
-/**
- * What a command may ask the format pane to open on — `activateTaskPane('formatCells', { args })`.
- */
-export interface FormatPaneArgs {
-  /** The tab to show. Omit to reopen on whichever tab the user was last on. */
-  tab?: FormatTab;
-}
-
-/** Persistence key for {@link FormatPaneArgs.tab | the tab} an argument-less activation returns to. */
+/** Persistence key for the tab an argument-less activation (`FormatPaneArgs`) returns to. */
 export const FORMAT_TAB_KEY = 'format.tab';
 
 /**
@@ -59,7 +51,8 @@ const TAB_ORDER: readonly FormatTab[] = Object.freeze([
 ]);
 
 /**
- * The **Format Cells** task pane: one preview over five tabs, applying live to the selection.
+ * The cells' body of the **Format** task pane (`registerFormatCellsPane`): one preview over five
+ * tabs, applying live to the selection.
  *
  * @remarks
  * Modeled on Excel Online's format pane, with two deliberate departures.
@@ -83,8 +76,8 @@ export const FormatTaskPane = memo((props: TaskPaneProps<IWorkbook, FormatPaneAr
   if (!sheet) {
     const { model: _model, args: _args, entryKey: _entryKey, frame: _frame, ref, ...rest } = props;
     return (
-      <Paper square ref={ref} sx={{ display: 'flex', flex: '1 1 auto', padding: (theme: Theme) => theme.spacing(2, GUTTER) }} {...rest}>
-        {t('format.noWorksheet')}
+      <Paper square ref={ref} sx={{ display: 'flex', flex: '1 1 auto' }} {...rest}>
+        <TaskPaneEmpty>{t('format.noWorksheet')}</TaskPaneEmpty>
       </Paper>
     );
   }
@@ -117,8 +110,9 @@ const FormatTaskPaneBody = memo((props: TaskPaneProps<IWorkbook, FormatPaneArgs>
   // activation asked for), while every fresh activation mints a new one, including one asking for
   // the tab it asked for last time.
   useEffect(() => {
-    const requested = args?.tab;
-    if (requested) setTab(requested);
+    // A tab the cells do not have (one asked of a drawing) is not one to change to.
+    const requested = args?.tab as FormatTab | undefined;
+    if (requested && TAB_ORDER.includes(requested)) setTab(requested);
   }, [args]);
 
   const numberFormat = selection.style.getNumberFormat();

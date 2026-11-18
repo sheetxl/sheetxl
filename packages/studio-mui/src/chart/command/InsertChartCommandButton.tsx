@@ -2,26 +2,68 @@ import { memo, forwardRef, useCallback } from 'react';
 
 import { Box } from '@mui/material';
 
+import { messageKey } from '@sheetxl/utils';
+
 import {
-  useCommands, useCommandButtonEntry, useCallbackRef, useTranslator
+  DynamicIcon, useCommands, useCommandButtonEntry, useCallbackRef, useTranslator
 } from '@sheetxl/utils-react';
 
 import {
-  ExhibitMenuHeader, ExhibitTooltip, CommandPopupButton, ExhibitIconButton, ExhibitDivider,
+  ExhibitMenuHeader, ExhibitTooltip, CommandPopupButton, ExhibitIconButton,
   type CommandPopupButtonProps, type ExhibitPopupPanelProps, type ExhibitIconButtonProps, type ButtonTooltipRenderProps
 } from '@sheetxl/utils-mui';
 
 import {
-  presetChartTypeDescriptor, PresetChartType, ThemedChartIcon, type ChartTypeDescriptor
+  presetChartTypeDescriptor, PresetChartType, chartIconKey, type ChartTypeDescriptor
 } from '@sheetxl/react';
 
 export interface InsertChartCommandButtonProps extends CommandPopupButtonProps {
 }
 
+export interface ChartTypeGalleryButtonProps extends CommandPopupButtonProps {
+  /** Called with the type pressed in the gallery. */
+  onSelectType: (descriptor: ChartTypeDescriptor) => void;
+  /** What the button's tooltip says. */
+  tip?: { label?: React.ReactNode, description?: React.ReactNode };
+}
+
+/** The gallery's sections, two to a row, each a category and its presets in order. */
+const GALLERY: readonly { category: string, label: string, presets: readonly PresetChartType[] }[] = [
+  { category: 'column', label: messageKey('chart.category.column'), presets: [PresetChartType.Column, PresetChartType.ColumnStacked, PresetChartType.ColumnStackedPercent] },
+  { category: 'bar', label: messageKey('chart.category.bar'), presets: [PresetChartType.Bar, PresetChartType.BarStacked, PresetChartType.BarStackedPercent] },
+  {
+    category: 'line',
+    label: messageKey('chart.category.line'),
+    presets: [
+      PresetChartType.Line, PresetChartType.LineStacked, PresetChartType.LineStackedPercent,
+      PresetChartType.LineMarkers, PresetChartType.LineStackedMarkers, PresetChartType.LineStackedPercentMarkers
+    ]
+  },
+  { category: 'area', label: messageKey('chart.category.area'), presets: [PresetChartType.Area, PresetChartType.AreaStacked, PresetChartType.AreaStackedPercent] },
+  { category: 'pie', label: messageKey('chart.category.pie'), presets: [PresetChartType.Pie, PresetChartType.PieDoughnut, PresetChartType.PieOfPie, PresetChartType.BarOfPie] },
+  {
+    category: 'scatter',
+    label: messageKey('chart.category.scatter'),
+    presets: [
+      PresetChartType.ScatterMarkers, PresetChartType.ScatterLinesMarkersSmooth, PresetChartType.ScatterLinesSmooth,
+      PresetChartType.ScatterLinesMarkers, PresetChartType.ScatterLines, PresetChartType.Bubble
+    ]
+  },
+  { category: 'statistical', label: messageKey('chart.category.statistical'), presets: [PresetChartType.Histogram, PresetChartType.Pareto, PresetChartType.BoxWhisker] },
+  { category: 'hierarchical', label: messageKey('chart.category.hierarchical'), presets: [PresetChartType.Treemap, PresetChartType.Sunburst] },
+  { category: 'radar', label: messageKey('chart.category.radar'), presets: [PresetChartType.Radar, PresetChartType.RadarMarkers, PresetChartType.RadarFilled] },
+  { category: 'other', label: messageKey('chart.category.other'), presets: [PresetChartType.Waterfall, PresetChartType.Funnel] },
+  { category: 'stock', label: messageKey('chart.category.stock'), presets: [PresetChartType.StockHLC, PresetChartType.StockOHLC, PresetChartType.StockVHLC, PresetChartType.StockVOHLC] },
+  {
+    category: 'surface',
+    label: messageKey('chart.category.surface'),
+    presets: [PresetChartType.Surface, PresetChartType.SurfaceWireframe, PresetChartType.SurfaceTopView, PresetChartType.SurfaceTopViewWireframe]
+  }
+];
+
 interface PresetChartIconButtonProps extends ExhibitIconButtonProps {
   presetKey: PresetChartType;
   handleOnInsertChart: (descriptor: ChartTypeDescriptor) => void;
-  size?: 'small' | 'medium' | 'large';
 }
 
 const PresetChartIconButton = memo((props: PresetChartIconButtonProps) => {
@@ -29,7 +71,6 @@ const PresetChartIconButton = memo((props: PresetChartIconButtonProps) => {
     presetKey,
     disabled,
     handleOnInsertChart,
-    size = 'large',
     ...rest
   } = props;
   const t = useTranslator();
@@ -39,25 +80,101 @@ const PresetChartIconButton = memo((props: PresetChartIconButtonProps) => {
     return null;
   }
 
-  const ChartIcon = descriptor.Icon;
   return (
     <ExhibitIconButton
       key={presetKey}
       propsTooltip={{
-        description: t(descriptor.description)
+        label: t(descriptor.description),
+        description: t(descriptor.hint)
       }}
       icon={
-        <ThemedChartIcon
-          size={size}
-        >
-          <ChartIcon/>
-        </ThemedChartIcon>
+        <DynamicIcon iconKey={chartIconKey(descriptor.type)} size="1.875rem"/>
       }
       onClick={() => { handleOnInsertChart(descriptor) }}
       {...rest}
     />
   );
 });
+
+/**
+ * A button that opens the gallery of chart types and hands back the one pressed. What is done with
+ * it is the caller's: the ribbon inserts a chart of it, the chart's details draw the chart as it.
+ */
+export const ChartTypeGalleryButton = memo(
+  forwardRef<HTMLElement, ChartTypeGalleryButtonProps>((props, refForwarded) => {
+  const {
+    onSelectType,
+    tip,
+    disabled: propDisabled,
+    label,
+    icon,
+    ...rest
+  } = props;
+  const t = useTranslator();
+  const disabled = propDisabled;
+
+  const handleOnInsertChart = useCallbackRef((preset: ChartTypeDescriptor) => {
+    onSelectType(preset);
+  }, [onSelectType]);
+
+  const renderPopupPanel = useCallback(({ closeFloatAll }: ExhibitPopupPanelProps) => {
+    const buttonProps = {
+      disabled,
+      handleOnInsertChart: (descriptor: ChartTypeDescriptor) => {
+        closeFloatAll?.();
+        handleOnInsertChart(descriptor);
+      }
+    }
+    return (
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, auto)',
+          columnGap: '24px',
+          rowGap: '6px',
+          padding: '10px 16px'
+        }}
+      >
+        {GALLERY.map(section => (
+          <Box key={section.category} data-chart-category={section.category} sx={{ display: 'flex', flexDirection: 'column' }}>
+            <ExhibitMenuHeader>
+              {t(section.label)}
+            </ExhibitMenuHeader>
+            <Box sx={{ display: 'flex', gap: '6px' }}>
+              {section.presets.map(preset => <PresetChartIconButton key={preset} presetKey={preset} {...buttonProps}/>)}
+            </Box>
+          </Box>
+        ))}
+      </Box>
+    );
+  }, [propDisabled, t]);
+
+  return (
+    <CommandPopupButton
+      ref={refForwarded}
+      renderPopupPanel={renderPopupPanel}
+      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
+        return (
+          <ExhibitTooltip
+            label={tip?.label as any}
+            description={tip?.description as any}
+            disabled={disabled}
+          >
+            {children}
+          </ExhibitTooltip>
+        );
+      }}
+      label={label}
+      disabled={disabled}
+      selected={false}
+      icon={icon ?? chartIconKey('columnClustered')}
+      {...rest}
+    />
+  )
+
+}));
+
+ChartTypeGalleryButton.displayName = 'ChartTypeGalleryButton';
 
 /**
  * TODO -
@@ -69,135 +186,32 @@ export const InsertChartCommandButton = memo(
   const {
     groupKey: propGroupKey,
     disabled: propDisabled,
-    label: propLabel,
-    icon: propIcon,
+    label: _propLabel,
+    icon: _propIcon,
     ...rest
   } = props;
   const t = useTranslator();
 
   const resolvedCommands = useCommands<ChartTypeDescriptor>(['insertChart']);
+  // Tooltip chrome from the registered `insertChartOptions` entry (catalog-backed).
   const entry = useCommandButtonEntry('insertChartOptions');
 
   const command = resolvedCommands[0];
   const disabled = propDisabled ?? command?.disabled();
 
-  const handleOnInsertChart = useCallbackRef((preset: ChartTypeDescriptor) => {
+  const onSelectType = useCallbackRef((preset: ChartTypeDescriptor) => {
     command?.execute(preset);
   }, [command, propGroupKey]);
 
-  const renderPopupPanel = useCallback((_props: ExhibitPopupPanelProps) => {
-    const buttonProps = {
-      disabled,
-      handleOnInsertChart
-    }
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          paddingTop: '4px', // TODO - size of rounded border from theme
-          paddingBottom: '4px', // TODO - size of rounded border from theme
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '6px 16px'
-          }}
-        >
-          <ExhibitMenuHeader>
-            {t('chart.category.column')}
-          </ExhibitMenuHeader>
-          <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-            <PresetChartIconButton presetKey={PresetChartType.Column} {...buttonProps} />
-            <PresetChartIconButton presetKey={PresetChartType.ColumnStacked} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.ColumnStackedPercent} {...buttonProps}/>
-          </Box>
-          <ExhibitDivider orientation="horizontal"/>
-          <ExhibitMenuHeader>
-            {t('chart.category.line')}
-          </ExhibitMenuHeader>
-          <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-            <PresetChartIconButton presetKey={PresetChartType.Line} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.LineStacked} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.LineStackedPercent} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.LineMarkers} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.LineStackedMarkers} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.LineStackedPercentMarkers} {...buttonProps}/>
-          </Box>
-          <ExhibitDivider orientation="horizontal"/>
-          <ExhibitMenuHeader>
-            {t('chart.category.pie')}
-          </ExhibitMenuHeader>
-          <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-            <PresetChartIconButton presetKey={PresetChartType.Pie} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.PieDoughnut} {...buttonProps}/>
-          </Box>
-          <ExhibitDivider orientation="horizontal"/>
-          <ExhibitMenuHeader>
-            {t('chart.category.bar')}
-          </ExhibitMenuHeader>
-          <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-            <PresetChartIconButton presetKey={PresetChartType.Bar} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.BarStacked} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.BarStackedPercent} {...buttonProps}/>
-          </Box>
-          <ExhibitDivider orientation="horizontal"/>
-          <ExhibitMenuHeader>
-            {t('chart.category.area')}
-          </ExhibitMenuHeader>
-          <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-            <PresetChartIconButton presetKey={PresetChartType.Area} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.AreaStacked} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.AreaStackedPercent} {...buttonProps}/>
-          </Box>
-          <ExhibitDivider orientation="horizontal"/>
-          <ExhibitMenuHeader>
-            {t('chart.category.scatter')}
-          </ExhibitMenuHeader>
-          <Box sx={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-            <PresetChartIconButton presetKey={PresetChartType.ScatterMarkers} {...buttonProps}/>
-            {/* <PresetChartIconButton presetKey={PresetChartType.ScatterLinesMarkersSmooth} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.ScatterLinesSmooth}/> {...buttonProps}*/}
-            <PresetChartIconButton presetKey={PresetChartType.ScatterLinesMarkers} {...buttonProps}/>
-            <PresetChartIconButton presetKey={PresetChartType.ScatterLines} {...buttonProps}/>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }, [propDisabled, t]);
-
-  const ChartIcon = presetChartTypeDescriptor(PresetChartType.Column).Icon;
   return (
-    <CommandPopupButton
+    <ChartTypeGalleryButton
       ref={refForwarded}
-      renderPopupPanel={renderPopupPanel}
-      renderTooltip={({ children, disabled }: ButtonTooltipRenderProps) => {
-        return (
-          <ExhibitTooltip
-            // Tooltip chrome from the registered `insertChartOptions` entry (catalog-backed).
-            label={entry?.getLabel?.()}
-            description={entry?.getDescription?.()}
-            disabled={disabled}
-          >
-            {children}
-          </ExhibitTooltip>
-        );
-      }}
+      onSelectType={onSelectType}
+      tip={{ label: entry?.getLabel?.(), description: entry?.getDescription?.() }}
       // TODO - add a insert chart quick Command
       label={command?.getLabel(propGroupKey) ?? t('chart.insertFallback')}
       disabled={disabled}
-      selected={false}
-      icon={
-        <ThemedChartIcon
-          // size={'small'}
-        >
-          <ChartIcon/>
-        </ThemedChartIcon>
-      }
       {...rest}
     />
-  )
-
+  );
 }));

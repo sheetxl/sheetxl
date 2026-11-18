@@ -37,7 +37,15 @@ const strictConvention = process.argv.slice(2).includes('--strict-convention');
  */
 const EXEMPT = new Set([
   'view', 'sheet', 'cellStyle', 'namedItem',
-  'contextMenu', 'movableContextMenu', 'sheetTabMenu', 'workbook'
+  'contextMenu', 'movableContextMenu', 'sheetTabMenu', 'workbook', 'taskPane'
+]);
+
+/**
+ * Surfaces whose scoped label is read by code rather than passed as a `groupKey`, so the static
+ * scan below cannot see them. Each entry names its reader.
+ */
+const CODE_SURFACES = new Map([
+  ['taskPane', 'react/src/taskPane/TaskPaneRegistry.ts titles a pane from its record'],
 ]);
 
 /**
@@ -67,7 +75,7 @@ const literalText = (n) =>
 
 /** Valid render contexts: every registered command-button `key` + every `groupKey="…"` literal. */
 function collectContexts() {
-  const contexts = new Set();
+  const contexts = new Set(CODE_SURFACES.keys());
   const pkgsDir = path.join(repoRoot, 'packages');
   for (const pkg of fs.readdirSync(pkgsDir)) {
     const srcDir = path.join(pkgsDir, pkg, 'src');

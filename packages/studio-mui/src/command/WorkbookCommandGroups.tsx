@@ -48,7 +48,7 @@ export const registerWorkbookCommandGroups = (): void => {
   }, true);
 
   // Format Cells: row/column sizing + visibility, with a nested Hide & Unhide group, closing on the
-  // Format Cells pane itself (`formatCells`) - the menu is named for it, and Excel ends its
+  // format pane itself (`format`) - the menu is named for it, and Excel ends its
   // Cells > Format menu the same way.
   DefaultCommandButtonRegistry.register({
     key: 'cellsFormatOptions',
@@ -61,7 +61,7 @@ export const registerWorkbookCommandGroups = (): void => {
       '-',
       'hideUnhideOptions',
       '-',
-      'formatCells'
+      'format'
     ]
   }, true);
 
@@ -298,7 +298,7 @@ export const registerWorkbookCommandGroups = (): void => {
       '-',
       'drawSizingOptions',
       '-',
-      'formatMovable'
+      'format'
     ]
   }, true);
 

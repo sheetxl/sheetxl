@@ -121,9 +121,10 @@ export const BorderPanel = memo((props: FormatPanelProps) => {
 
   const t = useTranslator();
   const {
-    getEdgeStroke, createBorder, applyStyle, styles, schemeLookup, autoColor, darkMode,
+    getEdgeStroke, createBorder, applyStyle, styles, autoColor, darkMode,
     hasInnerHorizontal, hasInnerVertical
   } = selection;
+  const schemeLookup = styles.schemeLookup();
   const disabled = propDisabled || selection.disabled;
 
   // An inner rule needs two cells to run between. On a selection with no inside those targets are

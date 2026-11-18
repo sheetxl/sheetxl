@@ -11,7 +11,6 @@ import { CommentsPlugin } from '../comments/CommentsPlugin';
 import { ConditionalFormatPlugin } from '../conditionalFormat/ConditionalFormatPlugin';
 import { DataValidationPlugin } from '../dataValidation/DataValidationPlugin';
 import { ExternalLinksPlugin } from '../externalLink/ExternalLinksPlugin';
-import { FormatPlugin } from '../format/FormatPlugin';
 import { NamedPlugin } from '../named/NamedPlugin';
 import { TablePlugin } from '../table/TablePlugin';
 
@@ -26,7 +25,6 @@ describe('Studio pane titles', () => {
     { plugin: ConditionalFormatPlugin, key: TaskPaneKey.ConditionalFormat },
     { plugin: DataValidationPlugin, key: TaskPaneKey.DataValidation },
     { plugin: ExternalLinksPlugin, key: TaskPaneKey.ExternalLinks },
-    { plugin: FormatPlugin, key: TaskPaneKey.FormatCells },
     { plugin: NamedPlugin, key: TaskPaneKey.Names },
     { plugin: TablePlugin, key: TaskPaneKey.TableDetails }
   ];
@@ -41,8 +39,7 @@ describe('Studio pane titles', () => {
 
   it('the pane reads its record', () => {
     registerStudioCommandCatalogs();
-    // A key can be a command in more than one scope (`formatCells` is the sheet's too); the probe goes
-    // where the title is read from.
+    // A key can be a command in more than one scope; the probe goes where the title is read from.
     for (const { key } of cases) {
       const scope = Command.DefaultCommandRegistry.findByKey(key)!.name;
       Command.DefaultCommandCatalogService.register(scope, 'en', {

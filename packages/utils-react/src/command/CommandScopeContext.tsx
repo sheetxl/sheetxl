@@ -126,6 +126,14 @@ export interface CommandScopeProviderProps {
    */
   order?: number;
   /**
+   * Inside a pane's chain, the **name** of an ancestor scope to chain on instead of the layer below — the
+   * layers below this one stop resolving through it, and layers above still stack on it. `null` or
+   * omitted ⇒ the ordinary place at {@link order}. Switchable live: a layer that takes over the region
+   * (a selected drawing, an active edit) sets it while it holds the focus and clears it after. A name
+   * with no matching ancestor leaves the layer in its ordinary place. Ignored outside a chain.
+   */
+  attachTo?: string | null;
+  /**
    * The created scope's **element** — the DOM node this scope's commands belong to. Attaching one bounds
    * the scope's region for **origin containment**: its shortcuts then only dispatch for keystrokes born
    * inside the element (the `sheet` scope names the sheet element, so `Delete` → `clearContents` cannot
@@ -210,7 +218,7 @@ export function attachWhenReady(
  * the scope's region (and, with {@link CommandScopeProviderProps.region region}, naming a focus leaf).
  * Optionally registers dispatch middleware via {@link CommandScopeProviderProps.use}.
  */
-export function CommandScopeProvider({ spec, scope, use, order, elementRef, region, scopeRef, children }: CommandScopeProviderProps): ReactNode {
+export function CommandScopeProvider({ spec, scope, use, order, attachTo, elementRef, region, scopeRef, children }: CommandScopeProviderProps): ReactNode {
   const parent = useCommandScope();
   const chain = useCommandChain();          // the pane's z-chain, or null outside a pane
   const ambientOrder = useCommandOrder();
@@ -232,12 +240,25 @@ export function CommandScopeProvider({ spec, scope, use, order, elementRef, regi
 
   // Own the created scope's lifecycle. Inside a pane's chain it JOINS at `joinOrder` (mechanism 1 —
   // reparent-on-insert by z; design/COMMAND-DESIGN.md §"Layered resolver"); otherwise it stays parented at its
-  // React ancestor (the createChild default). Unregister BEFORE dispose so the stack re-chains ahead of teardown.
+  // React ancestor (the createChild default). A new order or chain only moves the scope; it is disposed
+  // when the scope itself goes, in the effect below — declared after this one, so on unmount the stack
+  // re-chains ahead of teardown.
+  useEffect(() => {
+    if (!created || !chain) return undefined;
+    return chain.register(created, joinOrder);
+  }, [created, chain, joinOrder]);
+
+  // After the join above (effects run in order), so a re-join starts from the current attachment too.
+  const attach = attachTo ?? null;
+  useEffect(() => {
+    if (!created || !chain) return;
+    chain.setAttach(created, attach);
+  }, [created, chain, joinOrder, attach]);
+
   useEffect(() => {
     if (!created) return undefined;
-    const unregister = chain ? chain.register(created, joinOrder) : undefined;
-    return () => { unregister?.(); created.dispose(); };
-  }, [created, chain, joinOrder]);
+    return () => { created.dispose(); };
+  }, [created]);
 
   // Run the contributor's `dynamic` half on the created scope for its lifetime, tearing down on unmount /
   // data change.

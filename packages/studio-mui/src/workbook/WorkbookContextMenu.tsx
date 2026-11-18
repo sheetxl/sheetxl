@@ -138,7 +138,7 @@ const WorkbookContextMenuBody = memo(forwardRef<HTMLDivElement, WorkbookContextM
     ...contextOptions,
     // Format Cells last, on its own - the catch-all for anything the sections above don't cover.
     '-',
-    'formatCells'
+    'format'
   ];
 
   const children = renderMembers(members, {

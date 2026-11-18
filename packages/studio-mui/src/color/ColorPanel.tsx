@@ -20,6 +20,7 @@ import { AnimatedLoadingPanel, LazyLoadErrorPanel } from '@sheetxl/utils-mui';
 
 import { ColorPanelType, AutoColorPosition } from './Types';
 import { ColorButton } from './ColorButton';
+import { colorBlockEdge } from './ColorSetSwatch';
 import { ColorButtonList } from './ColorButtonList';
 
 import { addPreset } from './_Utils';
@@ -428,16 +429,10 @@ export const ColorPanel = memo(forwardRef<HTMLElement, ColorPanelProps>((props, 
           onClick={() => { handleOnSelectColorDef(null) }}
         >
         <Box
-          sx={{
+          sx={(appTheme: Theme) => ({
             flex: 'none',
-            boxShadow: (appTheme: Theme) => {
-              return appTheme.shadows[2];
-            },
-            borderRadius: (appTheme: Theme) => {
-              return appTheme.spacing(0.5);
-            },
-            overflow: 'hidden'
-          }}>
+            ...colorBlockEdge(appTheme)
+          })}>
           <ColorButton
             schemeColorLookup={schemeLookup}
             colorDef={colorDef}
