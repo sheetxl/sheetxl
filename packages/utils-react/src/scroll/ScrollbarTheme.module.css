@@ -5,14 +5,17 @@
  * `.scrollbar-colors` is on every custom `Scrollbar`, so its colors resolve against the surface it sits on.
  * `scrollbarThemedClassName` themes the native (webkit) scrollbars of an element and its descendants.
  * The `--scrollbar-*` variables are internal; a client themes scrollbars through the tokens.
+ *
+ * Each token falls back to its light default (`defaultTheme.light`), so a scrollbar with no
+ * `ThemeRootStyles` above it (a bare `ScrollPane`) still paints.
  */
 .scrollbar-themed,
 .scrollbar-colors {
-  --scrollbar-track-color: color-mix(in srgb, var(--sxl-color-base-content) 4%, transparent);
-  --scrollbar-thumb-color: color-mix(in srgb, var(--sxl-color-base-content) 26%, transparent);
-  --scrollbar-button-color: color-mix(in srgb, var(--sxl-color-base-content) 26%, transparent);
-  --scrollbar-active-color: var(--sxl-color-primary);
-  --scrollbar-corner-color: var(--sxl-color-base-100);
+  --scrollbar-track-color: color-mix(in srgb, var(--sxl-color-base-content, rgba(0, 0, 0, 0.87)) 4%, transparent);
+  --scrollbar-thumb-color: color-mix(in srgb, var(--sxl-color-base-content, rgba(0, 0, 0, 0.87)) 26%, transparent);
+  --scrollbar-button-color: color-mix(in srgb, var(--sxl-color-base-content, rgba(0, 0, 0, 0.87)) 26%, transparent);
+  --scrollbar-active-color: var(--sxl-color-primary, #1976d2);
+  --scrollbar-corner-color: var(--sxl-color-base-100, #ffffff);
 }
 
 .scrollbar-themed {
